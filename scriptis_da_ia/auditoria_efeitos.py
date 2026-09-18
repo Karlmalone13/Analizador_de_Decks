@@ -206,6 +206,92 @@ def _gatilhos(db: dict, code: str) -> set:
     return set((d.get("effects") or {}).keys())
 
 
+# Rotulo entre colchetes no TEXTO OFICIAL -> chave do banco de efeitos.
+# Lista branca de proposito: colchete no OPTCG tambem marca keyword
+# ([Rush], [Blocker], [Banish]) e condicao ([DON!! x1], [Once Per Turn]),
+# que NAO sao gatilhos. O que nao esta aqui e ignorado.
+_ROTULO_PARA_GATILHO = {
+    "on play": "on_play",
+    "when attacking": "when_attacking",
+    "activate: main": "activate_main",
+    "main": "main",
+    "counter": "counter",
+    "on k.o.": "on_ko",
+    "on your opponent's attack": "on_opp_attack",
+    "on block": "on_block",
+    "when rested": "when_rested",
+    "end of your turn": "end_of_turn",
+    "trigger": "trigger",
+}
+# [Your Turn] / [Opponent's Turn] NUNCA declaram gatilho sozinhos: quando a
+# linha e "[Your Turn] [Once Per Turn] When a DON!! card ... is returned",
+# o gatilho de verdade esta na PROSA e o parser ja o guarda numa chave mais
+# especifica (`when_don_returned`, `on_opp_event_activated`,
+# `on_own_effect_removes_char`...). Medido: tratando-os como gatilho, 42 das
+# 54 acusacoes eram falso positivo -- o banco estava certo e mais preciso
+# que a etiqueta. Por isso ficam FORA do mapa e entram so como qualificador.
+_COLCHETE = re.compile(r"\[([^\]]+)\]")
+# Colchetes ENCOSTADOS no inicio da linha: e onde um gatilho e DECLARADO.
+# "[On Play] [Once Per Turn] K.O. ..." -> pega os dois rotulos e para no 'K'.
+_PREFIXO = re.compile(r"^\s*((?:\[[^\]]+\]\s*)+)")
+# Rotulos que so QUALIFICAM quando (ou sob que condicao) outro gatilho vale.
+# "[Your Turn] [On Play] ..." e um on_play restrito ao seu turno, nao dois
+# gatilhos -- o parser dobra isso dentro do proprio on_play. So contam como
+# gatilho proprio quando aparecem SOZINHOS no prefixo.
+_QUALIFICADORES: set = set()
+
+
+def _texto_das_cartas() -> dict:
+    """CODIGO -> texto oficial. Fonte do que a carta DIZ que faz."""
+    import csv
+    try:
+        with (RAIZ / "cards_rows.csv").open(encoding="utf-8") as f:
+            return {r["id"]: (r.get("card_text") or "") for r in csv.DictReader(f)}
+    except Exception:
+        return {}
+
+
+def _gatilhos_do_texto(texto: str) -> set:
+    """Gatilhos que a carta DECLARA, lidos do texto oficial.
+
+    So conta colchete no INICIO da linha, que e onde um gatilho e declarado.
+    Colchete no meio da frase e referencia a keyword, nao declaracao -- sem
+    isso, "trash 1 card with a [Trigger] from your hand" virava um gatilho
+    `trigger` inexistente (15 falsos positivos medidos no banco).
+
+    Precisao importa mais que cobertura aqui: uma checagem barulhenta e uma
+    checagem que ninguem le, e ai ela nao serve pra nada.
+    """
+    achados = set()
+    for linha in (texto or "").splitlines():
+        pref = _PREFIXO.match(linha)
+        if not pref:
+            continue
+        rotulos = {
+            _ROTULO_PARA_GATILHO[r.strip().lower()]
+            for r in _COLCHETE.findall(pref.group(1))
+            if r.strip().lower() in _ROTULO_PARA_GATILHO
+        }
+        proprios = rotulos - _QUALIFICADORES
+        # qualificador so vira gatilho quando nao ha gatilho proprio na linha
+        achados |= proprios or rotulos
+    return achados
+
+
+def _keywords_so_em_combate() -> frozenset:
+    """Vem do MOTOR, nao de uma copia local.
+
+    Uma segunda lista aqui divergiria da do motor no primeiro keyword novo,
+    e a auditoria passaria a mentir em silencio. Se o import falhar, a
+    checagem se desliga (conjunto vazio) em vez de usar um palpite.
+    """
+    try:
+        from optcg_engine.decision_engine import _KEYWORD_SO_EM_COMBATE
+        return _KEYWORD_SO_EM_COMBATE
+    except Exception:
+        return frozenset()
+
+
 def _codigos_do_estado(st: dict) -> dict:
     """CODIGO -> onde estava (mao/campo/lider), pro lado do BOT."""
     achados = {}
@@ -339,6 +425,18 @@ def analisar(regs: list[dict], db: dict, filtro: str = "",
     ofertas = defaultdict(int)
     escolhas = defaultdict(int)
 
+    # CHECAGEM NOVA 1 -- O PONTO CEGO DA PROPRIA AUDITORIA.
+    # Tudo acima percorre os efeitos que estao NO BANCO. Uma carta cujo
+    # gatilho nunca foi parseado nao aparece como "nao concluido" nem como
+    # "nunca oferecido": ela simplesmente NAO EXISTE pra esta ferramenta.
+    # E o pior caso possivel (a acao nao existe pro modelo) caindo justo no
+    # buraco de quem deveria acha-lo. Achado real 18/09/2026: Loki OP17-119
+    # entrou em campo 2x sem executar nada e a auditoria deu a partida como
+    # 100% verde. Aqui a comparacao e contra o TEXTO OFICIAL, nao contra o
+    # banco -- e a unica fonte independente do parser.
+    textos = _texto_das_cartas()
+    texto_sem_banco = {}
+
     for r in decisoes:
         mid = r.get("match_id")
         if r.get("decision_kind") != "main":
@@ -346,6 +444,16 @@ def analisar(regs: list[dict], db: dict, filtro: str = "",
         for cod, zona in _codigos_do_estado(r.get("state_before") or {}).items():
             if cod and _gatilhos(db, cod) & GATILHOS_ATIVOS:
                 tinha[mid].setdefault(cod, zona)
+            if cod and cod in textos:
+                faltando = (_gatilhos_do_texto(textos[cod])
+                            - _gatilhos(db, cod))
+                if faltando:
+                    texto_sem_banco.setdefault(cod, {
+                        "match_id": mid, "zona": zona,
+                        "gatilhos_no_texto_e_fora_do_banco": sorted(faltando),
+                        "gatilhos_no_banco": sorted(_gatilhos(db, cod)),
+                        "texto": " / ".join(textos[cod].splitlines())[:160],
+                    })
 
         for a in r.get("scored_actions") or []:
             cod = a.get("card_code")
@@ -361,6 +469,16 @@ def analisar(regs: list[dict], db: dict, filtro: str = "",
         gats = _gatilhos(db, cod)
         # qual gatilho este tipo de acao dispara
         disparados = [g for g, t in ACAO_DO_GATILHO.items() if t == tipo and g in gats]
+        # EVENT jogado da mao resolve o `main` -- o mapa acima liga `main` a
+        # 'activate', que e o caminho de Character/Stage ja em campo. Sem
+        # esta linha, TODO Event jogado ficava fora do ciclo de vida:
+        # medido, 285 Events do banco tem `main` e nao tem `on_play`, ou
+        # seja, a auditoria era cega pra todos eles. Foi por aqui que o
+        # OP17-055 do turno 1 passou sem ser visto (achado 18/09/2026).
+        if (tipo == "play" and "main" in gats
+                and (db.get(cod) or {}).get("type") == "EVENT"
+                and "main" not in disparados):
+            disparados.append("main")
         if not disparados:
             continue
 
@@ -396,6 +514,32 @@ def analisar(regs: list[dict], db: dict, filtro: str = "",
             desfecho = "ATIVADO E CONCLUIDO"
             concluiu, porque = "SIM", "confirmado e o estado mudou"
 
+        # CHECAGEM NOVA 2 -- "CONCLUIU" e "VALEU ALGUMA COISA" sao perguntas
+        # DIFERENTES, e ate aqui so a primeira era feita. Um efeito pode
+        # chegar ao fim perfeitamente e ainda assim ter valor NULO por
+        # regra do jogo -- e ai a auditoria dava verde.
+        # Achado real 18/09/2026: no turno 1 o bot gastou OP17-055 (custo 0)
+        # e restou o unico DON pra dar [Unblockable] "during this turn", num
+        # turno em que atacar e impossivel (`can_attack_this_turn(): turn>1`).
+        # Concluiu, sim. Valeu zero, com CERTEZA, nao com suspeita.
+        # So entra aqui o que e demonstravel pela regra; "jogada fraca" e
+        # julgamento de valor e NAO pertence a esta ferramenta.
+        nulo = None
+        turno_r = r.get("turn")
+        if isinstance(turno_r, int) and turno_r == 1:
+            combate = _keywords_so_em_combate()
+            for g in disparados:
+                for passo in (((db.get(cod) or {}).get("effects") or {})
+                              .get(g, {}).get("steps") or []):
+                    if (passo.get("action") in combate
+                            and passo.get("duration") == "this_turn"):
+                        nulo = (f"{passo.get('action')} dura so este turno e no "
+                                f"turno 1 nao existe combate -- efeito nulo por "
+                                f"regra, mesmo tendo concluido")
+                        break
+                if nulo:
+                    break
+
         linhas.append({
             "match_id": mid, "turn": r.get("turn"), "carta": cod,
             "gatilhos": sorted(disparados), "acao": tipo,
@@ -404,6 +548,7 @@ def analisar(regs: list[dict], db: dict, filtro: str = "",
             "status": status, "concluiu": concluiu, "porque": porque,
             "desfecho": desfecho, "alvo": det_alvo,
             "delta": (tr or {}).get("delta"),
+            "valor_nulo_por_regra": nulo,
         })
 
     # ── DEFESA: counter / blocker / trigger / opcional / reacao ──────────
@@ -526,6 +671,8 @@ def analisar(regs: list[dict], db: dict, filtro: str = "",
     atores = {r.get("actor_code") for r in decisoes if r.get("actor_code")}
     return {"linhas": linhas, "defesa": defesa, "reativos": reativos,
             "nunca_disparou": nunca,
+            "texto_sem_banco": texto_sem_banco,
+            "valor_nulo": [l for l in linhas if l.get("valor_nulo_por_regra")],
             "partidas": sorted({r.get("match_id") for r in decisoes if r.get("match_id")}),
             "execucao_plugin": _auditar_plugin(bepinex_log, atores)}
 
@@ -603,6 +750,8 @@ def imprimir(rel: dict, top: int) -> None:
                     print(f"        vice: {dk}")
             elif l.get("alvo_necessario"):
                 print("        ALVO: houve decisao de alvo, mas sem detalhe legivel")
+            if l.get("valor_nulo_por_regra"):
+                print(f"        !! VALOR NULO: {l['valor_nulo_por_regra']}")
         print()
 
     defesa = rel.get("defesa") or []
@@ -667,6 +816,39 @@ def imprimir(rel: dict, top: int) -> None:
         print("  LEITURA: 'nunca oferecido' e o caso GRAVE (a acao nao existe pro")
         print("  modelo). 'oferecido e nao escolhido' e competicao normal -- so vira")
         print("  achado se a alternativa vencedora for consistentemente pior.")
+        print()
+
+    # ── O TEXTO DIZ, O BANCO NAO TEM (o ponto cego desta ferramenta) ─────
+    tsb = rel.get("texto_sem_banco") or {}
+    print(f"== O TEXTO DA CARTA TEM GATILHO QUE O BANCO NAO TEM ({len(tsb)}) ==")
+    print("   Tudo acima percorre o BANCO de efeitos. Gatilho que nunca foi")
+    print("   parseado nao aparece como 'nao concluido' NEM como 'nunca")
+    print("   oferecido' -- ele nao existe pra esta ferramenta. Esta secao e a")
+    print("   unica que compara contra o TEXTO OFICIAL, fora do parser.")
+    if not tsb:
+        print("   nenhum -- toda carta vista tem no banco os gatilhos que o texto declara.")
+    else:
+        print("   E O CASO MAIS GRAVE: a acao nao existe pro modelo, e nenhum")
+        print("   modelo melhor ou corpus maior alcanca. Vai pro parser.")
+        for cod, d in sorted(tsb.items()):
+            print(f"     {rot.get(d['match_id'],'?'):<3} {cod:<11} ({d['zona']}) "
+                  f"FALTA: {'/'.join(d['gatilhos_no_texto_e_fora_do_banco'])} "
+                  f"| banco tem: {'/'.join(d['gatilhos_no_banco']) or '(nada)'}")
+            print(f"         texto: {d['texto']}")
+    print()
+
+    # ── CONCLUIU, MAS VALIA ZERO ────────────────────────────────────────
+    vn = rel.get("valor_nulo") or []
+    print(f"== CONCLUIU E NAO VALIA NADA ({len(vn)}) ==")
+    print("   'Concluiu' e 'valeu alguma coisa' sao perguntas diferentes, e so")
+    print("   a primeira era feita. Aqui entra SO o que a regra do jogo prova")
+    print("   ser nulo -- 'jogada fraca' e julgamento de valor e nao pertence a")
+    print("   esta ferramenta.")
+    if not vn:
+        print("   nenhum.")
+    for l in vn[:top]:
+        print(f"     {rot.get(l.get('match_id'),'?'):<3} turno {l['turn']:<3} "
+              f"{l['carta']:<11} {l['valor_nulo_por_regra']}")
 
 
 def main() -> int:

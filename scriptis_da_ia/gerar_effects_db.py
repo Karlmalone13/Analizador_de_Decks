@@ -2285,14 +2285,35 @@ def parse_ko(text):
     steps = []
     t = text.lower()
 
-    total_power_m = re.search(
-        r'k\.o\. up to (\d+) of your opponent.?s characters? '
-        r'with a total power of (\d+) or less', t)
-    if total_power_m:
+    # ORCAMENTO SOMADO entre os alvos: "with a total power/cost of N or
+    # less" -- o limite e do CONJUNTO escolhido, nao de cada alvo (que e o
+    # `cost_lte`/`power_lte` do bloco generico abaixo). Duas formas do mesmo
+    # molde, entao um regex so:
+    #
+    #   quantificador : "up to N" | "any number of" | "all (of) (the)"
+    #   grandeza      : "power" -> total_power_lte | "cost" -> total_cost_lte
+    #
+    # Generalizado em 18/09/2026 a partir do Loki OP17-119 ("K.O. any number
+    # of your opponent's Characters with a total cost of 4 or less"), que ao
+    # vivo entrou em campo DUAS vezes sem executar nada: o `[On Play]` nao
+    # existia no banco, entao a acao nunca virava candidata. O regex antigo
+    # exigia "up to N" E a palavra "power", entao falhava nos dois eixos.
+    # Nao amarrar a carta: "any number of" e "total cost" sao formas, e a
+    # proxima carta com a mesma forma e palavras diferentes tem que passar.
+    total_m = re.search(
+        r'k\.o\. (?:up to (\d+)|any number|all(?: of)?(?: the)?) '
+        r'of your opponent.?s characters? '
+        r'with a total (power|cost) of (\d+) or less', t)
+    if total_m:
+        # sem numero explicito = sem teto de QUANTIDADE; quem limita e o
+        # orcamento. 99 e a mesma convencao que o "all" usa no bloco abaixo.
+        count = int(total_m.group(1)) if total_m.group(1) else 99
+        chave = ('total_power_lte' if total_m.group(2) == 'power'
+                 else 'total_cost_lte')
         return [{
-            'action': 'ko', 'count': int(total_power_m.group(1)),
+            'action': 'ko', 'count': count,
             'target': 'opp_character',
-            'total_power_lte': int(total_power_m.group(2)),
+            chave: int(total_m.group(3)),
         }]
 
     # Verbo: "k.o." ou "trash" (sinonimos de remocao neste contexto).

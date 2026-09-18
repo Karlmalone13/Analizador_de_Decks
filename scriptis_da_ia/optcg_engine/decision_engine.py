@@ -4645,6 +4645,37 @@ class EffectExecutor:
         if step.get('conditions') and not self._check_conditions(step['conditions'], card):
             return False
 
+        # KEYWORD DE COMBATE que expira NESTE turno, num turno em que combate
+        # nao pode acontecer = efeito nulo com CERTEZA, nao incerto.
+        #
+        # Achado ao vivo 18/09/2026 (CPU x CPU, log Rocks.D.Xebec-B x
+        # Monkey.D.Luffy-B): no TURNO 1 o bot jogou OP17-055 (Event custo 0)
+        # e restou o unico DON pra dar [Unblockable] ao lider "during this
+        # turn" -- num turno em que atacar e impossivel por regra. Queimou
+        # carta e DON por zero, e o motor ja tinha o fato a um metodo de
+        # distancia (`can_attack_this_turn()`). A telemetria mostrou
+        # `candidatas: 1`: era a UNICA acao gerada, entao o modelo nao tinha
+        # como recusar -- nao adianta esperar que o ML aprenda a nao fazer
+        # isso, a alternativa nem existia.
+        #
+        # Escopo deliberadamente estreito, pela FORMA e nao pela carta:
+        # so keyword que SO se expressa em combate, e so quando a duracao
+        # nao alcanca nenhum combate. `buff_power` fica de FORA de proposito
+        # -- poder e lido por outros efeitos dentro do mesmo turno
+        # ("se tiver 10000 de poder..."), entao nao ha certeza de que e
+        # inocuo, e a regra desta funcao e so reprovar com CERTEZA.
+        # `turn >= 1` NAO e detalhe: o default de GameState.turn e 0, um
+        # sentinela de "nao inicializado" que varios construtores internos
+        # (e testes) nunca preenchem. Sem esta guarda o gate disparava em
+        # turno 0 e reprovava keyword em estado do qual nao se sabe NADA --
+        # contra a regra desta funcao, que so pode reprovar com CERTEZA.
+        # Na pratica o gate e exatamente o turno 1, que e o unico turno real
+        # em que ninguem pode atacar.
+        if (a in _KEYWORD_SO_EM_COMBATE
+                and step.get('duration') == 'this_turn'
+                and me.turn >= 1 and not me.can_attack_this_turn()):
+            return False
+
         # Efeito cuja fonte e "escolha 1 personagem do oponente" (ex: Catarina
         # Devon [When Attacking] "select up to 1 opponent Character, copia o
         # poder dele") -- sem NENHUM personagem no campo do oponente, o step
@@ -8436,6 +8467,7 @@ class EffectExecutor:
             power_lte = step.get('power_lte')
             rested_only = step.get('rested_only', False)
             total_power_lte = step.get('total_power_lte')
+            total_cost_lte = step.get('total_cost_lte')
 
             if target_type == 'opp_stage':
                 if opp.field_stage and (cost_lte is None or opp.field_stage.cost <= cost_lte):
@@ -8477,12 +8509,31 @@ class EffectExecutor:
             immune_skipped = []
             imm_kind = 'ko' if action == 'ko' else 'removal'
             for owner, candidates in pools:
-                if total_power_lte is not None and owner is opp:
+                # ORCAMENTO SOMADO: o limite vale para o CONJUNTO, nao para
+                # cada alvo. Duas grandezas, UMA selecao -- somar poder ou
+                # somar custo muda so de onde sai o numero, entao nao pode
+                # virar dois caminhos (REGRA_SEM_DUPLICACAO).
+                # `total_cost_lte` entrou em 18/09/2026 junto do [On Play] do
+                # Loki (OP17-119); sem ele o step parseado nao teria quem o
+                # respeitasse e o K.O. sairia SEM limite nenhum, que e pior
+                # que o bug original de nao executar nada.
+                orcamento = next(
+                    ((lim, medida) for lim, medida in (
+                        (total_power_lte, lambda c: c.power),
+                        (total_cost_lte, lambda c: c.cost),
+                    ) if lim is not None), None)
+                if orcamento is not None and owner is opp:
+                    limite, medida = orcamento
                     from itertools import combinations
                     feasible = []
                     for size in range(1, min(count, len(candidates)) + 1):
                         feasible.extend(combo for combo in combinations(candidates, size)
-                                        if sum(c.power for c in combo) <= total_power_lte)
+                                        if sum(medida(c) for c in combo) <= limite)
+                    # NOTA: a chave prefere QUANTIDADE antes de valor, entao
+                    # dois alvos baratos ganham de um alvo caro. E o criterio
+                    # que ja existia para `total_power_lte`; mantido identico
+                    # de proposito -- trocar a regua e julgamento de VALOR e
+                    # tem que sair de medicao, nao de palpite meu aqui.
                     best_combo = max(
                         feasible,
                         key=lambda combo: (len(combo), sum(c.board_value() for c in combo)),
@@ -13474,6 +13525,14 @@ _KEYWORD_GRANTS = {
     'gain_banish':         'has_banish',
     'gain_unblockable':    'has_unblockable',
 }
+
+# Keywords que SO produzem efeito quando ha combate: sem ataque no turno,
+# conceder qualquer uma delas por UM turno nao muda nada no jogo. Usado por
+# `_step_is_viable` pra nao pagar custo por um beneficio nulo (achado ao vivo
+# 18/09/2026, OP17-055 dando [Unblockable] no turno 1 -- ver o comentario la).
+# `gain_blocker` entra porque bloquear so acontece em ataque do oponente, que
+# tambem nao existe no turno 1.
+_KEYWORD_SO_EM_COMBATE = frozenset(_KEYWORD_GRANTS)
 
 
 def apply_conditional_keyword_passives(gs: 'GameState', opp: 'GameState') -> None:

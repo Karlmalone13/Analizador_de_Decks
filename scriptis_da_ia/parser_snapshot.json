@@ -9842,7 +9842,7 @@
      "action": "set_active",
      "count": 1,
      "filter_name": "kuro",
-     "target": "own_character"
+     "target": "leader_or_own_character"
     }
    ]
   },
@@ -19833,7 +19833,7 @@
      "action": "set_active",
      "count": 1,
      "filter_name": "foxy",
-     "target": "own_character"
+     "target": "leader_or_own_character"
     }
    ]
   },
@@ -41254,7 +41254,7 @@
      "count": 1,
      "duration": "permanent",
      "filter_name": "kouzuki momonosuke",
-     "target": "own_character"
+     "target": "leader_or_own_character"
     }
    ]
   }
@@ -42168,6 +42168,39 @@
    ]
   }
  },
+ "OP17-010": {
+  "activate_main": {
+   "conditions": {
+    "no_other_named": "fossa",
+    "opp_char_power_gte": 10000
+   },
+   "once_per_turn": true,
+   "steps": [
+    {
+     "action": "buff_power",
+     "amount": 2000,
+     "duration": "until_opp_turn_end",
+     "target": "self"
+    },
+    {
+     "action": "gain_blocker"
+    }
+   ]
+  }
+ },
+ "OP17-011": {
+  "when_attacking": {
+   "don_requirement": 2,
+   "steps": [
+    {
+     "action": "debuff_power",
+     "amount": 4000,
+     "duration": "this_turn",
+     "target": "opp_character"
+    }
+   ]
+  }
+ },
  "OP17-012": {
   "on_ko": {
    "steps": [
@@ -42214,6 +42247,33 @@
    ]
   }
  },
+ "OP17-014": {
+  "on_opp_attack": {
+   "costs": [
+    {
+     "type": "trash_self"
+    }
+   ],
+   "steps": [
+    {
+     "action": "buff_power",
+     "amount": 1000,
+     "duration": "battle_only",
+     "target": "leader"
+    }
+   ]
+  },
+  "on_play": {
+   "steps": [
+    {
+     "action": "ko",
+     "count": 1,
+     "power_lte": 2000,
+     "target": "opp_character"
+    }
+   ]
+  }
+ },
  "OP17-015": {
   "on_ko": {
    "costs": [
@@ -42250,6 +42310,55 @@
      "count": 2,
      "power_lte": 2000,
      "target": "opp_character"
+    }
+   ]
+  }
+ },
+ "OP17-017": {
+  "counter": {
+   "steps": [
+    {
+     "action": "buff_power",
+     "amount": 2000,
+     "duration": "battle_only",
+     "target": "leader_or_character"
+    },
+    {
+     "action": "debuff_power",
+     "amount": 2000,
+     "duration": "this_turn",
+     "target": "opp_leader_or_character"
+    }
+   ]
+  }
+ },
+ "OP17-018": {
+  "counter": {
+   "conditions": {
+    "chars_gte": 2
+   },
+   "steps": [
+    {
+     "action": "buff_power",
+     "amount": 4000,
+     "duration": "battle_only",
+     "target": "leader_or_character"
+    }
+   ]
+  },
+  "main": {
+   "costs": [
+    {
+     "count": 2,
+     "type": "rest_don"
+    }
+   ],
+   "steps": [
+    {
+     "action": "ko",
+     "cost_lte": 99,
+     "count": 1,
+     "target": "opp_stage"
     }
    ]
   }
@@ -42337,6 +42446,19 @@
    "steps": [
     {
      "action": "keyword_rush"
+    }
+   ]
+  }
+ },
+ "OP17-023": {
+  "passive": {
+   "steps": [
+    {
+     "action": "substitute_ko",
+     "cost": {
+      "action": "rest_self"
+     },
+     "filter_type": "straw hat crew"
     }
    ]
   }
@@ -42891,6 +43013,19 @@
    ]
   }
  },
+ "OP17-047": {
+  "end_of_turn": {
+   "conditions": {
+    "hand_lte": 2
+   },
+   "steps": [
+    {
+     "action": "opp_place_hand_bottom_deck",
+     "count": 1
+    }
+   ]
+  }
+ },
  "OP17-048": {
   "on_opp_attack": {
    "costs": [
@@ -43138,32 +43273,6 @@
   }
  },
  "OP17-058": {
-  "counter": {
-   "steps": [
-    {
-     "action": "buff_power",
-     "amount": 2000,
-     "duration": "battle_only",
-     "target": "leader_or_character"
-    }
-   ]
-  },
-  "main": {
-   "costs": [
-    {
-     "count": 1,
-     "type": "rest_don"
-    }
-   ],
-   "steps": [
-    {
-     "action": "gain_unblockable",
-     "duration": "this_turn"
-    }
-   ]
-  }
- },
- "OP17-059": {
   "on_opp_attack": {
    "costs": [
     {
@@ -43197,6 +43306,36 @@
      "amount": 2000,
      "duration": "this_turn",
      "target": "opp_character"
+    }
+   ]
+  }
+ },
+ "OP17-059": {
+  "on_play": {
+   "costs": [
+    {
+     "count": 1,
+     "optional": true,
+     "type": "don_minus"
+    }
+   ],
+   "steps": [
+    {
+     "action": "draw",
+     "count": 1
+    },
+    {
+     "action": "ko",
+     "cost_lte": 2,
+     "count": 2,
+     "target": "opp_character"
+    }
+   ]
+  },
+  "passive": {
+   "steps": [
+    {
+     "action": "keyword_blocker"
     }
    ]
   }
@@ -43396,6 +43535,26 @@
    ]
   }
  },
+ "OP17-067": {
+  "on_play": {
+   "conditions": {
+    "other_char_cost_gte": 10
+   },
+   "costs": [
+    {
+     "count": 1,
+     "optional": true,
+     "type": "don_minus"
+    }
+   ],
+   "steps": [
+    {
+     "action": "rest_opp_character",
+     "count": 1
+    }
+   ]
+  }
+ },
  "OP17-068": {
   "when_attacking": {
    "conditions": {
@@ -43416,6 +43575,36 @@
    ]
   }
  },
+ "OP17-069": {
+  "on_play": {
+   "conditions": {
+    "leader_type": "animal kingdom pirates"
+   },
+   "costs": [
+    {
+     "count": 1,
+     "optional": true,
+     "type": "don_minus"
+    }
+   ],
+   "steps": [
+    {
+     "action": "debuff_power",
+     "amount": 2000,
+     "duration": "this_turn",
+     "target": "opp_character"
+    }
+   ]
+  },
+  "passive": {
+   "steps": [
+    {
+     "action": "keyword_rush_character"
+    }
+   ]
+  }
+ },
+ "OP17-070": {},
  "OP17-071": {
   "on_play": {
    "costs": [
@@ -43520,6 +43709,79 @@
      "action": "opp_trash_from_hand",
      "chosen_by": "effect_owner_blind",
      "count": 1
+    }
+   ]
+  }
+ },
+ "OP17-076": {
+  "counter": {
+   "costs": [
+    {
+     "count": 1,
+     "type": "trash_from_hand"
+    }
+   ],
+   "steps": [
+    {
+     "action": "buff_power",
+     "amount": 3000,
+     "duration": "battle_only",
+     "target": "leader"
+    }
+   ]
+  },
+  "trigger": {
+   "costs": [
+    {
+     "count": 1,
+     "optional": true,
+     "type": "don_minus"
+    }
+   ],
+   "steps": [
+    {
+     "action": "draw",
+     "count": 2
+    }
+   ]
+  }
+ },
+ "OP17-077": {
+  "counter": {
+   "costs": [
+    {
+     "count": 1,
+     "optional": true,
+     "type": "don_minus"
+    }
+   ],
+   "steps": [
+    {
+     "action": "buff_power",
+     "amount": 4000,
+     "duration": "battle_only",
+     "target": "leader"
+    }
+   ]
+  },
+  "main": {
+   "conditions": {
+    "leader_type": "animal kingdom pirates"
+   },
+   "costs": [
+    {
+     "count": 3,
+     "type": "rest_don"
+    },
+    {
+     "count": 2,
+     "type": "trash_from_hand"
+    }
+   ],
+   "steps": [
+    {
+     "action": "add_don",
+     "count": 3
     }
    ]
   }
@@ -43761,6 +44023,7 @@
    ]
   }
  },
+ "OP17-088": {},
  "OP17-089": {
   "on_play": {
    "steps": [
@@ -43936,6 +44199,52 @@
    ]
   }
  },
+ "OP17-096": {
+  "counter": {
+   "conditions": {
+    "board_has_cost_gte": 12
+   },
+   "steps": [
+    {
+     "action": "buff_power",
+     "amount": 4000,
+     "duration": "battle_only",
+     "target": "leader_or_character"
+    }
+   ]
+  },
+  "trigger": {
+   "steps": [
+    {
+     "action": "add_from_trash",
+     "count": 1,
+     "filter_type": "elbaph"
+    }
+   ]
+  }
+ },
+ "OP17-097": {
+  "counter": {
+   "steps": [
+    {
+     "action": "buff_power",
+     "amount": 3000,
+     "duration": "battle_only",
+     "target": "leader"
+    }
+   ]
+  },
+  "main": {
+   "steps": [
+    {
+     "action": "debuff_cost",
+     "amount": 1,
+     "count": 99,
+     "target": "opp_character"
+    }
+   ]
+  }
+ },
  "OP17-098": {
   "counter": {
    "steps": [
@@ -43990,6 +44299,7 @@
    "choice_chooser": "opponent"
   }
  },
+ "OP17-100": {},
  "OP17-101": {
   "activate_main": {
    "once_per_turn": true,
@@ -44871,6 +45181,17 @@
    ]
   }
  },
+ "P-038": {
+  "on_play": {
+   "steps": [
+    {
+     "action": "ko",
+     "count": 1,
+     "target": "opp_character"
+    }
+   ]
+  }
+ },
  "P-039": {
   "passive": {
    "conditions": {
@@ -44890,6 +45211,7 @@
    ]
   }
  },
+ "P-040": {},
  "P-041": {},
  "P-042": {},
  "P-043": {
@@ -45190,17 +45512,8 @@
    ]
   }
  },
- "P-063": {
-  "on_play": {
-   "steps": [
-    {
-     "action": "rest_opp_character",
-     "cost_lte": 1,
-     "count": 1
-    }
-   ]
-  }
- },
+ "P-063": {},
+ "P-064": {},
  "P-065": {
   "when_attacking": {
    "conditions": {
@@ -45216,6 +45529,19 @@
    ]
   }
  },
+ "P-066": {
+  "your_turn": {
+   "steps": [
+    {
+     "action": "buff_power",
+     "amount": 1000,
+     "duration": "this_turn",
+     "target": "self"
+    }
+   ]
+  }
+ },
+ "P-067": {},
  "P-068": {
   "activate_main": {
    "costs": [
@@ -45271,15 +45597,9 @@
    ]
   }
  },
+ "P-072": {},
  "P-073": {
   "activate_main": {
-   "costs": [
-    {
-     "count": 1,
-     "source": "life_top_or_bottom",
-     "type": "life_to_hand"
-    }
-   ],
    "once_per_turn": true,
    "steps": [
     {
@@ -45302,38 +45622,11 @@
      "action": "add_to_hand",
      "count": 1,
      "revealed_to_opponent": false
-    },
-    {
-     "action": "bounce",
-     "count": 1,
-     "target": "self"
     }
    ]
   }
  },
- "P-075": {
-  "on_play": {
-   "steps": [
-    {
-     "action": "give_don",
-     "count": 1,
-     "rested": true
-    }
-   ]
-  },
-  "when_attacking": {
-   "conditions": {
-    "other_char_cost_gte": 8
-   },
-   "steps": [
-    {
-     "action": "draw",
-     "count": 1,
-     "then_trash": 1
-    }
-   ]
-  }
- },
+ "P-075": {},
  "P-076": {
   "activate_main": {
    "costs": [
@@ -45410,38 +45703,9 @@
    ]
   }
  },
- "P-081": {
-  "activate_main": {
-   "steps": [
-    {
-     "action": "bounce",
-     "count": 1,
-     "target": "self"
-    },
-    {
-     "action": "play_card",
-     "cost_eq": 5,
-     "count": 1,
-     "filter_type": "cross guild"
-    }
-   ]
-  }
- },
- "P-082": {
-  "on_play": {
-   "conditions": {
-    "leader_type": "cross guild",
-    "your_turn_only": true
-   },
-   "steps": [
-    {
-     "action": "place_opp_character_bottom_deck",
-     "count": 1,
-     "power_lte": 2000
-    }
-   ]
-  }
- },
+ "P-080": {},
+ "P-081": {},
+ "P-082": {},
  "P-083": {
   "when_attacking": {
    "costs": [
@@ -45515,7 +45779,34 @@
    ]
   }
  },
+ "P-086": {
+  "activate_main": {
+   "costs": [
+    {
+     "count": 3,
+     "optional": true,
+     "type": "don_minus"
+    }
+   ],
+   "once_per_turn": true,
+   "steps": [
+    {
+     "action": "buff_power",
+     "amount": 3000,
+     "duration": "this_turn",
+     "target": "self"
+    },
+    {
+     "action": "play_card",
+     "cost_lte": 99,
+     "count": 1
+    }
+   ]
+  }
+ },
+ "P-087": {},
  "P-088": {},
+ "P-089": {},
  "P-090": {
   "on_ko": {
    "conditions": {
@@ -45590,6 +45881,58 @@
    ]
   }
  },
+ "P-093": {
+  "on_play": {
+   "conditions": {
+    "don_on_field_lte_opp": true
+   },
+   "steps": [
+    {
+     "action": "add_don",
+     "count": 1
+    }
+   ]
+  },
+  "passive": {
+   "steps": [
+    {
+     "action": "keyword_blocker"
+    }
+   ]
+  }
+ },
+ "P-094": {
+  "on_play": {
+   "steps": [
+    {
+     "action": "ko",
+     "cost_lte": 2,
+     "count": 1,
+     "rested_only": true,
+     "target": "opp_character"
+    }
+   ]
+  }
+ },
+ "P-095": {
+  "on_opp_attack": {
+   "costs": [
+    {
+     "count": 1,
+     "type": "trash_from_hand"
+    }
+   ],
+   "once_per_turn": true,
+   "steps": [
+    {
+     "action": "buff_power",
+     "amount": 2000,
+     "duration": "battle_only",
+     "target": "leader_or_character"
+    }
+   ]
+  }
+ },
  "P-096": {
   "activate_main": {
    "once_per_turn": true,
@@ -45608,6 +45951,118 @@
      "action": "draw",
      "count": 1,
      "then_trash": 1
+    }
+   ]
+  }
+ },
+ "P-097": {
+  "passive": {
+   "steps": [
+    {
+     "action": "keyword_blocker"
+    }
+   ]
+  }
+ },
+ "P-098": {
+  "on_play": {
+   "steps": [
+    {
+     "action": "place_own_character_bottom_deck",
+     "conditions": {
+      "no_own_chars_cost_gte_count": {
+       "cost_gte": 5,
+       "count_gte": 5
+      }
+     },
+     "target": "self"
+    }
+   ]
+  },
+  "passive": {
+   "steps": [
+    {
+     "action": "keyword_blocker"
+    }
+   ]
+  }
+ },
+ "P-099": {
+  "when_attacking": {
+   "costs": [
+    {
+     "count": 10,
+     "optional": true,
+     "type": "don_minus"
+    }
+   ],
+   "steps": [
+    {
+     "action": "set_active",
+     "target": "self"
+    }
+   ]
+  }
+ },
+ "P-100": {},
+ "P-101": {
+  "on_play": {
+   "steps": [
+    {
+     "action": "give_don",
+     "count": 1,
+     "rested": true
+    }
+   ]
+  },
+  "passive": {
+   "steps": [
+    {
+     "action": "keyword_blocker"
+    }
+   ]
+  }
+ },
+ "P-102": {
+  "on_play": {
+   "conditions": {
+    "leader_type": "straw hat crew"
+   },
+   "steps": [
+    {
+     "action": "set_don_active",
+     "count": 2,
+     "up_to": true
+    }
+   ]
+  }
+ },
+ "P-103": {
+  "on_play": {
+   "steps": [
+    {
+     "action": "draw",
+     "count": 2
+    },
+    {
+     "action": "hand_to_deck",
+     "count": 2
+    },
+    {
+     "action": "give_don",
+     "count": 1,
+     "rested": true
+    }
+   ]
+  }
+ },
+ "P-104": {
+  "passive": {
+   "steps": [
+    {
+     "action": "immunity",
+     "imm_type": "removal",
+     "source": "opp"
     }
    ]
   }
@@ -45646,6 +46101,861 @@
    ]
   }
  },
+ "P-106": {
+  "end_of_turn": {
+   "costs": [
+    {
+     "type": "turn_life_face_up"
+    }
+   ],
+   "steps": [
+    {
+     "action": "set_active",
+     "count": 1,
+     "filter_type": "egghead",
+     "target": "own_character"
+    }
+   ]
+  },
+  "trigger": {
+   "steps": [
+    {
+     "action": "draw",
+     "count": 1
+    },
+    {
+     "action": "ko",
+     "cost_lte": 2,
+     "count": 1,
+     "target": "opp_character"
+    }
+   ]
+  }
+ },
+ "P-107": {
+  "on_play": {
+   "steps": [
+    {
+     "action": "buff_power",
+     "amount": 2000,
+     "duration": "until_opp_turn_end",
+     "target": "leader"
+    }
+   ]
+  }
+ },
+ "P-108": {
+  "on_ko": {
+   "steps": [
+    {
+     "action": "set_don_active",
+     "count": 2,
+     "up_to": true
+    }
+   ]
+  },
+  "passive": {
+   "steps": [
+    {
+     "action": "keyword_blocker"
+    }
+   ]
+  }
+ },
+ "P-109": {
+  "on_play": {
+   "steps": [
+    {
+     "action": "look_top_deck",
+     "count": 3
+    },
+    {
+     "action": "add_to_hand",
+     "count": 1,
+     "revealed_to_opponent": false
+    },
+    {
+     "action": "deck_reorder_rest"
+    },
+    {
+     "action": "give_don",
+     "count": 1,
+     "rested": true
+    }
+   ]
+  },
+  "passive": {
+   "steps": [
+    {
+     "action": "keyword_blocker"
+    }
+   ]
+  }
+ },
+ "P-110": {},
+ "P-111": {},
+ "P-112": {
+  "on_play": {
+   "conditions": {
+    "leader_is": "nami"
+   },
+   "steps": [
+    {
+     "action": "play_card",
+     "cost_lte": 2,
+     "count": 1
+    },
+    {
+     "action": "give_don",
+     "count": 1,
+     "rested": true
+    }
+   ]
+  }
+ },
+ "P-113": {
+  "don_conditional_keywords": {
+   "steps": [
+    {
+     "action": "keyword_blocker",
+     "don_requirement": 2
+    }
+   ]
+  },
+  "opp_turn": {
+   "don_requirement": 2,
+   "steps": [
+    {
+     "action": "buff_power",
+     "amount": 2000,
+     "duration": "this_turn",
+     "target": "self"
+    },
+    {
+     "action": "gain_blocker"
+    }
+   ]
+  },
+  "trigger": {
+   "steps": [
+    {
+     "action": "ko",
+     "cost_lte": 3,
+     "count": 1,
+     "target": "opp_character"
+    }
+   ]
+  }
+ },
+ "P-114": {
+  "end_of_turn": {
+   "conditions": {
+    "don_gte": 1
+   },
+   "steps": [
+    {
+     "action": "set_active",
+     "target": "self"
+    }
+   ]
+  },
+  "passive": {
+   "steps": [
+    {
+     "action": "keyword_blocker"
+    }
+   ]
+  }
+ },
+ "P-115": {
+  "on_play": {
+   "steps": [
+    {
+     "action": "give_don",
+     "count": 1,
+     "rested": true
+    }
+   ]
+  },
+  "trigger": {
+   "steps": [
+    {
+     "action": "play_card",
+     "cost_lte": 99,
+     "count": 1,
+     "has_trigger": true,
+     "power_lte": 5000
+    }
+   ]
+  }
+ },
+ "P-116": {
+  "on_ko": {
+   "conditions": {
+    "trash_gte": 7
+   },
+   "steps": [
+    {
+     "action": "draw",
+     "count": 1,
+     "then_trash": 1
+    }
+   ]
+  },
+  "passive": {
+   "steps": [
+    {
+     "action": "keyword_blocker"
+    }
+   ]
+  }
+ },
+ "P-117": {
+  "game_rules": {
+   "rules": [
+    {
+     "type": "deck_out_win_instead_of_loss"
+    }
+   ]
+  },
+  "on_damage_to_life": {
+   "don_requirement": 1,
+   "steps": [
+    {
+     "action": "trash_from_deck_top",
+     "count": 1
+    }
+   ]
+  }
+ },
+ "P-118": {
+  "on_play": {
+   "conditions": {
+    "leader_type": "egghead"
+   },
+   "steps": [
+    {
+     "action": "play_card",
+     "cost_lte": 5,
+     "count": 1,
+     "filter_type": "egghead"
+    }
+   ]
+  }
+ },
+ "P-119": {},
+ "P-120": {
+  "passive": {
+   "steps": [
+    {
+     "action": "debuff_cost",
+     "amount": 2,
+     "target": "own_play_self"
+    }
+   ]
+  }
+ },
+ "P-121": {
+  "on_ko": {
+   "steps": [
+    {
+     "action": "opp_trash_from_hand",
+     "count": 2
+    }
+   ]
+  },
+  "on_play": {
+   "steps": [
+    {
+     "action": "trash_from_deck_top",
+     "count": 3
+    }
+   ]
+  }
+ },
+ "P-122": {
+  "activate_main": {
+   "once_per_turn": true,
+   "steps": [
+    {
+     "action": "buff_power",
+     "amount": 1000,
+     "duration": "this_turn",
+     "target": "self"
+    }
+   ]
+  }
+ },
+ "P-123": {},
+ "P-124": {},
+ "P-125": {},
+ "P-126": {
+  "on_play": {
+   "costs": [
+    {
+     "count": 1,
+     "type": "rest_don"
+    }
+   ],
+   "steps": [
+    {
+     "action": "gain_rush",
+     "duration": "this_turn"
+    }
+   ]
+  }
+ },
+ "P-127": {},
+ "P-128": {
+  "on_play": {
+   "steps": [
+    {
+     "action": "debuff_power",
+     "amount": 3000,
+     "duration": "this_turn",
+     "target": "opp_character"
+    }
+   ]
+  }
+ },
+ "P-129": {
+  "on_play": {
+   "steps": [
+    {
+     "action": "buff_power",
+     "amount": 2000,
+     "duration": "this_turn",
+     "target": "own_character"
+    }
+   ]
+  }
+ },
+ "P-130": {
+  "on_play": {
+   "steps": [
+    {
+     "action": "look_top_deck",
+     "count": 5
+    },
+    {
+     "action": "add_to_hand",
+     "count": 1,
+     "filter_type": "navy",
+     "revealed_to_opponent": true
+    },
+    {
+     "action": "deck_bottom_rest"
+    },
+    {
+     "action": "trash_from_hand",
+     "count": 1
+    }
+   ]
+  },
+  "trigger": {
+   "steps": [
+    {
+     "action": "activate_main_effect"
+    }
+   ]
+  }
+ },
+ "P-131": {},
+ "P-132": {
+  "on_play": {
+   "costs": [
+    {
+     "count": 4,
+     "type": "rest_don"
+    }
+   ],
+   "steps": [
+    {
+     "action": "play_card",
+     "cost_lte": 99,
+     "count": 1,
+     "filter_name": "sabo",
+     "power_lte": 6000
+    }
+   ]
+  }
+ },
+ "P-133": {
+  "passive": {
+   "steps": [
+    {
+     "action": "buff_power",
+     "amount": 2000,
+     "duration": "this_turn",
+     "target": "self"
+    }
+   ]
+  }
+ },
+ "P-134": {
+  "main": {
+   "steps": [
+    {
+     "action": "look_top_deck",
+     "count": 3
+    },
+    {
+     "action": "add_to_hand",
+     "count": 1,
+     "filter_type": "sabo",
+     "revealed_to_opponent": true
+    },
+    {
+     "action": "deck_bottom_rest"
+    },
+    {
+     "action": "draw",
+     "count": 1
+    }
+   ]
+  },
+  "trigger": {
+   "steps": [
+    {
+     "action": "activate_main_effect"
+    }
+   ]
+  }
+ },
+ "P-135": {
+  "on_play": {
+   "steps": [
+    {
+     "action": "rest_opp_character",
+     "cost_lte": 5,
+     "count": 1
+    }
+   ]
+  },
+  "passive": {
+   "steps": [
+    {
+     "action": "keyword_blocker"
+    }
+   ]
+  }
+ },
+ "P-136": {
+  "activate_main": {
+   "costs": [
+    {
+     "type": "rest_self"
+    }
+   ],
+   "steps": [
+    {
+     "action": "give_don",
+     "count": 1,
+     "rested": true
+    }
+   ]
+  }
+ },
+ "P-137": {
+  "passive": {
+   "steps": [
+    {
+     "action": "keyword_double_attack"
+    }
+   ]
+  },
+  "when_attacking": {
+   "steps": [
+    {
+     "action": "give_don",
+     "count": 1,
+     "rested": true
+    }
+   ]
+  }
+ },
+ "P-138": {
+  "opp_turn": {
+   "steps": [
+    {
+     "action": "buff_power",
+     "amount": 2000,
+     "duration": "this_turn",
+     "target": "self"
+    }
+   ]
+  }
+ },
+ "P-139": {
+  "on_play": {
+   "steps": [
+    {
+     "action": "give_don",
+     "count": 1,
+     "rested": true
+    }
+   ]
+  },
+  "when_attacking": {
+   "don_requirement": 1,
+   "steps": [
+    {
+     "action": "draw",
+     "count": 1
+    }
+   ]
+  }
+ },
+ "P-140": {
+  "on_play": {
+   "steps": [
+    {
+     "action": "give_don",
+     "count": 2,
+     "rested": true
+    }
+   ]
+  },
+  "passive": {
+   "steps": [
+    {
+     "action": "keyword_blocker"
+    }
+   ]
+  }
+ },
+ "P-141": {
+  "on_play": {
+   "steps": [
+    {
+     "action": "debuff_power",
+     "amount": 1000,
+     "duration": "this_turn",
+     "target": "opp_leader_or_character"
+    }
+   ]
+  },
+  "passive": {
+   "steps": [
+    {
+     "action": "keyword_rush"
+    }
+   ]
+  }
+ },
+ "P-142": {},
+ "P-143": {
+  "on_play": {
+   "conditions": {
+    "board_has_cost": [
+     0
+    ]
+   },
+   "steps": [
+    {
+     "action": "gain_rush",
+     "duration": "this_turn"
+    }
+   ]
+  }
+ },
+ "P-144": {
+  "on_play": {
+   "costs": [
+    {
+     "count": 1,
+     "filter_type": "baroque works",
+     "type": "ko_own_character"
+    }
+   ],
+   "steps": [
+    {
+     "action": "draw",
+     "count": 1
+    }
+   ]
+  }
+ },
+ "P-145": {
+  "on_ko": {
+   "conditions": {
+    "opp_hand_gte": 6
+   },
+   "steps": [
+    {
+     "action": "opp_trash_from_hand",
+     "count": 2
+    }
+   ]
+  },
+  "on_play": {
+   "steps": [
+    {
+     "action": "draw",
+     "count": 1,
+     "then_trash": 1
+    }
+   ]
+  }
+ },
+ "P-146": {
+  "on_ko": {
+   "steps": [
+    {
+     "action": "draw",
+     "count": 1
+    },
+    {
+     "action": "rest_opp_character",
+     "count": 1
+    }
+   ]
+  }
+ },
+ "P-147": {
+  "on_ko": {
+   "steps": [
+    {
+     "action": "add_from_trash",
+     "count": 1
+    }
+   ]
+  },
+  "passive": {
+   "conditions": {
+    "board_has_cost": [
+     0
+    ],
+    "board_has_cost_gte": 8
+   },
+   "steps": [
+    {
+     "action": "buff_power",
+     "amount": 2000,
+     "duration": "this_turn",
+     "target": "self"
+    }
+   ]
+  }
+ },
+ "P-148": {
+  "activate_main": {
+   "conditions": {
+    "board_has_cost": [
+     0
+    ],
+    "board_has_cost_gte": 8
+   },
+   "once_per_turn": true,
+   "steps": [
+    {
+     "action": "give_don",
+     "count": 1,
+     "rested": true
+    }
+   ]
+  },
+  "passive": {
+   "steps": [
+    {
+     "action": "keyword_blocker"
+    }
+   ]
+  }
+ },
+ "P-149": {
+  "on_play": {
+   "conditions": {
+    "board_has_cost": [
+     0
+    ],
+    "board_has_cost_gte": 8
+   },
+   "steps": [
+    {
+     "action": "draw",
+     "count": 2,
+     "then_trash": 1
+    }
+   ]
+  },
+  "passive": {
+   "steps": [
+    {
+     "action": "keyword_rush_character"
+    }
+   ]
+  }
+ },
+ "P-150": {
+  "on_play": {
+   "conditions": {
+    "your_turn_only": true
+   },
+   "steps": [
+    {
+     "action": "play_from_trash",
+     "cost_lte": 99,
+     "count": 1
+    }
+   ]
+  },
+  "trigger": {
+   "steps": [
+    {
+     "action": "draw",
+     "count": 1
+    },
+    {
+     "action": "lock_opp_character_attack",
+     "cost_lte": 6,
+     "count": 1,
+     "duration": "until_opp_turn_end"
+    }
+   ]
+  }
+ },
+ "P-151": {
+  "on_play": {
+   "conditions": {
+    "leader_type": "navy"
+   },
+   "steps": [
+    {
+     "action": "look_top_deck",
+     "count": 5
+    },
+    {
+     "action": "add_to_hand",
+     "count": 1,
+     "filter_type": "navy",
+     "revealed_to_opponent": false
+    },
+    {
+     "action": "deck_bottom_rest"
+    },
+    {
+     "action": "trash_from_hand",
+     "count": 1
+    }
+   ]
+  }
+ },
+ "P-152": {
+  "on_play": {
+   "steps": [
+    {
+     "action": "ko",
+     "count": 1,
+     "power_lte": 3000,
+     "target": "opp_character"
+    },
+    {
+     "action": "buff_power",
+     "amount": 2000,
+     "duration": "this_turn",
+     "target": "all_allies_and_leader"
+    }
+   ]
+  }
+ },
+ "P-153": {
+  "on_play": {
+   "steps": [
+    {
+     "action": "debuff_power",
+     "amount": 3000,
+     "count": 2,
+     "duration": "this_turn",
+     "target": "opp_character"
+    }
+   ]
+  }
+ },
+ "P-154": {
+  "on_play": {
+   "conditions": {
+    "leader_is": "portgas.d.ace"
+   },
+   "costs": [
+    {
+     "count": 3,
+     "type": "rest_don"
+    }
+   ],
+   "steps": [
+    {
+     "action": "play_card",
+     "cost_lte": 99,
+     "count": 1,
+     "filter_name": "portgas.d.ace",
+     "power_lte": 8000
+    }
+   ]
+  }
+ },
+ "P-155": {
+  "trigger": {
+   "conditions": {
+    "opp_life_lte": 3
+   },
+   "steps": [
+    {
+     "action": "play_card",
+     "count": 1,
+     "source": "self"
+    }
+   ]
+  },
+  "when_attacking": {
+   "costs": [
+    {
+     "count": 1,
+     "has_trigger": true,
+     "type": "trash_from_hand"
+    }
+   ],
+   "steps": [
+    {
+     "action": "debuff_power",
+     "amount": 2000,
+     "duration": "this_turn",
+     "target": "opp_character"
+    }
+   ]
+  }
+ },
+ "P-157": {
+  "on_play": {
+   "costs": [
+    {
+     "count": 1,
+     "type": "trash_from_hand"
+    }
+   ],
+   "steps": [
+    {
+     "action": "play_from_trash",
+     "cost_lte": 4,
+     "count": 1,
+     "filter_type": "elbaf"
+    }
+   ]
+  }
+ },
+ "P-159": {
+  "on_ko": {
+   "steps": [
+    {
+     "action": "play_card",
+     "cost_lte": 99,
+     "count": 1,
+     "filter_name": "straw hat crew"
+    }
+   ]
+  }
+ },
+ "P-999": {},
  "PRB01-001": {
   "activate_main": {
    "once_per_turn": true,
@@ -52414,7 +53724,7 @@
      "distribution": "free",
      "filter_name": "monkey d. luffy",
      "per_target_max": 1,
-     "target": "own_character"
+     "target": "leader_or_own_character"
     }
    ]
   },
@@ -52437,6 +53747,13 @@
  },
  "ST32-001": {
   "on_play": {
+   "costs": [
+    {
+     "count": 1,
+     "don_allowed": true,
+     "type": "rest_own_card"
+    }
+   ],
    "steps": [
     {
      "action": "draw",

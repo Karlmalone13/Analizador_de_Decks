@@ -69805,6 +69805,16 @@
     "sub_types": "Giant/Elbaf",
     "attribute": "Strike",
     "effects": {
+      "on_play": {
+        "steps": [
+          {
+            "action": "ko",
+            "count": 99,
+            "target": "opp_character",
+            "total_cost_lte": 4
+          }
+        ]
+      },
       "passive": {
         "steps": [
           {

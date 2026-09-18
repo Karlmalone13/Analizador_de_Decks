@@ -245,6 +245,172 @@ visivel**.
 
 ---
 
+## 2026-09-18 (870) - CPU x CPU acha DOIS bugs que a telemetria dava como verdes, e a auditoria tinha TRES pontos cegos
+
+Sessao Claude (Opus 5). Continuacao direta do 869: o controle A/A foi rodado,
+o usuario pediu CPU x CPU, e a partida rendeu dois achados que ele apontou na
+hora -- os dois invisiveis pra telemetria de hoje.
+
+### 0. A PENDENCIA DO BLOCO 869 FECHOU: o 52x2 VALE
+
+```
+controle A/A (dois lados IDENTICOS) : 0 pares decididos, 99 divididos
+duelo real (a UNICA diferenca e o flag) : 54 decididos, 52x2, Wilson 87,5%
+```
+
+O controle passou **mais forte do que o esperado**. O lembrete no script dizia
+"esperado ~50%", mas com os dois lados realmente iguais e pares ESPELHADOS o
+certo e **zero par decidido** -- nenhuma partida muda de desfecho. Foi
+exatamente isso. O instrumento nao esta cego, e o 52x2 do bloco 869 se
+reproduziu identico com o flag corrigido: **tirar o corte do shortlist melhora
+o JOGO**, nao so faz o modelo enxergar mais.
+
+NAO EXPLICADO, e fica registrado em vez de varrido: a execucao BUGADA do 869
+produziu esse mesmo 52x2 quando, em tese, rodava dois lados iguais -- que agora
+dao 0 decididos. A coincidencia e estranha; o par controle+duelo atual e
+internamente consistente (o controle discrimina, o duelo da sinal). Se alguem
+reabrir isso, o caminho e diagnosticar por que a rodada invertida decidia pares.
+
+Continua valendo a ressalva de escopo: **e AUTO-JOGO**, cego por construcao pra
+vicio compartilhado.
+
+### 1. LOKI (OP17-119): o `[On Play]` NUNCA EXISTIU no banco
+
+Partida `Rocks.D.Xebec-B_x_Monkey.D.Luffy-B_2026-09-18T16.34.07`. O usuario:
+*"loki nao deu alvo e tinha alvo valido"*. **Procede.** Loki entrou em campo
+nos turnos 6 e 10 e o combat log registrou `effects: []` nas DUAS vezes. No
+turno 6 o board adversario tinha Stussy OP17-054 custo 3, que sozinho cabe no
+orcamento de 4.
+
+Causa: `card_effects_db.json` so tinha `passive`. Sem step, a acao nunca virava
+candidata -- **nao e erro de decisao, e ausencia de opcao**. Nenhum modelo
+melhor e nenhum corpus maior alcanca isso.
+
+O regex de orcamento somado exigia `up to (\d+)` E a palavra `power`; Loki diz
+"any number of ... total cost of". **Falhava nos dois eixos.** Corrigido pela
+FORMA: quantificador (`up to N` | `any number` | `all`) x grandeza (`power` ->
+`total_power_lte` | `cost` -> `total_cost_lte`), num regex so.
+
+Gate global: gramatica exata = 1 carta; eixo "any number of" = 13 cartas (12 ja
+parseavam); eixo "total cost" = 3 (2 ja parseavam). `isolated_after_global_scan`.
+Registro em `parser_audits/2026-09-18_ko_orcamento_somado_any_number_total_cost.json`.
+
+**O MOTOR FOI ALTERADO JUNTO, de proposito.** `total_cost_lte` sem consumidor
+seria um step que ninguem respeita, e o K.O. sairia **SEM LIMITE NENHUM** --
+pior que o bug original de nao executar nada. O bloco que ja resolvia
+`total_power_lte` por combinacao virou UMA selecao parametrizada pela grandeza
+(REGRA_SEM_DUPLICACAO: somar poder ou somar custo muda so de onde sai o numero).
+
+`diff_parser.py`: **PERDEU=0**, 1 carta mudada no banco inteiro. 3 testes
+permanentes em `smoke_fast.py`, incluindo o caso de TETO (alvo unico custo 6 com
+orcamento 4 NAO pode cair -- garante que "any number" nao virou K.O. ilimitado).
+
+### 2. TURNO 1: [Unblockable] num turno em que atacar e IMPOSSIVEL
+
+O usuario: *"ativou custo 0 sem logica no primeiro turno"*. **Procede.** No
+turno 1 o bot jogou OP17-055 (Event custo 0) e restou o unico DON pra dar
+[Unblockable] ao lider "during this turn". O motor ja sabia, na propria classe,
+que aquele turno nao tem ataque:
+
+```python
+def can_attack_this_turn(self) -> bool:
+    return self.turn > 1
+```
+
+Valor **zero garantido, nao incerto**, com o fato a um metodo de distancia.
+
+A telemetria de decisao mostra que NAO adianta esperar que o ML aprenda isso:
+
+```
+decision_kind=main | candidatas= 1 | escolheu= play OP17-055
+decision_kind=main | candidatas= 0 | escolheu= end_turn
+```
+
+**Uma unica candidata.** Nao existia a opcao de nao jogar -- o buraco
+estrutural do `CLAUDE.md` ("o que nao vira candidato nao existe"). E o
+`q_fallback: 0` dizia "o modelo decidiu em todas", o que e verdade e ao mesmo
+tempo nao significa nada aqui: decidir entre 1 nao e decidir.
+
+Correcao em `_step_is_viable` (fonte unica): keyword que SO se expressa em
+combate + `duration: this_turn` + turno sem combate = invia^vel. `buff_power`
+ficou de FORA de proposito -- poder e lido por outros efeitos no mesmo turno,
+entao nao ha CERTEZA de que e inocuo, e esta funcao so pode reprovar com certeza.
+
+**ARMADILHA PAGA, registrada:** o default de `GameState.turn` e **0**, um
+sentinela de "nao inicializado", nao um turno. A 1a versao do gate disparava
+nele e derrubou o teste do Buggy (que constroi GameState sem passar `turn`).
+Guardado com `turn >= 1`. Testes permanentes nos tres sentidos: turno 1 reprova,
+turno 2 aprova, turno 0 NAO dispara, e o grant PERMANENTE segue viavel.
+
+### 3. A AUDITORIA DE EFEITOS TINHA TRES PONTOS CEGOS
+
+O usuario: *"essas coisas que nosso script tem que avaliar tb, se nao nao vamos
+melhorar nunca"*. Ele esta certo: a auditoria deu a partida como **verde**
+(`efeitos_nao_concluidos: 0`, "on_play 100% concluido") com os dois bugs acima
+dentro dela.
+
+**(a) EVENT jogado da mao ficava fora do ciclo de vida.** Achado no meio do
+caminho e o maior dos tres: `ACAO_DO_GATILHO` liga `main` a `activate`, que e o
+caminho de Character/Stage ja em campo. Event resolve `main` por uma acao
+`play`. **Medido: 285 Events do banco tem `main` e nao tem `on_play`** -- a
+auditoria era cega pra todos. Foi por aqui que o OP17-055 passou.
+
+**(b) "concluiu" e "valeu alguma coisa" sao perguntas diferentes**, e so a
+primeira era feita. Secao nova `CONCLUIU E NAO VALIA NADA`, so com o que a
+REGRA prova ser nulo -- "jogada fraca" e julgamento de valor e nao pertence a
+esta ferramenta. O conjunto de keywords vem do MOTOR por import, nao de uma
+copia local (uma 2a lista divergiria no primeiro keyword novo e a auditoria
+passaria a mentir em silencio).
+
+**(c) O PONTO CEGO ESTRUTURAL: a auditoria so percorre o BANCO.** Gatilho que
+nunca foi parseado nao aparece como "nao concluido" NEM como "nunca oferecido"
+-- ele nao existe pra ela. O pior caso possivel caindo justo no buraco de quem
+deveria acha-lo. Secao nova `O TEXTO DA CARTA TEM GATILHO QUE O BANCO NAO TEM`,
+comparando contra o TEXTO OFICIAL: a unica fonte independente do parser.
+
+Controle nos DOIS sentidos (regra do bloco 780): com o banco pre-fix ela acusa
+`on_play` no Loki; com o banco de hoje ela silencia.
+
+**PRECISAO custou duas iteracoes, e o numero justifica**: a 1a versao dava 102
+acusacoes e **90 eram falso positivo**. `[Trigger]` no meio da frase ("trash 1
+card with a [Trigger] from your hand") e referencia a keyword, nao declaracao --
+so vale colchete no INICIO da linha. E `[Your Turn]`/`[Opponent's Turn]` NAO
+declaram gatilho: o gatilho real esta na prosa e o parser ja guarda em chave
+mais especifica (`when_don_returned`, `on_opp_event_activated`,
+`on_own_effect_removes_char`) -- o banco estava certo e mais preciso que a
+etiqueta. Ferramenta barulhenta e ferramenta que ninguem le.
+
+### ACHADO NOVO que a checagem (c) permitiu, e que NAO foi corrigido
+
+Aplicada ao banco inteiro, **sobram 12 cartas com o mesmo defeito do Loki**:
+
+```
+OP02-066 [main]      OP06-023 [on_play]   OP15-042 [on_ko]
+OP17-117 [trigger]   ST26-001 [on_play]   P-063 P-072 P-075
+P-081 P-082 P-097 P-100  (7 promos)
+```
+
+Sao 12 bugs da classe "a acao nao existe pro modelo" que **nada no projeto
+conseguia detectar antes de hoje**. NAO foram tocados: cada um precisa do seu
+gate global e e investigacao separada. Entram no `TODO.md`.
+
+### O QUE NAO FOI VALIDADO -- ler antes de confiar
+
+**Nada disto rodou em partida ao vivo.** O que existe e `smoke_fast.py` OK,
+`diff_parser` PERDEU=0, e a auditoria re-rodada sobre o log ANTIGO. O servidor
+da 8765 desta sessao subiu ANTES das edicoes, entao estava com codigo velho --
+**a proxima CPU x CPU tem que reiniciar o server**, senao testa o que ja estava
+la. Tambem nao ha portao SPRT: nenhuma das duas correcoes foi medida em duelo,
+e o efeito delas no resultado de partida e desconhecido.
+
+Nota de leitura sobre o Loki na auditoria re-rodada: ele agora aparece como
+`on_play ATIVADO E CONCLUIDO` com alvo em `own_board`. **Isso e artefato de
+reanalisar um log VELHO com o banco NOVO** -- a decisao de alvo daquele turno
+pertencia a outra carta. Nao ler como evidencia de execucao correta; a
+validacao real e a proxima partida.
+
+---
+
 ## 2026-09-18 (869) - Flag por jogador + duelo: 52x2 a favor, e por que esse numero AINDA NAO VALE
 
 Pedido do usuario: *"monta o flag e roda o duelo"*.

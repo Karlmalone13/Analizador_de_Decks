@@ -1,6 +1,43 @@
 # TODO — Analisador de Decks OPTCG
 
-**Última atualização:** 18 de setembro de 2026 (bloco 869)
+**Última atualização:** 18 de setembro de 2026 (bloco 870)
+
+> **CPU x CPU ACHOU DOIS BUGS E A AUDITORIA TINHA TRES PONTOS CEGOS
+> (18/09/2026, bloco 870)** -- os dois apontados pelo usuario na hora, os dois
+> dados como VERDES pela telemetria.
+>
+> **FECHOU: o 52x2 do bloco 869 VALE.** Controle A/A com dois lados identicos
+> deu **0 pares decididos** (o certo para pares espelhados iguais -- mais forte
+> que o "~50%" que o script prometia); o duelo real reproduziu 54 decididos,
+> 52x2, Wilson 87,5%. Tirar o corte do shortlist melhora o JOGO. Continua sendo
+> AUTO-JOGO, cego pra vicio compartilhado.
+>
+> **FECHOU: Loki OP17-119** -- o `[On Play]` nunca existiu no banco; entrou em
+> campo 2x com `effects: []` tendo alvo valido. Regex de orcamento somado
+> generalizado nos DOIS eixos (quantificador x grandeza). Motor alterado junto,
+> senao o K.O. sairia sem limite. PERDEU=0, 1 carta mudada, 3 testes novos.
+>
+> **FECHOU: [Unblockable] no turno 1** -- keyword de combate `this_turn` num
+> turno em que atacar e impossivel por regra. Gate em `_step_is_viable`. A
+> telemetria mostrou `candidatas: 1`: nao havia alternativa, entao nao adianta
+> esperar que o ML aprenda.
+>
+> **FECHOU: a auditoria de efeitos enxerga o que nao via** -- (a) Event jogado
+> da mao ficava fora do ciclo de vida (**285 Events** do banco tem `main` e nao
+> `on_play`); (b) secao `CONCLUIU E NAO VALIA NADA`; (c) secao `O TEXTO DA CARTA
+> TEM GATILHO QUE O BANCO NAO TEM`, a unica que compara fora do parser.
+> Controle rodado nos dois sentidos.
+>
+> **ABERTO -- 12 cartas com o MESMO defeito do Loki**, achadas pela checagem (c)
+> e NAO corrigidas (cada uma precisa do seu gate global):
+> `OP02-066` `OP06-023` `OP15-042` `OP17-117` `ST26-001` e 7 promos
+> (`P-063` `P-072` `P-075` `P-081` `P-082` `P-097` `P-100`).
+> Classe "a acao nao existe pro modelo" -- nada no projeto detectava antes.
+>
+> **ABERTO -- NADA disto rodou ao vivo.** So `smoke_fast.py` OK, `diff_parser`
+> PERDEU=0 e auditoria sobre log antigo. **A proxima CPU x CPU tem que
+> REINICIAR o server da 8765** (o desta sessao subiu antes das edicoes). Sem
+> portao SPRT: o efeito das duas correcoes no resultado de partida e desconhecido.
 
 > **DUELO DO SHORTLIST: flag por jogador pronto, resultado NAO VERIFICADO
 > (18/09/2026, bloco 869)** -- `shortlist_sem_corte` por JOGADOR (padrao de

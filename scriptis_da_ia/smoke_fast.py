@@ -7488,7 +7488,8 @@ def test_don_n_parenteses_explicativo_e_life_area_cost() -> None:
 def test_lote_10_pendencias_eb01_011_a_op05_007() -> None:
     effects = {code: get_card_effects(code) for code in (
         "EB01-011", "OP05-056", "EB01-029", "EB01-045", "EB03-012",
-        "OP04-044", "OP04-046", "OP04-084", "OP05-002", "OP05-007")}
+        "OP04-044", "OP04-046", "OP04-084", "OP05-002", "OP05-007",
+        "OP17-119")}
     check("Lote 10: Mini-Merry exige rest_self + Character base 1000 no fundo",
           effects["EB01-011"]["activate_main"]["costs"][-1] ==
           {"type": "place_own_character_bottom_deck", "count": 1, "power_eq": 1000})
@@ -7550,6 +7551,61 @@ def test_lote_10_pendencias_eb01_011_a_op05_007() -> None:
     EffectExecutor(me3, opp3).execute(sabo, "on_play")
     check("Execucao lote 10: Sabo remove combinacao 2000+2000 e preserva 5000",
           a not in opp3.field_chars and b not in opp3.field_chars and big in opp3.field_chars)
+
+    # Loki OP17-119 -- o gemeo de CUSTO do Sabo (soma de poder). Achado ao
+    # vivo em 18/09/2026: entrou em campo nos turnos 6 e 10 sem executar
+    # nada, porque o `[On Play]` nao existia no banco ("any number of" +
+    # "total cost" nao casavam no regex antigo). O board abaixo e o REAL do
+    # turno 6: Stussy custo 3 cabia no orcamento de 4 e sobreviveu.
+    check("Loki: [On Play] existe e usa orcamento SOMADO de custo",
+          effects["OP17-119"]["on_play"]["steps"][0].get("total_cost_lte") == 4
+          and effects["OP17-119"]["on_play"]["steps"][0].get("action") == "ko")
+    loki = real_card("OP17-119")
+    barato_a = mk("LA", "Custo dois A", cost=2)
+    barato_b = mk("LB", "Custo dois B", cost=2)
+    caro = mk("LC", "Custo cinco", cost=5)
+    me_lk = GameState(leader=mk("LKL", "Lider", card_type="LEADER"), turn=6)
+    opp_lk = GameState(leader=mk("LKO", "Opp", card_type="LEADER"), turn=6)
+    opp_lk.field_chars = [barato_a, barato_b, caro]
+    EffectExecutor(me_lk, opp_lk).execute(loki, "on_play")
+    check("Loki: soma 2+2 cabe no orcamento 4 e o custo 5 sobrevive",
+          barato_a not in opp_lk.field_chars and barato_b not in opp_lk.field_chars
+          and caro in opp_lk.field_chars)
+    # O orcamento e TETO, nao cota: alvo unico acima do limite nao pode cair.
+    solo = mk("LS", "Custo seis", cost=6)
+    me_lk2 = GameState(leader=mk("LKL2", "Lider", card_type="LEADER"), turn=6)
+    opp_lk2 = GameState(leader=mk("LKO2", "Opp", card_type="LEADER"), turn=6)
+    opp_lk2.field_chars = [solo]
+    EffectExecutor(me_lk2, opp_lk2).execute(loki, "on_play")
+    check("Loki: nao estoura o orcamento quando o unico alvo custa mais",
+          solo in opp_lk2.field_chars)
+
+    # Mesma partida CPU x CPU de 18/09/2026, outro bug: no TURNO 1 o bot
+    # jogou OP17-055 (Event custo 0) e restou o unico DON pra dar
+    # [Unblockable] "during this turn" -- num turno em que atacar e
+    # impossivel por regra (`can_attack_this_turn(): turn > 1`). Keyword de
+    # combate que expira no turno, sem combate no turno, e efeito nulo com
+    # CERTEZA. O grant PERMANENTE nao pode ser afetado: ele vale pros turnos
+    # seguintes, e gatea-lo seria trocar um bug por outro.
+    passo_turno = {"action": "gain_unblockable", "duration": "this_turn"}
+    passo_perm = {"action": "gain_unblockable"}
+    def _viab(turno, passo):
+        me_ub = GameState(leader=mk("UBL", "Lider", card_type="LEADER"), turn=turno)
+        opp_ub = GameState(leader=mk("UBO", "Opp", card_type="LEADER"), turn=turno)
+        return EffectExecutor(me_ub, opp_ub)._step_is_viable(passo, me_ub.leader)
+    check("Turno 1: keyword de combate 'this_turn' e INVIAVEL (nao paga custo por nada)",
+          _viab(1, passo_turno) is False)
+    check("Turno 2: a mesma keyword volta a ser viavel (o gate e do turno, nao da carta)",
+          _viab(2, passo_turno) is True)
+    check("Turno 1: grant PERMANENTE segue viavel (vale nos turnos seguintes)",
+          _viab(1, passo_perm) is True)
+    # turn=0 e o DEFAULT de GameState, um sentinela de 'nao inicializado',
+    # nao um turno do jogo. O gate nao pode disparar ali: esta funcao so
+    # reprova com CERTEZA, e de um estado nao inicializado nao se sabe nada.
+    # Pego por uma regressao real: sem esta guarda o teste do Buggy (que
+    # constroi GameState sem passar turn) perdia o Double Attack.
+    check("Turno 0 (sentinela, nao turno real): o gate NAO dispara",
+          _viab(0, passo_turno) is True)
 
     betty_card = real_card("OP05-002")
     rev = mk("REV", "Revolucionario", sub_types="Revolutionary Army")
