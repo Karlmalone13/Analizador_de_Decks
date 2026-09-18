@@ -245,6 +245,85 @@ visivel**.
 
 ---
 
+## 2026-09-17 (857) - A RECUSA de counter era MUDA, e a telemetria vale para os DOIS lados no CPU x CPU
+
+Dois pedidos do usuario no mesmo passo: *"a telemetria tem que funcionar dos
+dois lados no cpu x cpu"* e a cobranca de que eu tinha LISTADO os adversarios do
+Mihawk em vez de investigar.
+
+### OS DOIS LADOS: o plugin ja estava certo, e foi TESTADO
+
+Em CPU x CPU o `BotPlayerIndex` segue `iPlayerAction` a cada frame, ANTES de
+qualquer decisao (BotDriver.cs:134) -- entao quando o jogo passa o passo de
+defesa ao defensor, os dois lados chegam ao `/defense`.
+
+O risco real era outro: o EVENTO saber de quem e. Testado de verdade, batendo no
+servidor com os dois lados defendendo:
+
+```
+defensor   atacante      atk  falta  motivo                 usou
+OP14-020   OP16-005     7000   2000  sem_counter_elegivel   False
+OP16-001   EB01-036     6000   1000  (avaliado)             True
+OP14-020   OP16-005     4000  -1000  ataque_nao_passa       False
+```
+
+Separavel por `board_no_ataque.defensor.leader`, com o atacante invertido.
+
+### O BURACO QUE O TESTE REVELOU: 4 saidas mudas
+
+`select_counter_cards` tem QUATRO saidas e so a ultima registrava
+(`should_use_counter`). No teste o bot tinha um `[Counter]` na mao, recusou, e o
+`raciocinio_defesa` saiu **VAZIO**.
+
+E exatamente o buraco de **46 janelas com counter na mao, 0 aceitas**: nao dava
+pra separar "recusou e estava certo" de "recusou e tomou dano a toa".
+
+Agora as quatro registram, com MOTIVO:
+
+| motivo | o que significa |
+|---|---|
+| `ataque_nao_passa` | recusa correta -- o ataque ja nao mata |
+| `sem_counter_elegivel` | nao havia counter utilizavel (custo/condicao) |
+| `nao_cobre` | counter parcial nao salva nada -- **provavelmente o grosso das 46** |
+| `troca_de_recursos` | defendendo PERSONAGEM -- nem a ACEITACAO era registrada |
+| `aceito_defendendo_lider` | quais cartas saem (categoria pior do projeto, 18,5%) |
+
+Reusa `_log_defesa` do motor: nao ha decisao nova, so a que ja era tomada
+deixando de ser invisivel.
+
+### O CONTROLE QUE PODIA FALHAR
+
+Board com `EB01-036` (tem `on_ko`), mao com `EB01-009` (`[Counter]`), vida com 3
+cartas reais. Gravado: `efeitos_pos_ko=[EB01-036]`,
+`efeitos_na_defesa=[EB01-009 counter, EB01-002 on_opp_attack]`, vida 3/2, mao 2,
+DON 5/1 -- todos conferem com o que foi mandado.
+
+> O `vida=0` da PRIMEIRA rodada de teste era artefato do meu proprio sintetico
+> (mandei `UNKNOWN-000`, que o `_make` descarta), nao bug. So apareceu como
+> duvida legitima porque eu nao tinha mandado carta de vida de verdade.
+
+### A INVESTIGACAO DOS ADVERSARIOS DO MIHAWK (o que eu devia ter feito antes)
+
+Eu tinha reportado "7-2". Era **so de hoje**. No banco limpo, 26 partidas:
+
+```
+Charlotte Katakuri  4-5   (9, todas julho)
+Rocks D. Xebec      2-4   (6)
+Monkey D. Luffy     2-1   (3)
+Enel                1-1   (2)   -- uma delas com 37 turnos
+Boa Hancock / Krieg / Portgas D. Ace   1-0 cada (17/09)
+Nami                0-1
+Marshall D. Teach   1-0   (humano_vs_humano)
+TOTAL              13-12
+```
+
+**O recorte que muda a leitura**: as 7 vitorias de hoje sao TODAS `cpu_vs_cpu`.
+Contra `com_bot` o Mihawk e bem pior (0-3 contra Xebec em 13/09). Ou seja: o
+7-2 de hoje mede o bot contra ELE MESMO -- e a ressalva de escopo ja registrada
+(vicio compartilhado e invisivel ao auto-jogo) se aplica inteira.
+
+---
+
 ## 2026-09-17 (856) - O BANCO estava RE-BANCANDO a mesma partida: 241 arquivos eram 195. Trava passa a olhar a PARTIDA, nao o nome do arquivo
 
 Achado ao conferir, a pedido do usuario, quem tinha enfrentado o Mihawk.

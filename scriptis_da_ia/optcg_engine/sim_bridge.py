@@ -1349,6 +1349,36 @@ def select_counter_cards(gs: GameState, atk_power: int, def_power: int,
             "card_code": card.code, "counter": value, "eligible": True,
         } for value, card in pool]
 
+    # ── A RECUSA PRECISA APARECER (bloco 857) ─────────────────────────────
+    # `should_use_counter` la embaixo e o UNICO ponto que registra, e esta
+    # funcao tem QUATRO saidas antes dele. Medido ao vivo: 46 janelas com
+    # counter real na mao, ZERO aceitas -- e o log nao dizia por que, entao
+    # "recusou e estava certo" (nao cobria o ataque de jeito nenhum) era
+    # indistinguivel de "recusou e tomou dano a toa".
+    #
+    # Reusa o `_log_defesa` do motor -- nao ha decisao nova aqui, so a que ja
+    # era tomada deixando de ser invisivel (REGRA_SEM_DUPLICACAO).
+    from optcg_engine.decision_engine import _log_defesa, _cods
+
+    def _registra(motivo, usou, **extra):
+        # SO OBSERVA -- nenhuma conta propria, nenhuma decisao. `falta` nao e
+        # recalculado aqui (sai de atk_power/def_power, que ja vao no registro)
+        # e `counter_na_mao` vem de `gs.counter_in_hand()`, a funcao do proprio
+        # motor -- reimplementar a soma aqui seria a duplicata que a
+        # REGRA_SEM_DUPLICACAO proibe, e foi o que o hook pre-commit acusou.
+        _log_defesa({
+            'kind': 'counter_use',
+            'motivo': motivo,
+            'turn': getattr(gs, 'global_turn', None),
+            'atk_power': atk_power,
+            'def_power': def_power,
+            'counter_na_mao': gs.counter_in_hand(),
+            'pool': _cods([c for _, c in pool]),
+            'mao': _cods(gs.hand),
+            'chosen': usou,
+            **extra,
+        })
+
     defender_char = None
     if defender_uid:
         defender_char = next((c for c in gs.field_chars
@@ -1356,6 +1386,14 @@ def select_counter_cards(gs: GameState, atk_power: int, def_power: int,
 
     needed = atk_power - def_power + 1
     if needed <= 0 or not pool:
+        # Sao DUAS recusas corretas por motivos diferentes -- o ataque ja nao
+        # passa, ou nao havia counter elegivel -- e so a segunda e "o bot
+        # tinha carta e nao usou". Vao como DADO (`needed` e `pool_vazio`) em
+        # vez de um ramo que escolhe o rotulo: esta funcao nao decide nada
+        # aqui, so registra o que o motor ja decidiu, e o `if` acima e o
+        # mesmo que sempre existiu.
+        _registra('sem_counter_utilizavel', False,
+                  needed=needed, pool_vazio=not pool)
         return []
 
     # Selecao unica pros dois casos (lider/personagem): cobre `needed`
@@ -1365,6 +1403,10 @@ def select_counter_cards(gs: GameState, atk_power: int, def_power: int,
     # achado real 11/07).
     escolha, gasto, total = engine.pick_counters(needed, pool=pool)
     if total < needed:
+        # Recusa CORRETA: counter parcial nao salva nada, so joga carta fora.
+        # Provavelmente o grosso das 46 -- e era exatamente isto que o log
+        # nao conseguia dizer.
+        _registra('nao_cobre', False, needed=needed, total_disponivel=total)
         return []
     ids = [uid for c in escolha if (uid := getattr(c, '_deck_uid', 0))]
 
@@ -1390,11 +1432,22 @@ def select_counter_cards(gs: GameState, atk_power: int, def_power: int,
         ataques_restantes = max(0, engine.analyzer.opp_attack_count() - 1)
         if ataques_restantes:
             valor_liquido -= gasto * 0.5 * min(ataques_restantes, 2)
-        return ids if valor_liquido > gasto else []
+        _usou = valor_liquido > gasto
+        _registra('troca_de_recursos', _usou, needed=needed,
+                  valor_protegido=round(float(valor_liquido), 2),
+                  gasto=round(float(gasto), 2),
+                  defendendo=getattr(defender_char, 'code', None),
+                  ataques_restantes=ataques_restantes,
+                  cartas=_cods(escolha))
+        return ids if _usou else []
 
     if not engine.should_use_counter(atk_power, def_power,
                                      counter_avail=total, gasto=gasto):
         return []
+    # O gate acima ja registra a decisao; aqui so fica QUAIS cartas saem --
+    # a categoria pior medida do projeto (`quais cartas de counter`, 18,5%).
+    _registra('aceito_defendendo_lider', True, needed=needed,
+              gasto=round(float(gasto), 2), cartas=_cods(escolha))
     return ids
 
 

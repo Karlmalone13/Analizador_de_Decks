@@ -2,6 +2,23 @@
 
 **Última atualização:** 14 de setembro de 2026 (bloco 836)
 
+> **RECUSA DE COUNTER ERA MUDA -- CORRIGIDO (17/09/2026, bloco 857)**:
+> `select_counter_cards` tem 4 saidas e so a ultima registrava. O bot recusava
+> com `[Counter]` na mao e o log saia VAZIO -- o buraco de "46 janelas com
+> counter, 0 aceitas". Agora as 4 registram com MOTIVO (`ataque_nao_passa`,
+> `sem_counter_elegivel`, `nao_cobre`, `troca_de_recursos`,
+> `aceito_defendendo_lider`), reusando `_log_defesa`.
+>
+> **DOIS LADOS NO CPU x CPU (pedido do usuario): CONFERIDO E TESTADO.** O
+> plugin ja estava certo (`BotPlayerIndex` segue `iPlayerAction` a cada frame);
+> o evento separa os lados por `board_no_ataque.defensor.leader`. Testado
+> batendo no `/defense` com cada lado defendendo.
+>
+> **ADVERSARIOS DO MIHAWK (banco limpo, 26 partidas): 13-12.** O "7-2" que eu
+> tinha reportado era so de hoje E todas `cpu_vs_cpu` -- bot contra ele mesmo.
+> Contra `com_bot` e pior (0-3 vs Xebec em 13/09). Katakuri 4-5 (9 partidas),
+> Xebec 2-4, Luffy 2-1.
+
 > **BANCO DE LOGS RE-BANCAVA A MESMA PARTIDA -- FECHADO (17/09/2026, bloco
 > 856)**: `LogOutput.log` acumula, o auto-collect re-parseia o arquivo INTEIRO
 > a cada `/outcome` e re-bancava as partidas anteriores com nome novo. A trava
