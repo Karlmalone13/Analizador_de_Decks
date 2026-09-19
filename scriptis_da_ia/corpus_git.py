@@ -65,6 +65,23 @@ estavel, e repeticoes legitimas sobrevivem intactas.
 A protecao contra importar a mesma fatia duas vezes e o LIVRO (nome da fatia ja
 aplicada), nao o conteudo da linha.
 
+O IMPORT RECONCILIA LINHA A LINHA (erro pago em 18/09/2026)
+-----------------------------------------------------------
+Quando o LIVRO nao cobre (clone novo por cima de corpus existente, fatia de
+backfill, corpus que veio por outra via), o import precisa decidir o que ja
+esta aqui. A primeira versao decidia pela FATIA INTEIRA, por origem:
+
+    ja_presente = all(locais[o] >= aplicadas[o] + n for o, n in desta.items())
+
+Tudo-ou-nada. Uma fatia de backfill com 3 origens -- duas ja completas aqui e
+UMA faltando 616 linhas -- reprovou o `all(...)` e foi anexada POR INTEIRO:
+**698.222 linhas duplicadas**, corpus de 699.230 para 1.398.068, sem erro
+nenhum. O `status` tinha anunciado 687 linhas a importar.
+
+Agora cada linha da fatia e conferida contra um MULTICONJUNTO das linhas locais
+das mesmas origens: presente, pula; ausente, anexa. Repeticao legitima
+sobrevive porque a contagem e por multiplicidade, nao por presenca.
+
 Uso:
     python corpus_git.py status      # o que falta importar/exportar
     python corpus_git.py importa     # aplica as fatias do git no .jsonl local
@@ -75,6 +92,7 @@ from __future__ import annotations
 import argparse
 import collections
 import gzip
+import hashlib
 import io
 import json
 import os
@@ -130,6 +148,29 @@ def _fatias_no_git() -> list[Path]:
     if not FATIAS.exists():
         return []
     return sorted(FATIAS.glob('*.jsonl.gz'))
+
+
+def _digesto(linha: str) -> bytes:
+    """Identidade de uma linha para reconciliar fatia contra corpus local.
+
+    Hash e so para caber na memoria (700k linhas x 465 MB nao cabem como str).
+    NAO e deduplicacao: a contagem e um MULTICONJUNTO, entao duas linhas
+    identicas legitimas -- candidatos iguais na MESMA decisao, 3,7% do corpus
+    real -- continuam valendo por duas.
+    """
+    return hashlib.blake2b(linha.strip().encode('utf-8'), digest_size=16).digest()
+
+
+def _multiconjunto_local(origens: set[str]) -> collections.Counter:
+    """Quantas vezes cada linha ja existe no corpus local, por `origem` em escopo."""
+    c: collections.Counter = collections.Counter()
+    if not CORPUS.exists():
+        return c
+    with open(CORPUS, encoding='utf-8', newline='') as fh:
+        for linha in fh:
+            if linha.strip() and _origem_da_linha(linha) in origens:
+                c[_digesto(linha)] += 1
+    return c
 
 
 def _livro() -> dict:
@@ -235,7 +276,6 @@ def cmd_importa() -> int:
         return 0
 
     locais = _conta_por_origem(CORPUS, comprimido=False)
-    aplicadas = _conta_por_origem_das_aplicadas()
     livro = _livro()
     ja = set(livro.get('aplicadas', []))
 
@@ -245,27 +285,36 @@ def cmd_importa() -> int:
 
     for f in falta:
         desta = _conta_por_origem(f, comprimido=True)
-        # Guarda para o caso do LIVRO ter se perdido (clone novo por cima de um
-        # corpus ja existente): se o local ja tem, para toda origem da fatia, o
-        # que as fatias aplicadas somam MAIS o que esta fatia traz, entao estas
-        # linhas ja estao aqui e reaplicar duplicaria.
-        ja_presente = all(
-            locais.get(o, 0) >= aplicadas.get(o, 0) + n for o, n in desta.items())
-        if ja_presente:
+        # Reconcilia LINHA A LINHA contra o que o corpus local ja tem, em vez de
+        # decidir pela fatia inteira. O guarda anterior era tudo-ou-nada por
+        # origem: bastava UMA origem incompleta para ele reaplicar a fatia
+        # INTEIRA. Custou 698.222 linhas duplicadas em 18/09/2026 -- uma fatia
+        # de backfill com 3 origens, duas ja completas aqui e uma faltando 616
+        # linhas, foi anexada por inteiro.
+        presentes = _multiconjunto_local(set(desta))
+        desta_fatia = 0
+        with open(CORPUS, 'a', encoding='utf-8', newline='') as saida, \
+                gzip.open(f, 'rt', encoding='utf-8', newline='') as fh:
+            for linha in fh:
+                if not linha.strip():
+                    continue
+                d = _digesto(linha)
+                if presentes[d] > 0:      # ja esta aqui: consome uma ocorrencia
+                    presentes[d] -= 1     # (multiconjunto -- repetida legitima
+                    continue              #  so e pulada tantas vezes quanto ha)
+                saida.write(linha if linha.endswith('\n') else linha + '\n')
+                desta_fatia += 1
+                locais[_origem_da_linha(linha)] += 1
+
+        novas += desta_fatia
+        trazidas = sum(desta.values())
+        if desta_fatia == 0:
             print(f'  {f.name}: ja presente no corpus local (so registra)')
+        elif desta_fatia < trazidas:
+            print(f'  {f.name}: +{_mil(desta_fatia)} linhas '
+                  f'({_mil(trazidas - desta_fatia)} de {_mil(trazidas)} ja estavam aqui)')
         else:
-            with open(CORPUS, 'a', encoding='utf-8', newline='') as saida, \
-                    gzip.open(f, 'rt', encoding='utf-8', newline='') as fh:
-                for linha in fh:
-                    if not linha.strip():
-                        continue
-                    saida.write(linha if linha.endswith('\n') else linha + '\n')
-                    novas += 1
-            print(f'  {f.name}: +{_mil(sum(desta.values()))} linhas')
-            for o, n in desta.items():
-                locais[o] += n
-        for o, n in desta.items():
-            aplicadas[o] += n
+            print(f'  {f.name}: +{_mil(desta_fatia)} linhas')
         ja.add(f.name)
 
     livro['aplicadas'] = sorted(ja)
@@ -273,15 +322,6 @@ def cmd_importa() -> int:
     print('')
     print(f'corpus {_mil(antes)} -> {_mil(antes + novas)} linhas (+{_mil(novas)})')
     return 0
-
-
-def _conta_por_origem_das_aplicadas() -> collections.Counter:
-    ja = set(_livro().get('aplicadas', []))
-    total: collections.Counter = collections.Counter()
-    for f in _fatias_no_git():
-        if f.name in ja:
-            total += _conta_por_origem(f, comprimido=True)
-    return total
 
 
 def cmd_exporta(rotulo: str | None) -> int:

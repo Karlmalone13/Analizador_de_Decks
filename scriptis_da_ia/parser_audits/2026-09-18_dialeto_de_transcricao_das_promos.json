@@ -1,0 +1,31 @@
+{
+  "trigger_card": "P-063",
+  "problem": "Bloco 870: a checagem nova 'O TEXTO DA CARTA TEM GATILHO QUE O BANCO NAO TEM' achou 12 cartas cujo texto oficial DECLARA um gatilho que o card_effects_db.json nao tem. 7 delas eram promos (P-*) sem efeito NENHUM no banco: P-063, P-072, P-075, P-081, P-082, P-097, P-100. Sem step, a acao nunca vira candidata -- nao e erro de decisao, e AUSENCIA DE OPCAO, e nenhum modelo melhor nem corpus maior alcanca isso. PREMISSA TESTADA ANTES DE CONSTRUIR: reescrevi o texto das 7 no dialeto canonico dos sets numerados, SEM tocar em nenhum parse_*, e 6 passaram a ser lidas na hora. Isso provou que o defeito e de ENTRADA e nao de gramatica ausente -- e evitou espalhar o conserto por ~20 regex de gramatica.",
+  "grammar_family": "DIALETO DE TRANSCRICAO das cartas promocionais. As promos sao transcritas por outra mao que os sets numerados e dizem a MESMA coisa com outras palavras, em 9 eixos independentes: numeral por extenso em posicao de quantificador ('up to one' x 'up to 1'); genitivo sem apostrofo ('your opponents characters'); duas TAGS DE GATILHO coladas ('[On Play] [On K.O.]' em vez da forma com barra, que o parser ja entende); '[During Your Turn]' em vez de '[Your Turn]'; grandeza ANTES do substantivo, em custo ('cost 4 or less characters') e em power ('power 2000 or lower characters'); 'N rested DON!!' sem a palavra 'card'; 'on the bottom of' em vez de 'at the bottom of'; e \"its owner's deck\" em vez de \"the owner's deck\".",
+  "queries": [
+    "cada uma das 9 regras foi medida com re.sub sobre as 4.557 cartas do cards_rows.csv ANTES de entrar no codigo, imprimindo o trecho exato que muda em cada carta tocada",
+    "numeral por extenso ('\\b(up to|give|draw|trash|rest|return|play|add|place|K\\.O\\.)\\s+one\\b'): 8 cartas",
+    "genitivo com determinante e sem continuacao de lista: 2 cartas (a versao AMPLA tocava 11 e foi reprovada, ver notes)",
+    "duas tags de gatilho coladas: 2 cartas (OP04-085 e P-072)",
+    "'[During Your Turn]': 1 carta",
+    "ordem invertida do custo ('cost N or less characters'): 3 cartas",
+    "ordem invertida do power ('power N or lower characters'): 1 carta",
+    "'DON!!' sem a palavra card, COM quantificador 'N rested/active' antes: 2 cartas no texto cru (a versao sem o quantificador tocaria 858, ver notes)",
+    "'on the bottom of': 1 carta",
+    "\"its owner's deck|hand|trash\": 2 cartas, contra 275 que ja usam a forma canonica \"the owner's ...\""
+  ],
+  "cards_found": [
+    "P-063", "P-072", "P-075", "P-081", "P-082", "P-097", "P-100",
+    "OP17-117", "OP17-099", "OP04-085", "P-085", "P-151", "ST31-006", "P-074"
+  ],
+  "resolution_scope": "global",
+  "decision": "gerar_effects_db.py: as 9 regras entram como NORMALIZACAO no topo de parse_card_effect, no mesmo ponto e com a mesma disciplina do fix de chave dupla '{{X}}' de 01/09. Corrigir em cada parse_* criaria ~20 lugares para a proxima variante quebrar de novo; o defeito e de entrada e o conserto pertence a entrada. Regra 6 (DON!! sem 'card') NAO dispara na forma 'Give up to N of your <nome> ... rested DON!!', que o parser de transferencia ja le inteira. Regra 8 ficou limitada a 'deck'. Regra 2 exige determinante possessivo antes e exclui continuacao de lista depois. As tres restricoes vieram do gate global, nao de suposicao.",
+  "validated_by": [
+    "diff_parser.py apos o fix: GANHOU=5 (P-063, P-072, P-075, P-081, P-082), PERDEU=0, MUDOU=2 -- OP17-117 ganhando o [Trigger] que faltava (intencional, era uma das 12) e OP17-119, que NAO e desta leva: e o fix do Loki do bloco 870, que ficou sem re-snapshot naquele commit e aparecia em todo diff desde entao",
+    "snapshot_parser.py regerado depois da validacao; diff seguinte 0/0/0",
+    "smoke_fast.py :: test_dialeto_de_transcricao_das_promos_bloco_871 -- 7 checagens, uma por FORMA (com o texto REAL das cartas que as revelaram) mais 2 CONTROLES que reprovam as versoes amplas derrubadas pelo gate",
+    "smoke_fast.py completo: 0 falhas",
+    "gerar_dbs.py: 2839 cartas sincronizadas nos dois bancos, sanidade de parsing das cartas-chave OK"
+  ],
+  "notes": "O GATE GLOBAL PEGOU TRES ERROS MEUS ANTES DE ENTRAREM NO CODIGO, e nenhum deles apareceria no PERDEU (que ficou 0 o tempo todo). (1) A regra do genitivo, na versao ampla, transformava o plural LEGITIMO '<Strike> attribute Leaders or Characters' em \"Leader's or Characters\" e '1 of your Leaders or Characters' idem -- 5 cartas que hoje passam quebrariam. Restringida a determinante possessivo + sem 'or/and' depois: caiu de 11 para 2 cartas. (2) A regra do DON!!, sem o quantificador antes, tocaria 858 cartas: '[DON!! x1]' e 'your DON!! deck' sao legitimos e nao levam 'card'. Restringida, e depois restringida DE NOVO ao ser pega pela leitura das MUDANCAS DE CONTEUDO do diff: ST31-006 ganhava transfer_don E give_don para a MESMA clausula -- dois passos para um efeito so, efeito em dobro. (3) A regra de owner's, com 'hand' no escopo, fazia P-074 gravar como PASSO de efeito o 'You may return this character to its owner's hand', que e CUSTO (esta antes do ':'). LICAO DE METODO: PERDEU=0 NAO prova ausencia de regressao -- duas das tres so apareceram lendo carta a carta as mudancas de conteudo. GANHOS COLATERAIS que a varredura generica trouxe sem ninguem ter pedido: OP04-085 ('[On Play] [When Attacking]' colados) passou a valer pelos DOIS gatilhos; P-151 e ST31-006 tinham o mesmo defeito de DON!! sem 'card'. FORA DE ESCOPO, de proposito: P-097 ('[On Play]/[When Attacking]/[Blocker] Your opponent cannot activate during this turn') tem o texto TRUNCADO na fonte -- 'cannot activate' sem objeto -- nao e gramatica faltando, e dado ruim, e corrigir exigiria adivinhar; P-100 ('Negate the effects of all of your opponent's Characters and Leader') depende de uma acao que NAO EXISTE no motor, entao e gramatica nova MAIS motor novo, nao normalizacao. As duas continuam sendo as unicas cartas do banco com gatilho declarado e ausente."
+}

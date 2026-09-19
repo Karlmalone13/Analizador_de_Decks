@@ -1,0 +1,71 @@
+{
+  "cards": [
+    {
+      "code": "OP07-022",
+      "name": "Otama",
+      "count": 4
+    },
+    {
+      "code": "OP13-040",
+      "name": "OP13-040",
+      "count": 2
+    },
+    {
+      "code": "OP06-033",
+      "name": "Vander Decken IX",
+      "count": 2
+    },
+    {
+      "code": "OP01-055",
+      "name": "OP01-055",
+      "count": 2
+    },
+    {
+      "code": "ST32-001",
+      "name": "Kin'emon",
+      "count": 2
+    },
+    {
+      "code": "OP17-031",
+      "name": "OP17-031",
+      "count": 2
+    },
+    {
+      "code": "OP08-036",
+      "name": "OP08-036",
+      "count": 1
+    },
+    {
+      "code": "ST32-002",
+      "name": "Kouzuki Oden",
+      "count": 1
+    },
+    {
+      "code": "OP17-022",
+      "name": "OP17-022",
+      "count": 1
+    },
+    {
+      "code": "OP06-038",
+      "name": "OP06-038",
+      "count": 1
+    },
+    {
+      "code": "OP12-023",
+      "name": "OP12-023",
+      "count": 1
+    },
+    {
+      "code": "OP13-031",
+      "name": "Trafalgar Law",
+      "count": 1
+    },
+    {
+      "code": "OP12-034",
+      "name": "OP12-034",
+      "count": 1
+    }
+  ],
+  "total_seen": 21,
+  "leader": "OP14-020"
+}

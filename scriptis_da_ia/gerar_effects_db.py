@@ -2802,17 +2802,34 @@ def parse_bounce(text):
     # OP07-058 Island of Women. Tipo primario = primeiro tipo mencionado
     # (heuristica de filtragem: IA prioriza a opcao mais barata da tribo
     # principal, mesmo com OR).
+    # Generalizado em 18/09/2026 (ST26-001, "[On Play] Return all of your
+    # [San-Gorou] and [Sanji] Characters to the owner's hand") em TRES eixos,
+    # porque a carta variava nos tres de uma vez e consertar so um nao a
+    # alcancava:
+    #   quantificador : "up to N"  |  "all of"  (99, a convencao que os
+    #                   outros parsers ja usam para "all")
+    #   palavra "type": presente   |  ausente
+    #   tags          : uma        |  varias, ligadas por "and" ou "or"
+    #
+    # Com varias tags o filtro sai como LISTA -- `eligible_cards` ja trata
+    # `filter_text` como lista com semantica OR, entao o motor NAO precisa de
+    # caminho novo. Com uma tag so continua saindo string, para nao mexer no
+    # que ja esta no banco.
     m_own = re.search(
-        r"return up to (\d+) of your "
-        r"(?:\[([^\]]+)\](?: or \[([^\]]+)\])? type characters?)"
+        r"return (?:up to (\d+)|all) of your "
+        r"((?:\[[^\]]+\](?:\s+(?:and|or)\s+)?)+)"
+        r"(?:\s*type)?\s*characters?"
         r"(?:.{0,30})?to the owner.?s hand",
         t
     )
     if m_own and not steps:
-        step = {'action': 'bounce', 'count': int(m_own.group(1)), 'target': 'own_character'}
-        # Usa o primeiro tipo como filtro primario (IA escolhe entre proprios)
-        if m_own.group(2):
-            step['filter_type'] = m_own.group(2).strip()
+        count = int(m_own.group(1)) if m_own.group(1) else 99
+        step = {'action': 'bounce', 'count': count, 'target': 'own_character'}
+        tags = [x.strip() for x in re.findall(r'\[([^\]]+)\]', m_own.group(2) or '') if x.strip()]
+        if len(tags) == 1:
+            step['filter_type'] = tags[0]
+        elif tags:
+            step['filter_type'] = tags
         steps.append(step)
     # Variante com condicional de DON e cost_lte: "if the number of DON!!
     # cards on your field is equal to or less than the number on your
@@ -3519,6 +3536,38 @@ def parse_lock_attack(text):
         steps.append(step)
         return steps
 
+    # Mesma gramatica do bloco acima, mas o alvo e o LIDER e nao os
+    # Characters: "Up to N of your opponent's [rested] Leader cannot attack
+    # until ..." (OP06-023). O regex principal exige a palavra "characters",
+    # entao esta forma nao virava step nenhum e o `[On Play]` inteiro sumia.
+    #
+    # Aceita o qualificador de estado ("rested") de forma generica e o
+    # PRESERVA: sem `only_rested` a trava valeria tambem contra lider ativo,
+    # o que e mais forte do que a carta permite -- um efeito errado a favor
+    # do bot e pior que efeito nenhum.
+    #
+    # Varredura global: 12 cartas do banco tem "cannot attack" perto de
+    # "leader"; as outras 11 ja sao lidas (miram Character, ou sao self-lock),
+    # e este ramo so pega a forma com o LIDER DO OPONENTE como alvo.
+    m_leader = re.search(
+        # `.{0,15}?` NAO-guloso de proposito: guloso, ele engolia a propria
+        # palavra "rested" e o grupo de estado vinha vazio -- o filtro sumia
+        # em silencio e a trava valia contra lider ativo tambem.
+        r"up to (\d+) of your opponent.{0,15}?(rested |active )?leader"
+        r" cannot attack (?:until|during this) ([^.]+)",
+        t
+    )
+    if m_leader:
+        duration_txt = m_leader.group(3)
+        dur = ('until_opp_turn_end' if 'this turn' in duration_txt
+               else parse_duration(duration_txt))
+        step = {'action': 'lock_opp_character_attack', 'count': int(m_leader.group(1)),
+                'duration': dur, 'target': 'opp_leader'}
+        if (m_leader.group(2) or '').strip() == 'rested':
+            step['only_rested'] = True
+        steps.append(step)
+        return steps
+
     # Padrao indireto: "select up to N ... Characters [with a cost of X or
     # less]. The selected Character(s) cannot (attack|be rested) until ..."
     # Tambem cobre "select all of your opponent's Characters" (sem "up to"
@@ -3724,9 +3773,20 @@ def parse_draw(text):
             step['then_trash_same_as_drawn'] = True
         steps.append(step)
 
-    m = None if (m_to_hand or m_per_type) else re.search(r'draw (\d+) cards?', t)
+    # "draw up to N cards" -- MESMA acao de "draw N cards", com o
+    # quantificador que o resto do parser ja anota como `up_to`. Sem aceitar
+    # o "up to" aqui, o regex exigia o digito colado em "draw" e o bloco
+    # INTEIRO da carta nao virava efeito nenhum (OP02-066: o `[Main]` sumia e
+    # so sobrava o `[Trigger]`). Varredura global em cards_rows.csv:
+    # 'draw up to N cards' existe em 1 carta no banco todo --
+    # isolated_after_global_scan -- mas o aceite e generico (qualquer N,
+    # qualquer gatilho), nao amarrado a ela.
+    m = None if (m_to_hand or m_per_type) else re.search(
+        r'draw (?:(up to) )?(\d+) cards?', t)
     if m:
-        step = {'action': 'draw', 'count': int(m.group(1))}
+        step = {'action': 'draw', 'count': int(m.group(2))}
+        if m.group(1):
+            step['up_to'] = True
         trash_m = re.search(r'draw \d+ cards? and trash (\d+)', t)
         if trash_m:
             step['then_trash'] = int(trash_m.group(1))
@@ -6813,6 +6873,23 @@ def parse_add_from_trash(text):
     # o add_from_trash nunca virava step nenhum. Concatena o trecho
     # capturado de volta em `desc` pra reusar o MESMO other_than_m abaixo,
     # sem duplicar logica de extracao.
+    # "Add THIS <X> card from your trash to your hand" -- auto-referencia, sem
+    # "up to N" e sem descricao filtravel: a carta recupera a SI MESMA. O
+    # regex principal exige "add up to N", entao esta forma nao virava step
+    # nenhum e o gatilho inteiro sumia do banco (OP15-042: o `[On K.O.]`
+    # nao existia).
+    #
+    # `self_only` e resolvido para `filter_name` = codigo da propria carta em
+    # `generate_effects_db`, que e quem conhece o codigo. O motor NAO precisa
+    # de caminho novo: `add_from_trash` ja filtra por `name_or_code`.
+    # Varredura global: 1 carta no banco (isolated_after_global_scan), mas o
+    # aceite e generico -- qualquer tipo de carta, qualquer gatilho.
+    m_self = re.search(
+        r'add this (?:\w+ )?cards? from your trash to your hand', t)
+    if m_self:
+        steps.append({'action': 'add_from_trash', 'count': 1, 'self_only': True})
+        return steps
+
     m = re.search(
         r'add up to (\d+) (.+?) from your trash(?: (other than \[[^\]]+\]))? to your hand', t)
     if not m:
@@ -8966,6 +9043,72 @@ def parse_card_effect(card_text, card_type):
     # mesmo assim, pra cobrir qualquer carta futura com a mesma variante de
     # impressao, em vez de hardcodear pra P-085.
     t = re.sub(r'\{\{([^{}]+)\}\}', r'{\1}', t)
+    # --- DIALETO DE TRANSCRICAO (achado 18/09/2026) -------------------------
+    # As promos (P-*) sao transcritas por outra mao que os sets numerados e
+    # usam um dialeto diferente para dizer a MESMA coisa. A gramatica ja
+    # existe e ja funciona: reescrevendo o texto no dialeto canonico, sem
+    # tocar em nenhum parser, 6 das 7 promas cegas passam a ser lidas
+    # (premissa testada ANTES de escrever estas linhas).
+    #
+    # Por isso o conserto e aqui e nao em cada parse_*: o problema e de
+    # ENTRADA, e espalha-lo por 20 regex de gramatica criaria 20 lugares
+    # para a proxima variante quebrar de novo.
+    #
+    # Cada regra abaixo foi medida no banco inteiro (4.557 cartas) antes de
+    # entrar -- e a do genitivo foi RESTRINGIDA por causa disso: sem o
+    # determinante e sem excluir lista, ela transformava o plural legitimo
+    # "Leaders or Characters" em "Leader's or Characters" e quebrava 5
+    # cartas que hoje passam.
+
+    # 1. numeral por extenso em posicao de quantificador: "up to one" -> "up to 1"
+    #    (8 cartas)
+    t = re.sub(r'\b(up to|give|draw|trash|rest|return|play|add|place|K\.O\.)\s+one\b',
+               lambda m: m.group(1) + ' 1', t, flags=re.IGNORECASE)
+    # 2. genitivo sem apostrofo: "your opponents characters" -> "your opponent's ..."
+    #    So com determinante possessivo ANTES e sem 'or/and' depois (2 cartas).
+    t = re.sub(r"\b(your|their|its)\s+(opponent|leader|owner)s\s+(?!or\b|and\b)(?=[a-z])",
+               lambda m: f"{m.group(1)} {m.group(2)}'s ", t, flags=re.IGNORECASE)
+    # 3. duas TAGS DE GATILHO coladas valem como as duas: a forma com barra
+    #    ("[On Play]/[On K.O.]") ja e entendida pelo parser (2 cartas).
+    _TAG = r'on play|on k\.o\.|when attacking|activate: main|counter|trigger|on block|main'
+    t = re.sub(rf'\[({_TAG})\]\s+\[({_TAG})\]',
+               lambda m: f'[{m.group(1)}]/[{m.group(2)}]', t, flags=re.IGNORECASE)
+    # 4. "[During Your Turn]" e a mesma restricao que "[Your Turn]" (1 carta)
+    t = re.sub(r'\[during your turn\]', '[Your Turn]', t, flags=re.IGNORECASE)
+    # 5. ordem invertida do custo: "cost 4 or less characters" (3 cartas)
+    t = re.sub(r'\bcost\s+(\d+)\s+or\s+(less|lower|greater|more)\s+(characters?)\b',
+               lambda m: f'{m.group(3)} with a cost of {m.group(1)} or {m.group(2)}',
+               t, flags=re.IGNORECASE)
+    # 5b. mesma inversao da 5, com POWER: "power 2000 or lower characters"
+    #     (1 carta). Fica ao lado da irma porque e a MESMA forma -- grandeza
+    #     antes do substantivo -- e a proxima variante deve cair nas duas.
+    t = re.sub(r'\bpower\s+(\d+)\s+or\s+(less|lower|greater|more|higher)\s+(characters?)\b',
+               lambda m: f'{m.group(3)} with {m.group(1)} power or {m.group(2)}',
+               t, flags=re.IGNORECASE)
+    # 6. "N rested DON!!" sem a palavra "card" que o dialeto canonico exige.
+    #    MUITO restrita de proposito: sem o quantificador antes, ela pegaria
+    #    858 cartas -- "[DON!! x1]" e "your DON!! deck" sao legitimos e nao
+    #    levam "card". Roda DEPOIS da regra 1, entao "up to one rested Don!!"
+    #    ja chegou aqui como "up to 1 rested Don!!" (3 cartas: P-075, P-151,
+    #    ST31-006 -- as duas ultimas tinham o mesmo defeito sem ninguem notar).
+    #    NAO dispara na forma "Give up to N of your <nome> up to M rested
+    #    DON!!", que o parser de transferencia JA le inteira: ali acrescentar
+    #    "card" faz um SEGUNDO parser reivindicar a mesma clausula e a carta
+    #    ganha `transfer_don` E `give_don` -- dois passos para um efeito so
+    #    (pego em ST31-006 pelo diff de conteudo, nao pelo PERDEU).
+    if not re.search(r'\bgive\s+up to\s+\d+\s+of\s+your\b', t, flags=re.IGNORECASE):
+        t = re.sub(r'(\d+\s+(?:rested|active)\s+)DON!!(?!\s*cards?)',
+                   lambda m: m.group(1) + 'DON!! card', t, flags=re.IGNORECASE)
+    # 7. "on the bottom of ... deck" -> "at the bottom of ..." (1 carta)
+    t = re.sub(r'\bon the bottom of\b', 'at the bottom of', t, flags=re.IGNORECASE)
+    # 8. "its owner's deck" -> "the owner's deck" (275 cartas ja usam a forma
+    #    canonica; 2 usam esta -- outlier de transcricao, nao variante viva).
+    #    So DECK: com `hand` no escopo, a P-074 passava a gravar o "You may
+    #    return this character to its owner's hand" -- que e CUSTO, esta antes
+    #    do `:` -- como um PASSO de efeito no fim da lista. Normalizar so onde
+    #    da pra mostrar que o resultado esta certo.
+    t = re.sub(r"\bits owners?'?s?\s+deck\b", "the owner's deck", t, flags=re.IGNORECASE)
+    # ----------------------------------------------------------------------
     # ATENCAO -- `t_low` NAO e o texto integro do fim ao cabo.
     #
     # Ele e CONSUMIDO ao longo do parse: quando um bloco e reconhecido, o
@@ -10565,10 +10708,27 @@ def generate_effects_db(csv_path):
             'color':     str(row.get('card_color') or ''),
             'sub_types': str(row.get('sub_types') or ''),
             'attribute': attribute,
-            'effects':   parse_card_effect(card_text, card_type),
+            'effects':   _resolve_self_only(parse_card_effect(card_text, card_type), code),
         }
 
     return db
+
+
+def _resolve_self_only(effects, code):
+    """`self_only` (auto-referencia) vira `filter_name` = codigo da carta.
+
+    O parser nao recebe o codigo -- so `generate_effects_db` o conhece. Em vez
+    de ensinar o motor um conceito novo de "esta carta" no trash, resolve-se
+    aqui para o campo que `add_from_trash` JA consulta (`name_or_code`), o que
+    mantem UM caminho de decisao no motor (REGRA_SEM_DUPLICACAO).
+    """
+    for bloco in (effects or {}).values():
+        if not isinstance(bloco, dict):
+            continue
+        for step in bloco.get('steps') or []:
+            if isinstance(step, dict) and step.pop('self_only', None):
+                step['filter_name'] = code
+    return effects
 
 
 if __name__ == '__main__':

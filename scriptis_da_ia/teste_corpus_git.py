@@ -81,6 +81,47 @@ ok(final == ''.join(conteudo+novo), 'A converge para o mesmo conteudo total')
 locais = cg._conta_por_origem(A/'metrics'/'q_alvos.jsonl', False)
 ok(locais.get('B',0) == 0, 'CONTROLE: corpus truncado e detectavel (B=0 apesar da fatia existir)')
 
+# --- FATIA DE BACKFILL PARCIALMENTE PRESENTE  (o estrago real de 18/09/2026)
+#
+# Uma fatia com VARIAS origens, quase toda ja presente no corpus local e
+# faltando poucas linhas de UMA delas. O guarda antigo era tudo-ou-nada por
+# origem: a origem incompleta reprovava o `all(...)` e a fatia INTEIRA era
+# anexada -- 698.222 linhas duplicadas no corpus real.
+#
+# Este e o CONTROLE: com a versao antiga o corpus final teria 3+3=6 linhas em
+# vez de 4, entao o teste REPROVA aquele codigo.
+C = monta('C')
+git2 = monta('git2')
+ja_tinha = [linha('X',1,1,'a'), linha('X',1,2,'b'), linha('Y',2,1,'c')]
+(C/'metrics'/'q_alvos.jsonl').write_text(''.join(ja_tinha), encoding='utf-8')
+
+# a fatia de backfill: repete as 3 que ja estao aqui e traz 1 nova de Y
+backfill = ja_tinha + [linha('Y',2,2,'d')]
+with gzip.open(git2/'metrics'/'q_alvos'/'Outra_20260918T000000_backfill.jsonl.gz',
+               'wt', encoding='utf-8', newline='') as fh:
+    fh.write(''.join(backfill))
+
+aponta(C, fatias_de=git2)
+cg.cmd_importa()
+depois = (C/'metrics'/'q_alvos.jsonl').read_text(encoding='utf-8')
+ok(depois == ''.join(backfill),
+   'CONTROLE 18/09: fatia parcialmente presente traz SO a linha que faltava')
+ok(depois.count(linha('X',1,1,'a')) == 1,
+   'CONTROLE 18/09: a linha ja existente NAO foi duplicada')
+
+# e a repeticao legitima continua sobrevivendo a esta reconciliacao
+D = monta('D')
+git3 = monta('git3')
+(D/'metrics'/'q_alvos.jsonl').write_text(linha('Z',0,4,'x'), encoding='utf-8')
+com_repetida = [linha('Z',0,4,'x'), linha('Z',0,4,'x')]
+with gzip.open(git3/'metrics'/'q_alvos'/'Outra_20260918T000001.jsonl.gz',
+               'wt', encoding='utf-8', newline='') as fh:
+    fh.write(''.join(com_repetida))
+aponta(D, fatias_de=git3)
+cg.cmd_importa()
+ok((D/'metrics'/'q_alvos.jsonl').read_text(encoding='utf-8') == ''.join(com_repetida),
+   'a reconciliacao respeita MULTIPLICIDADE (1 local + 1 faltando = 2, nao 1)')
+
 shutil.rmtree(base, ignore_errors=True)
 print()
 print('FALHAS:', len(falhas))

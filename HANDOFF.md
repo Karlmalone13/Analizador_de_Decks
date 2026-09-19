@@ -1,5 +1,172 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-09-19 (871) - As 12 cartas cegas viram 10 resolvidas, o import DUPLICOU o corpus, e a coleta bancava a partida ERRADA
+
+Sessao Claude (Opus 5), maquina **Arthur_PC**. Continuacao do bloco 870, que
+deixou 12 cartas com gatilho declarado e ausente do banco.
+
+### 0. A MAQUINA ESTAVA 8 COMMITS ATRAS, e o `importa` DUPLICOU o corpus
+
+Este PC parou em `5f900e2` (07:57); a Arthur_Trabalho empurrou ate `1f1ff7d`
+(17:03). `pull --ff-only` limpo; o `logs/index.json` tinha alteracao dos DOIS
+lados com partidas DIFERENTES -- mesclado conferindo por `parsed_file` (a chave
+que a `REGRA_DUAS_MAQUINAS` manda usar; `id` NAO e unico).
+
+**Ao rodar `corpus_git.py importa`, o corpus foi de 699.230 para 1.398.068
+linhas.** O `status` tinha anunciado 687 linhas a importar e ele somou 698.838.
+
+Causa: o guarda contra reaplicar fatia era **tudo-ou-nada por origem**
+(`all(locais[o] >= aplicadas[o] + n ...)`). A fatia de backfill tinha 3 origens,
+duas ja completas aqui e **uma faltando 616 linhas** -- a incompleta reprovou o
+`all(...)` e a fatia INTEIRA foi anexada.
+
+Consertado em tres niveis: (1) o corpus, truncado de volta as 699.230 linhas
+com o prefixo conferido bit-a-bit e depois anexadas as **616** que faltavam de
+verdade (NAO deduplicar por hash -- 3,7% do corpus sao repeticoes legitimas);
+(2) o mecanismo, que agora **reconcilia linha a linha** contra um multiconjunto
+das linhas locais das mesmas origens; (3) a regra, com a secao *AO IMPORTAR,
+CONFIRA O DELTA* na `REGRA_DUAS_MAQUINAS.md` e no espelho.
+
+`teste_corpus_git.py` tem o caso, e **verifiquei que ele reprova a versao
+antiga**: ela produz 7 linhas onde o certo sao 4.
+
+### 1. AS 12 CARTAS: 10 RESOLVIDAS, e eram 6 FORMAS
+
+**Premissa testada ANTES de construir**: reescrevendo o texto das 7 promos no
+dialeto canonico, **sem tocar em nenhum `parse_*`**, 6 passaram a ser lidas. O
+problema era de ENTRADA, nao de gramatica -- por isso o conserto e uma
+normalizacao no topo de `parse_card_effect`, e nao 20 regex espalhados.
+
+9 regras de dialeto (numeral por extenso, genitivo sem apostrofo, tags coladas,
+`[During Your Turn]`, ordem de custo e de power, `DON!!` sem "card",
+`on`/`at the bottom`, `its owner's deck`) + 4 gramaticas proprias:
+
+| forma | carta |
+|---|---|
+| `draw up to N cards` | OP02-066 |
+| `cannot attack` mirando o LEADER | OP06-023 (**motor alterado**) |
+| `Add this card from your trash` | OP15-042 |
+| `Return all of your [X] and [Y]` | ST26-001 |
+
+**O motor so foi alterado na B, e ele JA esperava por ela**: `refresh_phase`
+sempre resetou `leader.cannot_attack_until` -- o executor e que so olhava
+`field_chars`.
+
+**GANHOS COLATERAIS**: OP04-085 passou a valer pelos dois gatilhos; P-151 e
+ST31-006 tinham o mesmo defeito de `DON!!`; OP07-058 guardava so o primeiro de
+DOIS tipos legais.
+
+**O GATE GLOBAL PEGOU 4 ERROS MEUS**, nenhum visivel no `PERDEU` (que ficou 0 o
+tempo todo): a regra do genitivo quebrava o plural legitimo `Leaders or
+Characters` (5 cartas); a do `DON!!` fazia ST31-006 virar `transfer_don` E
+`give_don` para a MESMA clausula; a de `owner's` fazia P-074 gravar como EFEITO
+algo que e CUSTO; e um `.{0,15}` guloso comia a palavra `rested`, o que deixaria
+a trava valendo contra lider ATIVO -- **efeito errado a favor do bot e pior que
+efeito nenhum**.
+
+`diff_parser`: **PERDEU=0**. Snapshot regerado -- de quebra some o ruido do
+Loki, que o bloco 870 deixou sem re-snapshot e aparecia em todo diff desde
+entao.
+
+**NAO corrigidas, de proposito**: `P-097` (texto TRUNCADO na fonte, "cannot
+activate" sem objeto -- corrigir seria adivinhar) e `P-100` (`Negate the
+effects`, acao que NAO EXISTE no motor).
+
+Dois registros em `parser_audits/`.
+
+### 2. QUATRO CPU x CPU, e o que elas acharam
+
+| # | partida | resultado | telemetria |
+|---|---|---|---|
+| 1 | Mihawk x Ace | 0x1, 10 turnos | completa |
+| 2 | Teach x Ace | 0x1, 12 turnos | **perdida** |
+| 3 | Krieg x Luffy RG | **1x0**, 13 turnos | **perdida** |
+| 4 | Enel x Imu | **1x0**, 9 turnos | **perdida** |
+
+**`q_fallback: 0` na partida 1** -- primeira confirmacao AO VIVO de que o
+modelo decide em 100% das decisoes (o campo do bloco 867 cumprindo a funcao).
+
+**`when_attacking` a 0% de conclusao, nas tres partidas com dado.** Causa
+nomeada: Vista OP16-011 tem `ko target=opp_character power_lte=2000` e o bot
+mirou **Uta, 4000 de power, na PROPRIA MAO**. E a pendencia aberta do bloco 862
+(25% de cobertura) -- `_relevant_blocks` funde os blocos nao-combate e o custo
+`reveal_from_hand` do `on_play` contamina o `when_attacking`. Ao vivo:
+`[TGT] 33 candidatos (purpose=unknown) zonas=[as 12 zonas]`.
+
+**Uma hipotese minha CAIU na conferencia**: eu ia reportar o Ace falhando por
+alvo inelegivel, e os alvos (Vista 8000 e Newgate 10000, ambos Whitebeard
+Pirates) **eram legais**. Causa continua ABERTA; candidata sao as 32 recusas de
+clique do plugin (padrao do bloco 839).
+
+Agregado da sessao: counter **30 aceitos x 25 recusados**, com 56 recusas tendo
+opcao (varias com 4-5 cartas); trigger **2 aceitos x 19 recusados**.
+
+Krieg e Teach sao dois dos lideres que o projeto registra como SEM decklist real
+no banco -- as partidas 2 e 3 sao cobertura que nao existia.
+
+### 3. A COLETA BANCAVA A PARTIDA ERRADA -- dois fixes, o primeiro INCOMPLETO
+
+**O OPTCGSim reescreve a SESSAO INTEIRA a cada fim de partida**, com o mesmo
+mtime em todos:
+
+```
+22:43:06   22.43.05.log                          <- 1a
+23:57:43   23.57.39.log  +  _p2.log              <- 2a (a nova e a _p2)
+09:52:10   09.52.03.log + _p2 + _p3 + _p4.log    <- 4a (a nova e a _p4)
+```
+
+O BASE contem a partida ANTERIOR (com `[You] Quits!` e um `RZ1|HDR|` novo no
+fim). `_latest_log` usava `max(mtime)`, que EMPATA e devolve o base; ai
+`_validate_bank_entry` procurava um id que o parser pulara de proposito (ja
+bancado, trava do bloco 856) e a excecao **abortava a coleta INTEIRA**.
+
+**A gravidade estava SUBESTIMADA na minha primeira leitura.** Eu escrevi "o
+risco nao e perder dado". **E**: as partidas 2, 3 e 4 ficaram com ZERO artefato
+(`live_`, `efeitos_`, `consequence_`, `receipt_`). O log bruto sobrevive; a
+telemetria nao -- e ela e dois dos quatro itens da meta desta fase.
+
+**O 1o fix (desempate por sufixo) NAO bastou, e so o teste AO VIVO mostrou**: no
+instante do `/outcome` o `_p4` ainda nao existia no disco. Isolei a validacao
+para nao chutar -- com `_p4` PASSA, com o base FALHA com a mensagem exata.
+**2o fix**: espera o CONJUNTO da sessao parar de crescer (quantidade de irmaos
++ maior sufixo, duas leituras iguais) antes de escolher; esgotando a espera,
+devolve a melhor escolha conhecida em vez de levantar -- bancar o log e o
+trabalho critico e nao pode cair por timeout.
+
+`smoke_fast`: 6 checagens da coleta, incluindo o caso da CORRIDA e dois
+controles (1a partida da sessao sem sufixo; sessao antiga na mesma pasta).
+Verificado que a corrida reprova a versao sem espera: ela escolhe `_p2` em vez
+de `_p4`.
+
+> **NAO VALIDADO AO VIVO.** O 2o fix passa nos testes e na simulacao da corrida,
+> e a proxima partida e quem diz -- exatamente o erro que cometi ao dar o 1o
+> como resolvido.
+
+### 4. REGRAS NOVAS (pedido do usuario)
+
+- **`Rematch` acumula o combat log** -- entre partidas, `Back to Main`. Medido
+  depois: o `Back to Main` tambem mexe no arquivo anterior (`[You] Quits!` +
+  cabecalho novo), mas a partida nova sai em arquivo PROPRIO. Provavel causa
+  raiz dos blocos 856 e 860.
+- **Qual modelo, e a sessao avisa NA HORA**: Opus para raciocinio, Sonnet para
+  execucao -- e **o modelo pesa menos que o tamanho da sessao** (cada turno
+  reenvia a conversa inteira). Medido em 19/09: UMA sessao com 540k tokens
+  consumiu quase toda a cota semanal do Pro em dois dias, agravada por pausas
+  de 1-6h que quebram o cache e forcam releitura a preco cheio.
+
+### ESTADO
+
+`smoke_fast` 0 falhas. `diff_parser` 0/0/0 apos o re-snapshot. Corpus integro
+(699.846 linhas) e fatia `Arthur_PC_20260919T101141.jsonl.gz` exportada. Banco
+em **201 partidas**. Server da 8765 no ar com o codigo atual.
+
+**Pendente**: validar o 2o fix da coleta na proxima partida; a telemetria das
+partidas 2-4 nao existe como artefato (a auditoria de efeitos foi reconstruida
+do decision log do server, `live_`/`consequence_` nao); `when_attacking` a 0%
+segue aberto, assim como a causa do Ace.
+
+---
+
 > **RECOMENDACAO REGISTRADA DO USUARIO (22/08/2026, apos o bloco 642)**:
 > discutido explicitamente se "continuar investigando bug real" resolve
 > sozinho ou se precisa de outra ferramenta. Resposta dada ao usuario:

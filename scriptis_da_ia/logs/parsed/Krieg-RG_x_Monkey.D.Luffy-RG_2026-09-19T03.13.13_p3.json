@@ -1,0 +1,1885 @@
+{
+  "meta": {
+    "players": {
+      "p1": {
+        "name": "You",
+        "leader": {
+          "name": "Krieg",
+          "code": "OP15-001"
+        }
+      },
+      "p2": {
+        "name": "Opponent",
+        "leader": {
+          "name": "Monkey D. Luffy",
+          "code": "OP13-001"
+        }
+      }
+    },
+    "goes_first": null
+  },
+  "total_turns": 13,
+  "turns": [
+    {
+      "turn": 1,
+      "player": "You",
+      "card_drawn": null,
+      "don_drawn": 1,
+      "actions": [
+        {
+          "type": "play",
+          "card": "OP15-026",
+          "card_name": "Jango",
+          "effects": [
+            "<b>Reveal and Draw Jango [\"OP15-026\">OP15-026]</b>"
+          ]
+        }
+      ],
+      "snapshot": {
+        "You": {
+          "hand": [
+            "OP15-009",
+            "OP15-027",
+            "OP12-027",
+            "OP15-008",
+            "OP15-026"
+          ],
+          "board": [
+            "OP15-026"
+          ],
+          "trash": [],
+          "life": 4,
+          "deck": [
+            "OP15-007",
+            "OP15-017"
+          ],
+          "life_cards": [
+            "OP15-017",
+            "OP15-023",
+            "OP15-027",
+            "OP15-037"
+          ],
+          "don_cost": [
+            "Don"
+          ],
+          "rested_rz1": {
+            "don_cost": [
+              "Don"
+            ]
+          },
+          "rested": {
+            "OP15-026": 1
+          }
+        },
+        "Opponent": {
+          "hand": [
+            "OP13-037",
+            "OP05-038",
+            "OP13-037",
+            "EB04-007",
+            "EB04-007"
+          ],
+          "trash": [],
+          "board": [],
+          "life": 4,
+          "deck": [
+            "EB02-017",
+            "OP01-016",
+            "OP10-011",
+            "OP13-027",
+            "OP13-040",
+            "OP13-118",
+            "OP14-031",
+            "OP15-032",
+            "OP16-004",
+            "ST31-005"
+          ],
+          "life_cards": [
+            "OP13-037",
+            "OP14-022",
+            "OP15-035",
+            "ST21-003"
+          ]
+        }
+      }
+    },
+    {
+      "turn": 2,
+      "player": "Opponent",
+      "card_drawn": null,
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP13-001",
+          "to_name": "Monkey D. Luffy",
+          "total": 1
+        }
+      ],
+      "snapshot": {
+        "Opponent": {
+          "hand": [
+            "OP13-037",
+            "OP05-038",
+            "OP13-037",
+            "EB04-007",
+            "EB04-007",
+            "ST31-005"
+          ],
+          "board": [],
+          "trash": [],
+          "life": 4,
+          "deck": [
+            "EB02-017",
+            "OP01-016",
+            "OP10-011",
+            "OP13-027",
+            "OP13-040",
+            "OP13-118",
+            "OP14-031",
+            "OP15-032",
+            "OP16-004"
+          ],
+          "life_cards": [
+            "OP13-037",
+            "OP14-022",
+            "OP15-035",
+            "ST21-003"
+          ],
+          "don_cost": [
+            "Don"
+          ],
+          "attached_don": [
+            "Don"
+          ]
+        },
+        "You": {
+          "hand": [
+            "OP15-009",
+            "OP15-027",
+            "OP12-027",
+            "OP15-008",
+            "OP15-026"
+          ],
+          "trash": [],
+          "board": [
+            "OP15-026"
+          ],
+          "life": 4,
+          "deck": [
+            "OP15-007",
+            "OP15-017"
+          ],
+          "life_cards": [
+            "OP15-017",
+            "OP15-023",
+            "OP15-027",
+            "OP15-037"
+          ],
+          "don_cost": [
+            "Don"
+          ],
+          "rested_rz1": {
+            "don_cost": [
+              "Don"
+            ]
+          },
+          "rested": {
+            "OP15-026": 1
+          }
+        }
+      }
+    },
+    {
+      "turn": 3,
+      "player": "You",
+      "card_drawn": null,
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "activate",
+          "card": "OP15-026",
+          "card_name": "Jango",
+          "effects": [
+            "Trash Jango [\"OP15-026\">OP15-026]",
+            "<b>Reveal and Draw Morgan [\"OP15-017\">OP15-017]</b>"
+          ]
+        },
+        {
+          "type": "play",
+          "card": "OP15-026",
+          "card_name": "Jango",
+          "effects": []
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP15-001",
+          "to_name": "Krieg",
+          "total": 1
+        },
+        {
+          "type": "attack",
+          "attacker": "Krieg",
+          "attacker_code": "OP15-001",
+          "target": "Monkey D. Luffy [\"OP13-001\">OP13-001]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "play",
+          "card": "OP15-009",
+          "card_name": "Koby",
+          "effects": []
+        }
+      ],
+      "snapshot": {
+        "You": {
+          "hand": [
+            "OP15-027",
+            "OP12-027",
+            "OP15-008",
+            "OP15-023",
+            "OP15-017"
+          ],
+          "board": [
+            "OP15-026",
+            "OP15-009"
+          ],
+          "trash": [
+            "OP15-026"
+          ],
+          "life": 4,
+          "deck": [
+            "OP15-007",
+            "OP15-023",
+            "OP15-025"
+          ],
+          "life_cards": [
+            "OP15-017",
+            "OP15-023",
+            "OP15-027",
+            "OP15-037"
+          ],
+          "don_cost": [
+            "Don",
+            "Don"
+          ],
+          "attached_don": [
+            "Don"
+          ],
+          "rested_rz1": {
+            "don_cost": [
+              "Don"
+            ]
+          },
+          "rested": {
+            "OP15-026": 1,
+            "OP15-009": 1
+          }
+        },
+        "Opponent": {
+          "hand": [
+            "OP13-037",
+            "OP05-038",
+            "OP13-037",
+            "EB04-007",
+            "EB04-007",
+            "ST31-005",
+            "OP13-037"
+          ],
+          "trash": [],
+          "board": [],
+          "life": 3,
+          "deck": [
+            "EB02-017",
+            "OP01-016",
+            "OP10-011",
+            "OP13-027",
+            "OP13-040",
+            "OP13-118",
+            "OP14-031",
+            "OP15-032",
+            "OP16-004"
+          ],
+          "life_cards": [
+            "OP14-022",
+            "OP15-035",
+            "ST21-003"
+          ],
+          "don_cost": [
+            "Don"
+          ],
+          "attached_don": [
+            "Don"
+          ]
+        }
+      }
+    },
+    {
+      "turn": 4,
+      "player": "Opponent",
+      "card_drawn": null,
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP13-001",
+          "to_name": "Monkey D. Luffy",
+          "total": 1
+        },
+        {
+          "type": "attack",
+          "attacker": "Monkey D. Luffy",
+          "attacker_code": "OP13-001",
+          "target": "Krieg [\"OP15-001\">OP15-001]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "play",
+          "card": "ST31-005",
+          "card_name": "Thousand Sunny",
+          "effects": [
+            "<b>Reveal and Draw Nami [\"EB02-017\">EB02-017]</b>"
+          ]
+        },
+        {
+          "type": "play",
+          "card": "OP15-035",
+          "card_name": "Laboon",
+          "effects": []
+        },
+        {
+          "type": "play",
+          "card": "EB02-017",
+          "card_name": "Nami",
+          "effects": [
+            "<b>Reveal and Draw Brook [\"OP15-032\">OP15-032]</b>"
+          ]
+        }
+      ],
+      "snapshot": {
+        "Opponent": {
+          "hand": [
+            "OP13-037",
+            "OP05-038",
+            "OP13-037",
+            "EB04-007",
+            "EB04-007",
+            "OP13-037",
+            "OP15-032"
+          ],
+          "board": [
+            "OP15-035",
+            "EB02-017"
+          ],
+          "trash": [],
+          "life": 3,
+          "deck": [
+            "OP01-016",
+            "OP10-011",
+            "OP13-027",
+            "OP13-040",
+            "OP13-118",
+            "OP14-022",
+            "OP14-031",
+            "OP15-035",
+            "OP16-004"
+          ],
+          "life_cards": [
+            "OP14-022",
+            "OP15-035",
+            "ST21-003"
+          ],
+          "don_cost": [
+            "Don",
+            "Don",
+            "Don"
+          ],
+          "attached_don": [
+            "Don"
+          ],
+          "stage": [
+            "ST31-005"
+          ],
+          "rested_rz1": {
+            "don_cost": [
+              "Don"
+            ]
+          },
+          "rested": {
+            "OP15-035": 1,
+            "EB02-017": 1
+          }
+        },
+        "You": {
+          "hand": [
+            "OP15-027",
+            "OP12-027",
+            "OP15-008",
+            "OP15-023",
+            "OP15-017",
+            "OP15-017"
+          ],
+          "trash": [
+            "OP15-026"
+          ],
+          "board": [
+            "OP15-026",
+            "OP15-009"
+          ],
+          "life": 3,
+          "deck": [
+            "OP15-007",
+            "OP15-023",
+            "OP15-025"
+          ],
+          "life_cards": [
+            "OP15-023",
+            "OP15-027",
+            "OP15-037"
+          ],
+          "don_cost": [
+            "Don",
+            "Don"
+          ],
+          "attached_don": [
+            "Don"
+          ],
+          "rested_rz1": {
+            "don_cost": [
+              "Don"
+            ]
+          },
+          "rested": {
+            "OP15-026": 1,
+            "OP15-009": 1
+          }
+        }
+      }
+    },
+    {
+      "turn": 5,
+      "player": "You",
+      "card_drawn": null,
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "play",
+          "card": "OP15-027",
+          "card_name": "Dracule Mihawk",
+          "effects": []
+        },
+        {
+          "type": "activate",
+          "card": "OP15-026",
+          "card_name": "Jango",
+          "effects": [
+            "Trash Jango [\"OP15-026\">OP15-026]",
+            "Attach 1 Rested Don to Nami [\"EB02-017\">EB02-017]"
+          ]
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP15-001",
+          "to_name": "Krieg",
+          "total": 1
+        },
+        {
+          "type": "attack",
+          "attacker": "Krieg",
+          "attacker_code": "OP15-001",
+          "target": "Monkey D. Luffy [\"OP13-001\">OP13-001]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        }
+      ],
+      "snapshot": {
+        "You": {
+          "hand": [
+            "OP12-027",
+            "OP15-008",
+            "OP15-023",
+            "OP15-017",
+            "OP15-017",
+            "OP15-007"
+          ],
+          "board": [
+            "OP15-009",
+            "OP15-027"
+          ],
+          "trash": [
+            "OP15-026",
+            "OP15-026"
+          ],
+          "life": 3,
+          "deck": [
+            "OP15-023",
+            "OP15-025"
+          ],
+          "life_cards": [
+            "OP15-023",
+            "OP15-027",
+            "OP15-037"
+          ],
+          "don_cost": [
+            "Don",
+            "Don",
+            "Don",
+            "Don"
+          ],
+          "attached_don": [
+            "Don"
+          ],
+          "rested_rz1": {
+            "don_cost": [
+              "Don"
+            ]
+          },
+          "rested": {
+            "OP15-027": 1
+          }
+        },
+        "Opponent": {
+          "hand": [
+            "OP13-037",
+            "OP05-038",
+            "OP13-037",
+            "EB04-007",
+            "EB04-007",
+            "OP13-037",
+            "OP15-032",
+            "OP15-035"
+          ],
+          "trash": [],
+          "board": [
+            "OP15-035",
+            "EB02-017"
+          ],
+          "life": 2,
+          "deck": [
+            "OP01-016",
+            "OP10-011",
+            "OP13-027",
+            "OP13-040",
+            "OP13-118",
+            "OP14-022",
+            "OP14-031",
+            "OP15-035",
+            "OP16-004"
+          ],
+          "life_cards": [
+            "OP14-022",
+            "ST21-003"
+          ],
+          "don_cost": [
+            "Don",
+            "Don"
+          ],
+          "attached_don": [
+            "Don",
+            "Don"
+          ],
+          "stage": [
+            "ST31-005"
+          ],
+          "rested_rz1": {
+            "attached_don": [
+              "Don"
+            ]
+          },
+          "rested": {
+            "OP15-035": 1,
+            "EB02-017": 1
+          }
+        }
+      }
+    },
+    {
+      "turn": 6,
+      "player": "Opponent",
+      "card_drawn": null,
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "play",
+          "card": "OP15-032",
+          "card_name": "Brook",
+          "effects": [
+            "Rest Dracule Mihawk [\"OP15-027\">OP15-027]"
+          ]
+        },
+        {
+          "type": "attack",
+          "attacker": "Monkey D. Luffy",
+          "attacker_code": "OP13-001",
+          "target": "Krieg [\"OP15-001\">OP15-001]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": [
+            "OP12-027"
+          ]
+        },
+        {
+          "type": "activate",
+          "card": "ST31-005",
+          "card_name": "Thousand Sunny",
+          "effects": [
+            "Rest Thousand Sunny [\"ST31-005\">ST31-005]",
+            "Attach 1 Rested Don to Monkey D. Luffy [\"OP13-001\">OP13-001]"
+          ]
+        }
+      ],
+      "snapshot": {
+        "Opponent": {
+          "hand": [
+            "OP13-037",
+            "OP05-038",
+            "OP13-037",
+            "EB04-007",
+            "EB04-007",
+            "OP13-037",
+            "OP15-035",
+            "OP13-027"
+          ],
+          "board": [
+            "OP15-035",
+            "EB02-017",
+            "OP15-032"
+          ],
+          "trash": [],
+          "life": 2,
+          "deck": [
+            "OP01-016",
+            "OP10-011",
+            "OP13-040",
+            "OP13-118",
+            "OP14-022",
+            "OP14-031",
+            "OP15-035",
+            "OP16-004"
+          ],
+          "life_cards": [
+            "OP14-022",
+            "ST21-003"
+          ],
+          "don_cost": [
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don"
+          ],
+          "attached_don": [
+            "Don"
+          ],
+          "stage": [
+            "ST31-005"
+          ],
+          "rested_rz1": {
+            "don_cost": [
+              "Don"
+            ],
+            "attached_don": [
+              "Don"
+            ]
+          },
+          "rested": {
+            "OP15-032": 1
+          }
+        },
+        "You": {
+          "hand": [
+            "OP15-008",
+            "OP15-023",
+            "OP15-017",
+            "OP15-017",
+            "OP15-007"
+          ],
+          "trash": [
+            "OP15-026",
+            "OP15-026",
+            "OP12-027"
+          ],
+          "board": [
+            "OP15-009",
+            "OP15-027"
+          ],
+          "life": 3,
+          "deck": [
+            "OP15-023",
+            "OP15-025"
+          ],
+          "life_cards": [
+            "OP15-023",
+            "OP15-027",
+            "OP15-037"
+          ],
+          "don_cost": [
+            "Don",
+            "Don",
+            "Don",
+            "Don"
+          ],
+          "attached_don": [
+            "Don"
+          ],
+          "rested_rz1": {
+            "don_cost": [
+              "Don"
+            ]
+          },
+          "rested": {
+            "OP15-027": 1
+          }
+        }
+      }
+    },
+    {
+      "turn": 7,
+      "player": "You",
+      "card_drawn": null,
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "play",
+          "card": "OP15-007",
+          "card_name": "Gin",
+          "effects": [
+            "Deploy Morgan [\"OP15-017\">OP15-017]"
+          ]
+        },
+        {
+          "type": "activate",
+          "card": "OP15-017",
+          "card_name": "Morgan",
+          "effects": [
+            "Attach 1 Rested Don to Brook [\"OP15-032\">OP15-032]",
+            "Attach 1 Rested Don to Koby [\"OP15-009\">OP15-009]"
+          ]
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP15-001",
+          "to_name": "Krieg",
+          "total": 1
+        },
+        {
+          "type": "attack",
+          "attacker": "Krieg",
+          "attacker_code": "OP15-001",
+          "target": "Monkey D. Luffy [\"OP13-001\">OP13-001]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": [
+            "OP15-035"
+          ]
+        },
+        {
+          "type": "attack",
+          "attacker": "Dracule Mihawk",
+          "attacker_code": "OP15-027",
+          "target": "Monkey D. Luffy [\"OP13-001\">OP13-001]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": [
+            "OP13-037"
+          ]
+        }
+      ],
+      "snapshot": {
+        "You": {
+          "hand": [
+            "OP15-008",
+            "OP15-023",
+            "OP15-017",
+            "OP15-007"
+          ],
+          "board": [
+            "OP15-009",
+            "OP15-027",
+            "OP15-007",
+            "OP15-017"
+          ],
+          "trash": [
+            "OP15-026",
+            "OP15-026",
+            "OP12-027"
+          ],
+          "life": 3,
+          "deck": [
+            "OP15-023",
+            "OP15-025"
+          ],
+          "life_cards": [
+            "OP15-023",
+            "OP15-027",
+            "OP15-037"
+          ],
+          "don_cost": [
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don"
+          ],
+          "attached_don": [
+            "Don",
+            "Don"
+          ],
+          "rested_rz1": {
+            "attached_don": [
+              "Don"
+            ]
+          },
+          "rested": {
+            "OP15-027": 1,
+            "OP15-007": 1
+          }
+        },
+        "Opponent": {
+          "hand": [
+            "OP05-038",
+            "OP13-037",
+            "EB04-007",
+            "EB04-007",
+            "OP13-037",
+            "OP13-027"
+          ],
+          "trash": [
+            "OP15-035",
+            "OP13-037"
+          ],
+          "board": [
+            "OP15-035",
+            "EB02-017",
+            "OP15-032"
+          ],
+          "life": 2,
+          "deck": [
+            "OP01-016",
+            "OP10-011",
+            "OP13-040",
+            "OP13-118",
+            "OP14-022",
+            "OP14-031",
+            "OP15-035",
+            "OP16-004"
+          ],
+          "life_cards": [
+            "OP14-022",
+            "ST21-003"
+          ],
+          "don_cost": [
+            "Don",
+            "Don",
+            "Don",
+            "Don"
+          ],
+          "attached_don": [
+            "Don",
+            "Don"
+          ],
+          "stage": [
+            "ST31-005"
+          ],
+          "rested_rz1": {
+            "attached_don": [
+              "Don",
+              "Don"
+            ]
+          },
+          "rested": {
+            "OP15-032": 1
+          }
+        }
+      }
+    },
+    {
+      "turn": 8,
+      "player": "Opponent",
+      "card_drawn": null,
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "play",
+          "card": "EB04-007",
+          "card_name": "Roronoa Zoro",
+          "effects": [
+            "Grant Monkey D. Luffy [\"OP13-001\">OP13-001] 2000 until opponent's next turn end"
+          ]
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP13-001",
+          "to_name": "Monkey D. Luffy",
+          "total": 1
+        },
+        {
+          "type": "attack",
+          "attacker": "Monkey D. Luffy",
+          "attacker_code": "OP13-001",
+          "target": "Krieg [\"OP15-001\">OP15-001]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": "OP15-017",
+          "countered_by": [
+            "OP15-023",
+            "OP15-017",
+            "OP15-007"
+          ]
+        },
+        {
+          "type": "activate",
+          "card": "OP15-032",
+          "card_name": "Brook",
+          "effects": [
+            "Trash Brook [\"OP15-032\">OP15-032]"
+          ]
+        },
+        {
+          "type": "activate",
+          "card": "ST31-005",
+          "card_name": "Thousand Sunny",
+          "effects": [
+            "Rest Thousand Sunny [\"ST31-005\">ST31-005]",
+            "Attach 1 Rested Don to Monkey D. Luffy [\"OP13-001\">OP13-001]"
+          ]
+        }
+      ],
+      "snapshot": {
+        "Opponent": {
+          "hand": [
+            "OP05-038",
+            "OP13-037",
+            "EB04-007",
+            "OP13-037",
+            "OP13-027",
+            "EB02-017"
+          ],
+          "board": [
+            "OP15-035",
+            "EB02-017",
+            "EB04-007"
+          ],
+          "trash": [
+            "OP15-035",
+            "OP13-037",
+            "OP15-032"
+          ],
+          "life": 2,
+          "deck": [
+            "OP01-016",
+            "OP10-011",
+            "OP13-040",
+            "OP13-118",
+            "OP14-022",
+            "OP14-031",
+            "OP15-035",
+            "OP16-004"
+          ],
+          "life_cards": [
+            "OP14-022",
+            "ST21-003"
+          ],
+          "don_cost": [
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don"
+          ],
+          "attached_don": [
+            "Don",
+            "Don"
+          ],
+          "stage": [
+            "ST31-005"
+          ],
+          "rested_rz1": {
+            "attached_don": [
+              "Don"
+            ]
+          },
+          "rested": {
+            "EB04-007": 1
+          }
+        },
+        "You": {
+          "hand": [
+            "OP15-008"
+          ],
+          "trash": [
+            "OP15-026",
+            "OP15-026",
+            "OP12-027",
+            "OP15-023",
+            "OP15-017",
+            "OP15-007"
+          ],
+          "board": [
+            "OP15-009",
+            "OP15-027",
+            "OP15-007",
+            "OP15-017"
+          ],
+          "life": 3,
+          "deck": [
+            "OP15-023",
+            "OP15-025"
+          ],
+          "life_cards": [
+            "OP15-023",
+            "OP15-027",
+            "OP15-037"
+          ],
+          "don_cost": [
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don"
+          ],
+          "attached_don": [
+            "Don",
+            "Don"
+          ],
+          "rested_rz1": {
+            "attached_don": [
+              "Don"
+            ]
+          },
+          "rested": {
+            "OP15-027": 1,
+            "OP15-007": 1
+          }
+        }
+      }
+    },
+    {
+      "turn": 9,
+      "player": "You",
+      "card_drawn": null,
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "play",
+          "card": "OP15-008",
+          "card_name": "Krieg",
+          "effects": [
+            "Attach 1 Rested Don to Laboon [\"OP15-035\">OP15-035]",
+            "Attach 1 Rested Don to Laboon [\"OP15-035\">OP15-035]",
+            "Attach 1 Rested Don to Laboon [\"OP15-035\">OP15-035]",
+            "Give Krieg [\"OP15-008\">OP15-008] Rush"
+          ]
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP15-001",
+          "to_name": "Krieg",
+          "total": 1
+        },
+        {
+          "type": "attack",
+          "attacker": "Gin",
+          "attacker_code": "OP15-007",
+          "target": "Monkey D. Luffy [\"OP13-001\">OP13-001]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": [
+            "OP13-037"
+          ]
+        },
+        {
+          "type": "attack",
+          "attacker": "Krieg",
+          "attacker_code": "OP15-008",
+          "target": "Monkey D. Luffy [\"OP13-001\">OP13-001]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "activate",
+          "card": "OP15-001",
+          "card_name": "Krieg",
+          "effects": [
+            "Rest Laboon [\"OP15-035\">OP15-035]"
+          ]
+        },
+        {
+          "type": "attack",
+          "attacker": "Krieg",
+          "attacker_code": "OP15-001",
+          "target": "Laboon [\"OP15-035\">OP15-035]",
+          "result": "hit",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "activate",
+          "card": "OP15-017",
+          "card_name": "Morgan",
+          "effects": [
+            "Attach 1 Rested Don to Roronoa Zoro [\"EB04-007\">EB04-007]",
+            "Attach 1 Rested Don to Koby [\"OP15-009\">OP15-009]"
+          ]
+        }
+      ],
+      "snapshot": {
+        "You": {
+          "hand": [
+            "OP15-009"
+          ],
+          "board": [
+            "OP15-009",
+            "OP15-027",
+            "OP15-007",
+            "OP15-017",
+            "OP15-008"
+          ],
+          "trash": [
+            "OP15-026",
+            "OP15-026",
+            "OP12-027",
+            "OP15-023",
+            "OP15-017",
+            "OP15-007"
+          ],
+          "life": 3,
+          "deck": [
+            "OP15-023",
+            "OP15-025"
+          ],
+          "life_cards": [
+            "OP15-023",
+            "OP15-027",
+            "OP15-037"
+          ],
+          "don_cost": [
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don"
+          ],
+          "attached_don": [
+            "Don",
+            "Don"
+          ],
+          "rested_rz1": {
+            "attached_don": [
+              "Don"
+            ]
+          },
+          "rested": {
+            "OP15-007": 1,
+            "OP15-008": 1
+          }
+        },
+        "Opponent": {
+          "hand": [
+            "OP05-038",
+            "EB04-007",
+            "OP13-037",
+            "OP13-027",
+            "EB02-017",
+            "ST21-003"
+          ],
+          "trash": [
+            "OP15-035",
+            "OP13-037",
+            "OP15-032",
+            "OP13-037",
+            "OP15-035"
+          ],
+          "board": [
+            "EB02-017",
+            "EB04-007"
+          ],
+          "life": 1,
+          "deck": [
+            "OP01-016",
+            "OP10-011",
+            "OP13-040",
+            "OP13-118",
+            "OP14-022",
+            "OP14-031",
+            "OP15-035",
+            "OP16-004"
+          ],
+          "life_cards": [
+            "OP14-022"
+          ],
+          "don_cost": [
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don"
+          ],
+          "attached_don": [
+            "Don",
+            "Don",
+            "Don"
+          ],
+          "stage": [
+            "ST31-005"
+          ],
+          "rested_rz1": {
+            "don_cost": [
+              "Don",
+              "Don"
+            ],
+            "attached_don": [
+              "Don",
+              "Don"
+            ]
+          },
+          "rested": {
+            "EB04-007": 1
+          }
+        }
+      }
+    },
+    {
+      "turn": 10,
+      "player": "Opponent",
+      "card_drawn": null,
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "play",
+          "card": "EB04-007",
+          "card_name": "Roronoa Zoro",
+          "effects": [
+            "Grant Monkey D. Luffy [\"OP13-001\">OP13-001] 2000 until opponent's next turn end"
+          ]
+        },
+        {
+          "type": "attack",
+          "attacker": "Monkey D. Luffy",
+          "attacker_code": "OP13-001",
+          "target": "Krieg [\"OP15-001\">OP15-001]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": "OP15-017",
+          "countered_by": [
+            "OP15-009"
+          ]
+        },
+        {
+          "type": "attack",
+          "attacker": "Roronoa Zoro",
+          "attacker_code": "EB04-007",
+          "target": "Morgan [\"OP15-017\">OP15-017]",
+          "result": null,
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "play",
+          "card": "EB02-017",
+          "card_name": "Nami",
+          "effects": [
+            "<b>Reveal and Draw Tony Tony Chopper [\"OP10-011\">OP10-011]</b>"
+          ]
+        },
+        {
+          "type": "activate",
+          "card": "ST31-005",
+          "card_name": "Thousand Sunny",
+          "effects": [
+            "Rest Thousand Sunny [\"ST31-005\">ST31-005]",
+            "Attach 1 Rested Don to Monkey D. Luffy [\"OP13-001\">OP13-001]"
+          ]
+        }
+      ],
+      "snapshot": {
+        "Opponent": {
+          "hand": [
+            "OP05-038",
+            "OP13-037",
+            "OP13-027",
+            "ST21-003",
+            "OP16-004",
+            "OP10-011"
+          ],
+          "board": [
+            "EB02-017",
+            "EB04-007",
+            "EB04-007",
+            "EB02-017"
+          ],
+          "trash": [
+            "OP15-035",
+            "OP13-037",
+            "OP15-032",
+            "OP13-037",
+            "OP15-035"
+          ],
+          "life": 1,
+          "deck": [
+            "OP01-016",
+            "OP13-040",
+            "OP13-118",
+            "OP14-022",
+            "OP14-031",
+            "OP15-035"
+          ],
+          "life_cards": [
+            "OP14-022"
+          ],
+          "don_cost": [
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don"
+          ],
+          "attached_don": [
+            "Don"
+          ],
+          "stage": [
+            "ST31-005"
+          ],
+          "rested_rz1": {
+            "don_cost": [
+              "Don",
+              "Don",
+              "Don",
+              "Don"
+            ],
+            "attached_don": [
+              "Don"
+            ]
+          },
+          "rested": {
+            "EB04-007": 2,
+            "EB02-017": 1
+          }
+        },
+        "You": {
+          "hand": [],
+          "trash": [
+            "OP15-026",
+            "OP15-026",
+            "OP12-027",
+            "OP15-023",
+            "OP15-017",
+            "OP15-007",
+            "OP15-009",
+            "OP15-017"
+          ],
+          "board": [
+            "OP15-009",
+            "OP15-027",
+            "OP15-007",
+            "OP15-008"
+          ],
+          "life": 3,
+          "deck": [
+            "OP15-023",
+            "OP15-025"
+          ],
+          "life_cards": [
+            "OP15-023",
+            "OP15-027",
+            "OP15-037"
+          ],
+          "don_cost": [
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don"
+          ],
+          "attached_don": [
+            "Don",
+            "Don"
+          ],
+          "rested_rz1": {
+            "attached_don": [
+              "Don"
+            ]
+          },
+          "rested": {
+            "OP15-007": 1,
+            "OP15-008": 1
+          }
+        }
+      }
+    },
+    {
+      "turn": 11,
+      "player": "You",
+      "card_drawn": null,
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "attack",
+          "attacker": "Gin",
+          "attacker_code": "OP15-007",
+          "target": "Monkey D. Luffy [\"OP13-001\">OP13-001]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": [
+            "ST21-003"
+          ]
+        },
+        {
+          "type": "attach_don",
+          "amount": 2,
+          "to": "OP15-001",
+          "to_name": "Krieg",
+          "total": 2
+        },
+        {
+          "type": "attack",
+          "attacker": "Krieg",
+          "attacker_code": "OP15-001",
+          "target": "Monkey D. Luffy [\"OP13-001\">OP13-001]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": [
+            "OP16-004"
+          ]
+        },
+        {
+          "type": "attack",
+          "attacker": "Krieg",
+          "attacker_code": "OP15-008",
+          "target": "Roronoa Zoro [\"EB04-007\">EB04-007]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": [
+            "OP13-037"
+          ]
+        },
+        {
+          "type": "attach_don",
+          "amount": 5,
+          "to": "OP15-009",
+          "to_name": "Koby",
+          "total": 5
+        },
+        {
+          "type": "attack",
+          "attacker": "Koby",
+          "attacker_code": "OP15-009",
+          "target": "Monkey D. Luffy [\"OP13-001\">OP13-001]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": [
+            "OP10-011"
+          ]
+        },
+        {
+          "type": "attach_don",
+          "amount": 2,
+          "to": "OP15-027",
+          "to_name": "Dracule Mihawk",
+          "total": 2
+        },
+        {
+          "type": "attack",
+          "attacker": "Dracule Mihawk",
+          "attacker_code": "OP15-027",
+          "target": "Monkey D. Luffy [\"OP13-001\">OP13-001]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        }
+      ],
+      "snapshot": {
+        "You": {
+          "hand": [
+            "OP13-040"
+          ],
+          "board": [
+            "OP15-009",
+            "OP15-027",
+            "OP15-007",
+            "OP15-008"
+          ],
+          "trash": [
+            "OP15-026",
+            "OP15-026",
+            "OP12-027",
+            "OP15-023",
+            "OP15-017",
+            "OP15-007",
+            "OP15-009",
+            "OP15-017"
+          ],
+          "life": 3,
+          "deck": [
+            "OP15-023",
+            "OP15-025"
+          ],
+          "life_cards": [
+            "OP15-023",
+            "OP15-027",
+            "OP15-037"
+          ],
+          "don_cost": [
+            "Don"
+          ],
+          "attached_don": [
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don"
+          ],
+          "rested": {
+            "OP15-009": 1,
+            "OP15-027": 1,
+            "OP15-007": 1,
+            "OP15-008": 1
+          }
+        },
+        "Opponent": {
+          "hand": [
+            "OP13-027",
+            "OP14-022"
+          ],
+          "trash": [
+            "OP15-035",
+            "OP13-037",
+            "OP15-032",
+            "OP13-037",
+            "OP15-035",
+            "OP05-038",
+            "ST21-003",
+            "OP16-004",
+            "OP13-037",
+            "OP10-011"
+          ],
+          "board": [
+            "EB02-017",
+            "EB04-007",
+            "EB04-007",
+            "EB02-017"
+          ],
+          "life": 0,
+          "deck": [
+            "OP01-016",
+            "OP13-040",
+            "OP13-118",
+            "OP14-022",
+            "OP14-031",
+            "OP15-035"
+          ],
+          "don_cost": [
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don"
+          ],
+          "attached_don": [
+            "Don"
+          ],
+          "stage": [
+            "ST31-005"
+          ],
+          "rested_rz1": {
+            "don_cost": [
+              "Don",
+              "Don",
+              "Don",
+              "Don"
+            ],
+            "attached_don": [
+              "Don"
+            ]
+          },
+          "rested": {
+            "EB04-007": 2,
+            "EB02-017": 1
+          }
+        }
+      }
+    },
+    {
+      "turn": 12,
+      "player": "Opponent",
+      "card_drawn": null,
+      "don_drawn": 0,
+      "actions": [
+        {
+          "type": "play",
+          "card": "OP13-027",
+          "card_name": "Sanji",
+          "effects": [
+            "Activate 1 Don",
+            "Activate 1 Don",
+            "Activate 1 Don"
+          ]
+        },
+        {
+          "type": "activate",
+          "card": "ST31-005",
+          "card_name": "Thousand Sunny",
+          "effects": [
+            "Rest Thousand Sunny [\"ST31-005\">ST31-005]",
+            "Attach 1 Rested Don to Monkey D. Luffy [\"OP13-001\">OP13-001]"
+          ]
+        },
+        {
+          "type": "attack",
+          "attacker": "Monkey D. Luffy",
+          "attacker_code": "OP13-001",
+          "target": "Krieg [\"OP15-001\">OP15-001]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "attack",
+          "attacker": "Roronoa Zoro",
+          "attacker_code": "EB04-007",
+          "target": "Krieg [\"OP15-001\">OP15-001]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "attack",
+          "attacker": "Roronoa Zoro",
+          "attacker_code": "EB04-007",
+          "target": "Krieg [\"OP15-001\">OP15-001]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "attach_don",
+          "amount": 5,
+          "to": "EB02-017",
+          "to_name": "Nami",
+          "total": 5
+        },
+        {
+          "type": "attack",
+          "attacker": "Nami",
+          "attacker_code": "EB02-017",
+          "target": "Krieg [\"OP15-001\">OP15-001]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": [
+            "OP15-027"
+          ]
+        },
+        {
+          "type": "attach_don",
+          "amount": 2,
+          "to": "EB02-017",
+          "to_name": "Nami",
+          "total": 2
+        },
+        {
+          "type": "attack",
+          "attacker": "Nami",
+          "attacker_code": "EB02-017",
+          "target": "Koby [\"OP15-009\">OP15-009]",
+          "result": "hit",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": []
+        }
+      ],
+      "snapshot": {
+        "Opponent": {
+          "hand": [
+            "OP14-022",
+            "OP01-016"
+          ],
+          "board": [
+            "EB02-017",
+            "EB04-007",
+            "EB04-007",
+            "EB02-017",
+            "OP13-027"
+          ],
+          "trash": [
+            "OP15-035",
+            "OP13-037",
+            "OP15-032",
+            "OP13-037",
+            "OP15-035",
+            "OP05-038",
+            "ST21-003",
+            "OP16-004",
+            "OP13-037",
+            "OP10-011"
+          ],
+          "life": 0,
+          "deck": [
+            "OP13-040",
+            "OP13-118",
+            "OP14-022",
+            "OP14-031",
+            "OP15-035"
+          ],
+          "don_cost": [
+            "Don",
+            "Don"
+          ],
+          "attached_don": [
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don"
+          ],
+          "stage": [
+            "ST31-005"
+          ],
+          "rested_rz1": {
+            "attached_don": [
+              "Don"
+            ]
+          },
+          "rested": {
+            "EB02-017": 2,
+            "EB04-007": 2,
+            "OP13-027": 1
+          }
+        },
+        "You": {
+          "hand": [
+            "OP15-037"
+          ],
+          "trash": [
+            "OP15-026",
+            "OP15-026",
+            "OP12-027",
+            "OP15-023",
+            "OP15-017",
+            "OP15-007",
+            "OP15-009",
+            "OP15-017",
+            "OP13-040",
+            "OP15-027",
+            "OP15-009"
+          ],
+          "board": [
+            "OP15-027",
+            "OP15-007",
+            "OP15-008"
+          ],
+          "life": 1,
+          "deck": [
+            "OP15-023",
+            "OP15-025"
+          ],
+          "life_cards": [
+            "OP15-023"
+          ],
+          "don_cost": [
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don"
+          ],
+          "attached_don": [
+            "Don",
+            "Don",
+            "Don",
+            "Don"
+          ],
+          "rested_rz1": {
+            "don_cost": [
+              "Don",
+              "Don",
+              "Don",
+              "Don",
+              "Don",
+              "Don"
+            ]
+          },
+          "rested": {
+            "OP15-027": 1,
+            "OP15-007": 1,
+            "OP15-008": 1
+          }
+        }
+      }
+    },
+    {
+      "turn": 13,
+      "player": "You",
+      "card_drawn": null,
+      "don_drawn": 0,
+      "actions": [
+        {
+          "type": "attack",
+          "attacker": "Gin",
+          "attacker_code": "OP15-007",
+          "target": "Monkey D. Luffy [\"OP13-001\">OP13-001]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": [
+            "OP14-022",
+            "OP01-016"
+          ]
+        }
+      ],
+      "snapshot": {}
+    }
+  ]
+}

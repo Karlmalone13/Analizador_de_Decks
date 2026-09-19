@@ -9042,11 +9042,25 @@ class EffectExecutor:
             }
             dur = DUR_MAP.get(step.get('duration', 'until_opp_turn_end'), 'opp_turn_end')
 
-            candidates = [c for c in opp.field_chars
-                          if (cost_lte is None or c.cost <= cost_lte)
-                          and (power_lte is None or c.power <= power_lte)
-                          and (action != 'lock_opp_blocker_turn' or c.is_blocker())
-                          and (not exclude or exclude not in c.name.lower())]
+            # target='opp_leader': a trava mira o LIDER do oponente, nao os
+            # Characters (OP06-023, "Up to 1 of your opponent's rested Leader
+            # cannot attack until..."). O refresh do dono JA reseta
+            # `leader.cannot_attack_until` -- o motor sempre previu a trava no
+            # lider, e so este executor nunca a punha, porque so olhava
+            # `field_chars`. `only_rested` respeita o filtro de estado que a
+            # carta exige: sem ele a trava valeria tambem contra lider ativo,
+            # que e mais forte do que a carta permite.
+            if step.get('target') == 'opp_leader':
+                lider = getattr(opp, 'leader', None)
+                candidates = [lider] if lider is not None else []
+                if step.get('only_rested'):
+                    candidates = [c for c in candidates if getattr(c, 'rested', False)]
+            else:
+                candidates = [c for c in opp.field_chars
+                              if (cost_lte is None or c.cost <= cost_lte)
+                              and (power_lte is None or c.power <= power_lte)
+                              and (action != 'lock_opp_blocker_turn' or c.is_blocker())
+                              and (not exclude or exclude not in c.name.lower())]
 
             locked = []
             for _ in range(min(count, len(candidates))):

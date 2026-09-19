@@ -1,0 +1,56 @@
+{
+  "cards": [
+    {
+      "code": "OP15-009",
+      "name": "Koby",
+      "count": 2
+    },
+    {
+      "code": "OP15-027",
+      "name": "Dracule Mihawk",
+      "count": 2
+    },
+    {
+      "code": "OP15-026",
+      "name": "Jango",
+      "count": 2
+    },
+    {
+      "code": "OP15-017",
+      "name": "OP15-017",
+      "count": 2
+    },
+    {
+      "code": "OP15-007",
+      "name": "Gin",
+      "count": 2
+    },
+    {
+      "code": "OP12-027",
+      "name": "OP12-027",
+      "count": 1
+    },
+    {
+      "code": "OP15-008",
+      "name": "Krieg",
+      "count": 1
+    },
+    {
+      "code": "OP15-023",
+      "name": "OP15-023",
+      "count": 1
+    },
+    {
+      "code": "OP13-040",
+      "name": "OP13-040",
+      "count": 1
+    },
+    {
+      "code": "OP15-037",
+      "name": "OP15-037",
+      "count": 1
+    }
+  ],
+  "total_seen": 15,
+  "leader": "OP15-001"
+}

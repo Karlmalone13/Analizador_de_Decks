@@ -1,6 +1,45 @@
 # TODO — Analisador de Decks OPTCG
 
-**Última atualização:** 18 de setembro de 2026 (bloco 870)
+**Última atualização:** 19 de setembro de 2026 (bloco 871)
+
+> **CORRIGIDO -- a coleta pegava a partida ERRADA e abortava a telemetria
+> (19/09/2026, bloco 871)**, achado rodando tres CPU x CPU seguidas.
+>
+> **O OPTCGSim reescreve a SESSAO INTEIRA a cada fim de partida**, com o mesmo
+> mtime em todos os arquivos:
+>
+> ```
+> 22:43:06   22.43.05.log                          <- 1a partida
+> 23:57:43   23.57.39.log  +  _p2.log              <- 2a (a nova e a _p2)
+> 03:13:18   03.13.13.log  +  _p2.log  +  _p3.log  <- 3a (a nova e a _p3)
+> ```
+>
+> O arquivo BASE contem a partida ANTERIOR (com `[You] Quits!` e um cabecalho
+> `RZ1|HDR|` novo no fim). `_latest_log` usava `max(mtime)`, que EMPATA e
+> devolve o base. Ai `_validate_bank_entry` procurava no index um id que o
+> parser tinha pulado de proposito -- ja bancado, a trava por `impressao` do
+> bloco 856 -- e levantava excecao.
+>
+> **A gravidade estava SUBESTIMADA na primeira versao deste item.** Eu escrevi
+> "o risco nao e perder dado". **E.** A excecao aborta a coleta INTEIRA: toda
+> partida que nao e a primeira da sessao ficava SEM `live_`, `efeitos_`,
+> `consequence_` e `receipt_`. Medido no disco: as partidas 2 e 3 desta sessao
+> tinham ZERO artefato. O log bruto sobrevive; a telemetria nao -- e ela e dois
+> dos quatro itens da meta desta fase.
+>
+> **Fix**: agrupa pelo PREFIXO de sessao e escolhe o MAIOR sufixo, em vez de
+> confiar no mtime (o empate e o caso normal, e a ordem entre iguais nao e
+> garantida). `smoke_fast.py ::
+> test_coleta_escolhe_a_partida_NOVA_da_sessao_bloco_871`, 5 checagens, com
+> controle para a 1a partida (sem sufixo, o base vale) e para sessao antiga na
+> mesma pasta. **Verificado que o controle reprova a versao antiga**: ela
+> escolhia `03.13.13` em vez de `03.13.13_p3`.
+>
+> **ABERTO**: a telemetria das partidas 2 e 3 desta sessao nao existe como
+> artefato. A auditoria de efeitos foi reconstruida do decision log do server
+> (`decisions_2026-09-18T20.02.02.jsonl`, cobre as 3); `live_`/`consequence_`
+> das duas nao foram regeradas.
+
 
 > **CPU x CPU ACHOU DOIS BUGS E A AUDITORIA TINHA TRES PONTOS CEGOS
 > (18/09/2026, bloco 870)** -- os dois apontados pelo usuario na hora, os dois

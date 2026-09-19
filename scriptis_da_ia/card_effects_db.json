@@ -13098,6 +13098,24 @@
             "count": 2
           }
         ]
+      },
+      "main": {
+        "steps": [
+          {
+            "action": "draw",
+            "count": 2,
+            "up_to": true
+          }
+        ],
+        "conditions": {
+          "leader_type": "impel down"
+        },
+        "costs": [
+          {
+            "type": "trash_from_hand",
+            "count": 2
+          }
+        ]
       }
     }
   },
@@ -26122,6 +26140,23 @@
     "sub_types": "Fish-Man Arlong Pirates East Blue",
     "attribute": "Slash",
     "effects": {
+      "on_play": {
+        "steps": [
+          {
+            "action": "lock_opp_character_attack",
+            "count": 1,
+            "duration": "until_opp_turn_end",
+            "target": "opp_leader",
+            "only_rested": true
+          }
+        ],
+        "costs": [
+          {
+            "type": "trash_from_hand",
+            "count": 1
+          }
+        ]
+      },
       "trigger": {
         "steps": [
           {
@@ -30758,7 +30793,10 @@
             "action": "bounce",
             "count": 1,
             "target": "own_character",
-            "filter_type": "amazon lily"
+            "filter_type": [
+              "amazon lily",
+              "kuja pirates"
+            ]
           }
         ],
         "conditions": {
@@ -59336,6 +59374,15 @@
             "count": 1
           }
         ]
+      },
+      "on_ko": {
+        "steps": [
+          {
+            "action": "add_from_trash",
+            "count": 1,
+            "filter_name": "OP15-042"
+          }
+        ]
       }
     }
   },
@@ -69746,6 +69793,16 @@
     "sub_types": "Four Emperors/Big Mom Pirates",
     "attribute": "",
     "effects": {
+      "trigger": {
+        "steps": [
+          {
+            "action": "ko",
+            "count": 1,
+            "target": "opp_character",
+            "cost_lte": 6
+          }
+        ]
+      },
       "counter": {
         "steps": [
           {
@@ -71272,7 +71329,17 @@
     "color": "Green",
     "sub_types": "Fishman",
     "attribute": "Strike",
-    "effects": {}
+    "effects": {
+      "on_play": {
+        "steps": [
+          {
+            "action": "rest_opp_character",
+            "count": 1,
+            "cost_lte": 1
+          }
+        ]
+      }
+    }
   },
   "P-064": {
     "name": "Kozuki Momonosuke",
@@ -71456,7 +71523,26 @@
     "color": "Green",
     "sub_types": "MONSTERS",
     "attribute": "Slash",
-    "effects": {}
+    "effects": {
+      "on_play": {
+        "steps": [
+          {
+            "action": "rest_opp_character",
+            "count": 1,
+            "cost_lte": 4
+          }
+        ]
+      },
+      "on_ko": {
+        "steps": [
+          {
+            "action": "rest_opp_character",
+            "count": 1,
+            "cost_lte": 4
+          }
+        ]
+      }
+    }
   },
   "P-073": {
     "name": "Sabo",
@@ -71518,7 +71604,25 @@
     "color": "Black",
     "sub_types": "Supernova/Straw Hat Crew",
     "attribute": "Strike",
-    "effects": {}
+    "effects": {
+      "on_play": {
+        "steps": [
+          {
+            "action": "give_don",
+            "count": 1,
+            "rested": true
+          }
+        ]
+      },
+      "when_attacking": {
+        "steps": [
+          {
+            "action": "draw",
+            "count": 1
+          }
+        ]
+      }
+    }
   },
   "P-076": {
     "name": "Sakazuki",
@@ -71662,7 +71766,21 @@
     "color": "Purple",
     "sub_types": "Cross Guild",
     "attribute": "Slash",
-    "effects": {}
+    "effects": {
+      "activate_main": {
+        "steps": [
+          {
+            "action": "play_card",
+            "count": 1,
+            "cost_lte": 99
+          }
+        ],
+        "conditions": {
+          "chars_gte": 3,
+          "chars_gte_type_filter": "cross guild"
+        }
+      }
+    }
   },
   "P-082": {
     "name": "Crocodile",
@@ -71674,7 +71792,20 @@
     "color": "Blue",
     "sub_types": "Cross Guild/Former Baroque Works",
     "attribute": "Special",
-    "effects": {}
+    "effects": {
+      "on_play": {
+        "steps": [
+          {
+            "action": "place_opp_character_bottom_deck",
+            "count": 1
+          }
+        ],
+        "conditions": {
+          "leader_type_includes": "{crossguild} or {baroque works}",
+          "your_turn_only": true
+        }
+      }
+    }
   },
   "P-083": {
     "name": "Shanks",
@@ -82959,6 +83090,19 @@
     "sub_types": "Straw Hat Crew",
     "attribute": "Strike",
     "effects": {
+      "on_play": {
+        "steps": [
+          {
+            "action": "bounce",
+            "count": 99,
+            "target": "own_character",
+            "filter_type": [
+              "san-gorou",
+              "sanji"
+            ]
+          }
+        ]
+      },
       "passive": {
         "steps": [
           {

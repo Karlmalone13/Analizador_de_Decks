@@ -10367,6 +10367,243 @@ def test_aliases_do_simulador_resolvem_no_banco():
               for s in sunny.get("activate_main", {}).get("steps", [])))
 
 
+def test_dialeto_de_transcricao_das_promos_bloco_871() -> None:
+    """As promos (P-*) sao transcritas noutro dialeto que os sets numerados.
+
+    7 delas declaravam gatilho no texto oficial e o banco nao tinha efeito
+    NENHUM -- a acao nunca virava candidata, entao nao existia pro modelo. A
+    gramatica ja cobria o que elas dizem; falhava a ENTRADA. O conserto e uma
+    normalizacao no topo de `parse_card_effect`, medida carta a carta no banco
+    inteiro antes de entrar.
+
+    Este teste fixa as FORMAS, nao as cartas: se a proxima promo chegar com a
+    mesma variante e palavras diferentes, ela cai aqui.
+
+    Os dois ultimos casos sao CONTROLE -- reprovam as versoes AMPLAS que o
+    gate global derrubou. Sem eles, alguem "simplifica" a regra e volta a
+    quebrar plural legitimo em 5 cartas, em silencio.
+    """
+    from gerar_effects_db import parse_card_effect
+
+    def chaves(txt, tipo="Character"):
+        return sorted((parse_card_effect(txt, tipo) or {}).keys())
+
+    # --- uma forma por caso, com o texto REAL das cartas que as revelaram
+    check("numeral por extenso: 'up to one' vale como 'up to 1' (P-063)",
+          "on_play" in chaves(
+              "[On Play] Rest up to one of your opponent's characters "
+              "with a cost of 1 or less."))
+
+    check("duas tags de gatilho coladas valem pelas duas (P-072)",
+          chaves("[On Play] [On K.O.] Rest up to one of your opponents "
+                 "cost 4 or less characters.") == ["on_ko", "on_play"])
+
+    check("'N rested DON!!' sem a palavra 'card' (P-075)",
+          "on_play" in chaves(
+              "[On Play] Give your leader or one of your characters "
+              "up to one rested Don!!"))
+
+    check("chaves no lugar de colchetes no tipo (P-081)",
+          "activate_main" in chaves(
+              "[Activate: Main] You may return this character to your hand: "
+              "If you have 3 or more {Cross Guild} type characters in play, "
+              "you may play up to one cost 5 {Cross Guild} type character "
+              "from your hand."))
+
+    check("[During Your Turn] + power invertido + 'its owners deck' (P-082)",
+          "on_play" in chaves(
+              "[During Your Turn] [On Play] If your leaders type includes "
+              "{Crossguild} or {Baroque Works}, place up to one of your "
+              "opponents power 2000 or lower characters on the bottom of "
+              "its owners deck."))
+
+    # --- CONTROLE 1: a regra do genitivo NAO pode tocar plural legitimo.
+    # Na versao ampla, "Leaders or Characters" virava "Leader's or
+    # Characters" e quebrava 5 cartas que hoje passam.
+    plural = parse_card_effect(
+        "[On Play] Give up to 1 rested DON!! card to 1 of your Leaders "
+        "or Characters.", "Character") or {}
+    check("CONTROLE: 'Leaders or Characters' (plural) continua sendo lido",
+          "on_play" in plural)
+
+    # --- CONTROLE 2: a regra do DON!! NAO pode invadir a forma que o parser
+    # de transferencia ja le inteira -- senao a MESMA clausula vira dois
+    # passos (transfer_don E give_don), que e um efeito executado em dobro.
+    st = parse_card_effect(
+        '[Activate:Main] Rest this stage: Give up to 1 of your '
+        '"Monkey D. Luffy" up to 1 rested DON!!', "Stage") or {}
+    passos = [p.get("action") for p in (st.get("activate_main") or {}).get("steps", [])]
+    check("CONTROLE: clausula de transferencia NAO vira transfer_don + give_don",
+          not ("transfer_don" in passos and "give_don" in passos))
+
+
+
+def test_quatro_formas_de_gatilho_ausente_bloco_871() -> None:
+    """As 4 formas que sobraram do lote das 12 cartas cegas (bloco 870).
+
+    Cada uma e uma GRAMATICA que faltava, nao dialeto: o gatilho inteiro
+    sumia do banco, entao a acao nunca virava candidata e nao existia pro
+    modelo -- nenhum corpus maior alcanca isso.
+
+    Os controles no fim valem tanto quanto os casos: dois erros meus foram
+    pegos por eles durante a construcao (o `.{0,15}` guloso comendo a palavra
+    'rested', e o filtro de tipo indo pra lista quando deveria continuar
+    string com uma tag so).
+    """
+    from gerar_effects_db import parse_card_effect, _resolve_self_only
+
+    def bloco(txt, gatilho, tipo="Character"):
+        return (parse_card_effect(txt, tipo) or {}).get(gatilho)
+
+    # --- A. "draw up to N cards" (OP02-066): o quantificador no draw fazia o
+    #        bloco [Main] inteiro nao existir.
+    main = bloco("[Main] You may trash 2 cards from your hand: If your Leader "
+                 "has the [Impel Down] type, draw up to 2 cards.", "main", "Event")
+    check("A: 'draw up to N' vira step de draw",
+          bool(main) and main["steps"][0]["action"] == "draw")
+    check("A: o quantificador fica anotado (up_to)",
+          bool(main) and main["steps"][0].get("up_to") is True)
+    check("A: o custo antes do ':' continua sendo CUSTO, nao efeito",
+          bool(main) and main.get("costs") == [{"type": "trash_from_hand", "count": 2}])
+    sem = bloco("[Main] Draw 2 cards.", "main", "Event")
+    check("A CONTROLE: 'draw N' (sem 'up to') NAO ganha up_to",
+          bool(sem) and "up_to" not in sem["steps"][0])
+
+    # --- B. "cannot attack" mirando o LEADER (OP06-023): o regex exigia a
+    #        palavra 'characters'.
+    op = bloco("[On Play] You may trash 1 card from your hand: Up to 1 of your "
+               "opponent's rested Leader cannot attack until the end of your "
+               "opponent's next turn.", "on_play")
+    check("B: a trava de ataque mira o lider do oponente",
+          bool(op) and op["steps"][0].get("target") == "opp_leader")
+    check("B: o qualificador 'rested' e PRESERVADO",
+          bool(op) and op["steps"][0].get("only_rested") is True)
+    sem_rested = bloco("[On Play] Up to 1 of your opponent's Leader cannot "
+                       "attack until the end of your opponent's next turn.", "on_play")
+    check("B CONTROLE: sem 'rested' no texto, NAO inventa only_rested",
+          bool(sem_rested) and "only_rested" not in sem_rested["steps"][0])
+
+    # --- C. "Add this card from your trash" (OP15-042): auto-referencia.
+    efeitos = parse_card_effect(
+        "[On K.O.] Add this Character card from your trash to your hand.", "Character")
+    ko = (efeitos or {}).get("on_ko")
+    check("C: auto-referencia vira add_from_trash",
+          bool(ko) and ko["steps"][0]["action"] == "add_from_trash")
+    check("C: o parser marca self_only (o codigo ele nao conhece)",
+          bool(ko) and ko["steps"][0].get("self_only") is True)
+    resolvido = _resolve_self_only(efeitos, "OP15-042")
+    passo = resolvido["on_ko"]["steps"][0]
+    check("C: o gerador resolve self_only -> filter_name com o codigo real",
+          passo.get("filter_name") == "OP15-042" and "self_only" not in passo)
+
+    # --- D. "Return all of your [X] and [Y] Characters" (ST26-001): tres
+    #        variacoes de uma vez (quantificador, 'type' ausente, 2 tags).
+    d = bloco("[On Play] Return all of your [San-Gorou] and [Sanji] Characters "
+              "to the owner's hand.", "on_play")
+    check("D: 'all of' vira count=99 (a convencao ja usada pra 'all')",
+          bool(d) and d["steps"][0].get("count") == 99)
+    check("D: as DUAS tags viram filtro (lista, semantica OR em eligible_cards)",
+          bool(d) and d["steps"][0].get("filter_type") == ["san-gorou", "sanji"])
+    check("D: o alvo e o PROPRIO lado",
+          bool(d) and d["steps"][0].get("target") == "own_character")
+    uma_tag = bloco("[On Play] Return up to 1 of your [Sanji] type Characters "
+                    "to the owner's hand.", "on_play")
+    check("D CONTROLE: com UMA tag o filtro continua string, nao vira lista",
+          bool(uma_tag) and uma_tag["steps"][0].get("filter_type") == "sanji")
+
+
+
+def test_coleta_escolhe_a_partida_NOVA_da_sessao_bloco_871() -> None:
+    """O OPTCGSim reescreve a SESSAO INTEIRA a cada fim de partida.
+
+    Medido em 19/09/2026, tres partidas seguidas:
+
+        22:43:06   22.43.05.log                          <- 1a
+        23:57:43   23.57.39.log  +  _p2.log              <- 2a (nova = _p2)
+        03:13:18   03.13.13.log  +  _p2.log  +  _p3.log  <- 3a (nova = _p3)
+
+    Todos com o MESMO mtime. O base contem a partida ANTERIOR. `max(mtime)`
+    empatava e devolvia o base; `_validate_bank_entry` entao procurava no index
+    um id que o parser tinha pulado de proposito (ja bancado, trava do bloco
+    856) e a excecao abortava a coleta INTEIRA -- as partidas 2 e 3 ficaram sem
+    `live_`, `efeitos_`, `consequence_` e `receipt_`.
+
+    O ultimo caso e o CONTROLE: sem sufixo nenhum, o base E a partida da vez.
+    Sem ele, alguem "simplifica" para sempre pegar o maior sufixo e quebra a
+    primeira partida de toda sessao.
+    """
+    import os
+    import tempfile
+    import time
+    from pathlib import Path as _P
+
+    import collect_latest_match as clm
+
+    def monta(nomes):
+        d = _P(tempfile.mkdtemp())
+        agora = time.time()
+        for n in nomes:
+            f = d / n
+            f.write_text("x", encoding="utf-8")
+            os.utime(f, (agora, agora))      # mtime IDENTICO, como o jogo faz
+        return d
+
+    d = monta(["2026-09-19T03.13.13.log",
+               "2026-09-19T03.13.13_p2.log",
+               "2026-09-19T03.13.13_p3.log"])
+    check("3 partidas na sessao: escolhe a _p3 (a que acabou), nao o base",
+          clm._latest_log(d).stem == "2026-09-19T03.13.13_p3")
+
+    d = monta(["2026-09-18T23.57.39.log", "2026-09-18T23.57.39_p2.log"])
+    check("2 partidas na sessao: escolhe a _p2",
+          clm._latest_log(d).stem == "2026-09-18T23.57.39_p2")
+
+    # CONTROLE: primeira partida da sessao -- nao existe sufixo, e o base vale
+    d = monta(["2026-09-18T22.43.05.log"])
+    check("CONTROLE: 1a partida da sessao continua sendo o proprio base",
+          clm._latest_log(d).stem == "2026-09-18T22.43.05")
+
+    # CONTROLE: sessao ANTIGA junto na pasta nao pode roubar a escolha
+    d = monta(["2026-09-01T10.00.00.log", "2026-09-01T10.00.00_p9.log"])
+    novo = d / "2026-09-19T03.13.13.log"
+    novo.write_text("x", encoding="utf-8")
+    agora = time.time() + 5
+    os.utime(novo, (agora, agora))
+    check("CONTROLE: sufixo alto de OUTRA sessao nao rouba a escolha",
+          clm._latest_log(d).stem == "2026-09-19T03.13.13")
+
+    check("_sessao_e_ordem separa prefixo e ordem",
+          clm._sessao_e_ordem("2026-09-19T03.13.13_p3") == ("2026-09-19T03.13.13", 3)
+          and clm._sessao_e_ordem("2026-09-19T03.13.13") == ("2026-09-19T03.13.13", 1))
+
+    # --- A CORRIDA: o `_pN` da partida nova aparece DEPOIS que a coleta comeca
+    #
+    # Foi o que derrubou a 1a versao deste fix, ao vivo (19/09/2026): o
+    # desempate ja estava certo, mas no instante do `/outcome` o `_p4` ainda
+    # nao existia no disco, entao o maior sufixo disponivel era o BASE -- a
+    # PRIMEIRA partida da sessao. Esperar o arquivo escolhido estabilizar nao
+    # cobre isso, porque a escolha acontece antes.
+    import threading
+
+    d = monta(["2026-09-19T09.52.03.log", "2026-09-19T09.52.03_p2.log"])
+
+    def escreve_tarde():
+        time.sleep(1.5)
+        f = d / "2026-09-19T09.52.03_p4.log"
+        f.write_text("x", encoding="utf-8")
+        agora2 = time.time()
+        os.utime(f, (agora2, agora2))
+
+    t = threading.Thread(target=escreve_tarde, daemon=True)
+    t.start()
+    escolhido = clm._latest_log(d).stem
+    t.join(timeout=5)
+    check("CORRIDA: espera o conjunto da sessao parar de crescer antes de escolher",
+          escolhido == "2026-09-19T09.52.03_p4")
+
+
+
+
 def main() -> int:
     test_big_mom_optional_zero_parser_order_and_don_synergy()
     test_is_active_turn_corrigido_evita_don_minus_desnecessario()
@@ -10443,6 +10680,9 @@ def main() -> int:
     test_win_prob_lote_da_o_mesmo_que_uma_por_vez_bloco_787()
     test_clone_preserva_once_per_turn_bloco_788()
     test_modelo_decide_o_bloqueio_bloco_792()
+    test_dialeto_de_transcricao_das_promos_bloco_871()
+    test_quatro_formas_de_gatilho_ausente_bloco_871()
+    test_coleta_escolhe_a_partida_NOVA_da_sessao_bloco_871()
     test_opponent_model_for_leader_fallback_3_camadas()
     test_play_card_aninhado_credita_valor_da_carta_trazida()
     test_search_contextual_evita_congestionar_mao_com_bombas()

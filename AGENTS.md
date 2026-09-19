@@ -239,6 +239,16 @@ Regras-chave (resumo — leia o resto deste arquivo):
 > python corpus_git.py exporta     # so o corpus
 > ```
 >
+> **AO IMPORTAR, CONFIRA O DELTA** (armadilha paga em 18/09/2026): o numero que
+> o `importa` soma tem que bater com o que o `status` anunciou. Naquele dia o
+> status disse 687 linhas e o import somou **698.838** -- o corpus foi de
+> 699.230 para 1.398.068, **698.222 duplicadas**, sem erro nenhum. Causa: o
+> guarda contra reaplicar fatia era tudo-ou-nada por origem, e uma fatia de
+> backfill com uma origem incompleta era anexada POR INTEIRO. Corrigido no
+> mecanismo (reconciliacao linha a linha, `teste_corpus_git.py` com o controle
+> que reprova a versao antiga). **Se ja duplicou, NAO deduplique por hash** --
+> 3,7% do corpus sao repeticoes legitimas; trunque de volta e reimporte.
+>
 > **OS LOGS NAO SAO ZIPADOS, e a medicao explica** (18/09): `logs/` tem 27,0 MB
 > em disco e **1,7 MB dentro do .git** -- exatamente o que um `tar.gz` daria. O
 > git ja comprime na mesma taxa. Zipar nao economizaria um byte e quebraria as
@@ -260,6 +270,41 @@ Regras-chave (resumo — leia o resto deste arquivo):
 > **AO TERMINAR O PROJETO, as fatias saem do git** (pedido do usuario, 18/09):
 > sao andaime, nao entregavel. Exige reescrita de historico e o corpus salvo
 > fora antes -- operacao combinada, nunca por iniciativa de sessao.
+
+### QUAL MODELO, E A SESSAO AVISA NA HORA (usuario, 19/09/2026)
+
+> *"para eu saber tb quando usar o oppus"* · *"consegue por esses modelos na
+> hora certa para eu nao esquecer?"*
+
+**Opus quando o problema e de RACIOCINIO. Sonnet quando o trabalho e de
+EXECUCAO.**
+
+| vale Opus | nao precisa |
+|---|---|
+| diagnostico cuja causa nao e obvia | rodar partida, dirigir o jogo |
+| decidir a FORMA de um fix | ler telemetria ja formatada |
+| ler evidencia contraditoria | `smoke_fast`/`diff_parser`/`gerar_dbs` |
+| mexer em regra de projeto/arquitetura | commit, push, escrever HANDOFF |
+
+**Regra de bolso**: se da pra dizer de antemao qual e o proximo passo, e
+Sonnet. Se a pergunta e *"por que isso esta acontecendo?"* ou *"isso esta
+certo?"*, e Opus.
+
+**O MODELO PESA MENOS QUE O TAMANHO DA SESSAO.** Cada turno reenvia a conversa
+inteira, entao o custo por turno cresce com o contexto: Opus numa sessao de
+30k custa menos que Sonnet numa de 540k. Medido em 19/09: UMA sessao chegou a
+540k tokens (54% da janela de 1M) e consumiu sozinha quase toda a cota semanal
+do Pro em dois dias -- agravada por pausas de 1-6h, que quebram o cache de
+contexto e forcam releitura a preco cheio. **A ordem e: (1) sessao curta,
+(2) escolha do modelo.**
+
+**OBRIGACAO DA SESSAO** (e o "na hora certa" que ele pediu): quando o proximo
+passo for trabalho de EXECUCAO -- gerar partidas em serie, rodar suite, fechar
+sessao -- **diga em uma linha que aquilo nao precisa de Opus**, em vez de
+deixar o usuario lembrar sozinho. Rotina sugerida: gerar partidas em Sonnet
+(ciclo repetitivo, e volume e o que o ML precisa) e abrir sessao Opus quando a
+telemetria apontar algo estranho, levando so o bloco do HANDOFF e o relatorio
+da partida -- nao o historico.
 
 ---
 
@@ -1376,6 +1421,46 @@ ML só se 1-3 baterem teto).
   `BepInEx` inteira quando atualiza (já aconteceu, 09/07/2026). Feche o
   jogo e rode `BOT\setup_bepinex.bat` (reinstala BepInEx + recompila/copia
   o plugin, sem precisar de internet). Ver `BOT/README.md`.
+
+### CPU x CPU em sequencia: NUNCA use `Rematch` (usuario, 18/09/2026)
+
+> **O botao `Rematch` do OPTCGSim NAO comeca um combat log novo -- ele CONTINUA
+> acumulando no mesmo arquivo.** Para uma partida por log, o caminho e
+> `Back to Main Menu` -> `Solo v Self` -> `Shift+C` -> `Start`, toda vez.
+
+Um log com duas partidas coladas corrompe tudo que le `logs/parsed/*.json` por
+partida: contagem de turnos, winrate, telemetria por `match_id` e o corpus de
+alvos. **E a explicacao provavel de dois achados ja pagos**: o bloco 856 ("o
+BANCO estava RE-BANCANDO a mesma partida: 241 arquivos eram 195") e o bloco 860
+("a 13a falha semantica comparava DUAS PARTIDAS") sao os dois sintomas de log
+com mais de uma partida dentro.
+
+Se um log aparecer com turnos demais ou dois mulligans, **desconfie disto antes
+de procurar bug no motor**.
+
+**NUANCE MEDIDA (19/09/2026, duas partidas seguidas):** o `Back to Main`
+**tambem** mexe no arquivo da partida anterior -- ao voltar ao menu o jogo
+acrescentou `[You] Quits!` e um cabecalho `RZ1|HDR|` novo (458 bytes alem do
+`GameOver`). A diferenca que importa: com `Back to Main` a partida NOVA sai em
+**arquivo proprio** (`<ts>_p2.log`) em vez de concatenada. A regra continua
+valendo; o que muda e saber que o arquivo antigo nao fica intocado.
+
+**CONSEQUENCIA: o alerta abaixo pode ser ALARME FALSO.**
+
+```
+[AUTO-COLLECT] falhou: parser terminou sem registrar id=<ts> no index
+```
+
+Ao fim da 2a partida o jogo escreve DOIS arquivos com o mesmo timestamp: o
+base (conteudo da partida ANTERIOR, ja bancada) e o `_p2` (a partida nova). O
+parser calcula a impressao do base, reconhece a partida ja bancada e pula --
+corretamente, e a trava do bloco 856. Mas o auto-collect confere o sucesso
+procurando o **id BASE** no index, que nunca entra. Resultado: diz "falhou"
+tendo dado certo.
+
+**Antes de re-bancar na mao, confira o index pelo `_p2`.** Caso real:
+`2026-09-18T23.57.39_p2` = `Marshall.D.Teach-BY_x_Portgas.D.Ace-R`, 12 turnos,
+integro. Nada se perdeu. **Corrigir a checagem esta no `TODO.md`.**
 
 ## Banco de logs de partidas reais — OBRIGATÓRIO salvar
 

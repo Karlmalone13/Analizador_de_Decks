@@ -122,6 +122,37 @@ python sincroniza.py chega     # ao sentar na outra máquina
 | `entrega` | exporta a fatia do corpus + **versiona todo log que o `index.json` referencia e o git não tem** |
 | `chega` | `git pull --ff-only` + importa as fatias + confere se todo log referenciado chegou |
 
+#### AO IMPORTAR, CONFIRA O DELTA CONTRA O QUE O `status` ANUNCIOU
+
+> **Armadilha paga em 18/09/2026** — é a razão de esta checagem existir.
+
+```bash
+python corpus_git.py status      # anota o "A IMPORTAR: N linhas"
+python corpus_git.py importa     # a última linha diz "+M linhas"
+```
+
+**`M` tem que bater com `N`.** Se o import somar muito mais do que o `status`
+anunciou, ele duplicou — pare e não treine. Um corpus com linhas repetidas não
+dá erro: só treina um modelo pior, e ninguém liga a causa ao efeito.
+
+**O que aconteceu**: o `status` anunciou 687 linhas a importar e o import
+somou **698.838** — o corpus foi de 699.230 para 1.398.068 linhas, **698.222
+duplicadas**. A fatia era um *backfill* com 3 origens: duas já completas nesta
+máquina e uma faltando 616 linhas. O guarda contra reaplicar era tudo-ou-nada
+por origem (`all(locais[o] >= aplicadas[o] + n ...)`), então a origem
+incompleta reprovou o `all(...)` e a fatia **inteira** foi anexada.
+
+**Corrigido no mecanismo**, não só aqui: o import agora reconcilia **linha a
+linha** contra um multiconjunto das linhas locais das mesmas origens — presente,
+pula; ausente, anexa. Repetição legítima sobrevive porque a contagem é por
+multiplicidade. `teste_corpus_git.py` tem o controle que **reprova a versão
+antiga** (verificado: ela produz 7 linhas onde o certo são 4).
+
+**Se já duplicou**: não deduplique por hash — o corpus real tem 3,7% de linhas
+repetidas **legítimas** (candidatos idênticos na mesma decisão). O conserto é
+truncar de volta ao número de linhas anterior (o corpus só cresce por acréscimo,
+então o começo está intacto) e reimportar.
+
 `entrega` **não commita nem empurra**, de propósito: o `pre-push` exige bloco de
 `HANDOFF.md`/`TODO.md`, e isso é trabalho de sessão. Ele prepara e diz o que falta.
 
@@ -214,6 +245,8 @@ atualizada.
 2. **Na que está entrando**: `git pull`.
 3. Conferir, ANTES de rodar qualquer coisa:
    * o corpus tem o volume esperado e todas as linhas têm `origem`;
+   * **o que o `importa` somou bate com o que o `status` anunciou** (seção
+     *AO IMPORTAR, CONFIRA O DELTA* acima — duplicar não dá erro);
    * `ciclo_estado.json` indica o próximo ciclo (a seed sai dele);
    * `scikit-learn` na versão do `requirements.txt` e `q_net.joblib` abre sem
      erro.

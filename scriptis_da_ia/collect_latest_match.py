@@ -8,6 +8,7 @@ from __future__ import annotations
 import argparse
 import json
 import os
+import re
 import shutil
 import subprocess
 import sys
@@ -40,11 +41,78 @@ _env_autosaved = os.environ.get("OPTCGSIM_AUTOSAVED_DIR")
 DEFAULT_AUTOSAVED = Path(_env_autosaved) if _env_autosaved else combat_logs_dir()
 
 
+def _sessao_e_ordem(stem: str) -> tuple[str, int]:
+    """`2026-09-19T03.13.13_p3` -> (`2026-09-19T03.13.13`, 3); sem sufixo -> 1."""
+    m = re.search(r"_p(\d+)$", stem)
+    if m:
+        return stem[: m.start()], int(m.group(1))
+    return stem, 1
+
+
+def _escolhe_da_sessao(directory: Path, tentativas: int = 15,
+                       intervalo: float = 1.0) -> Path:
+    """Espera o CONJUNTO de arquivos da sessao parar de crescer, e so entao
+    escolhe o de maior sufixo.
+
+    Esperar o arquivo ESCOLHIDO estabilizar (`_wait_stable`) nao basta: a
+    escolha acontece ANTES, e o `/outcome` chega enquanto o jogo ainda esta
+    escrevendo a sessao. Medido em 19/09/2026: na 4a partida o `_p4` ainda nao
+    existia no instante da coleta, entao o maior sufixo disponivel era o BASE
+    (a 1a partida) -- e a validacao falhou procurando um id que o parser
+    pulara por ja estar bancado.
+
+    Dois sinais de estabilidade, porque um so nao cobre: a QUANTIDADE de
+    irmaos (um `_pN` novo aparecendo) e o MAIOR SUFIXO. Duas leituras iguais
+    seguidas bastam, mesmo criterio do `_wait_stable`.
+    """
+    anterior = None
+    estavel = 0
+    escolhido = None
+    for _ in range(tentativas):
+        candidatos = [p for p in directory.glob("*.log") if p.is_file()]
+        if not candidatos:
+            raise FileNotFoundError(f"nenhum .log encontrado em {directory}")
+        mais_novo = max(candidatos, key=lambda p: p.stat().st_mtime)
+        prefixo, _ = _sessao_e_ordem(mais_novo.stem)
+        irmaos = [p for p in candidatos if _sessao_e_ordem(p.stem)[0] == prefixo]
+        escolhido = max(irmaos, key=lambda p: _sessao_e_ordem(p.stem)[1])
+        agora = (prefixo, len(irmaos), _sessao_e_ordem(escolhido.stem)[1])
+        estavel = estavel + 1 if agora == anterior else 0
+        if estavel >= 2:
+            return escolhido
+        anterior = agora
+        time.sleep(intervalo)
+    # Nao levanta: devolve a melhor escolha conhecida. Bancar o log e o
+    # trabalho critico e nao pode cair porque a espera esgotou -- a validacao
+    # logo a seguir ainda diz se algo saiu errado.
+    return escolhido
+
+
 def _latest_log(directory: Path, max_age_seconds: int = 1800) -> Path:
-    candidates = [p for p in directory.glob("*.log") if p.is_file()]
-    if not candidates:
-        raise FileNotFoundError(f"nenhum .log encontrado em {directory}")
-    latest = max(candidates, key=lambda p: p.stat().st_mtime)
+    """O combat log da partida que ACABOU de terminar.
+
+    O OPTCGSim reescreve a SESSAO INTEIRA a cada fim de partida, sempre com o
+    mesmo timestamp e o mesmo mtime (medido 19/09/2026):
+
+        22:43:06   22.43.05.log                          <- 1a partida
+        23:57:43   23.57.39.log  +  _p2.log              <- 2a (a nova e a _p2)
+        03:13:18   03.13.13.log  +  _p2.log  +  _p3.log  <- 3a (a nova e a _p3)
+
+    O arquivo BASE contem a partida ANTERIOR (com `[You] Quits!` e um cabecalho
+    `RZ1|HDR|` novo colados no fim quando se volta ao menu). A partida NOVA e
+    sempre a de MAIOR sufixo.
+
+    `max(mtime)` empatava e devolvia o base, e ai `_validate_bank_entry`
+    procurava no index um id que o parser tinha -- corretamente -- pulado por
+    ja estar bancado (a trava por `impressao` do bloco 856). A excecao abortava
+    a coleta INTEIRA: as partidas 2 e 3 da sessao de 18-19/09 ficaram sem
+    `live_`, `efeitos_`, `consequence_` e `receipt_`. O log bruto sobrevivia; a
+    telemetria, nao -- e ela e dois dos quatro itens da meta desta fase.
+
+    Agrupa pelo PREFIXO de sessao em vez de confiar no mtime exato, porque o
+    empate e o caso normal e a ordem entre iguais nao e garantida.
+    """
+    latest = _escolhe_da_sessao(directory)
     age = time.time() - latest.stat().st_mtime
     if age > max_age_seconds:
         raise FileNotFoundError(

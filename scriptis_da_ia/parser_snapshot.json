@@ -8277,6 +8277,24 @@
   }
  },
  "OP02-066": {
+  "main": {
+   "conditions": {
+    "leader_type": "impel down"
+   },
+   "costs": [
+    {
+     "count": 2,
+     "type": "trash_from_hand"
+    }
+   ],
+   "steps": [
+    {
+     "action": "draw",
+     "count": 2,
+     "up_to": true
+    }
+   ]
+  },
   "trigger": {
    "steps": [
     {
@@ -16505,6 +16523,23 @@
   }
  },
  "OP06-023": {
+  "on_play": {
+   "costs": [
+    {
+     "count": 1,
+     "type": "trash_from_hand"
+    }
+   ],
+   "steps": [
+    {
+     "action": "lock_opp_character_attack",
+     "count": 1,
+     "duration": "until_opp_turn_end",
+     "only_rested": true,
+     "target": "opp_leader"
+    }
+   ]
+  },
   "trigger": {
    "steps": [
     {
@@ -19458,7 +19493,10 @@
     {
      "action": "bounce",
      "count": 1,
-     "filter_type": "amazon lily",
+     "filter_type": [
+      "amazon lily",
+      "kuja pirates"
+     ],
      "target": "own_character"
     }
    ]
@@ -37728,6 +37766,15 @@
   }
  },
  "OP15-042": {
+  "on_ko": {
+   "steps": [
+    {
+     "action": "add_from_trash",
+     "count": 1,
+     "filter_name": "OP15-042"
+    }
+   ]
+  },
   "on_play": {
    "conditions": {
     "leader_is": "rebecca"
@@ -44720,6 +44767,16 @@
      "target": "self"
     }
    ]
+  },
+  "trigger": {
+   "steps": [
+    {
+     "action": "ko",
+     "cost_lte": 6,
+     "count": 1,
+     "target": "opp_character"
+    }
+   ]
   }
  },
  "OP17-118": {
@@ -44748,6 +44805,16 @@
   }
  },
  "OP17-119": {
+  "on_play": {
+   "steps": [
+    {
+     "action": "ko",
+     "count": 99,
+     "target": "opp_character",
+     "total_cost_lte": 4
+    }
+   ]
+  },
   "passive": {
    "steps": [
     {
@@ -45512,7 +45579,17 @@
    ]
   }
  },
- "P-063": {},
+ "P-063": {
+  "on_play": {
+   "steps": [
+    {
+     "action": "rest_opp_character",
+     "cost_lte": 1,
+     "count": 1
+    }
+   ]
+  }
+ },
  "P-064": {},
  "P-065": {
   "when_attacking": {
@@ -45597,7 +45674,26 @@
    ]
   }
  },
- "P-072": {},
+ "P-072": {
+  "on_ko": {
+   "steps": [
+    {
+     "action": "rest_opp_character",
+     "cost_lte": 4,
+     "count": 1
+    }
+   ]
+  },
+  "on_play": {
+   "steps": [
+    {
+     "action": "rest_opp_character",
+     "cost_lte": 4,
+     "count": 1
+    }
+   ]
+  }
+ },
  "P-073": {
   "activate_main": {
    "once_per_turn": true,
@@ -45626,7 +45722,25 @@
    ]
   }
  },
- "P-075": {},
+ "P-075": {
+  "on_play": {
+   "steps": [
+    {
+     "action": "give_don",
+     "count": 1,
+     "rested": true
+    }
+   ]
+  },
+  "when_attacking": {
+   "steps": [
+    {
+     "action": "draw",
+     "count": 1
+    }
+   ]
+  }
+ },
  "P-076": {
   "activate_main": {
    "costs": [
@@ -45704,8 +45818,35 @@
   }
  },
  "P-080": {},
- "P-081": {},
- "P-082": {},
+ "P-081": {
+  "activate_main": {
+   "conditions": {
+    "chars_gte": 3,
+    "chars_gte_type_filter": "cross guild"
+   },
+   "steps": [
+    {
+     "action": "play_card",
+     "cost_lte": 99,
+     "count": 1
+    }
+   ]
+  }
+ },
+ "P-082": {
+  "on_play": {
+   "conditions": {
+    "leader_type_includes": "{crossguild} or {baroque works}",
+    "your_turn_only": true
+   },
+   "steps": [
+    {
+     "action": "place_opp_character_bottom_deck",
+     "count": 1
+    }
+   ]
+  }
+ },
  "P-083": {
   "when_attacking": {
    "costs": [
@@ -52601,6 +52742,19 @@
   }
  },
  "ST26-001": {
+  "on_play": {
+   "steps": [
+    {
+     "action": "bounce",
+     "count": 99,
+     "filter_type": [
+      "san-gorou",
+      "sanji"
+     ],
+     "target": "own_character"
+    }
+   ]
+  },
   "passive": {
    "conditions": {
     "other_char_power_gte": 7000,
