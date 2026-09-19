@@ -1,5 +1,65 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-09-19 (879) - O MODO 'BUSCA' COLETAVA ZERO ALVOS DESDE O BLOCO 811, E O CICLO 4 NAO GEROU DADO NENHUM
+
+Sessao Claude (Sonnet 5), continuacao imediata do bloco 878. Rodei o ciclo
+pedido pelo usuario com TODAS as mudancas da sessao juntas (busca em vez de
+bootstrap, explorar 0,17, folds/amostra novos) -- e o "gera" terminou
+suspeito: **29s pra 40 partidas em modo busca**, quando bootstrap levava
+~250s pro mesmo volume (busca deveria ser ~3,8x MAIS LENTO, nao mais rapido).
+`alvos_corpus` do ciclo 4 saiu **identico** ao ciclo 3 (721.008) -- confirmado
+com `wc -l`: o arquivo nem mudou de mtime. **O ciclo gerou ZERO alvos novos.**
+
+### A causa: bloco 811 deixou o modo 'busca' inalcancavel, silenciosamente
+
+Isolei com `gerar_selfplay_dataset.py --n 2` direto: bootstrap deu 1028
+alvos, busca deu **0**, sem erro nenhum. A captura do modo 'busca' vivia SO
+dentro do trecho `_ensina` (`_select_action_via_search_inner`,
+decision_engine.py), que fica DEPOIS do bloco "O Q DECIDE" (bloco 811, "sem
+chave e sem alternativa: e o UNICO decisor"). Esse bloco **retorna assim
+que carrega um `q_net.joblib` valido** -- e sempre ha um em producao, desde
+o primeiro ciclo (`metrics/q_net.joblib` existe desde 13/09). Ou seja: o
+trecho `_ensina` ficou **permanentemente inalcancavel** desde que o bloco
+811 foi mergeado, e ninguem notou porque `Q_ALVO_MODO` ja tinha virado
+'bootstrap' por default no mesmo periodo (bloco 799) -- a combinacao das
+duas mudancas nunca foi testada junta ate eu ligar 'busca' de volta hoje.
+
+A captura de bootstrap nunca teve esse problema porque roda ANTES do bloco
+"O Q DECIDE", nao depois.
+
+### Fix
+
+`_busca_determinista` passa a ser chamada tambem ANTES do bloco que decide
+(mesmo lugar da captura de bootstrap), so pelo efeito colateral -- ela
+MESMA ja grava em `_q_captura` quando `Q_ALVO_MODO == 'busca'` (o codigo
+interno de captura sempre esteve certo, so nunca era alcancado). Sem
+duplicar nada (`REGRA_SEM_DUPLICACAO`): mesma funcao, so chamada de um
+lugar que sempre executa.
+
+**Validado isolado**: `gerar_selfplay_dataset.py --n 5` com
+`OPTCG_Q_ALVO=busca` -> 1856 alvos, **100% com `'modo': 'busca'`** (o campo
+que o bloco 877 adicionou pra isso ficar auditavel).
+
+Teste permanente em `smoke_fast.py`
+(`test_coleta_busca_roda_mesmo_com_q_decidindo_19_09`): mocka
+`_busca_determinista` como espia e confirma que ela e CHAMADA mesmo quando
+o Q decide de verdade (o sintoma exato do bug era ela nunca ser alcancada).
+`smoke_fast.py` inteiro OK.
+
+### O ciclo 4 nao conta -- os numeros dele sao ruido, nao descarte real
+
+`portao: 9x8 INCONCLUSIVO`, `erro_q: 0,0498` (pior que o ciclo 3, 0,0426):
+**nao e regressao de aprendizado** -- o modelo foi retreinado no MESMO
+corpus de sempre (721.008, sem nada novo), so que com os folds/amostra
+NOVOS do bloco 878 (metodologia diferente = numero nao comparavel). Nao
+usar esse ciclo como evidencia de nada alem do proprio bug de coleta.
+
+### Estado
+
+`smoke_fast.py` OK. Servidor engine NAO precisa reiniciar (a mudanca e so
+no caminho de geracao offline, `ciclo.py`/`gerar_selfplay_dataset.py`, nao
+no server ao vivo). **PENDENTE**: rodar o ciclo de novo com o fix real.
+
 ## 2026-09-19 (878) - O TREINO CAI DE 1451s PRA 180s: 6 fits completos viravam 3, e ninguem media POR LIDER
 
 Sessao Claude (Sonnet 5), continuacao imediata do bloco 877. O usuario pediu

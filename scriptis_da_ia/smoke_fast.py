@@ -10677,6 +10677,7 @@ def main() -> int:
     test_opponent_model_ao_vivo_por_lider_e_fallback_seguro()
     test_contrafactual_ao_vivo_usa_monte_carlo_com_fallback_de_cor()
     test_decisao_e_busca_determinista_sem_monte_carlo_bloco_785()
+    test_coleta_busca_roda_mesmo_com_q_decidindo_19_09()
     test_win_prob_lote_da_o_mesmo_que_uma_por_vez_bloco_787()
     test_clone_preserva_once_per_turn_bloco_788()
     test_modelo_decide_o_bloqueio_bloco_792()
@@ -15777,6 +15778,67 @@ def test_decisao_e_busca_determinista_sem_monte_carlo_bloco_785() -> None:
               esc2 is cands[0] and val2 == 0.0 and len(recs2) == len(cands))
     finally:
         OPTCGMatch._busca_determinista = orig
+        _vn_q.load_value_net, _vn_q.q_valores = orig_load, orig_q
+
+
+def test_coleta_busca_roda_mesmo_com_q_decidindo_19_09() -> None:
+    """
+    Achado real ao vivo 19/09 (bloco 878, ciclo 4 de `ciclo.py`): com
+    `OPTCG_Q_ALVO=busca`, a coleta de alvos Q ficava em ZERO. Confirmado
+    isolado: `gerar_selfplay_dataset.py --n 2` deu 1028 alvos em bootstrap
+    e **0** em busca -- o corpus do ciclo nem cresceu (721.008 antes e
+    depois).
+
+    Causa: a captura do modo 'busca' vivia SO dentro do trecho `_ensina`,
+    que fica ABAIXO do bloco "O Q DECIDE" (bloco 811) -- e esse bloco
+    RETORNA assim que carrega um `q_net.joblib` valido, o que e SEMPRE o
+    caso em producao (ha um desde o primeiro ciclo). A captura do
+    bootstrap nunca teve esse problema porque roda ANTES do Q decidir.
+
+    Fix: `_busca_determinista` tambem passa a ser chamada ANTES do bloco
+    que decide, só pelo efeito colateral de captura -- ela mesma ja grava
+    em `_q_captura` quando `Q_ALVO_MODO == 'busca'` (sem duplicar logica).
+    Este teste prova que ela e CHAMADA mesmo quando o Q decide de verdade
+    -- o sintoma do bug era exatamente ela nunca ser alcancada.
+    """
+    import optcg_engine.decision_engine as _de
+
+    me = GameState(leader=real_card("OP11-062"), don_available=5, turn=3)
+    opp = GameState(leader=real_card("OP04-019"), turn=3)
+    match = OPTCGMatch((me.leader, []), (opp.leader, []))
+    cands = [(400, 'attack', None, 'leader', None),
+             (10, 'play', None, None, None),
+             (5, 'play', None, None, None)]
+
+    orig_busca = OPTCGMatch._busca_determinista
+    orig_modo = _de.Q_ALVO_MODO
+    import optcg_engine.value_net as _vn_q
+    orig_load, orig_q = _vn_q.load_value_net, _vn_q.q_valores
+    chamadas = []
+    try:
+        _de.Q_ALVO_MODO = 'busca'
+
+        def _busca_espia(self, p, o, e, c):
+            chamadas.append(len(c))
+            return (c[0], 0.5, [(x, 0.5) for x in c])
+        OPTCGMatch._busca_determinista = _busca_espia
+        _vn_q.load_value_net = lambda *a, **k: {'tipo': 'q'}
+        _vn_q.q_valores = lambda p, o, acoes, bundle=None: [
+            0.9 if x is cands[2] else 0.1 for x in acoes]
+
+        match._q_captura = []
+        esc, val, recs, nos, simv = match._select_action_via_search(
+            me, opp, DecisionEngine(me, opp), cands)
+
+        check("Q ainda decide (nao regrediu o bloco 811 -- so a coleta muda)",
+              esc is cands[2])
+        check("BUG REPRODUZIDO E CORRIGIDO: _busca_determinista foi chamada "
+              "mesmo com o Q decidindo de verdade -- senao a coleta 'busca' "
+              "fica em zero pra sempre, ja que sempre ha um q_net.joblib valido",
+              chamadas == [len(cands)])
+    finally:
+        OPTCGMatch._busca_determinista = orig_busca
+        _de.Q_ALVO_MODO = orig_modo
         _vn_q.load_value_net, _vn_q.q_valores = orig_load, orig_q
 
 

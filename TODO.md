@@ -1,6 +1,19 @@
 # TODO — Analisador de Decks OPTCG
 
-**Última atualização:** 19 de setembro de 2026 (bloco 878)
+**Última atualização:** 19 de setembro de 2026 (bloco 879)
+
+> **CORRIGIDO (bloco 879): modo 'busca' coletava ZERO alvos desde o bloco 811
+> (13/09), sem erro nem aviso.** O ciclo 4 (bloco 878's teste) confirmou: 40
+> partidas em modo busca, corpus ficou EXATAMENTE igual (721.008) -- gerou
+> nada. Causa: a captura de 'busca' ficava num trecho que so roda quando o Q
+> NAO decide, e o Q SEMPRE decide em producao desde que existe um
+> `q_net.joblib` (desde o 1o ciclo) -- o trecho era inalcancavel. Fix:
+> `_busca_determinista` tambem roda ANTES do Q decidir (mesmo lugar do
+> bootstrap), so pelo efeito colateral de captura. Validado isolado (1856
+> alvos, 100% `modo=busca`) e com teste permanente no `smoke_fast.py`. **O
+> ciclo 4 nao conta como medicao real** (retreinou no corpus velho, sem dado
+> novo -- erro_q 0,0498 e ruido de metodologia, nao regressao). **PENDENTE**:
+> rodar o ciclo de novo, agora com o fix, e ai sim comparar.
 
 > **MEDIDO (bloco 878): treino caiu de 1451s pra 180s (8,1x), sem tirar a
 > validacao por lider.** Causa real (AS-IS mediu -- a suspeita de "ler linha a

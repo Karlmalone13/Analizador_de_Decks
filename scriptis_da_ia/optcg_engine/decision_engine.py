@@ -19626,6 +19626,26 @@ class OPTCGMatch:
                 and len(candidatas) > 1):
             self._coleta_bootstrap(p, opp, engine, candidatas, _capb)
 
+        # COLETA BUSCA (bloco 878, achado ao vivo 19/09) -- mesma logica do
+        # bootstrap acima, so que pro modo 'busca'. SEM ISTO a captura de
+        # 'busca' so acontecia no bloco `_ensina` mais abaixo, que so roda
+        # quando o Q NAO decide (sem modelo ou excecao). Como SEMPRE ha um
+        # `q_net.joblib` valido em producao desde o bloco 811 ("O Q DECIDE
+        # ... sem chave e sem alternativa: e o unico decisor" -- e RETORNA
+        # antes de chegar no bloco `_ensina`), aquele trecho ficou
+        # inalcancavel na pratica desde entao -- modo 'busca' capturava
+        # ZERO alvos, sem erro nem aviso nenhum. Confirmado ao vivo (ciclo
+        # com `OPTCG_Q_ALVO=busca`): "alvos" do corpus ficou EXATAMENTE
+        # igual ao ciclo anterior (721.008), e um teste isolado (2
+        # partidas) reproduziu -- bootstrap gerou 1028 alvos, busca gerou
+        # 0. `_busca_determinista` ja faz sua PROPRIA captura interna
+        # (identico ao `Q_ALVO_MODO == 'busca'`, so precisa ser CHAMADA);
+        # chamar aqui so pelo efeito colateral, antes do Q decidir, resolve
+        # sem duplicar nenhuma logica (REGRA_SEM_DUPLICACAO).
+        if (_capb is not None and Q_ALVO_MODO == 'busca'
+                and len(candidatas) > 1):
+            self._busca_determinista(p, opp, engine, candidatas)
+
         # ── O Q DECIDE (bloco 811) ──────────────────────────────────────
         # Uma consulta em lote no lugar de ~64 estados materializados. Sem
         # chave e sem alternativa: e o unico decisor.
