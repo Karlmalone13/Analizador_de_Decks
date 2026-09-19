@@ -1,6 +1,13 @@
 # TODO — Analisador de Decks OPTCG
 
-**Última atualização:** 19 de setembro de 2026 (bloco 871)
+**Última atualização:** 19 de setembro de 2026 (bloco 872)
+
+> **PENDENTE: commit do fix `pick_counters` (bloco 872)** -- `effective_counter`
+> era chamado 2x por carta, mesmo padrao ja corrigido em `counter_in_hand` no
+> bloco de 03/08. Corrigido em `optcg_engine/decision_engine.py`, `smoke_fast.py`
+> OK, **nao commitado ainda**. Achado colateral (nao mexido): `get_card_effects`
+> duplicada em `decision_engine.py` (linhas 2102/2197), a primeira e codigo
+> morto.
 
 > **CORRIGIDO -- a coleta pegava a partida ERRADA e abortava a telemetria
 > (19/09/2026, bloco 871)**, achado rodando tres CPU x CPU seguidas.

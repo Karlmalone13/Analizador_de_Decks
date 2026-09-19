@@ -16123,8 +16123,12 @@ class DecisionEngine:
         pequenas caras" sem precisar de knapsack completo.
         """
         if pool is None:
-            pool = [(effective_counter(c, self.me), c) for c in self.me.hand
-                     if effective_counter(c, self.me) > 0]
+            # Achado real 19/09 (mesmo padrao ja corrigido em counter_in_hand,
+            # bloco 03/08): effective_counter(c, self.me) era chamado 2x por
+            # carta -- uma vez no filtro `if`, outra na tupla. Calcula 1x por
+            # carta e reusa, igual ja foi feito la.
+            valores = [(effective_counter(c, self.me), c) for c in self.me.hand]
+            pool = [(v, c) for v, c in valores if v > 0]
         if needed <= 0 or not pool:
             return [], 0.0, 0
 

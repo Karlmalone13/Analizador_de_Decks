@@ -1,5 +1,47 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-09-19 (872) - effective_counter chamado 2x em pick_counters (mesmo padrao ja corrigido em 03/08), e funcao morta duplicada
+
+Sessao Claude (Sonnet 5), Arthur_PC. Investigacao pedida pelo usuario:
+"funcoes chamadas varias vezes que poderiam ser chamadas menos".
+
+AS-IS fresco (nao herdado) rodado antes de qualquer alteracao: 2,16s/partida,
+65,6% do tempo no modelo (rede de valor, ja em lote, memo 77%). Sem gargalo
+bloqueando o ciclo de treino -- os fixes de arquitetura anteriores (Monte
+Carlo fora, Q em lote, heuristica fora do shortlist) ja deixaram isso rapido.
+
+Dois achados de higiene, nenhum critico:
+
+1. **`get_card_effects` duplicada em `decision_engine.py`** (linhas 2102 e
+   2197). A segunda sobrescreve a primeira -- a primeira e codigo 100% morto,
+   nunca executa. Nao mexido ainda (baixo risco, baixa prioridade).
+
+2. **`effective_counter(c, self.me)` chamado 2x por carta em `pick_counters()`**
+   (linha ~16126) -- mesmo padrao achado e corrigido em `counter_in_hand()` no
+   bloco de 03/08 (la era 94% de todas as chamadas de `effective_counter` numa
+   partida real). Aqui o impacto e menor: so 8.705 -> 8.477 chamadas (-2,6%)
+   nas 2 partidas do AS-IS, porque a maior fatia ja vinha de `counter_in_hand`
+   (ja corrigida). **CORRIGIDO** (computa 1x, reusa) -- `smoke_fast.py` OK.
+
+   **AS-IS pos-fix mostrou -75,9% no tempo de partida, e isso NAO e do fix**:
+   as funcoes que dominam o tempo (`predictor.py:predict`,
+   `_predict_iterations`) tem o MESMO numero de chamadas antes e depois
+   (51.000 e 170) -- zero mudanca de trabalho. O OPTCGSim.exe estava aberto em
+   background durante a 1a medicao (quase 19.200s de CPU acumulado num dos
+   processos), contaminando o numero. NAO citar o -75,9% como ganho do fix.
+
+**PENDENTE: NAO COMMITADO.** O fix de `pick_counters` esta em
+`optcg_engine/decision_engine.py`, validado por `smoke_fast.py`, esperando
+commit.
+
+**Achado a parte, sobre TOKENS**: sessao unica desta conversa chegou a 561k
+tokens (56% da janela) e consumiu boa parte da cota semanal do Pro. Registrado
+em `memory/feedback_reduzir_consumo_de_tokens.md` (5 praticas: sessao nova por
+bloco, menos screenshot, ler com grep em vez de arquivo inteiro, cortar saida
+de ferramenta antes de entrar no contexto, agrupar edicoes no mesmo arquivo).
+
+---
+
 ## 2026-09-19 (871) - As 12 cartas cegas viram 10 resolvidas, o import DUPLICOU o corpus, e a coleta bancava a partida ERRADA
 
 Sessao Claude (Opus 5), maquina **Arthur_PC**. Continuacao do bloco 870, que
