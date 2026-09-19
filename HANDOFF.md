@@ -1,5 +1,24 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-09-19 (873) - commit do fix pick_counters, e a `get_card_effects` morta removida
+
+Sessao Claude (Sonnet 5), continuacao do bloco 872 na mesma maquina. Commit
+`1320ceb` do fix de `pick_counters` (2 chamadas -> 1 de `effective_counter`
+por carta).
+
+Segundo achado do bloco 872, agora resolvido: a primeira `get_card_effects`
+(linha ~2102, sem cache/enriquecimento) era sombreada pela segunda definicao
+no mesmo modulo (linha ~2196, com `_EFFECTS_ENRICHED_CACHE` +
+`_enrich_effects_from_analysis_text`) -- Python so mantem a ultima, entao a
+primeira era 100% morta (nunca executava, `grep` confirmou 118 usos do nome
+em `decision_engine.py`, todos resolvendo pra segunda). Removida.
+`smoke_fast.py` OK.
+
+Nao investiguei alem disso nesta sessao -- o AS-IS do bloco 872 ja mostrou
+65,6% do tempo no modelo (ja em lote, memo 77%), sem gargalo bloqueando o
+ciclo de treino. Proxima investigacao de otimizacao, se houver, deve comecar
+com AS-IS fresco (a composicao do tempo muda a cada mudanca no motor).
+
 ## 2026-09-19 (872) - effective_counter chamado 2x em pick_counters (mesmo padrao ja corrigido em 03/08), e funcao morta duplicada
 
 Sessao Claude (Sonnet 5), Arthur_PC. Investigacao pedida pelo usuario:

@@ -2099,11 +2099,6 @@ def _load_analysis_db():
 _load_analysis_db()
 
 
-def get_card_effects(code: str) -> dict:
-    """Retorna os efeitos de uma carta pelo código."""
-    return _EFFECTS_DB.get(code, {}).get('effects', {})
-
-
 def _quoted_types_before_play_turn_attack(text: str) -> list[str]:
     marker = 'can attack characters on the turn in which it is played'
     low = (text or '').lower()
