@@ -16624,6 +16624,43 @@ class OPTCGMatch:
         self.model_for_a = OpponentModel(full_decklist=list(self.state_b.deck))
         self.model_for_b = OpponentModel(full_decklist=list(self.state_a.deck))
 
+        # DE QUEM E O ATAQUE em andamento (achado ao vivo 19/09/2026, bloco
+        # 875). `ChooseTargetRequest.attackerPower` (server.py) so e
+        # preenchido pelo plugin pra cenario de DEFESA/redirect -- quando e
+        # o PROPRIO atacante resolvendo o `when_attacking` DELE MESMO (ex:
+        # Vista OP16-011), o plugin manda 0. Sem isso, `_relevant_blocks`
+        # (sim_bridge.py) escolhe o bloco de efeito ERRADO (on_play em vez
+        # de when_attacking) e contamina a zona com own_hand -- medido ao
+        # vivo mirando a propria mao. O SERVIDOR ja sabe quem esta atacando
+        # (foi ele quem escolheu a acao no /decide real); estas duas funcoes
+        # sao a fonte UNICA que guarda/reconstroi esse dado -- server.py so
+        # chama, nunca compara nada sozinho (regra "server.py = transporte
+        # puro").
+        self._ultimo_ataque_real: dict = {}   # {"code", "uid", "power", "turn"}
+
+    def register_own_attack(self, attacker: Card, turn: int) -> None:
+        """Chamado pelo /decide REAL (nunca pelo pondering, que especula
+        jogadas que podem nunca acontecer) quando a acao escolhida e
+        'attack'. Guarda o suficiente pra reconstruir o attacker_power que
+        o plugin nao manda pro when_attacking do proprio atacante."""
+        self._ultimo_ataque_real = {
+            "code": getattr(attacker, 'code', None),
+            "uid": getattr(attacker, '_deck_uid', 0),
+            "power": getattr(attacker, 'power', 0) or 0,
+            "turn": turn,
+        }
+
+    def consume_attacker_power(self, actor_code: Optional[str], turn: int) -> int:
+        """Devolve o poder do ultimo ataque REAL registrado se bater o ator
+        E o turno, e LIMPA o registro (uso unico -- evita vazar pra uma
+        pergunta de alvo seguinte do mesmo actor mais tarde no turno).
+        Devolve 0 se nao ha registro correspondente."""
+        reg = self._ultimo_ataque_real
+        if actor_code and reg.get("code") == actor_code and reg.get("turn") == turn:
+            self._ultimo_ataque_real = {}
+            return reg.get("power") or 1
+        return 0
+
     def _human_pattern_bonus(self, p: GameState, kind: str, card: Optional[Card]) -> float:
         """Pequeno bonus por padroes humanos observados para este leader."""
         if card is None or not p or not p.leader:

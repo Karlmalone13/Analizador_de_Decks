@@ -1,6 +1,19 @@
 # TODO — Analisador de Decks OPTCG
 
-**Última atualização:** 19 de setembro de 2026 (bloco 874)
+**Última atualização:** 19 de setembro de 2026 (bloco 875)
+
+> **CORRIGIDO (bloco 875): `when_attacking` mirava a propria mao.** Causa
+> fechada (pendencia aberta desde o bloco 862/871): `/choose_target` so
+> recebia `attackerPower>0` do plugin em cenario de DEFESA/redirect -- quando
+> era o PROPRIO atacante resolvendo o `when_attacking` dele mesmo (Vista
+> OP16-011), chegava 0 e `_relevant_blocks` escolhia o bloco de efeito
+> ERRADO (on_play em vez de when_attacking), contaminando a zona com
+> `own_hand`. Fix em `server.py`: o servidor reconstroi o `attacker_power`
+> a partir do que ELE MESMO decidiu no `/decide` real (novo tracker
+> `_ultimo_ataque_real`), sem depender do plugin. Teste permanente em
+> `smoke_fast.py` (camada `sim_bridge`), `smoke_fast.py` inteiro OK.
+> **NAO validado ao vivo ainda** -- proxima partida com carta `when_attacking`
+> deve mostrar `atk=0->N(proprio ataque)` no log `[TGT]`.
 
 > **CORRIGIDO (bloco 874): Enel ativava o lider no vacuo.** Investigando os 2
 > ultimos logs banked (Krieg x Luffy RG limpo; Enel x Imu com 1 bug real),

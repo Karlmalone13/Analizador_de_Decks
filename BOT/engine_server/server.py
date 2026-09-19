@@ -1449,6 +1449,18 @@ def choose_target(req: ChooseTargetRequest):
         # pra achar o episodio acima) -- essa medicao permite pegar o
         # PROXIMO caso ja com aviso na hora, no console/session log.
         tgt_started = time.perf_counter()
+
+        # O plugin so preenche `attackerPower` pra cenario de DEFESA/redirect
+        # -- quando e o PROPRIO atacante resolvendo o `when_attacking` DELE
+        # MESMO, chega 0 e `_relevant_blocks` (sim_bridge.py) escolhe o
+        # bloco de efeito ERRADO (achado ao vivo 19/09, bloco 875: Vista
+        # OP16-011 mirando alvo na propria mao). O match ja sabe quem esta
+        # atacando (`register_own_attack`, chamado no /decide real) --
+        # server.py so pede o dado, nao decide nada (fonte unica em
+        # `OPTCGMatch.consume_attacker_power`, decision_engine.py).
+        attacker_power_efetivo = req.attackerPower or _get_match().consume_attacker_power(
+            req.actorCode, req.state.turnNumber)
+
         # `with_scores=True`: alem da ordem, a bridge devolve a CHAVE que
         # ordenou cada candidato. O servidor so repassa (nenhuma heuristica
         # aqui -- regra "server.py = transporte puro"). Sem isto a
@@ -1457,7 +1469,7 @@ def choose_target(req: ChooseTargetRequest):
         marcados = bridge.order_target_candidates(
             gs, opp_gs,
             [{"id": c.id, "zone": c.zone, "code": c.code} for c in req.candidates],
-            attacker_power=req.attackerPower,
+            attacker_power=attacker_power_efetivo,
             defender_uid=req.defenderId,
             actor_code=req.actorCode,
             purpose=req.purpose,
@@ -1468,7 +1480,9 @@ def choose_target(req: ChooseTargetRequest):
         zonas = sorted({c.zone for c in req.candidates})
         print(f"[TGT] {len(req.candidates)} candidatos (actor={req.actorCode} "
               f"purpose={req.purpose} passo={req.stepIndex}/{req.actionIndex} "
-              f"atk={req.attackerPower} def={req.defenderId} zonas={zonas}) -> ordem {out[:5]}",
+              f"atk={req.attackerPower}"
+              + (f"->{attacker_power_efetivo}(proprio ataque)" if attacker_power_efetivo != req.attackerPower else "")
+              + f" def={req.defenderId} zonas={zonas}) -> ordem {out[:5]}",
               flush=True)
         if tgt_ms > 2000:
             print(f"[ALERTA] order_target_candidates demorou {tgt_ms:.0f}ms "
@@ -1758,6 +1772,16 @@ def decide(state: GameStateDto):
 
         payload, reason, extra_trace = _package_action(action, gs, opp_gs, match, bridge)
         trace.update(extra_trace)
+
+        # Guarda quem esta atacando AGORA -- so no /decide real (o pondering
+        # especula jogadas que podem nunca acontecer). O registro/consumo
+        # vive no match (OPTCGMatch.register_own_attack/consume_attacker_
+        # power, decision_engine.py) -- server.py so chama, nao decide nada
+        # (achado ao vivo 19/09, bloco 875: when_attacking mirando a propria
+        # mao porque o plugin nao manda attackerPower pro proprio atacante).
+        if action is not None and len(action) > 2 and action[1] == 'attack':
+            match.register_own_attack(action[2], state.turnNumber)
+
         return finish(payload, reason)
 
     except Exception as e:

@@ -1,5 +1,85 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-09-19 (875) - `when_attacking` mirava a PROPRIA MAO: o `/choose_target` nao sabia quem estava atacando
+
+Sessao Claude (Sonnet 5), continuacao do bloco 874. Pedido do usuario:
+resolver a causa do `when_attacking` a 0% de conclusao (pendencia aberta do
+bloco 862/871 -- Vista OP16-011 mirando a Uta, 4000 de poder, na propria mao).
+
+### A causa, confirmada com log real (nao so hipotese)
+
+```
+[TGT] 36 candidatos (actor=OP16-011 purpose=unknown passo=0/0 atk=0 def=0
+      zonas=[TODAS as 12 zonas]) -> ordem [...]
+```
+(`BOT/engine_server/logs/session_2026-09-18T20.02.02.log`, MESMA sessao de
+hoje -- confirma que o bug segue vivo, nao e historico.)
+
+`ChooseTargetRequest.attackerPower` (`server.py`) so e preenchido pelo plugin
+pra cenario de DEFESA/redirect ("efeito resolvendo durante um ataque DO
+OPONENTE" -- comentario original do campo, `server.py:798`). Quando e o
+PROPRIO atacante resolvendo o `when_attacking` DELE MESMO (Vista atacando,
+`ko target=opp_character power_lte=2000`), o plugin manda `attackerPower=0`
+-- do lado dele nao e "o oponente atacando".
+
+`_relevant_blocks(actor_code, attacker_power > 0)` (`sim_bridge.py:2305`) usa
+esse mesmo campo pra escolher entre os blocos de COMBATE (`when_attacking`,
+`counter`...) e os de NAO-combate (`on_play`, `activate_main`...). Com
+`atk=0`, escolhe o `on_play` do Vista -- que tem custo `reveal_from_hand`
+(zona `own_hand`) -- em vez do `when_attacking` real. Resultado: zona
+`own_hand` nao filtrada, a Uta na mao vira alvo "legal".
+
+**Confirmado por reproducao direta** (`sim_bridge.order_target_candidates`
+chamado isolado, sem servidor): com `attacker_power=0` a ordem devolve a Uta
+na mao; com `attacker_power=8000` (o poder do proprio Vista) devolve so o
+personagem do oponente.
+
+### O fix -- o MATCH passa a saber quem esta atacando
+
+`stepIndex`/`actionIndex` (plumbing do bloco 854) **nao servem**: chegam
+`0/0` tanto pro `on_play` quanto pro `when_attacking`, nao identificam o
+bloco. E o proprio bloco 854 ja mediu que confiar no que o PLUGIN reporta
+("qual habilidade") piorou o acerto (59%->55%), com a causa raiz do lado do
+plugin (`IsOptionalCostWindow` so reconhece 5 de 10 formas de custo).
+
+Em vez de esperar o plugin, o **servidor ja sabe quem esta atacando** -- foi
+ELE quem escolheu a acao no `/decide` real.
+
+**1a versao (revertida): tracker module-level em `server.py`.** O hook
+`pre-commit` (checagem "possivel SEGUNDO MOTOR") **pegou certo**: a versao
+inicial guardava `{code, uid, power, turn}` num dict solto em `server.py` E
+comparava `<=`/`==` la mesmo pra decidir se reusava -- exatamente o padrao
+que a `REGRA_SEM_DUPLICACAO` proibe (`server.py` decidindo algo numerico sem
+passar pelo motor).
+
+**2a versao (a que ficou): `OPTCGMatch.register_own_attack`/
+`consume_attacker_power`** (`decision_engine.py`) -- o `match` (singleton
+`OPTCGMatch`, ja persistente entre chamadas via `_get_match()`) e a fonte
+UNICA que guarda e compara; `server.py` so CHAMA, sem nenhuma comparacao
+numerica propria:
+- `/decide` real (nunca o pondering -- "o PONDER especula jogadas que podem
+  nunca acontecer", comentario ja existente no arquivo) chama
+  `match.register_own_attack(attacker, turno)` quando a acao e `attack`.
+- `/choose_target` chama `match.consume_attacker_power(actorCode, turno)`,
+  que so devolve o poder se o codigo E o turno baterem, e se AUTO-LIMPA
+  (uso unico -- nao vaza pra uma pergunta de alvo seguinte do mesmo actor
+  mais tarde no turno).
+
+Teste permanente em `smoke_fast.py`:
+`test_order_target_candidates_when_attacking_sem_attacker_power_19_09`
+(reproduz o bug em `sim_bridge.order_target_candidates` isolado -- SEM
+`attacker_power` mira a mao, COM mira so opp_board) e
+`test_optcgmatch_register_e_consume_attacker_power_19_09` (registra/consome
+no `OPTCGMatch` direto: sem registro devolve 0, com registro devolve o
+poder certo, uso unico confirmado, e os dois casos de MISMATCH -- turno
+errado, ator errado -- nao usam o registro alheio). `server.py` nao e
+importado pelo smoke (sem harness de FastAPI neste projeto) -- validado
+manualmente (import limpo, `ast.parse` OK). `smoke_fast.py` inteiro OK.
+
+**NAO validado ao vivo ainda** -- proxima partida com quaisquer cartas
+`when_attacking` (nao so Vista) deve mostrar `atk=X->Y(proprio ataque)` no
+log `[TGT]` em vez de `atk=0`, e as zonas devem vir filtradas.
+
 ## 2026-09-19 (874) - Enel ativava o lider no vacuo: `add_don`/`set_don_active` nunca checavam se sobrava DON
 
 Sessao Claude (Sonnet 5), continuacao do bloco 873. Pedido do usuario:

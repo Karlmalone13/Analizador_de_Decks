@@ -10931,6 +10931,8 @@ def main() -> int:
     test_give_don_either_side_arlong_alvida_morgan_24_08()
     test_should_activate_main_nao_queima_once_per_turn_em_custo_impagavel_24_08()
     test_should_activate_main_add_don_exige_don_disponivel_19_09()
+    test_order_target_candidates_when_attacking_sem_attacker_power_19_09()
+    test_optcgmatch_register_e_consume_attacker_power_19_09()
     test_opp_turn_reactive_effects_krieg_leader_debuff_24_08()
     test_give_don_filtro_de_tipo_no_destinatario_24_08()
     test_play_card_total_cost_lte_e_distinct_names_24_08()
@@ -15346,6 +15348,92 @@ def test_should_activate_main_add_don_exige_don_disponivel_19_09() -> None:
     check("don_deck proprio zerado, mas step ANTERIOR devolve DON (inclusive "
           "anexado) pro deck -- libera em vez de recusar cego pelo estado atual",
           pode_seq is True)
+
+
+def test_order_target_candidates_when_attacking_sem_attacker_power_19_09() -> None:
+    """
+    Achado real 19/09 (bloco 875, log `session_2026-09-18T20.02.02.log`):
+    `[TGT] ... actor=OP16-011 purpose=unknown passo=0/0 atk=0 def=0
+    zonas=[TODAS as 12 zonas]` -- Vista (OP16-011) atacando, resolvendo o
+    proprio `when_attacking` (`ko target=opp_character power_lte=2000`), e o
+    bot mirou a Uta (4000 de poder) na PROPRIA MAO.
+
+    Causa: `attackerPower` no `/choose_target` so e preenchido pelo plugin
+    pra cenario de DEFESA/redirect -- quando e o PROPRIO atacante resolvendo
+    a habilidade dele mesmo, chega 0. `_relevant_blocks` (sim_bridge.py)
+    usa `attacker_power > 0` pra escolher entre os blocos de COMBATE
+    (`when_attacking`) e os de NAO-combate (`on_play`, que tem custo
+    `reveal_from_hand` -> zona `own_hand`) -- com atk=0 escolhe o errado,
+    contamina a lista com own_hand, e a Uta vira alvo "legal".
+
+    Fix real e no `/choose_target` do `server.py` (BOT/engine_server/) --
+    o servidor ja sabe quem esta atacando porque foi ELE quem decidiu isso
+    no `/decide`, e passa a reconstruir o `attacker_power` que o plugin nao
+    manda. server.py nao e importado por este smoke (FastAPI, sem harness
+    de teste aqui) -- este teste cobre a CAMADA que o fix realmente usa
+    (`sim_bridge.order_target_candidates`), provando que com o
+    `attacker_power` correto (o poder do proprio Vista) a zona errada
+    (own_hand) sai da lista e so opp_board sobra.
+    """
+    vista = real_card("OP16-011")
+    me = GameState(leader=mk("VL1", "MeLeader", card_type="LEADER", power=5000), turn=3)
+    me.field_chars = [vista]
+    uta = mk("UTA1", "Uta", card_type="CHARACTER", power=4000)
+    uta._deck_uid = 900
+    me.hand = [uta]
+
+    opp_char = mk("OC1", "OppChar", card_type="CHARACTER", power=1500)
+    opp_char._deck_uid = 800
+    opp = GameState(leader=mk("VL2", "OppLeader", card_type="LEADER", power=5000))
+    opp.field_chars = [opp_char]
+
+    cands = [
+        {"id": 900, "zone": "own_hand", "code": "UTA1"},
+        {"id": 800, "zone": "opp_board", "code": "OC1"},
+    ]
+
+    sem_fix = sim_bridge.order_target_candidates(
+        me, opp, cands, attacker_power=0, actor_code="OP16-011")
+    check("BUG REPRODUZIDO: sem attacker_power, Vista quando ataca mira a "
+          "propria mao (own_hand nao filtrado -- bloco de efeito errado)",
+          sem_fix == [900])
+
+    com_fix = sim_bridge.order_target_candidates(
+        me, opp, cands, attacker_power=vista.power, actor_code="OP16-011")
+    check("COM attacker_power (o poder do proprio Vista, reconstruido pelo "
+          "server.py no /choose_target): so opp_board sobra, mira o "
+          "personagem do oponente",
+          com_fix == [800])
+
+
+def test_optcgmatch_register_e_consume_attacker_power_19_09() -> None:
+    """
+    Achado real 19/09 (bloco 875): a reconstrucao do `attacker_power` que
+    o plugin nao manda pro `when_attacking` do proprio atacante vive em
+    `OPTCGMatch.register_own_attack`/`consume_attacker_power`
+    (decision_engine.py) -- fonte UNICA, `server.py` so chama (nunca
+    compara nada sozinho, regra "server.py = transporte puro").
+    """
+    vista = real_card("OP16-011")
+    match = OPTCGMatch((real_card("OP15-001"), []), (real_card("OP13-001"), []))
+
+    check("sem nenhum ataque registrado: consume devolve 0",
+          match.consume_attacker_power("OP16-011", 5) == 0)
+
+    match.register_own_attack(vista, 5)
+    check("com o Vista registrado no turno 5: consume devolve o poder dele",
+          match.consume_attacker_power("OP16-011", 5) == vista.power)
+    check("USO UNICO: a 2a chamada do MESMO ator/turno nao acha mais nada "
+          "(nao vaza pra uma pergunta de alvo seguinte)",
+          match.consume_attacker_power("OP16-011", 5) == 0)
+
+    match.register_own_attack(vista, 6)
+    check("codigo bate mas TURNO diferente: nao usa o registro de outro turno",
+          match.consume_attacker_power("OP16-011", 7) == 0)
+    match.register_own_attack(vista, 6)
+    check("turno bate mas CODIGO diferente (outro ator perguntando alvo "
+          "no mesmo turno): nao usa o registro de outra carta",
+          match.consume_attacker_power("OP15-023", 6) == 0)
 
 
 def test_opp_turn_reactive_effects_krieg_leader_debuff_24_08() -> None:
