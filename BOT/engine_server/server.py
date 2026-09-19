@@ -444,6 +444,17 @@ def _ponder_worker(bot_dto, opp_dto, trigger_turn: int, generation: int,
             trace_out=trace)
         payload, reason, extra_trace = _package_action(action, gs, opp_gs, match, bridge)
         trace.update(extra_trace)
+        # code/power do atacante, SE a jogada calculada for 'attack' --
+        # achado ao vivo 19/09 (bloco 875): quando este resultado e
+        # confirmado por um HIT em /decide, ele e usado sem passar pelo
+        # `_package_action` normal, entao o registro do ataque (pro
+        # `when_attacking` do proprio atacante saber o attacker_power que
+        # o plugin nao manda) tem que vir daqui tambem.
+        atacante_code = None
+        atacante_power = 0
+        if action is not None and len(action) > 2 and action[1] == 'attack':
+            atacante_code = getattr(action[2], 'code', None)
+            atacante_power = getattr(action[2], 'power', 0) or 0
         with _ponder_lock:
             if generation != _ponder_generation:
                 return  # invalidado por /mulligan ou gatilho mais novo enquanto calculava
@@ -453,6 +464,8 @@ def _ponder_worker(bot_dto, opp_dto, trigger_turn: int, generation: int,
                 "payload": payload,
                 "reason": reason,
                 "trace": trace,
+                "atacante_code": atacante_code,
+                "atacante_power": atacante_power,
             }
     except Exception as e:
         import traceback
@@ -1706,6 +1719,13 @@ def decide(state: GameStateDto):
         if cached is not None:
             trace.update(cached["trace"])
             trace["ponder_hit"] = True
+            # O ataque confirmado pelo ponder-hit tambem precisa ser
+            # registrado (bloco 875) -- esta e a jogada que vai acontecer
+            # de verdade, so que decidida ANTES desta requisicao.
+            if cached.get("atacante_code"):
+                _get_match().register_own_attack_by_code(
+                    cached["atacante_code"], cached.get("atacante_power", 0),
+                    state.turnNumber)
             return finish(cached["payload"], cached["reason"])
 
         gs     = _dto_to_gs(state.bot, state.turnNumber)

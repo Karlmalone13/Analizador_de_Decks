@@ -16636,28 +16636,65 @@ class OPTCGMatch:
         # sao a fonte UNICA que guarda/reconstroi esse dado -- server.py so
         # chama, nunca compara nada sozinho (regra "server.py = transporte
         # puro").
-        self._ultimo_ataque_real: dict = {}   # {"code", "uid", "power", "turn"}
+        #
+        # POR CODIGO, nao um unico registro (correcao no MESMO bloco, ainda
+        # 19/09, validado ao vivo): o OPTCGSim declara VARIOS ataques do
+        # turno antes de resolver o `when_attacking` de cada um -- medido em
+        # log real (Ace x Enel, turno 3): 3 `attack` escolhidos em sequencia
+        # pelo /decide ANTES do `/choose_target` do primeiro atacante (Vista)
+        # perguntar o alvo do proprio ko. Um unico registro (versao anterior)
+        # era sobrescrito pelo 2o/3o atacante e o de Vista se perdia --
+        # `atk=0` continuou chegando, bug NAO corrigido na pratica. Guardar
+        # por codigo deixa os ataques pendentes coexistirem ate cada um ser
+        # consumido.
+        self._ataques_pendentes: dict[str, dict] = {}   # code -> {"power", "turn"}
 
     def register_own_attack(self, attacker: Card, turn: int) -> None:
-        """Chamado pelo /decide REAL (nunca pelo pondering, que especula
-        jogadas que podem nunca acontecer) quando a acao escolhida e
-        'attack'. Guarda o suficiente pra reconstruir o attacker_power que
-        o plugin nao manda pro when_attacking do proprio atacante."""
-        self._ultimo_ataque_real = {
-            "code": getattr(attacker, 'code', None),
-            "uid": getattr(attacker, '_deck_uid', 0),
-            "power": getattr(attacker, 'power', 0) or 0,
-            "turn": turn,
-        }
+        """Chamado pelo /decide quando a acao REALMENTE escolhida (nunca
+        uma especulacao do pondering que pode nao acontecer) e 'attack'.
+        Guarda o suficiente pra reconstruir o attacker_power que o plugin
+        nao manda pro when_attacking do proprio atacante. NAO sobrescreve
+        ataques de OUTRAS cartas ainda pendentes (varios atacantes podem
+        estar com o when_attacking pendente ao mesmo tempo)."""
+        code = getattr(attacker, 'code', None)
+        if not code:
+            return
+        self.register_own_attack_by_code(
+            code, getattr(attacker, 'power', 0) or 0, turn)
+
+    def register_own_attack_by_code(self, code: str, power: int, turn: int) -> None:
+        """Mesma coisa que `register_own_attack`, mas sem precisar do
+        objeto `Card` -- usado pelo CACHE do pondering em /decide (achado
+        ao vivo 19/09: um ataque CONFIRMADO via ponder-hit retorna ANTES
+        de `_package_action`/`register_own_attack` rodarem no /decide,
+        entao o registro nunca acontecia pra esses casos -- Vista atacando
+        via ponder-hit continuava com `atk=0` sem fallback). O ponder
+        worker guarda code/power do atacante no proprio resultado
+        (`_ponder_result`), e o /decide os repassa aqui quando confirma o
+        hit -- a jogada, nesse ponto, JA e a que vai acontecer de verdade."""
+        if not code:
+            return
+        self._ataques_pendentes[code] = {"power": power or 0, "turn": turn}
 
     def consume_attacker_power(self, actor_code: Optional[str], turn: int) -> int:
-        """Devolve o poder do ultimo ataque REAL registrado se bater o ator
-        E o turno, e LIMPA o registro (uso unico -- evita vazar pra uma
-        pergunta de alvo seguinte do mesmo actor mais tarde no turno).
-        Devolve 0 se nao ha registro correspondente."""
-        reg = self._ultimo_ataque_real
-        if actor_code and reg.get("code") == actor_code and reg.get("turn") == turn:
-            self._ultimo_ataque_real = {}
+        """Devolve o poder do ataque REAL registrado pra esse CODIGO se o
+        turno bater. NAO apaga o registro (achado ao vivo 19/09, mesma
+        sessao: um `when_attacking` de VARIOS passos -- ex: Enel passo
+        20/21/22/23 da MESMA ativacao -- pedia alvo mais de uma vez; a
+        1a versao limpava no 1o uso "pra nao vazar" e os passos seguintes
+        voltavam a `atk=0` sem fallback, quebrando o proprio caso que o
+        fix existe pra cobrir). Fica disponivel pro resto do turno pra
+        ESSE codigo -- o proprio filtro de turno ja evita vazar pro turno
+        seguinte, e o pior caso de "vazar" pra uma pergunta NAO-combate
+        mais tarde no mesmo turno e o comportamento de ANTES do fix (nao
+        e regressao). So e sobrescrito se o MESMO codigo atacar de novo
+        (Double Attack) -- o novo registro so teria efeito se `power`
+        mudar, o que nao acontece na pratica. Devolve 0 se nao ha
+        registro correspondente."""
+        if not actor_code:
+            return 0
+        reg = self._ataques_pendentes.get(actor_code)
+        if reg and reg.get("turn") == turn:
             return reg.get("power") or 1
         return 0
 

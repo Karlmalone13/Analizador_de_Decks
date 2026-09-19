@@ -10933,6 +10933,7 @@ def main() -> int:
     test_should_activate_main_add_don_exige_don_disponivel_19_09()
     test_order_target_candidates_when_attacking_sem_attacker_power_19_09()
     test_optcgmatch_register_e_consume_attacker_power_19_09()
+    test_optcgmatch_varios_ataques_pendentes_mesmo_turno_19_09()
     test_opp_turn_reactive_effects_krieg_leader_debuff_24_08()
     test_give_don_filtro_de_tipo_no_destinatario_24_08()
     test_play_card_total_cost_lte_e_distinct_names_24_08()
@@ -15423,9 +15424,11 @@ def test_optcgmatch_register_e_consume_attacker_power_19_09() -> None:
     match.register_own_attack(vista, 5)
     check("com o Vista registrado no turno 5: consume devolve o poder dele",
           match.consume_attacker_power("OP16-011", 5) == vista.power)
-    check("USO UNICO: a 2a chamada do MESMO ator/turno nao acha mais nada "
-          "(nao vaza pra uma pergunta de alvo seguinte)",
-          match.consume_attacker_power("OP16-011", 5) == 0)
+    check("PERSISTE pro resto do turno (achado ao vivo: when_attacking de "
+          "varios passos pede alvo mais de uma vez -- limpar no 1o uso "
+          "quebrava os passos seguintes): a 2a chamada do MESMO ator/turno "
+          "continua devolvendo o mesmo poder",
+          match.consume_attacker_power("OP16-011", 5) == vista.power)
 
     match.register_own_attack(vista, 6)
     check("codigo bate mas TURNO diferente: nao usa o registro de outro turno",
@@ -15434,6 +15437,35 @@ def test_optcgmatch_register_e_consume_attacker_power_19_09() -> None:
     check("turno bate mas CODIGO diferente (outro ator perguntando alvo "
           "no mesmo turno): nao usa o registro de outra carta",
           match.consume_attacker_power("OP15-023", 6) == 0)
+
+
+def test_optcgmatch_varios_ataques_pendentes_mesmo_turno_19_09() -> None:
+    """
+    Achado real ao vivo 19/09 (mesmo bloco 875, validando o fix em partida
+    -- Ace R x Enel, turno 3): a 1a versao de `register_own_attack` usava
+    UM registro so, sobrescrito a cada `attack` escolhido. Log real: 3
+    `attack` decididos em sequencia pelo /decide ANTES do quando_attacking
+    do 1o atacante (Vista) perguntar o alvo -- `_ultimo_ataque_real`
+    guardava so o ULTIMO, o registro do Vista se perdia, e `atk=0`
+    continuou chegando no `[TGT]` (bug NAO corrigido na pratica pela 1a
+    versao). Fix: por CODIGO (`_ataques_pendentes`, dict), varios ataques
+    coexistem ate cada um ser consumido.
+    """
+    vista = real_card("OP16-011")
+    ace = real_card("OP16-001")
+    match = OPTCGMatch((real_card("OP16-003"), []), (real_card("OP15-001"), []))
+
+    # 3 ataques declarados em sequencia no MESMO turno, igual ao log real
+    # (Vista primeiro, depois outros 2 atacantes -- aqui simplificado pra
+    # so mais um, o suficiente pra provar que nao se apagam).
+    match.register_own_attack(vista, 3)
+    match.register_own_attack(ace, 3)
+
+    check("com 2 ataques pendentes no mesmo turno, o do PRIMEIRO (Vista) "
+          "continua recuperavel -- nao foi apagado pelo 2o (Ace)",
+          match.consume_attacker_power("OP16-011", 3) == vista.power)
+    check("o 2o (Ace) tambem continua intacto depois de consumir o 1o",
+          match.consume_attacker_power("OP16-001", 3) == ace.power)
 
 
 def test_opp_turn_reactive_effects_krieg_leader_debuff_24_08() -> None:

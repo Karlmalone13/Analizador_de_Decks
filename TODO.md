@@ -1,6 +1,19 @@
 # TODO — Analisador de Decks OPTCG
 
-**Última atualização:** 19 de setembro de 2026 (bloco 875)
+**Última atualização:** 19 de setembro de 2026 (bloco 876)
+
+> **ABERTO (bloco 876): atacante do OPONENTE via pondering ainda escapa do fix
+> do bloco 875.** Validando ao vivo (4 partidas CPU x CPU), o fix funciona
+> 100% pros ataques do PROPRIO turno do bot (inclusive multi-passo). Mas a
+> Vista (Ace R) continua `atk=0` sem correcao -- a decision_log mostra o MESMO
+> ataque dela registrado em 3 turnos diferentes (3, 4, 5), sinal de que o
+> PONDERING especula o ataque adiantado sob um `trigger_turn` que nao bate com
+> o turno real em que o `when_attacking` pergunta o alvo. `consume_attacker_
+> power` exige turno exato -- e por isso nunca acha o registro certo nesses
+> casos. Prognostico: ou trocar a exigencia de turno exato por "mais recente
+> pra esse codigo", ou achar outro sinal que nao dependa de `trigger_turn`.
+> Nao investigado mais fundo (pedido do usuario foi validar e seguir pro
+> treino).
 
 > **CORRIGIDO (bloco 875): `when_attacking` mirava a propria mao.** Causa
 > fechada (pendencia aberta desde o bloco 862/871): `/choose_target` so

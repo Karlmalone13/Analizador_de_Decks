@@ -1,5 +1,81 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-09-19 (876) - Validacao ao vivo do bloco 875: multi-passo fechado, atacante do OPONENTE ainda escapa (pondering)
+
+Sessao Claude (Sonnet 5), continuacao imediata do bloco 875. Rodei 3 partidas
+CPU x CPU reais (Enel x Imu, 2x Enel x Ace R) pra validar o fix ao vivo, via
+computer-use (acesso concedido ao `OPTCGSim.exe`).
+
+### Achado 1, CORRIGIDO: registro por CODIGO, nao um unico valor
+
+1a partida pos-fix (Enel x Imu): o marcador `atk=0->5000(proprio ataque)`
+apareceu no log -- o mecanismo geral funciona. Mas ao trocar pra Enel x Ace R
+(deck com Vista OP16-011, quem revelou o bug original), a Vista continuou
+`atk=0` sem marcador. Causa: `_ultimo_ataque_real` era UM registro so; em CPU
+x CPU o OPTCGSim declara **varios ataques do turno em sequencia** antes de
+resolver o `when_attacking` de cada um (medido: 3 `attack` escolhidos pelo
+`/decide` antes do primeiro quando_attacking perguntar o alvo) -- o 2o/3o
+atacante sobrescrevia o registro do 1o. **Fix**: `_ataques_pendentes`, dict
+por CODIGO (`OPTCGMatch`, decision_engine.py), varios ataques coexistem.
+
+### Achado 2, CORRIGIDO: nao apagar no 1o consumo
+
+Reiniciei o servidor com o fix 1 e testei nomeadamente o proprio Enel: o log
+mostrou `passo=20/1` com o marcador, mas `passo=21/1`, `22/1`, `23/1` (MESMA
+ativacao, so passos seguintes) voltaram a `atk=0` sem marcador. Causa: um
+`when_attacking`/efeito de VARIOS passos pede alvo mais de uma vez, e
+`consume_attacker_power` limpava o registro no 1o uso "pra nao vazar pro
+proximo pedido" -- quebrando o proprio caso que o fix existe pra cobrir.
+**Fix**: passa a NAO apagar (fica disponivel o resto do turno pra aquele
+codigo; so e sobrescrito se a MESMA carta atacar de novo). Validado ao vivo:
+3a partida (Enel x Ace R de novo), Enel `passo=20/1` ATE `23/1` **todos** com
+o marcador.
+
+### Achado 3, TENTADO mas NAO fechou: pondering pula o registro
+
+Suspeitei que ataques confirmados via CACHE do pondering (`_try_consume_ponder`
+em `/decide`) nunca passavam por `_package_action`/registro, porque o retorno
+e antecipado (`return finish(cached["payload"], ...)` antes de `action =
+bridge.choose_action(...)`). Adicionei `atacante_code`/`atacante_power` ao
+`_ponder_result` (gravado no proprio worker do pondering) e um novo metodo
+`register_own_attack_by_code` chamado no ponder-hit do `/decide`.
+
+**Reiniciei e testei de novo (4a partida): NAO resolveu o caso da Vista.**
+Evidencia de que a causa e mais funda: a decision_log mostra a Vista com
+`type=attack` **em 3 turnos diferentes (3, 4 e 5)** pra aparentemente o MESMO
+ataque (scores quase identicos, mesma `card_uid=-250`, `priority` mudando de
+`REMOVE_THREAT` pra `LETHAL`) -- consistente com o pondering **especulando o
+ataque adiantado**, guardando sob um `trigger_turn` que nao bate com o turno
+real em que o ataque de fato executa e o `when_attacking` pergunta o alvo.
+Meu registro fica preso ao turno errado e `consume_attacker_power` nunca acha
+o match (a checagem de turno, que existe de proposito pra nao vazar pro turno
+seguinte, acaba rejeitando o proprio caso certo).
+
+**NAO investigado mais fundo por ora** -- pedido do usuario foi validar e
+seguir pro treino. Registrado como ABERTO no TODO.md. Prognostico de proximo
+passo: OU parar de exigir batida exata de turno em `consume_attacker_power`
+(trocar por "mais recente pra esse codigo", aceitando o risco pequeno de
+turno errado) OU nao confiar em `trigger_turn`/`state.turnNumber` do
+pondering pra esse registro especifico e usar outro sinal.
+
+### O que ficou provado, com log real
+
+- Ataques do PROPRIO turno do bot (decididos no `/decide` normal, sem
+  pondering envolvido): **100% corrigidos**, inclusive efeitos multi-passo.
+- Ataques do lado OPONENTE que passam por pondering (self-play, comum): a
+  causa raiz mudou de "nunca registrado" pra "registrado no turno errado" --
+  progresso real, mas o sintoma ao vivo (`atk=0`, zona nao filtrada) ainda
+  aparece pra esses casos.
+
+### Estado
+
+`smoke_fast.py` OK a cada iteracao (testes atualizados pra refletir "nao
+apaga no consumo"; teste novo cobrindo varios ataques pendentes no mesmo
+turno). 3 partidas novas bancadas automaticamente pelo auto-collect
+(`2026-09-19T13.16.38_p5`, `..T13.59.05_p6`, `..T14.19.50_p7` -- ver
+`logs/index.json`). Servidor reiniciado 3x ao longo da sessao pra carregar
+cada iteracao do fix; versao final no ar ao terminar o bloco.
+
 ## 2026-09-19 (875) - `when_attacking` mirava a PROPRIA MAO: o `/choose_target` nao sabia quem estava atacando
 
 Sessao Claude (Sonnet 5), continuacao do bloco 874. Pedido do usuario:
