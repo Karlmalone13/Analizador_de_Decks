@@ -1,5 +1,89 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-09-19 (878) - O TREINO CAI DE 1451s PRA 180s: 6 fits completos viravam 3, e ninguem media POR LIDER
+
+Sessao Claude (Sonnet 5), continuacao imediata do bloco 877. O usuario pediu
+pra investigar por que "treina" e 74% do ciclo antes de aceitar reduzir o
+corpus -- ele suspeitava que ler o arquivo linha a linha fosse o culpado.
+
+### AS-IS isolado ANTES de qualquer mudanca (regra do projeto)
+
+```
+leitura + parse (721.008 linhas)          :   22,1 s  (1,5% do "treina")
+UM fit do MLPRegressor (577k linhas)      :  210,6 s
+```
+
+**A suspeita do usuario estava ERRADA, e bom ter medido em vez de assumir**:
+ler o arquivo nao e o gargalo. O codigo fazia **6 fits completos** (5 do
+`GroupKFold` + 1 final no corpus inteiro, que e o que realmente vira o
+`.joblib`) -- e os 5 de validacao NUNCA viram modelo de producao, so medem
+generalizacao. Ou seja, tinham o MESMO custo do fit final sem precisar do
+MESMO tamanho de dado.
+
+### O que NAO mudou, por pedido explicito do usuario
+
+Discutido antes de qualquer linha de codigo: **a validacao por lider
+(`GroupKFold`) fica**. O argumento dele: *"jogar bem nao e necessariamente
+ganhar a partida, mas tirar o melhor do deck"* -- um modelo que decorou lider
+aprenderia "este lider costuma vencer" em vez de julgar a jogada, e isso
+passaria disfarcado de "aprendeu" no erro agregado. Cortar isso por
+velocidade teria sido economizar tempo destruindo a UNICA garantia de que o
+Q generaliza pra lider novo (o objetivo central do projeto, "QUALQUER
+DECK"). O corte veio de outro lugar.
+
+### As duas mudancas (`treinar_q.py`)
+
+1. **`--folds` 5 -> 2** (o minimo que ainda garante "testado em lider nunca
+   visto"). 5 fits de validacao viram 2.
+2. **`--amostra-validacao` (default 200.000)**: os folds de validacao rodam
+   numa AMOSTRA do corpus, nao no corpus inteiro -- ja que nunca viram
+   modelo de producao mesmo. **O modelo FINAL continua treinando no corpus
+   INTEIRO**, sem amostragem nenhuma -- so a medicao de generalizacao ficou
+   mais barata, nao o modelo que vai pro ciclo.
+
+### Terceira mudanca: relatorio POR LIDER individual (nao so velocidade)
+
+Achado no caminho: o relatorio so mostrava erro/concordancia POR FOLD (uma
+MISTURA de varios lideres, ~10 por fold com 2 folds) e POR FAMILIA de acao
+-- nunca por lider individual, embora a lista de lideres ja estivesse salva
+no bundle sem nenhum uso. Mesmo buraco que a regra do projeto ja proibe
+noutras ferramentas ("nenhum agregado vale sem o recorte POR LIDER"). Como
+cada lider so aparece no fold em que foi held-out, da pra tabular sem custo
+extra -- so contabilidade.
+
+### MEDIDO DEPOIS (mesmo corpus, 721.008 alvos, 20 lideres)
+
+```
+TEMPO TOTAL: 180,1s  (era 1451s -- 8,1x)
+
+CONCORDANCIA TOP-1 COM O PROFESSOR: 59,9% (5.866 decisoes, +23,0pp do acaso)
+  por familia: attack 63,7% | play 65,2% | pass 58,9% | activate 40,9%
+               | attach_don 33,6%
+
+POR LIDER: a maioria entre 52-68% de concordancia, erro 0,044-0,059 --
+  generalizacao razoavelmente UNIFORME, nenhum lider catastroficamente
+  pior que os outros (nao decorou).
+```
+
+**Ressalva encontrada pela propria tabela nova**: 4 lideres (Krieg OP15-001,
+Imu OP13-079, Xebec OP17-039, um Ace OP17-079) cairam com so 21-70 alvos na
+amostra de 200k (contra 10-15 mil dos outros) -- concordancia saiu "?" por
+falta de dado na amostra, nao por falha real. **Amostragem aleatoria pura
+nao garante piso por lider.** Se isso importar pra decisao futura, trocar
+por amostragem ESTRATIFICADA (minimo garantido por lider) -- nao feito ainda,
+registrado como pendencia.
+
+### Estado
+
+`smoke_fast.py` OK (nao toca `treinar_q.py` diretamente -- validado por
+rodada real, primeiro numa fatia de 15k linhas, depois no corpus inteiro,
+ambas conferidas manualmente antes deste registro). Artefato de teste
+(`q_desafiante_teste.joblib`) removido -- nao e o modelo de producao.
+
+**PENDENTE**: rodar 1 ciclo inteiro (`ciclo.py`) com TODAS as mudancas da
+sessao juntas (busca em vez de bootstrap na geracao, explorar 0,17 com
+distancia longe, folds/amostra novos) e medir o portao. Ainda nao rodado.
+
 ## 2026-09-19 (877) - O TREINO TROCA DE PROFESSOR: bootstrap sai da geracao, exploracao ganha uma 2a distancia, corpus ganha etiqueta de qualidade
 
 Sessao Claude (Sonnet 5), depois de rodar o ciclo 3 (bloco 876-area, INCONCLUSIVO

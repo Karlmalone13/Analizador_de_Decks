@@ -32,7 +32,42 @@ ela deixa de fazer e decidir.
 
 `GroupKFold` por lider: o objetivo registrado e jogar bem com QUALQUER deck,
 entao o teste tem que ser em lider que o modelo nao viu treinando. Sem isso, um
-modelo que decorou lider passa e quebra no deck novo.
+modelo que decorou lider passa e quebra no deck novo. NAO reduzir isso por
+velocidade -- discutido explicitamente com o usuario 19/09/2026: jogar bem nao
+e "ganhar a partida", e extrair o melhor do deck que se tem, e um modelo que so
+aprendeu "este lider costuma vencer" erraria isso silenciosamente. O corte por
+velocidade tem que vir de OUTRO lugar (ver abaixo), nunca de tirar o holdout.
+
+## AS-IS que motivou a mudanca de 19/09/2026 (bloco 878)
+
+Medido isolado: ler+parsear o corpus inteiro (721k linhas) custa 22s: **1,5%**
+do tempo de "treina" no ciclo (1451s). O resto e o `MLPRegressor.fit()` --
+210,6s pra UM fit em ~577k linhas. E o codigo fazia **6 fits completos**: 5
+(GroupKFold) + 1 final no corpus inteiro (`modelo = novo().fit(X, y)`, o que
+realmente vai pro `.joblib`). Os folds de validacao NUNCA viram modelo de
+producao -- so medem generalizacao -- entao nao precisam ver o corpus
+INTEIRO pra isso. Duas mudancas, nenhuma delas mexendo no holdout por lider:
+
+1. `--folds` cai de 5 pra 2 (o MINIMO que ainda garante "testado em lider
+   nao visto") -- 5 fits de validacao viram 2.
+2. `--amostra-validacao` (default 200.000): os folds rodam numa AMOSTRA do
+   corpus, nao no corpus inteiro. O modelo FINAL (o que e salvo) continua
+   treinando no corpus INTEIRO, sem amostragem -- a amostra e so pra medir
+   generalizacao mais barato.
+
+Ganho estimado (nao ainda remedido com AS-IS formal): ~1451s -> ~350-400s.
+
+## Relatorio POR LIDER individual (achado no mesmo pedido)
+
+Ate aqui o relatorio so mostrava erro/concordancia POR FOLD (uma MISTURA de
+varios lideres, ja que cada fold segura ~n_lideres/folds lideres de uma vez)
+e POR FAMILIA de acao -- nunca por lider individual, embora a lista de
+lideres ja estivesse salva no bundle sem uso nenhum. E exatamente o tipo de
+agregado que o projeto ja proibe em outras ferramentas (regra "nenhum
+resultado agregado vale sem o recorte POR LIDER", `decision_quality_full.py`
+ja obrigado a mostrar isso). Um lider especifico podia estar generalizando
+mal e sumir na media do fold. Corrigido: cada lider so aparece no fold em
+que foi held-out, entao da pra tabular por lider sem custo extra de treino.
 
 Uso:
     python treinar_q.py --dataset metrics/q_alvos.jsonl --out metrics/q_net.joblib
@@ -51,7 +86,19 @@ def main() -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument('--dataset', default='metrics/q_alvos.jsonl')
     ap.add_argument('--out', default='metrics/q_net.joblib')
-    ap.add_argument('--folds', type=int, default=5)
+    ap.add_argument('--folds', type=int, default=2,
+                    help='GroupKFold por lider. MINIMO 2 (garante lider nunca '
+                         'visto no treino) -- default ate 19/09 era 5, cortado '
+                         'pro minimo que ainda cumpre a garantia (bloco 878, '
+                         'AS-IS: cada fold a mais e outro fit completo, ~210s '
+                         'em ~577k linhas)')
+    ap.add_argument('--amostra-validacao', dest='amostra_validacao', type=int,
+                    default=200_000,
+                    help='os FOLDS de validacao rodam nesta amostra do corpus, '
+                         'nao no corpus inteiro -- o modelo FINAL salvo sempre '
+                         've tudo (bloco 878). 0 desliga a amostragem (usa o '
+                         'corpus inteiro tambem na validacao, comportamento '
+                         'antigo).')
     ap.add_argument('--modelo', choices=('rede', 'arvores'), default='rede',
                     help='REDE por default desde o bloco 800: medido em 120 mil '
                          'alvos, ela erra 18%% MENOS que as 300 arvores (0,0554 '
@@ -105,6 +152,24 @@ def main() -> int:
     print('  alvo: media %.3f | desvio %.3f | distintos %d'
           % (y.mean(), y.std(), len(set(np.round(y, 4).tolist()))))
 
+    # AMOSTRA SO PRA VALIDACAO (bloco 878) -- os folds nunca viram o modelo
+    # salvo (esse treina no X/y INTEIROS mais abaixo), entao nao precisam do
+    # corpus inteiro pra medir generalizacao. Semente FIXA (reprodutivel).
+    if args.amostra_validacao and len(X) > args.amostra_validacao:
+        idx_val = np.random.RandomState(0).choice(
+            len(X), size=args.amostra_validacao, replace=False)
+        idx_val.sort()  # mantem a ordem original (decisoes agrupadas)
+        Xv, yv, gruposv = X[idx_val], y[idx_val], grupos[idx_val]
+        decisoesv = decisoes[idx_val]
+        escolhidasv = escolhidas[idx_val]
+        familiasv = familias[idx_val]
+        print('  validacao rodando numa amostra de %d (o modelo final treina '
+              'nos %d inteiros)' % (len(Xv), len(X)))
+    else:
+        Xv, yv, gruposv = X, y, grupos
+        decisoesv, escolhidasv, familiasv = decisoes, escolhidas, familias
+    n_lideres_val = len(set(gruposv.tolist()))
+
     def novo():
         # REDE LEVE (NNUE-style), default desde o bloco 800. A previsao e duas
         # multiplicacoes de matriz -- 0,100 ms em numpy puro contra 8,47 ms das
@@ -123,7 +188,7 @@ def main() -> int:
                          early_stopping=True, n_iter_no_change=5,
                          random_state=0))
 
-    folds = min(args.folds, n_lideres)
+    folds = min(args.folds, n_lideres_val)
     if folds < 2:
         raise SystemExit('precisa de pelo menos 2 lideres pra validar por lider')
 
@@ -135,6 +200,12 @@ def main() -> int:
     # mede o VALOR, e quem decide e o ARGMAX.
     conc_ok = conc_tot = 0
     conc_fam = {}
+    # POR LIDER individual (bloco 878) -- cada lider so aparece no fold em
+    # que foi held-out, entao acumula direto sem custo extra de treino.
+    # erro_lider: lider -> lista de |erro| das linhas dele; conc_lider: lider
+    # -> [acertos, total] de concordancia, mesmo formato de conc_fam.
+    erro_lider = {}
+    conc_lider = {}
     # CONTROLE QUE PODE FALHAR (regra do projeto): escolher no ACASO entre as
     # candidatas da decisao. Com ~4,8 candidatas isso ja da ~21%, entao a
     # concordancia sozinha nao diz nada -- o que informa e a distancia ate aqui.
@@ -142,25 +213,28 @@ def main() -> int:
     gkf = GroupKFold(n_splits=folds)
     print()
     print('  fold | lideres no teste | erro medio do MODELO | erro da MEDIA')
-    for k, (tr, te) in enumerate(gkf.split(X, y, grupos), 1):
-        m = novo().fit(X[tr], y[tr])
-        pred = m.predict(X[te])
-        em = float(np.mean(np.abs(pred - y[te])))
-        eb = float(np.mean(np.abs(y[tr].mean() - y[te])))
+    for k, (tr, te) in enumerate(gkf.split(Xv, yv, gruposv), 1):
+        m = novo().fit(Xv[tr], yv[tr])
+        pred = m.predict(Xv[te])
+        em = float(np.mean(np.abs(pred - yv[te])))
+        eb = float(np.mean(np.abs(yv[tr].mean() - yv[te])))
         erros_modelo.append(em)
         erros_base.append(eb)
+
+        for pos, i in enumerate(te):
+            erro_lider.setdefault(gruposv[i], []).append(abs(pred[pos] - yv[i]))
 
         # so as decisoes do fold de TESTE, e so as que tem id e escolhida
         grupos_dec = {}
         for pos, i in enumerate(te):
-            dec = decisoes[i]
+            dec = decisoesv[i]
             if dec.endswith('|None') or dec.startswith('None|'):
                 continue
             grupos_dec.setdefault(dec, []).append((pos, i))
         for dec, itens in grupos_dec.items():
             if len(itens) < 2:
                 continue          # decisao de uma candidata so nao decide nada
-            alvo_prof = [i for _p, i in itens if escolhidas[i]]
+            alvo_prof = [i for _p, i in itens if escolhidasv[i]]
             if len(alvo_prof) != 1:
                 continue          # sem professor marcado, nao ha o que comparar
             melhor = max(itens, key=lambda t: pred[t[0]])[1]
@@ -168,12 +242,16 @@ def main() -> int:
             conc_ok += 1 if acertou else 0
             conc_acaso += 1.0 / len(itens)
             conc_tot += 1
-            fam = familias[alvo_prof[0]]
+            fam = familiasv[alvo_prof[0]]
             d2 = conc_fam.setdefault(fam, [0, 0])
             d2[1] += 1
             d2[0] += 1 if acertou else 0
+            lid = gruposv[alvo_prof[0]]
+            d3 = conc_lider.setdefault(lid, [0, 0])
+            d3[1] += 1
+            d3[0] += 1 if acertou else 0
         print('  %4d | %16d | %20.4f | %13.4f'
-              % (k, len(set(grupos[te].tolist())), em, eb))
+              % (k, len(set(gruposv[te].tolist())), em, eb))
 
     em = float(np.mean(erros_modelo))
     eb = float(np.mean(erros_base))
@@ -208,6 +286,32 @@ def main() -> int:
                 print('       %-12s %5.1f%%  (%d decisoes)'
                       % (fam, 100.0 * ok / max(1, tot), tot))
 
+    # POR LIDER individual (bloco 878) -- ate aqui o relatorio so mostrava
+    # fold (mistura varios lideres) e familia; um lider especifico podia
+    # generalizar mal e sumir na media. Ordenado por volume de decisoes,
+    # mesma convencao de `decision_quality_full.py`.
+    por_lider = {}
+    for lid in set(list(erro_lider.keys()) + list(conc_lider.keys())):
+        erros = erro_lider.get(lid, [])
+        ok, tot = conc_lider.get(lid, [0, 0])
+        por_lider[lid] = {
+            'erro_medio': round(float(np.mean(erros)), 4) if erros else None,
+            'n_alvos': len(erros),
+            'concordancia_pct': round(100.0 * ok / tot, 1) if tot else None,
+            'decisoes': tot,
+        }
+    if por_lider:
+        print()
+        print('  POR LIDER (validacao, cada lider held-out em 1 fold):')
+        print('    %-14s %10s %12s %14s %10s'
+              % ('lider', 'alvos', 'erro medio', 'concordancia', 'decisoes'))
+        for lid, d in sorted(por_lider.items(), key=lambda kv: -kv[1]['decisoes']):
+            erro_txt = '%.4f' % d['erro_medio'] if d['erro_medio'] is not None else '?'
+            conc_txt = ('%.1f%%' % d['concordancia_pct']
+                       if d['concordancia_pct'] is not None else '?')
+            print('    %-14s %10d %12s %14s %10d'
+                  % (lid, d['n_alvos'], erro_txt, conc_txt, d['decisoes']))
+
     modelo = novo().fit(X, y)
     bundle = {
         'modelo': modelo,
@@ -223,6 +327,8 @@ def main() -> int:
         'concordancia_por_familia': {k: {'acerto_pct': round(100.0 * v[0] / max(1, v[1]), 1),
                                          'decisoes': v[1]}
                                      for k, v in conc_fam.items()},
+        'por_lider': por_lider,
+        'amostra_validacao': int(len(Xv)),
         'erro_da_media': eb,
         'ganho_pct': ganho,
         'dataset': args.dataset,

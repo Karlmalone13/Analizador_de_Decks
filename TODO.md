@@ -1,6 +1,23 @@
 # TODO — Analisador de Decks OPTCG
 
-**Última atualização:** 19 de setembro de 2026 (bloco 877)
+**Última atualização:** 19 de setembro de 2026 (bloco 878)
+
+> **MEDIDO (bloco 878): treino caiu de 1451s pra 180s (8,1x), sem tirar a
+> validacao por lider.** Causa real (AS-IS mediu -- a suspeita de "ler linha a
+> linha" estava ERRADA, so 1,5% do tempo): eram 6 fits completos de rede
+> neural (5 folds de `GroupKFold` + 1 final), e os 5 de validacao nunca viram
+> o modelo salvo. Fix em `treinar_q.py`: `--folds` 5->2 (minimo que ainda
+> garante lider nunca visto) + `--amostra-validacao 200000` (folds rodam numa
+> amostra, o modelo FINAL continua vendo o corpus INTEIRO). Concordancia com o
+> professor: 59,9% (+23pp do acaso). Bonus: relatorio ganhou tabela POR LIDER
+> individual (nao existia, so fold-agregado e familia-agregado existiam antes)
+> -- mostrou generalizacao uniforme (52-68% na maioria), MAS tambem que 4
+> lideres raros (Krieg, Imu, Xebec, 1 Ace) ficaram com amostra de menos
+> (21-70 alvos) pra medir concordancia -- amostragem aleatoria pura nao
+> garante piso por lider, pendente trocar por estratificada se importar.
+> **PENDENTE**: rodar 1 ciclo inteiro com todas as mudancas da sessao juntas
+> (busca em vez de bootstrap + explorar 0,17 + folds/amostra novos) e medir
+> o portao -- ainda nao rodado.
 
 > **MUDADO (bloco 877): o treino deixa de ser bootstrap.** 3 ciclos seguidos
 > INCONCLUSIVOS com erro Q parado (~0,042) levaram a trocar o professor da

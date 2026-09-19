@@ -185,8 +185,14 @@ def guarda_corpo(workers) -> dict:
     return achados
 
 
-def gera(n, seed, workers) -> bool:
+def gera(n, seed, workers, n_ciclo=0) -> bool:
     """
+    `n_ciclo` grava em CADA linha (campo `gen` do corpus) -- achado 19/09
+    ao investigar reducao de corpus: `gera()` nunca passava `--gen`, entao
+    97% das linhas do corpus (721k) tem `gen=0` e nao ha como saber DE QUE
+    CICLO uma linha veio. Sem isso, nenhuma janela "guarda so os ultimos N
+    ciclos" e possivel -- o corte teria que ser as cegas.
+
     ALVO Q = 'busca' (professor INDEPENDENTE, nao bootstrap) -- pedido do
     usuario, 19/09/2026: 3 ciclos seguidos INCONCLUSIVOS com erro Q parado
     (0,0438 -> 0,0423 -> 0,0426, dentro do ruido) enquanto o corpus so
@@ -214,6 +220,7 @@ def gera(n, seed, workers) -> bool:
     env['OPTCG_Q_ALVO'] = 'busca'
     return _rodar(['gerar_selfplay_dataset.py', '--n', str(n), '--workers', str(workers),
                    '--decks', '24', '--seed', str(seed), '--append',
+                   '--gen', str(n_ciclo),
                    '--out', str(CORPUS), '--q-out', str(Q_CORPUS)],
                   'geracao de partidas', env=env)
 
@@ -393,7 +400,7 @@ def main() -> int:
         print('[1/5] GERA %d partidas (acumulando alvos Q)' % args.partidas,
               flush=True)
         cron.inicia('gera')
-        ok = gera(args.partidas, seed, args.workers)
+        ok = gera(args.partidas, seed, args.workers, n_ciclo=n_ciclo)
         cron.fecha()
         if not ok:
             break
