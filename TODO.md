@@ -1,6 +1,26 @@
 # TODO — Analisador de Decks OPTCG
 
-**Última atualização:** 19 de setembro de 2026 (bloco 879)
+**Última atualização:** 19 de setembro de 2026 (bloco 880)
+
+> **CICLO 5 rodado com o fix do bloco 879: gerou dado de verdade (721.008 ->
+> 740.861, +19.853 via busca), ciclo caiu pra 9,7min (era 30,9min no ciclo 3).
+> Portao continua INCONCLUSIVO (9x8) e erro Q subiu (0,0534) -- MAS isso NAO e
+> evidencia de que o professor busca piora nada: a tabela historica mistura
+> DUAS mudancas de metodologia da mesma sessao (professor bootstrap->busca +
+> validacao 5-fold/tudo -> 2-fold/amostra-200k), ciclos 1-3 e 4-5 nao sao a
+> mesma regua. Um ciclo de 40 partidas tambem e incremento pequeno (~2,7% do
+> corpus) pra decidir algo sozinho. NAO concluir "busca ajuda" nem "busca
+> atrapalha" ainda -- falta MAIS ciclos com a metodologia atual (ja fixada)
+> pra virar comparavel.**
+>
+> **PROXIMO PASSO**: rodar mais ciclos seguidos (mesma metodologia de agora)
+> ate ter volume suficiente pra julgar de verdade. Resumo do que mudou nesta
+> sessao pra quem assumir: geracao usa professor 'busca' (nao bootstrap);
+> `treinar_q.py` usa 2 folds + amostra 200k pra validacao (modelo final ve
+> tudo) e ganhou tabela POR LIDER; `--explorar` default 0,17 com exploracao
+> "longe" (30% pra qualquer candidata, nao so top-4); corpus ganhou campo
+> `modo` em linhas novas (nao foi reduzido). `when_attacking` via pondering
+> (bloco 876) segue aberto, nao investigado mais fundo.
 
 > **CORRIGIDO (bloco 879): modo 'busca' coletava ZERO alvos desde o bloco 811
 > (13/09), sem erro nem aviso.** O ciclo 4 (bloco 878's teste) confirmou: 40

@@ -1,5 +1,67 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-09-19 (880) - CICLO 5, com o fix do bloco 879: gerou dado de verdade, mas o portao continua sem promover
+
+Sessao Claude (Sonnet 5), fechamento da sessao (usuario vai dar `/clear`).
+Rodei `ciclo.py --partidas 40 --workers 4` de novo, agora com o fix do
+bloco 879 (modo 'busca' coletando de verdade) ja no lugar.
+
+### O que o ciclo 5 PROVA
+
+`alvos_corpus`: 721.008 -> **740.861** (+19.853, todos via busca -- o
+mecanismo de coleta funciona no pipeline real, nao so no teste isolado do
+bloco 879). `gera` levou 309s (ciclo 3, bootstrap, levava 249s pro mesmo
+volume -- busca e mais caro por partida, como esperado, mas nao inviabiliza
+o ciclo). `treina` levou 196s (era 1451s no ciclo 3) -- o fix do bloco 878
+se confirma TAMBEM com corpus real maior, nao so no teste isolado de 180s.
+**Tempo total do ciclo: 9,7 min, contra 30,9 min do ciclo 3** (a soma dos
+dois fixes da sessao, medida junta).
+
+### O que o ciclo 5 NAO prova, e por que -- honestidade obrigatoria aqui
+
+```
+ ciclo |   alvos | erro Q |        portao        | promovido
+     3 |  721008 | 0.0426 |   8x7   INCONCLUSIVO | nao
+     4 |  721008 | 0.0498 |   9x8   INCONCLUSIVO | nao  (SEM dado novo, bloco 879)
+     5 |  740861 | 0.0534 |   9x8   INCONCLUSIVO | nao
+```
+
+O portao continua INCONCLUSIVO e o erro Q SUBIU (nao caiu) em relacao ao
+ciclo 3. **Isto NAO e evidencia de que o professor 'busca' piora o
+modelo** -- a coluna "erro Q" da tabela historica mistura DUAS mudancas de
+metodologia feitas na MESMA sessao (professor bootstrap->busca, bloco 877;
+validacao 5-fold/corpus-inteiro -> 2-fold/amostra-200k, bloco 878), entao
+os numeros de ciclos 1-3 e 4-5 nao sao a mesma regua. Somado a isso, um
+ciclo de 40 partidas continua sendo um incremento pequeno (~2,7% do
+corpus) -- pouco pra esperar mudanca visivel no portao de UM ciclo so,
+ainda mais com um professor que o modelo nunca tinha visto antes.
+
+**Nao inventar conclusao que o dado nao sustenta**: nem "o busca ajuda" nem
+"o busca atrapalha" tem evidencia suficiente ainda. Precisa de mais ciclos
+com a MESMA metodologia (a atual, ja fixada) pra virar comparavel.
+
+### Estado ao fechar a sessao
+
+Tudo commitado ate aqui (blocos 874-879, engine + ML). Unico pendente de
+commit era `metrics/ciclo_estado.json` (o historico dos 5 ciclos) e os
+`real_loss_audits/*` tocados pela etapa 4 do ciclo -- versionados junto
+deste bloco.
+
+**Resumo do que muda pra quem assumir a sessao seguinte**:
+- Geracao offline (`ciclo.py`) usa professor 'busca' (nao bootstrap).
+- `treinar_q.py`: 2 folds + amostra de 200k pra validacao, modelo final
+  ainda ve o corpus inteiro. Relatorio ganhou tabela POR LIDER.
+  `--amostra-validacao 0` volta ao comportamento antigo se precisar.
+- `--explorar` default 0,17 (era 0,10), com exploracao "longe" (30% das
+  exploracoes vao pra qualquer candidata, nao so as 3 seguintes ao topo).
+- Corpus (740.861 linhas agora) ganhou campo `modo` (busca/bootstrap) em
+  toda linha NOVA -- linhas antigas nao tem. Nao foi reduzido/truncado.
+- `when_attacking` do atacante via PONDERING ainda tem o gap aberto do
+  bloco 876 (nao investigado mais fundo, fica pra depois).
+- **PROXIMO PASSO SUGERIDO**: rodar mais ciclos (mesma metodologia atual)
+  ate ter volume suficiente de dado 'busca' pra comparar de verdade contra
+  o baseline bootstrap -- 1 ciclo nao decide nada.
+
 ## 2026-09-19 (879) - O MODO 'BUSCA' COLETAVA ZERO ALVOS DESDE O BLOCO 811, E O CICLO 4 NAO GEROU DADO NENHUM
 
 Sessao Claude (Sonnet 5), continuacao imediata do bloco 878. Rodei o ciclo
