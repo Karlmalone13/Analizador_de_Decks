@@ -1,6 +1,22 @@
 # TODO — Analisador de Decks OPTCG
 
-**Última atualização:** 19 de setembro de 2026 (bloco 873)
+**Última atualização:** 19 de setembro de 2026 (bloco 874)
+
+> **CORRIGIDO (bloco 874): Enel ativava o lider no vacuo.** Investigando os 2
+> ultimos logs banked (Krieg x Luffy RG limpo; Enel x Imu com 1 bug real),
+> achado que `_should_activate_main` liberava QUALQUER `add_don`/
+> `set_don_active` sem checar se sobrava DON no deck/restado -- Enel (deck de
+> DON reduzido, `don_deck_size: 6`) ativava o lider no turno 5 sem deck
+> sobrando, queimava o `once_per_turn`, e nao movia nada. Afeta 32 cartas do
+> banco (nao so o Enel). Fix percorre os `steps` em ORDEM: um
+> `return_don_until_match_opp` (devolve DON do campo, incl. ANEXADO, pro
+> deck) ANTES de um `add_don`/`set_don_active` na mesma cadeia libera mesmo
+> com o deck zerado AGORA (pedido do usuario -- "a sequencia importa").
+> Teste permanente em `smoke_fast.py`, `smoke_fast.py` inteiro OK.
+>
+> **PENDENTE de sempre**: telemetria individual (`live_`/`efeitos_`/
+> `receipt_`) de Krieg x Luffy e Enel x Imu nao existe como artefato (bug do
+> bloco 871) -- a auditoria foi reconstruida na mao do decision log cru.
 
 > **COMMITADO: fix `pick_counters` (bloco 872, commit `1320ceb`)** --
 > `effective_counter` era chamado 2x por carta, mesmo padrao ja corrigido em

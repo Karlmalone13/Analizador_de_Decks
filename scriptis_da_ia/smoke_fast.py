@@ -10930,6 +10930,7 @@ def main() -> int:
     test_opp_attack_count_delega_pro_helper_compartilhado_15_08()
     test_give_don_either_side_arlong_alvida_morgan_24_08()
     test_should_activate_main_nao_queima_once_per_turn_em_custo_impagavel_24_08()
+    test_should_activate_main_add_don_exige_don_disponivel_19_09()
     test_opp_turn_reactive_effects_krieg_leader_debuff_24_08()
     test_give_don_filtro_de_tipo_no_destinatario_24_08()
     test_play_card_total_cost_lte_e_distinct_names_24_08()
@@ -15276,6 +15277,75 @@ def test_should_activate_main_nao_queima_once_per_turn_em_custo_impagavel_24_08(
     # oponente) = 0 sobrando, os 2 no banco do oponente foram usados.
     check("custo + efeito de fato pagos (DON restado do oponente todo debitado)",
           opp3.don_rested == 0)
+
+
+def test_should_activate_main_add_don_exige_don_disponivel_19_09() -> None:
+    """
+    Achado real 19/09 (log Enel-P x Imu-B, banco `2026-09-19T09.52.03_p4`,
+    investigacao da telemetria dos 2 ultimos logs): o [Activate: Main] do
+    proprio lider Enel (OP15-058) disparou no turno 5, foi confirmado pelo
+    motor, queimou o `once_per_turn` -- e NAO mudou nada (deck de DON
+    reduzido do Enel, `don_deck_size: 6`, ja exaurido). Causa: o ramo "DON
+    ramp" de `_should_activate_main` dizia "sempre vale" pra `add_don`/
+    `set_don_active` sem olhar se `p.don_deck`/`p.don_rested` tinham algo
+    -- mesmo padrao ja corrigido pro custo `give_don_opp` (teste acima),
+    nunca replicado pra este.
+
+    Fix generaliza pras 32 cartas do banco com `add_don`/`set_don_active`
+    em `activate_main`, nao so o Enel.
+    """
+    ef_enel = get_card_effects("OP15-058")["activate_main"]
+
+    # Deck de DON exaurido (Enel real: comeca com 6, achado o motivo do
+    # turno 5 ja estar seco) -- nao ha nada pra mover, tem que recusar.
+    leader_enel = real_card("OP15-058")
+    me_seco = GameState(leader=leader_enel, turn=5)
+    me_seco.don_deck = 0
+    me_seco.don_rested = 0
+    opp_seco = GameState(leader=mk("IMU1", "OppLeader", card_type="LEADER", power=5000))
+    match_seco = OPTCGMatch((me_seco.leader, []), (opp_seco.leader, []))
+    pode_seco, motivo_seco = match_seco._should_activate_main(
+        leader_enel, ef_enel, me_seco, opp_seco)
+    check("Enel com don_deck e don_rested zerados: _should_activate_main recusa "
+          "(sem isso, a habilidade dispara no vacuo e queima o once_per_turn)",
+          pode_seco is False)
+    check("motivo da recusa menciona add_don/set_don_active",
+          "add_don" in motivo_seco or "set_don_active" in motivo_seco)
+
+    # Com DON no deck, a mesma carta continua liberada normalmente (nao
+    # pode virar recusa cega).
+    leader_enel2 = real_card("OP15-058")
+    me_cheio = GameState(leader=leader_enel2, turn=5)
+    me_cheio.don_deck = 3
+    opp_cheio = GameState(leader=mk("IMU2", "OppLeader2", card_type="LEADER", power=5000))
+    match_cheio = OPTCGMatch((me_cheio.leader, []), (opp_cheio.leader, []))
+    pode_cheio, _ = match_cheio._should_activate_main(
+        leader_enel2, ef_enel, me_cheio, opp_cheio)
+    check("Enel com don_deck > 0: _should_activate_main continua liberando",
+          pode_cheio is True)
+
+    # A SEQUENCIA importa (pedido do usuario ao corrigir): deck do PROPRIO
+    # deck zerado, mas um step ANTERIOR na mesma cadeia devolve DON do
+    # campo (inclusive ANEXADO) pro deck antes do add_don rodar -- tem que
+    # liberar, porque na hora de executar de verdade vai ter DON.
+    carta_seq = mk("SEQ1", "SequenciaDon", card_type="CHARACTER", power=1000)
+    ef_seq = {
+        "steps": [
+            {"action": "return_don_until_match_opp"},
+            {"action": "add_don", "count": 1},
+        ],
+        "conditions": {},
+        "costs": [],
+    }
+    me_seq = GameState(leader=mk("SEQL", "SeqLeader", card_type="LEADER", power=5000), turn=5)
+    me_seq.don_deck = 0
+    me_seq.field_chars = [carta_seq]
+    opp_seq = GameState(leader=mk("SEQO", "SeqOpp", card_type="LEADER", power=5000))
+    match_seq = OPTCGMatch((me_seq.leader, []), (opp_seq.leader, []))
+    pode_seq, _ = match_seq._should_activate_main(carta_seq, ef_seq, me_seq, opp_seq)
+    check("don_deck proprio zerado, mas step ANTERIOR devolve DON (inclusive "
+          "anexado) pro deck -- libera em vez de recusar cego pelo estado atual",
+          pode_seq is True)
 
 
 def test_opp_turn_reactive_effects_krieg_leader_debuff_24_08() -> None:

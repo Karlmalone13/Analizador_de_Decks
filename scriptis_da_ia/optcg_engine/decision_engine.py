@@ -17315,9 +17315,43 @@ class OPTCGMatch:
                 return False, 'select_grant_rush: nenhum Character recem-deployado sem a permissao'
             return True, 'select_grant_rush: alvo recem-deployado disponivel'
 
-        # DON ramp — sempre vale
+        # DON ramp — vale se sobra DON pra mover em ALGUM ponto da cadeia.
+        # Achado real 19/09 (log Enel-P x Imu-B, turno 5): `add_don`/
+        # `set_don_active` eram julgados "sempre vale" sem olhar se
+        # `p.don_deck`/`p.don_rested` tinham algo -- o [Activate: Main] do
+        # Enel (deck de DON reduzido pra 6, game_rules `don_deck_size`)
+        # disparava, confirmava, queimava o `once_per_turn`, e nao movia
+        # NADA (deck ja exaurido). Mesmo padrao ja corrigido pro custo
+        # `give_don_opp` acima, nao pra este.
+        #
+        # A SEQUENCIA importa (apontado pelo usuario): o DON que falta pode
+        # vir de volta ANTES do add_don/set_don_active rodar -- inclusive
+        # DON ANEXADO (`return_don_until_match_opp` devolve DON do campo,
+        # anexado ou nao, pro deck; `add_don(..., rested=True)` alimenta um
+        # `set_don_active` mais adiante na MESMA cadeia). Por isso isto
+        # percorre `steps` em ORDEM em vez de olhar so o estado atual --
+        # "viabilidade ampla", nao contagem exata (mesmo espirito do resto
+        # desta funcao: nao bloquear por falta de simulacao fina).
         if any(a in ('add_don', 'set_don_active') for a in actions):
-            return True, 'benefício DON ramp'
+            devolve_don_antes = False
+            add_don_rested_antes = False
+            algum_viavel = False
+            for s in steps:
+                a = s.get('action')
+                if a == 'return_don_until_match_opp':
+                    devolve_don_antes = True
+                elif a == 'add_don':
+                    if devolve_don_antes or p.don_deck > 0:
+                        algum_viavel = True
+                    if s.get('rested'):
+                        add_don_rested_antes = True
+                elif a == 'set_don_active':
+                    if devolve_don_antes or add_don_rested_antes or p.don_rested > 0:
+                        algum_viavel = True
+            if algum_viavel:
+                return True, 'benefício DON ramp'
+            return False, ('add_don/set_don_active: sem DON no deck/restado pra '
+                           'mover (nem apos steps anteriores da cadeia)')
 
         # play_card de graça — vale se há carta elegível na mão.
         # ATENÇÃO (12/07): esta era a TERCEIRA cópia da regra de

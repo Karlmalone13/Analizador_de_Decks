@@ -1,5 +1,65 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-09-19 (874) - Enel ativava o lider no vacuo: `add_don`/`set_don_active` nunca checavam se sobrava DON
+
+Sessao Claude (Sonnet 5), continuacao do bloco 873. Pedido do usuario:
+investigar os 2 ultimos logs banked (Krieg x Luffy RG e Enel x Imu) e
+conferir se os efeitos foram ativados/alvos selecionados.
+
+**Aviso de escopo**: nenhuma das duas tem telemetria individual (`live_`/
+`efeitos_`/`receipt_`) -- pendencia deixada em aberto no bloco 871. Reconstrui
+a auditoria de efeitos a partir do `decisions_*.jsonl` cru do server
+(`BOT/engine_server/logs/decisions/`), identificando cada `match_id` pelos
+codigos de carta/lider (Krieg=OP15-001, Luffy RG=OP13-001, Enel=OP15-058,
+Imu=OP13-079) porque os arquivos misturam varias partidas da mesma sessao do
+servidor.
+
+**Krieg x Luffy RG** (banco `2026-09-19T03.13.13_p3`): limpa, 21/22 disparos
+concluidos, o unico "nao concluido" e o falso-alarme ja documentado (efeito
+que so atinge o oponente, telemetria do proprio lado nao enxerga).
+
+**Enel x Imu** (banco `2026-09-19T09.52.03_p4`): 25/28 concluidos, 2 sao o
+mesmo falso-alarme, e **1 e bug real**: turno 5, `[Activate: Main]` do
+PROPRIO lider Enel (OP15-058) disparou, foi confirmado pelo motor, queimou o
+`once_per_turn` -- e nao mudou NADA (delta zerado em mao/campo/DON/vida/deck).
+
+**Causa**: `_should_activate_main()` (`decision_engine.py`, ramo "DON ramp")
+dizia `return True, 'beneficio DON ramp'` pra QUALQUER efeito com
+`add_don`/`set_don_active`, sem olhar se `p.don_deck`/`p.don_rested` tinham
+algo pra mover. Mesmo padrao ja corrigido pro custo `give_don_opp` (bloco
+24/08, poucas linhas acima na MESMA funcao) e nunca replicado pra este. Enel
+tem `don_deck_size: 6` (mecanica propria dele, deck de DON reduzido) e por
+volta do turno 5 ja estava exaurido -- a habilidade disparava, confirmava, e
+nao tinha mais DON pra mover.
+
+**Blast radius conferido ANTES de mexer** (regra do bloco 780, "liste os
+consumidores"): 32 cartas no banco tem `add_don`/`set_don_active` em
+`activate_main` -- nao e fix de lider isolado.
+
+**Adendo do usuario ao pedir o fix**: "as vezes a sequencia importa, porque
+os dons que retornam podem ser os atachados tb" -- `_return_don_to_deck()`
+(chamada por `return_don_until_match_opp`, um step real de efeito) devolve
+DON do CAMPO pro deck, incluindo DON ANEXADO a personagens/lider. Uma
+checagem ingenua de "estado atual" recusaria por engano uma carta cujo
+efeito primeiro devolve DON anexado e SO DEPOIS tenta mover (`add_don`) --
+recusa cega derrubaria uma jogada legitima.
+
+**Fix**: percorre `steps` em ORDEM (nao so olha o estado atual). Se um
+`return_don_until_match_opp` aparece ANTES de um `add_don`/`set_don_active`
+na mesma cadeia, libera mesmo com deck/restado zerados agora (o retorno vai
+alimentar o passo seguinte); um `add_don(..., rested=True)` anterior tambem
+libera um `set_don_active` mais adiante na mesma cadeia. Sem nenhum desses,
+exige `don_deck > 0` (pro `add_don`) ou `don_rested > 0` (pro
+`set_don_active`) -- "viabilidade ampla", nao contagem exata, mesmo espirito
+do resto da funcao.
+
+Teste permanente em `smoke_fast.py`
+(`test_should_activate_main_add_don_exige_don_disponivel_19_09`): Enel com
+deck/restado zerados recusa; Enel com deck>0 continua liberando (controle
+contra recusa cega); e um caso sintetico com `return_don_until_match_opp`
+ANTES de `add_don` confirma que a SEQUENCIA libera mesmo com o deck proprio
+zerado agora. `smoke_fast.py` inteiro OK.
+
 ## 2026-09-19 (873) - commit do fix pick_counters, e a `get_card_effects` morta removida
 
 Sessao Claude (Sonnet 5), continuacao do bloco 872 na mesma maquina. Commit
