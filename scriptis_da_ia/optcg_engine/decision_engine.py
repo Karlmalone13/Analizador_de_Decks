@@ -19332,6 +19332,7 @@ class OPTCGMatch:
                         'acao': _a[1] if len(_a) > 1 else None,
                         'leader': getattr(getattr(p, 'leader', None), 'code', None),
                         'turn': int(getattr(p, 'turn', 0) or 0),
+                        'modo': 'busca',
                     })
             except Exception:
                 pass
@@ -19428,7 +19429,8 @@ class OPTCGMatch:
                                     'acao': a[1] if len(a) > 1 else None,
                                     'leader': getattr(getattr(p, 'leader', None),
                                                       'code', None),
-                                    'turn': int(getattr(p, 'turn', 0) or 0)})
+                                    'turn': int(getattr(p, 'turn', 0) or 0),
+                                    'modo': 'bootstrap'})
                         self._q_registra(a, cap[-1])
                         continue
                     estados.append((p2, o2))
@@ -19454,7 +19456,8 @@ class OPTCGMatch:
                         'alvo': float(v), 'escolhida': False,
                         'decisao': _dec,
                         'acao': a[1] if len(a) > 1 else None,
-                        'leader': lider, 'turn': turno})
+                        'leader': lider, 'turn': turno,
+                        'modo': 'bootstrap'})
             self._q_registra(a, cap[-1])
 
     def _select_action_via_search(self, p, opp, engine, candidatas):
@@ -21330,9 +21333,23 @@ class OPTCGMatch:
         escolhas. Laco fechado: nao descobria porque nunca tentava.
 
         Com `_explora_eps` > 0, em epsilon das decisoes escolhe uma candidata
-        FORA do topo (entre as 3 seguintes), e a partida segue dali. O rotulo
-        continua sendo quem ganhou -- entao o modelo aprende o valor de linhas
-        que ele nao teria escolhido sozinho.
+        FORA do topo, e a partida segue dali. O rotulo continua sendo quem
+        ganhou -- entao o modelo aprende o valor de linhas que ele nao teria
+        escolhido sozinho.
+
+        DUAS distancias, nao uma (pedido do usuario, 19/09/2026: "uma forma
+        de descobrir o que ele nunca cogitaria" -- a versao anterior so
+        sorteava entre as 3 seguintes ao topo, o que descobre "quase
+        escolhi", nao "nunca cogitaria"):
+
+        - PERTO (fracao `1 - _explora_far_frac` do epsilon): rank 2-4, igual
+          antes -- refina a borda do que o modelo ja considera bom.
+        - LONGE (fracao `_explora_far_frac`): candidata UNIFORME entre TODAS
+          as alternativas, incluindo as de rank mais baixo -- o unico jeito
+          de o modelo ver o resultado de uma linha que ele rankeou por
+          ULTIMO. Sem isso, exploracao "perto do topo" nunca sai da vizinhanca
+          do que ja era plausivel pra ele -- e viес nunca sai do proprio
+          ponto cego.
 
         DEFAULT 0.0: producao e duelo NAO exploram. Isto e pra GERAR CORPUS --
         explorar durante um duelo mediria ruido, nao forca.
@@ -21345,6 +21362,11 @@ class OPTCGMatch:
         ordenados = sorted(cand_valor, key=lambda cv: cv[1], reverse=True)
         eps = getattr(self, '_explora_eps', 0.0) or 0.0
         if eps > 0.0 and len(ordenados) >= 2 and random.random() < eps:
+            far_frac = getattr(self, '_explora_far_frac', 0.3) or 0.0
+            if far_frac > 0.0 and random.random() < far_frac:
+                escolhido = ordenados[random.randrange(1, len(ordenados))]
+                self._explora_longe_n = getattr(self, '_explora_longe_n', 0) + 1
+                return escolhido
             k = min(len(ordenados) - 1, 3)
             escolhido = ordenados[1 + random.randrange(k)]
             self._explora_n = getattr(self, '_explora_n', 0) + 1

@@ -1,6 +1,20 @@
 # TODO — Analisador de Decks OPTCG
 
-**Última atualização:** 19 de setembro de 2026 (bloco 876)
+**Última atualização:** 19 de setembro de 2026 (bloco 877)
+
+> **MUDADO (bloco 877): o treino deixa de ser bootstrap.** 3 ciclos seguidos
+> INCONCLUSIVOS com erro Q parado (~0,042) levaram a trocar o professor da
+> geracao offline de `bootstrap` (aluno julgando a si mesmo) pra `busca`
+> (simulacao real, professor independente) -- so em `ciclo.py`, o caminho ao
+> vivo continua bootstrap por latencia. `--explorar` subiu de 0,10 pra 0,17,
+> e ganhou uma exploracao "longe" (30% das exploracoes vao pra QUALQUER
+> candidata, nao so as 3 seguintes ao topo -- unico jeito de descobrir o que
+> o modelo nunca cogitaria). Corpus (721k linhas) NAO foi reduzido -- e 100%
+> bootstrap hoje (0% busca), sem campo de data pra podar cirurgicamente;
+> linhas novas ganham `'modo': 'busca'/'bootstrap'` pra permitir filtrar o
+> treino MAIS TARDE sem apagar nada agora. **PENDENTE**: rodar 1 ciclo com o
+> professor novo e comparar concordancia contra o baseline de 56,1% (bloco
+> 817); decidir com o usuario quando/se truncar o corpus bootstrap legado.
 
 > **ABERTO (bloco 876): atacante do OPONENTE via pondering ainda escapa do fix
 > do bloco 875.** Validando ao vivo (4 partidas CPU x CPU), o fix funciona

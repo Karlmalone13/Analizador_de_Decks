@@ -10934,6 +10934,7 @@ def main() -> int:
     test_order_target_candidates_when_attacking_sem_attacker_power_19_09()
     test_optcgmatch_register_e_consume_attacker_power_19_09()
     test_optcgmatch_varios_ataques_pendentes_mesmo_turno_19_09()
+    test_explorar_longe_descobre_alem_do_topo_19_09()
     test_opp_turn_reactive_effects_krieg_leader_debuff_24_08()
     test_give_don_filtro_de_tipo_no_destinatario_24_08()
     test_play_card_total_cost_lte_e_distinct_names_24_08()
@@ -15466,6 +15467,53 @@ def test_optcgmatch_varios_ataques_pendentes_mesmo_turno_19_09() -> None:
           match.consume_attacker_power("OP16-011", 3) == vista.power)
     check("o 2o (Ace) tambem continua intacto depois de consumir o 1o",
           match.consume_attacker_power("OP16-001", 3) == ace.power)
+
+
+def test_explorar_longe_descobre_alem_do_topo_19_09() -> None:
+    """
+    Pedido do usuario 19/09/2026: "uma forma de descobrir o que ele nunca
+    cogitaria". A exploracao ja existia (bloco 767) mas so sorteava entre
+    as 3 candidatas seguintes ao topo -- descobre "quase escolhi", nunca
+    o que o modelo rankeou por ultimo. `_explorar` ganhou uma 2a distancia:
+    com `_explora_far_frac`, uma fracao das exploracoes sorteia UNIFORME
+    entre TODAS as alternativas (rank 2 ate o ultimo), nao so rank 2-4.
+    """
+    import random
+    match = OPTCGMatch((real_card("OP15-001"), []), (real_card("OP13-001"), []))
+
+    # 10 candidatas com valores DECRESCENTES -- c9 e a ULTIMA, a mais
+    # distante do topo possivel.
+    cand_valor = [(f"c{i}", 10 - i) for i in range(10)]
+
+    random.seed(42)
+    match._explora_eps = 1.0       # sempre explora (determinismo do teste)
+    match._explora_far_frac = 1.0  # sempre LONGE
+    vistos = set()
+    for _ in range(200):
+        c, _ = match._explorar(cand_valor)
+        vistos.add(c)
+    check("com far_frac=1.0, a exploracao alcanca candidatas ALEM do rank "
+          "2-4 (a ultima, c9, tem que aparecer em 200 tentativas)",
+          "c9" in vistos)
+    check("com far_frac=1.0, o topo (c0) nunca e escolhido por exploracao "
+          "(sempre sai do topo, nunca fica nele)",
+          "c0" not in vistos)
+
+    random.seed(42)
+    match._explora_far_frac = 0.0  # so PERTO (comportamento antigo)
+    vistos_perto = set()
+    for _ in range(200):
+        c, _ = match._explorar(cand_valor)
+        vistos_perto.add(c)
+    check("com far_frac=0.0 (comportamento antigo preservado): so rank 2-4 "
+          "(c1,c2,c3) aparecem, nunca a ultima",
+          vistos_perto <= {"c1", "c2", "c3"} and "c9" not in vistos_perto)
+
+    random.seed(7)
+    match._explora_eps = 0.0
+    c, v = match._explorar(cand_valor)
+    check("sem exploracao (_explora_eps=0.0), sempre devolve o topo",
+          c == "c0" and v == 10)
 
 
 def test_opp_turn_reactive_effects_krieg_leader_debuff_24_08() -> None:

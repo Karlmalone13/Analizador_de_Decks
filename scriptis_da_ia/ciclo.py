@@ -118,9 +118,9 @@ class Cronometro:
         return round(sum(self.etapas.values()), 1)
 
 
-def _rodar(cmd, titulo) -> bool:
+def _rodar(cmd, titulo, env=None) -> bool:
     print('  $ %s' % ' '.join(str(c) for c in cmd[1:]), flush=True)
-    r = subprocess.run([sys.executable, '-u'] + cmd, cwd=str(RAIZ))
+    r = subprocess.run([sys.executable, '-u'] + cmd, cwd=str(RAIZ), env=env)
     if r.returncode != 0:
         print('  [FALHOU] %s (codigo %d)' % (titulo, r.returncode), flush=True)
         return False
@@ -186,10 +186,36 @@ def guarda_corpo(workers) -> dict:
 
 
 def gera(n, seed, workers) -> bool:
+    """
+    ALVO Q = 'busca' (professor INDEPENDENTE, nao bootstrap) -- pedido do
+    usuario, 19/09/2026: 3 ciclos seguidos INCONCLUSIVOS com erro Q parado
+    (0,0438 -> 0,0423 -> 0,0426, dentro do ruido) enquanto o corpus so
+    crescia ~3% por ciclo. Causa: o modo 'bootstrap' (default do motor,
+    `OPTCG_Q_ALVO`) usa o PROPRIO modelo pra avaliar o estado que cada
+    candidata produz -- o aluno aprende com o proprio julgamento, sem nada
+    de fora corrigindo. Reforca erro em vez de corrigir (o codigo ja
+    documentava isso: "mais ruidoso no comeco porque se apoia num modelo
+    ainda ruim"). Era a troca certa quando o corpus era pequeno e o
+    requisito era ESCALA (bloco 799, partida <=1s pra gerar milhares) --
+    mas o proprio ciclo ja mostra que o TREINO domina o tempo (74% do
+    ciclo, roda sobre o corpus INTEIRO, nao sobre o que "gera" produz),
+    entao gerar mais devagar com sinal melhor nao muda a ordem de grandeza
+    do ciclo.
+
+    Modo 'busca' faz o motor simular de verdade (profundidade fixa) e usa
+    ESSE valor como alvo -- professor independente do aluno, exatamente
+    como no ciclo de 14/09 (bloco 817) que mediu 56,1% de concordancia
+    real contra o acaso de 24,4%. So afeta ESTA coleta OFFLINE (env por
+    subprocesso) -- o caminho AO VIVO (`coleta_q_ao_vivo.py`, decisao
+    real contra humano) continua bootstrap, sem custo extra de latencia
+    numa partida de verdade.
+    """
+    env = dict(os.environ)
+    env['OPTCG_Q_ALVO'] = 'busca'
     return _rodar(['gerar_selfplay_dataset.py', '--n', str(n), '--workers', str(workers),
                    '--decks', '24', '--seed', str(seed), '--append',
                    '--out', str(CORPUS), '--q-out', str(Q_CORPUS)],
-                  'geracao de partidas')
+                  'geracao de partidas', env=env)
 
 
 def treina() -> dict | None:

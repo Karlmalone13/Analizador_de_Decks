@@ -344,11 +344,17 @@ def main() -> None:
     # NUNCA tentava o que ainda nao escolheria, e o auto-jogo era eco: o corpus
     # so continha o que ele ja fazia. Isso contradizia frontalmente o que o
     # usuario pediu ("o ML vai testando as alternativas e esse criterio vai
-    # surgindo"): sem tentar, nada emerge. 0.1 e o epsilon-guloso padrao.
-    ap.add_argument('--explorar', type=float, default=0.1,
+    # surgindo"): sem tentar, nada emerge.
+    # 0.17 (pedido do usuario, 19/09/2026, subiu de 0.10): dessas decisoes que
+    # exploram, ~30% vao LONGE (candidata uniforme entre TODAS as alternativas,
+    # nao so as 3 seguintes ao topo -- ver `_explorar` em decision_engine.py)
+    # pra descobrir o que o modelo NUNCA cogitaria, nao so "quase escolhi".
+    ap.add_argument('--explorar', type=float, default=0.17,
                     help='epsilon de EXPLORACAO (0.0-1.0): em epsilon das '
-                         'decisoes joga FORA do topo, pra o dataset conter '
-                         'linhas que o bot nao escolheria sozinho. Default 0.0 '
+                         'decisoes joga FORA do topo (~70% perto do topo, '
+                         '~30% em QUALQUER candidata -- ver _explora_far_frac '
+                         'em decision_engine.py), pra o dataset conter linhas '
+                         'que o bot nao escolheria sozinho. Default 0.0 '
                          '(guloso, comportamento antigo). Tipico: 0.10-0.20. '
                          'NAO usar em duelo -- la mediria ruido (bloco 767)')
     ap.add_argument('--gen', type=int, default=0, help='numero da geracao, gravado em cada amostra')

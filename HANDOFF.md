@@ -1,5 +1,92 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-09-19 (877) - O TREINO TROCA DE PROFESSOR: bootstrap sai da geracao, exploracao ganha uma 2a distancia, corpus ganha etiqueta de qualidade
+
+Sessao Claude (Sonnet 5), depois de rodar o ciclo 3 (bloco 876-area, INCONCLUSIVO
+8x7, erro Q parado em 3 ciclos: 0,0438->0,0423->0,0426) e o usuario perguntar
+"por que nao promoveu" e depois "nao acha que ele esta aprendendo de forma
+ruim e lenta". Tres pedidos diretos dele, nesta ordem.
+
+### 1. "remova o que treina mais fraco"
+
+Achado: `ciclo.py` gera o corpus com `Q_ALVO_MODO=bootstrap` (default do
+motor) -- o alvo de cada candidata vem do PROPRIO modelo avaliando o estado
+que ela produz, sem nada de fora corrigindo. O proprio commit que introduziu
+isso (`463a6a3`, bloco 799) ja documentava a contrapartida: "mais ruidoso no
+comeco porque se apoia num modelo ainda ruim, e melhora junto com ele". Foi
+troca DELIBERADA por velocidade (requisito do usuario na epoca: partida <=1s
+pra simular milhares) quando o corpus era pequeno.
+
+**Isso deixou de fazer sentido**: o treino ja domina o ciclo (74% do tempo,
+roda sobre o corpus INTEIRO, nao sobre o que a geracao de hoje produz) --
+gerar mais devagar com sinal melhor nao muda a ordem de grandeza do ciclo.
+
+**Fix**: `ciclo.py::gera()` agora forca `OPTCG_Q_ALVO=busca` (env por
+subprocesso) -- o motor simula de verdade e usa esse valor como alvo, professor
+INDEPENDENTE do aluno (mesmo modo que mediu 56,1% de concordancia real contra
+24,4% de acaso no ciclo de 14/09, bloco 817). **So a geracao OFFLINE muda** --
+o caminho AO VIVO (`coleta_q_ao_vivo.py`, decisao contra humano de verdade)
+continua bootstrap, sem ganhar latencia numa partida real (o motivo original
+do bloco 799 ainda vale LA, so nao pra treino).
+
+### 2. "corpus gigantesco, tem coisa que ja foi corrigida, ele fica mais lento conforme cresce"
+
+**Investigado, NAO executado** -- nao ha como podar cirurgicamente. Achados:
+
+- `escolhida_por` no corpus atual (721.008 linhas): **0% 'busca'**, 4,3% 'q'
+  (bootstrap, a candidata escolhida), 95,6% sem marca (candidatas nao
+  escolhidas da mesma decisao). **100% do corpus existente e bootstrap** --
+  nao ha um subconjunto "bom" escondido ali pra separar do "ruim".
+- Nenhum campo de DATA/VERSAO por linha -- impossivel saber quais linhas
+  vieram de antes ou depois de um bug corrigido especifico.
+- Schema de features consistente: **721.008 de 721.008 linhas com exatamente
+  101 features** -- sem drift detectavel de contagem (nao decarta a hipotese
+  de features REDEFINIDAS no mesmo indice, mas nao ha evidencia disso).
+- As fatias git (`metrics/q_alvos/*.jsonl.gz`) so cobrem os ultimos 2 dias
+  (18-19/09, ~12,9 MB) -- o grosso do corpus (600k+ linhas) e de ANTES do
+  mecanismo de fatias, sem rastro de data granular.
+
+**Fix aplicado (habilita poda FUTURA, nao poda agora)**: toda linha nova
+grava `'modo': 'busca'` ou `'modo': 'bootstrap'` (`_coleta_bootstrap` e
+`_select_action_via_search`, decision_engine.py) -- as linhas antigas nao tem
+esse campo, as novas tem. Quando houver volume suficiente de linhas `busca`,
+da pra filtrar o treino pra usar só elas (ou pesar por modo) SEM apagar nada
+do arquivo -- reversivel, ao contrario de truncar.
+
+**NAO truncado**: apagar as 721k linhas exigiria decisao explicita (a
+`REGRA_DUAS_MAQUINAS.md` ja diz que remover fatia do corpus do git e
+"operacao combinada, nunca por iniciativa de sessao") -- fica pro usuario
+decidir quando a leva `busca` for grande o bastante pra substituir.
+
+### 3 e 4. "aumente o explorar para 17%" + "uma forma de descobrir o que ele nunca cogitaria"
+
+`--explorar` default `gerar_selfplay_dataset.py`: 0,10 -> **0,17**.
+
+**Achado ao ler `_explorar`** (`decision_engine.py`, `OPTCGMatch`): a
+exploracao so sorteava entre as 3 candidatas SEGUINTES ao topo (rank 2-4) --
+descobre "quase escolhi", nunca "nunca cogitaria". Nova 2a distancia,
+`_explora_far_frac` (default 0,3 -- 30% das exploracoes): sorteia UNIFORME
+entre TODAS as alternativas, incluindo a de rank mais baixo -- o unico jeito
+do modelo ver o resultado de uma linha que ele proprio rankeou por ultimo.
+Com epsilon=0,17 e far_frac=0,3: ~11,9% das decisoes exploram PERTO, ~5,1%
+exploram LONGE.
+
+Teste permanente em `smoke_fast.py`
+(`test_explorar_longe_descobre_alem_do_topo_19_09`): com far_frac=1,0 a
+candidata de rank mais baixo (a "ultima colocada", never escolhida pelo topo)
+aparece em 200 tentativas; com far_frac=0,0 o comportamento antigo (so rank
+2-4) fica intacto -- controle de regressao.
+
+### Estado
+
+`smoke_fast.py` OK (2 testes novos: exploracao longe + os do bloco 875/876
+ja existentes). **NAO rodado ainda um ciclo com o professor novo** -- o
+proximo ciclo vai ser mais lento pra gerar (busca ~3,8x mais cara que
+bootstrap por partida) mas o treino, que ja domina o tempo, nao muda.
+Proxima sessao: rodar 1 ciclo e comparar concordancia com o professor
+(deve deixar de ser ~100% circular, ja que agora ha um professor de verdade
+de novo) contra o baseline de 56,1% do bloco 817.
+
 ## 2026-09-19 (876) - Validacao ao vivo do bloco 875: multi-passo fechado, atacante do OPONENTE ainda escapa (pondering)
 
 Sessao Claude (Sonnet 5), continuacao imediata do bloco 875. Rodei 3 partidas
