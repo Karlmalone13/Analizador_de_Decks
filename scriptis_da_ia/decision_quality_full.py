@@ -519,6 +519,14 @@ def _defense_verdict(parsed_path, human_side_label, cards_db, df_raw, urls):
                 'engine_countered': bool(motor_counter_codes),
                 'hist_counter_codes': hist_countered_codes,
                 'engine_counter_codes': motor_counter_codes,
+                # Telemetria (20/09, mesmo par de `bot_efficiency_report.py`
+                # `decision_quality_by_kind`): `eng` ja calculou o custo
+                # comparavel de cada candidato dentro de should_use_blocker/
+                # should_use_counter -- so nunca saia daqui. None quando o
+                # value_net nao decidiu (ramos legados), mesma honestidade
+                # do caminho ao vivo.
+                'blocker_trace': getattr(eng, '_ultimo_blocker_trace', None),
+                'counter_trace': getattr(eng, '_ultimo_counter_trace', None),
             })
     return {'rows': rows}
 
