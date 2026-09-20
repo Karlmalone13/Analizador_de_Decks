@@ -308,7 +308,7 @@ class ReplayMatch:
             p.full_deck_census = deck_census(list(p.deck))
             p.hand = [p.deck.pop() for _ in range(min(5, len(p.deck)))]
             # Decisão de mulligan via ENGINE (fonte única), com motivo
-            deve_trocar, motivo = self._get_engine_match()._mulligan_decision(
+            deve_trocar, motivo, _sinais = self._get_engine_match()._mulligan_decision(
                 p.hand, deck=p.hand + p.deck)
             if deve_trocar:
                 print(f'{col}{nm}: fez Mulligan — {motivo}{C.RESET}')

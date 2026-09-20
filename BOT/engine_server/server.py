@@ -1191,12 +1191,21 @@ def mulligan(req: MulliganRequest):
         hand_cards = [c for c in (_make(d) for d in req.hand) if c]
         if not hand_cards:
             return {"mulligan": False, "reason": "mao vazia/desconhecida — keep"}
-        deve_trocar, resumo = match._mulligan_decision(hand_cards, deck=None)
+        deve_trocar, resumo, sinais = match._mulligan_decision(hand_cards, deck=None)
         chosen = "mulligan" if deve_trocar else "keep"
+        # Score comparavel (20/09, mesmo padrao de blocker/counter): a
+        # MARGEM que ja decidiu `deve_trocar` (ruins-bons), exposta com o
+        # sinal que favorece cada lado -- sem isso `defense`-like unscored
+        # ficava mulligan tambem.
+        _margem = sinais["ruins"] - sinais["bons"]
+        _score_mulligan, _score_keep = float(_margem), float(-_margem)
         return _record_aux_decision(
             "mulligan", {"hand": [_model_dict(c) for c in req.hand]},
-            [{"type": "keep", "eligible": True}, {"type": "mulligan", "eligible": True}],
-            {"type": chosen}, {"mulligan": bool(deve_trocar), "reason": resumo},
+            [{"type": "keep", "eligible": True, "score": _score_keep},
+             {"type": "mulligan", "eligible": True, "score": _score_mulligan}],
+            {"type": chosen,
+             "score": _score_mulligan if deve_trocar else _score_keep},
+            {"mulligan": bool(deve_trocar), "reason": resumo},
             latency_ms=round((time.perf_counter() - started) * 1000, 3))
     except Exception as e:
         import traceback

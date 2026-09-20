@@ -16912,7 +16912,13 @@ class OPTCGMatch:
 
         deve_trocar = ruins > bons
         resumo = '; '.join(motivos)
-        return deve_trocar, resumo
+        # `sinais` exposto pra telemetria (20/09, mesmo padrao do blocker/
+        # counter): `bons`/`ruins` JA sao o que decide `deve_trocar` --
+        # so nunca saiam da funcao. Score comparavel: quem "ganha" (keep
+        # quando bons>=ruins, mulligan quando ruins>bons) fica com a
+        # DIFERENCA a favor; o outro lado fica no negativo dela -- mesma
+        # margem, sinal oposto, sem inventar unidade nova.
+        return deve_trocar, resumo, {'bons': bons, 'ruins': ruins}
 
     def setup(self):
         """
