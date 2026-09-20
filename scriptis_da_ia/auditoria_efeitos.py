@@ -311,10 +311,28 @@ def _codigos_do_estado(st: dict) -> dict:
 #   OP09-099 trasha 1 e adiciona 1 -> mao NEUTRA
 #   OP09-093 nega efeito do LIDER ADVERSARIO -> zero no proprio lado
 #   OP16-104 muda o PODER BASE -> nao mexe em mao/campo/DON/vida
+#
+# ACHADO REAL (19/09/2026, auditoria das 10 partidas CPU x CPU do dia):
+# OP16-001 (lider Ace) aparecia com 11/11 `activate_main` "NAO SURTIU
+# EFEITO" -- investigado a fundo no decision_log, o alvo (Vista OP16-011,
+# just_played, Whitebeard Pirates 8000 power) ERA valido e batia o filtro
+# da carta. `select_grant_rush` concede uma PALAVRA-CHAVE numa carta que ja
+# esta em campo -- nunca move mao/campo/DON/vida/deck do proprio lado, e
+# por isso sempre parecia "sem efeito" mesmo funcionando certo. A familia
+# inteira (`grant_*`/`select_grant_*`/`gain_rush`/`gain_blocker`/...)
+# aparece 248x no banco e tinha o MESMO problema -- generalizado pela
+# FORMA (concessao de keyword), nao so pro Ace.
 _ACOES_INVISIVEIS = (
     "negate", "opp_", "_opp", "power", "set_base_power", "rest_opp",
     "ko_", "trash_opp", "bounce", "deck_bottom", "look_top", "reveal",
     "lock_", "cant_", "immun", "buff", "debuff", "give_don",
+    # "grant" cobre toda a familia `grant_*`/`select_grant_*` (rush,
+    # blocker, double_attack, banish, can_attack_active, unblockable,
+    # ko_immunity). "gain_*" fica listado EXPLICITO (nao por prefixo)
+    # porque `gain_life` muda vida de verdade e precisa continuar
+    # observavel -- listar por nome evita apagar esse caso por engano.
+    "grant", "gain_rush", "gain_blocker", "gain_double_attack",
+    "gain_banish", "gain_can_attack_active", "gain_unblockable",
 )
 
 
@@ -332,6 +350,19 @@ def _delta_nulo(tr: dict | None) -> bool:
     return all(not v for v in d.values()) and all(not v for v in u.values())
 
 
+# Alvos SEM AMBIGUIDADE -- so podem ser o campo do OPONENTE. Um step com um
+# destes nunca move o delta do PROPRIO lado, nao importa a acao (achado
+# 19/09/2026: `ko` sozinho, sem sufixo, e 319 steps no banco -- 307 com
+# `target: opp_character` -- e nao era pego pelo `_ACOES_INVISIVEIS` por
+# nome, porque o nome da acao ("ko") nao diz de quem e o alvo, so o campo
+# `target` diz). Alvos AMBIGUOS ficam de fora de proposito (`leader_or_
+# character`, `all_character`, etc. -- podem incluir o proprio lado).
+_ALVOS_APENAS_OPONENTE = {
+    'opp_character', 'opp_leader_or_character', 'all_opp_characters',
+    'opp_stage', 'opp_leader', 'opponent', 'opp_two_chars',
+}
+
+
 def _efeito_e_observavel(db: dict, code: str, gatilhos: list) -> bool:
     """O efeito DEVERIA mover algo mensuravel no proprio lado?
 
@@ -346,6 +377,8 @@ def _efeito_e_observavel(db: dict, code: str, gatilhos: list) -> bool:
     if not passos:
         return False
     for st in passos:
+        if st.get("target") in _ALVOS_APENAS_OPONENTE:
+            continue  # so atinge o campo do oponente, invisivel ao delta proprio
         acao = str(st.get("action") or "")
         if not any(k in acao for k in _ACOES_INVISIVEIS):
             return True   # ao menos um passo mexe em algo do proprio lado
