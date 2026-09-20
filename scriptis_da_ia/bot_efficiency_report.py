@@ -323,7 +323,21 @@ def analyze_decision_events(lines) -> dict:
                 if card.get("deckUniqueId") == uid:
                     return zone, card
         leader = player.get("leader") or {}
-        return ("leader", leader) if leader.get("deckUniqueId") == uid else (None, None)
+        if leader.get("deckUniqueId") == uid:
+            return "leader", leader
+        # ACHADO REAL (20/09/2026, auditoria das partidas CPU x CPU): faltava
+        # a zona STAGE aqui -- toda "activate" de uma carta Stage (ex: OP09-099
+        # Fullalead) nunca era encontrada em NENHUM zona, `before_card`/
+        # `after_card` ficavam sempre None, e main_transition_ok caia direto
+        # no `bool(after_card and ...)` = False -- "falha semantica" GARANTIDA
+        # pra toda ativacao de Stage, com ou sem bug nenhum de verdade (14 de
+        # 47 "semantic_transition_failed" desta sessao eram exatamente isto).
+        # `stage` e um card UNICO (nao lista, GameStateDto.cs), diferente de
+        # hand/board.
+        stage = player.get("stage")
+        if isinstance(stage, dict) and stage.get("deckUniqueId") == uid:
+            return "stage", stage
+        return (None, None)
 
     def main_transition_ok(decision: dict, after: dict) -> bool | None:
         if decision.get("decision_kind") != "main" or not isinstance(after, dict):
@@ -364,8 +378,18 @@ def analyze_decision_events(lines) -> dict:
                 return True
             lider_antes = (before.get("bot") or {}).get("leader") or {}
             lider_depois = (after.get("bot") or {}).get("leader") or {}
-            return bool(lider_antes.get("code") and lider_depois.get("code")
-                        and lider_antes["code"] != lider_depois["code"])
+            # ACHADO REAL (20/09/2026, auditoria das partidas CPU x CPU):
+            # comparar por `code` quebra em PARTIDA ESPELHO (mesmo lider dos
+            # dois lados, ex: Ace & Newgate x Ace & Newgate) -- o codigo NUNCA
+            # muda entao end_turn "falhava" em TODO turno de toda partida
+            # espelho (19+ de 47 semantic_transition_failed desta sessao
+            # eram so isto). `deckUniqueId` e unico por CARTA na partida
+            # inteira (os dois lados nunca compartilham um id, e o mecanismo
+            # de `targetId` ja depende disso pra apontar o alvo certo) --
+            # muda de lado mesmo quando o `code` e identico.
+            return bool(lider_antes.get("deckUniqueId") is not None
+                        and lider_depois.get("deckUniqueId") is not None
+                        and lider_antes["deckUniqueId"] != lider_depois["deckUniqueId"])
         return None
     for decision_id, decision in decisions.items():
         eligible = [a for a in decision.get("scored_actions", []) if a.get("eligible")]
