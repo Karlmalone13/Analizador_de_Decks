@@ -15923,6 +15923,10 @@ class DecisionEngine:
                 'minha_vida': self.me.life_count(),
                 'candidatos': _cods(cands),
                 'chosen': getattr(escolhido, 'code', None),
+                # None quando o caminho legado decidiu (6 dos 7 ramos de
+                # `_should_use_blocker_inner`) -- sem custo comparavel pra
+                # expor, marcado como tal em vez de inventar um.
+                'trace': getattr(self, '_ultimo_blocker_trace', None),
             })
         return escolhido
 
@@ -15939,6 +15943,17 @@ class DecisionEngine:
         my_life = self.me.life_count()
         opp_life = self.opp.life_count()
 
+        # Instrumento (20/09, continuacao do achado `target_order_quality`):
+        # `should_use_blocker` so logava CODIGO do candidato/escolhido, nunca
+        # o CUSTO que decidiu entre eles -- a categoria `defense:blocker` da
+        # telemetria ficava sem nenhum score real pra medir "o bot bloqueou
+        # com o melhor candidato?" (so ordinal, nunca comparavel). So
+        # instrumenta o caminho do value_net (o PRIMARIO hoje, ver comentario
+        # do bloco 792 acima) -- os 6 ramos de fallback abaixo ficam SEM
+        # trace, marcados explicitamente, em vez de reimplementar a conta
+        # deles so pra telemetria (REGRA_SEM_DUPLICACAO: exportar o que a
+        # decisao ja calculou, nao calcular de novo com outra regua).
+        self._ultimo_blocker_trace = None
         blockers = self.me.blockers_active()
         if not blockers:
             return None
@@ -15985,6 +16000,14 @@ class DecisionEngine:
                                 _pares.append((_d, _c))
                         if _pares:
                             _custo, _escolhido = max(_pares, key=lambda t: t[0])
+                            self._ultimo_blocker_trace = {
+                                'metodo': 'value_net',
+                                'golpe_sem_bloquear': round(float(_golpe), 4),
+                                'candidatos': [
+                                    {'card_uid': getattr(_c, '_deck_uid', 0),
+                                     'card_code': _c.code, 'custo': round(float(_c_custo), 4)}
+                                    for _c_custo, _c in _pares],
+                            }
                             # A INCERTEZA POR QUANTIL FOI TENTADA AQUI E
                             # REPROVADA (bloco 793, ver REPROVADOS.md): deu
                             # **0,5000 exato em toda posicao**, porque quantil

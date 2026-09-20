@@ -1399,9 +1399,27 @@ def defense(req: DefenseRequest):
             _DEFESA['on'], _DEFESA['log'], _DEFESA['state_a'] = _de_old
 
         if req.phase == "blocker":
-            legal = [{"type": "no_blocker", "eligible": True}] + [
+            # Achado 20/09 (continuacao do `target_order_quality`): o motor
+            # ja calcula um custo COMPARAVEL por candidato quando decide via
+            # value_net (`should_use_blocker` -> `_ultimo_blocker_trace`,
+            # mesma regra que decide "bloqueia se _custo > _golpe") -- so
+            # nunca chegava no `scored_actions` que a telemetria le. Drena o
+            # que o PROPRIO motor calculou (REGRA_SEM_DUPLICACAO: nao
+            # recalcular aqui) em vez de reimplementar a conta so pra expor
+            # `score`. Quando o value_net nao decidiu (6 dos 7 ramos legados
+            # de `_should_use_blocker_inner`), `_blocker_trace` fica None e
+            # os candidatos saem SEM `score` -- honesto com o que da pra
+            # medir, em vez de inventar um numero.
+            _blocker_trace = next(
+                (r.get("trace") for r in _raciocinio if r.get("kind") == "blocker_choice"), None)
+            _custo_by_uid = ({c["card_uid"]: c["custo"] for c in _blocker_trace["candidatos"]}
+                            if _blocker_trace else {})
+            legal = [{"type": "no_blocker", "eligible": True,
+                      **({"score": _blocker_trace["golpe_sem_bloquear"]} if _blocker_trace else {})}] + [
                 {"type": "blocker", "card_uid": getattr(c, '_deck_uid', 0),
-                 "card_code": c.code, "eligible": True}
+                 "card_code": c.code, "eligible": True,
+                 **({"score": _custo_by_uid[getattr(c, '_deck_uid', 0)]}
+                    if getattr(c, '_deck_uid', 0) in _custo_by_uid else {})}
                 for c in gs.blockers_active()]
         elif req.phase == "counter":
             legal = ([{"type": "no_counter", "eligible": True}]
@@ -1412,6 +1430,23 @@ def defense(req: DefenseRequest):
         chosen = {"type": req.phase, "blocker_id": out["blockerId"],
                   "counter_ids": out["counterIds"],
                   "accepted": out["useTrigger"] or out["useReaction"]}
+        if req.phase == "blocker":
+            # `score` precisa estar NO PROPRIO `chosen` (mesma convencao de
+            # `main`, onde chosen_action ja e uma copia do candidato
+            # vencedor) -- sem isso, o regret de bot_efficiency_report.py
+            # (`chosen.get("score", best)`) nunca acha o valor e o gap fica
+            # sempre 0.0, mesmo com score real disponivel em `legal`. Reusa
+            # `blocker` (o Card ou None que `should_use_blocker` JA
+            # devolveu acima) por IDENTIDADE -- nao rederiva a decisao
+            # comparando id contra sentinela, so localiza o score que o
+            # motor ja calculou pra ela.
+            if blocker is None:
+                if _blocker_trace:
+                    chosen["score"] = _blocker_trace["golpe_sem_bloquear"]
+            else:
+                _uid_escolhido = getattr(blocker, '_deck_uid', 0)
+                if _uid_escolhido in _custo_by_uid:
+                    chosen["score"] = _custo_by_uid[_uid_escolhido]
         return _record_aux_decision(
             "defense", _model_dict(req.state), legal, chosen, out,
             phase=req.phase, turn=req.state.turnNumber,
