@@ -3794,6 +3794,34 @@ def parse_draw(text):
     elif not m_per_type and 'draw a card' in t:
         steps.append({'action': 'draw', 'count': 1})
 
+    # "...and place the revealed card at the top/bottom of your deck" --
+    # segue um 'draw' apos um custo `reveal_from_hand` (ST22-001 Ace &
+    # Newgate: "you may reveal 1 card ... from your hand: Draw 1 card and
+    # place the revealed card at the top of your deck"). Achado 20/09/2026
+    # (investigacao de "efeito sem efeito" nas partidas CPU x CPU -- a mao
+    # ficava com a MESMA contagem porque a carta revelada volta pro deck,
+    # comportamento CORRETO do jogo que o parser nao capturava). Varredura
+    # global (grep "revealed card at the (top|bottom) of your deck"):
+    # so 3 cartas-base tem essa frase -- EB01-029/OP04-011 ja sao cobertas
+    # por outro mecanismo (revelam do TOPO DO DECK, nao da mao -- fora do
+    # escopo aqui), ST22-001 e a UNICA com o source em HAND --
+    # isolated_after_global_scan.
+    # LIMITE HONESTO: o engine nao rastreia QUAL carta especifica foi
+    # revelada pra pagar o custo (`_reveal_from_hand_matches` so confere
+    # quantidade, nunca fixa uma carta) -- reusa `hand_to_deck_top`/
+    # `hand_to_deck` (mesma action de "place N cards from your hand at
+    # top/bottom of deck", ja suportada), que deixa o motor escolher
+    # LIVREMENTE qual carta devolver, em vez de forcar a MESMA carta
+    # revelada. Aproximacao deliberada: sem isto o efeito parecia
+    # vantagem de carta GRATIS (0 custo real), o que e pior.
+    m_revealed_deck = re.search(
+        r'draw \d+ cards? and place the revealed card at (?:the )?'
+        r'(top|bottom) of your deck', t)
+    if m_revealed_deck:
+        steps.append({'action': ('hand_to_deck_top' if m_revealed_deck.group(1) == 'top'
+                                 else 'hand_to_deck'),
+                      'count': 1})
+
     # "...and place M cards from your hand at the top or bottom of your
     # deck in any order" -- clausula "loot" (compra N, devolve M da mao)
     # que segue o draw. Achado 15/07 via audit_parser_coverage.py +

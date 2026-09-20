@@ -376,6 +376,26 @@ def _efeito_e_observavel(db: dict, code: str, gatilhos: list) -> bool:
         passos += (efs.get(g) or {}).get("steps") or []
     if not passos:
         return False
+    # PAR que se CANCELA: "draw N" + "hand_to_deck"/"hand_to_deck_top" de
+    # MESMA contagem N -- carta comprada do deck, outra carta da mao volta
+    # pro deck, mao fica com a MESMA contagem POR DESENHO da carta (nao e
+    # falha). Achado real 20/09/2026, ST22-001 (lider Ace & Newgate),
+    # texto oficial "Draw 1 card and place the revealed card at the top
+    # of your deck": o step 'draw' sozinho passa pelo filtro por nome
+    # abaixo (draw normalmente MOVE a mao -- so este NAO move, por causa
+    # do par), entao o loop por nome de acao nunca bastaria aqui; precisa
+    # comparar os DOIS steps entre si. Mesma familia do par trash+add_to_
+    # hand do OP09-099 (custo cancela step), so que dos dois lados fica
+    # em 'steps' (a carta devolvida NAO e custo, e parte do efeito).
+    draws = [s for s in passos if str(s.get("action") or "") == "draw"
+             and not s.get("up_to") and not s.get("count_source")]
+    devolve = [s for s in passos
+              if str(s.get("action") or "") in ("hand_to_deck", "hand_to_deck_top")]
+    if draws and devolve and sum(s.get("count", 1) for s in draws) == \
+            sum(s.get("count", 1) for s in devolve):
+        passos = [s for s in passos if s not in draws and s not in devolve]
+        if not passos:
+            return False
     for st in passos:
         if st.get("target") in _ALVOS_APENAS_OPONENTE:
             continue  # so atinge o campo do oponente, invisivel ao delta proprio

@@ -126948,6 +126948,10 @@
    {
     "action": "draw",
     "trigger": "activate_main"
+   },
+   {
+    "action": "hand_to_deck_top",
+    "trigger": "activate_main"
    }
   ],
   "referenced_types": [

@@ -1,0 +1,16 @@
+{
+  "trigger_card": "ST22-001",
+  "problem": "O efeito 'draw 1 card and place the revealed card at the top of your deck' so parseava o draw. A clausula 'and place the revealed card at the top of your deck' (o custo reveal_from_hand devolve a carta revelada pro deck) ficava ausente -- o step parseado dava a impressao de vantagem de carta GRATIS (compra sem custo real), quando na verdade a contagem de mao fica igual (carta revelada sai, carta comprada entra). Achado investigando por que a auditoria de efeitos (auditoria_efeitos.py) marcava ST22-001 como 'ATIVADO E NAO SURTIU EFEITO' em 10/10 ativacoes nas partidas CPU x CPU de 19-20/09/2026 -- o combat log real do OPTCGSim confirmava 'Draw 1 Card' toda vez; o comportamento do jogo estava CORRETO, o parser que nao capturava a clausula completa.",
+  "grammar_family": "'draw N cards and place the revealed card at the top/bottom of your deck' -- segue um custo reveal_from_hand (mao), distinto de 'reveal 1 card from the TOP OF YOUR DECK ... place the revealed card at the bottom' (EB01-029/OP04-011, ja coberto por reveal_deck_top_conditional).",
+  "queries": [
+    "grep -in \"place the revealed card\" cards_rows.csv",
+    "grep -in \"revealed card at the (top|bottom) of your deck\" cards_rows.csv",
+    "grep -in \"reveal .* from your hand\" cards_rows.csv (mapa completo da familia reveal_from_hand, nenhuma outra carta combina com 'place the revealed card')"
+  ],
+  "cards_found": ["ST22-001"],
+  "note": "ST22-001_p1 (parallel, mesmo texto) nao precisa de entrada propria -- por design, nenhum dos 721 codigos '_p*' do banco tem entrada separada em card_effects_db.json (resolvido via codigo base).",
+  "resolution_scope": "isolated_after_global_scan",
+  "decision": "So ST22-001 usa esta forma exata (reveal da MAO + devolve a carta revelada ao deck). As 2 outras ocorrencias de 'place the revealed card' (EB01-029, OP04-011) revelam do TOPO DO DECK, gramatica e mecanismo diferentes (reveal_deck_top_conditional), ja corretos. Fix generico pela FORMA: regex casa 'draw \\\\d+ cards? and place the revealed card at (top|bottom) of your deck' independente do numero comprado ou do lider/carta.",
+  "limitation": "O engine nao rastreia QUAL carta especifica foi revelada pra pagar o custo (_reveal_from_hand_matches so confere quantidade disponivel, nunca fixa uma carta) -- o novo step reusa hand_to_deck_top/hand_to_deck (mesma action de 'place N cards from your hand at top/bottom of deck'), que deixa o motor escolher LIVREMENTE qual carta devolver, em vez de forcar a MESMA carta revelada. Aproximacao deliberada, registrada honestamente: sem isto o efeito aparecia como card advantage gratuito, o que e um erro maior.",
+  "validated_by": ["diff_parser.py (GANHOU=0, PERDEU=0, MUDOU=1 -- so ST22-001)", "smoke_fast.py", "cards_rows.csv (texto oficial do card, conferido campo a campo)"]
+}

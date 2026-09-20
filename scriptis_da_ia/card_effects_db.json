@@ -82091,6 +82091,10 @@
           {
             "action": "draw",
             "count": 1
+          },
+          {
+            "action": "hand_to_deck_top",
+            "count": 1
           }
         ],
         "costs": [
