@@ -1656,17 +1656,22 @@ def choose_effect_option(req: ChooseEffectOptionRequest):
         # `actorCode` ja vinha no request e nao era repassado -- sem ele a
         # bridge nao tem como consultar o efeito parseado do ator, que e o
         # que decide topo x fundo (bloco 840).
-        idx, motivo = bridge.escolher_opcao_de_efeito(
+        idx, motivo, score_by_index = bridge.escolher_opcao_de_efeito(
             gs_opt, opp_opt, req.options, actor_code=req.actorCode)
         melhor = next((o for o in req.options if o.index == idx), req.options[0])
         print(f"[V3CHOICE] opcoes={[(o.index, o.text) for o in req.options]} "
               f"-> escolhida {melhor.index} ({melhor.text!r}) :: {motivo}", flush=True)
         legal = [{"type": "effect_option", "option_index": o.index,
-                  "text": o.text, "eligible": True} for o in req.options]
+                  "text": o.text, "eligible": True,
+                  **({"score": score_by_index[o.index]}
+                     if score_by_index.get(o.index) is not None else {})}
+                 for o in req.options]
+        chosen = {"type": "effect_option", "option_index": melhor.index,
+                  "text": melhor.text, "motivo": motivo}
+        if score_by_index.get(melhor.index) is not None:
+            chosen["score"] = score_by_index[melhor.index]
         return _record_aux_decision(
-            "effect_option", _model_dict(req.state), legal,
-            {"type": "effect_option", "option_index": melhor.index,
-             "text": melhor.text, "motivo": motivo},
+            "effect_option", _model_dict(req.state), legal, chosen,
             {"optionIndex": melhor.index},
             phase="effect_option", turn=req.state.turnNumber,
             actor_code=req.actorCode,

@@ -2168,13 +2168,21 @@ def escolher_opcao_de_efeito(gs: GameState, opp_gs: GameState,
                 motivo = 'rotulo nao reconhecido'
         custos.append((custo, motivo, op))
 
+    # `score_by_index` pra telemetria (20/09, mesmo padrao de blocker/
+    # counter/mulligan): `custo` JA e a regua completa que decide `melhor`
+    # (min custo) -- so nunca saia da funcao pro decision log. Score = -custo
+    # (menor custo = melhor = score MAIOR, mesma convencao de "max(score)
+    # vence" usada em toda outra categoria). Opcoes com rotulo nao
+    # reconhecido ficam de fora (None), honesto sobre o que nao da pra medir.
+    score_by_index = {getattr(op, 'index', i): (-c if c is not None else None)
+                      for i, (c, _m, op) in enumerate(custos)}
     conhecidos = [c for c in custos if c[0] is not None]
     if not conhecidos:
         return (getattr(opcoes[0], 'index', 0) if opcoes else 0,
-                'nenhum rotulo reconhecido -- primeira opcao')
+                'nenhum rotulo reconhecido -- primeira opcao', score_by_index)
     melhor = min(conhecidos, key=lambda c: c[0])
     detalhe = ' | '.join(f'{m}: custo {c:.0f}' for c, m, _ in conhecidos)
-    return getattr(melhor[2], 'index', 0), detalhe
+    return getattr(melhor[2], 'index', 0), detalhe, score_by_index
 
 
 def _key_para_log(chave) -> list:
