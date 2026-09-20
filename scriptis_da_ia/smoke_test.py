@@ -1166,7 +1166,13 @@ check('Declarar ataque com attack_paywall ativo trasha as cartas do custo automa
 
 # ── 17. deck_reorder_rest / deck_top_rest -- mesma semantica de execucao
 # (achado: 'deck_top_rest' eh nome equivocado do parser, todas as ocorrencias
-# reais sao "top OR bottom in any order"). Heuristica: melhor carta no topo. ──
+# reais sao "top OR bottom in any order"). Heuristica: melhor carta no topo.
+# ATUALIZADO 20/09/2026: EB03-023 (Kaya) e "Look at 5 cards from the top of
+# your deck and place them at the top or bottom of the deck in any order"
+# -- PURO REORDENAR, sem "add to hand" nenhum (achado real auditando as
+# partidas CPU x CPU: o parser inventava um add_to_hand que a carta nao
+# tem, mesmo bug do Satori OP15-066). Com o parser corrigido, NENHUMA
+# carta vai pra mao -- todas voltam pro deck, so reordenadas. ──
 me, opp = me_opp()
 ee = EffectExecutor(me, opp)
 kaya = mk('EB03-023', 'Kaya', card_type='CHARACTER')
@@ -1174,11 +1180,14 @@ me.hand = [kaya]
 fraca = mk('FRACA', 'Fraca', power=1000)
 media = mk('MEDIA', 'Media', power=4000)
 forte = mk('FORTE', 'Forte', power=9000, has_trigger=True)
-me.deck = [fraca, media, forte]  # forte = topo (fim da lista), unico candidato de add_to_hand
+me.deck = [fraca, media, forte]  # forte = topo (fim da lista)
 logs = ee.execute(kaya, 'on_play')
-check('deck_reorder_rest pega 1 do topo e reordena o resto (melhor carta volta ao topo)',
-      forte in me.hand and len(me.deck) == 2 and me.deck[-1] is media and me.deck[0] is fraca)
+check('deck_reorder_rest olha o deck inteiro e reordena sem tirar carta nenhuma (melhor no topo)',
+      forte not in me.hand and len(me.deck) == 3
+      and me.deck[-1] is forte and me.deck[0] is fraca)
 
+# OP02-057 (nao afetado pelo fix acima -- TEM "reveal up to 1 ... and add
+# it to your hand" no texto real, entao continua pegando 1 carta de verdade).
 me, opp = me_opp()
 ee = EffectExecutor(me, opp)
 kuma = mk('OP02-057', 'Bartholomew Kuma', card_type='CHARACTER')
@@ -1191,7 +1200,10 @@ check('deck_top_rest (nome equivocado do parser) executa igual deck_reorder_rest
       warlord in me.hand and len(me.deck) == 1 and me.deck[0] is outra)
 
 # OP01-088: Counter event que tinha ficado de fora por causa do deck_top_rest
-# sem handler -- agora deve ativar normalmente (buff + busca)
+# sem handler -- agora deve ativar normalmente (buff + reordenar). ATUALIZADO
+# 20/09/2026: o texto real e "...look at 3 cards from the top of your deck
+# and place them at the top or bottom of the deck in any order" -- PURO
+# REORDENAR (mesmo achado do EB03-023 acima), a carta olhada fica no deck.
 me, opp = me_opp()
 me.don_available = 2
 evento_op01088 = mk('OP01-088', 'Desert Spada', card_type='EVENT', cost=2)
@@ -1202,7 +1214,7 @@ ee = EffectExecutor(me, opp)
 counter = ee.try_counter_event_power(me.leader, 'leader', needed=2000)
 check('Counter event OP01-088 ativa agora que deck_reorder_rest tem handler',
       counter and counter[0] == 2000 and evento_op01088 in me.trash
-      and carta_deck in me.hand)
+      and carta_deck not in me.hand and carta_deck in me.deck)
 
 # ── 18. is_attack_locked_self -- achado 01/07/2026: ja estava 100%
 # implementado (le 'passive'/'mass_lock_conditional' direto do banco, sem

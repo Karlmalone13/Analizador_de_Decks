@@ -2483,11 +2483,6 @@
             "count": 3
           },
           {
-            "action": "add_to_hand",
-            "count": 1,
-            "revealed_to_opponent": false
-          },
-          {
             "action": "deck_reorder_rest"
           }
         ],
@@ -4473,11 +4468,6 @@
           {
             "action": "look_top_deck",
             "count": 5
-          },
-          {
-            "action": "add_to_hand",
-            "count": 1,
-            "revealed_to_opponent": false
           },
           {
             "action": "deck_reorder_rest"
@@ -10047,11 +10037,6 @@
             "count": 5
           },
           {
-            "action": "add_to_hand",
-            "count": 1,
-            "revealed_to_opponent": false
-          },
-          {
             "action": "deck_reorder_rest"
           }
         ]
@@ -10150,11 +10135,6 @@
           {
             "action": "look_top_deck",
             "count": 5
-          },
-          {
-            "action": "add_to_hand",
-            "count": 1,
-            "revealed_to_opponent": false
           },
           {
             "action": "deck_reorder_rest"
@@ -10457,11 +10437,6 @@
           {
             "action": "look_top_deck",
             "count": 3
-          },
-          {
-            "action": "add_to_hand",
-            "count": 1,
-            "revealed_to_opponent": false
           },
           {
             "action": "deck_reorder_rest"
@@ -12781,11 +12756,6 @@
           {
             "action": "look_top_deck",
             "count": 3
-          },
-          {
-            "action": "add_to_hand",
-            "count": 1,
-            "revealed_to_opponent": false
           },
           {
             "action": "deck_reorder_rest"
@@ -23510,11 +23480,6 @@
             "count": 5
           },
           {
-            "action": "add_to_hand",
-            "count": 1,
-            "revealed_to_opponent": false
-          },
-          {
             "action": "deck_reorder_rest"
           }
         ]
@@ -27188,11 +27153,6 @@
             "count": 5
           },
           {
-            "action": "add_to_hand",
-            "count": 1,
-            "revealed_to_opponent": false
-          },
-          {
             "action": "deck_reorder_rest"
           }
         ]
@@ -30211,11 +30171,6 @@
           {
             "action": "look_top_deck",
             "count": 3
-          },
-          {
-            "action": "add_to_hand",
-            "count": 1,
-            "revealed_to_opponent": false
           },
           {
             "action": "deck_reorder_rest"
@@ -44955,11 +44910,6 @@
           {
             "action": "look_top_deck",
             "count": 3
-          },
-          {
-            "action": "add_to_hand",
-            "count": 1,
-            "revealed_to_opponent": false
           },
           {
             "action": "deck_reorder_rest"
@@ -60160,11 +60110,6 @@
             "count": 2
           },
           {
-            "action": "add_to_hand",
-            "count": 1,
-            "revealed_to_opponent": false
-          },
-          {
             "action": "deck_reorder_rest"
           }
         ],
@@ -67458,11 +67403,6 @@
             "count": 2
           },
           {
-            "action": "add_to_hand",
-            "count": 1,
-            "revealed_to_opponent": false
-          },
-          {
             "action": "deck_reorder_rest"
           },
           {
@@ -70962,11 +70902,6 @@
             "count": 5
           },
           {
-            "action": "add_to_hand",
-            "count": 1,
-            "revealed_to_opponent": false
-          },
-          {
             "action": "deck_reorder_rest"
           }
         ]
@@ -71432,11 +71367,6 @@
             "count": 5
           },
           {
-            "action": "add_to_hand",
-            "count": 1,
-            "revealed_to_opponent": false
-          },
-          {
             "action": "deck_reorder_rest"
           }
         ],
@@ -71584,11 +71514,6 @@
           {
             "action": "look_top_deck",
             "count": 5
-          },
-          {
-            "action": "add_to_hand",
-            "count": 1,
-            "revealed_to_opponent": false
           }
         ]
       }
@@ -72565,11 +72490,6 @@
           {
             "action": "look_top_deck",
             "count": 3
-          },
-          {
-            "action": "add_to_hand",
-            "count": 1,
-            "revealed_to_opponent": false
           },
           {
             "action": "deck_reorder_rest"
@@ -75570,9 +75490,7 @@
             "count": 3
           },
           {
-            "action": "add_to_hand",
-            "count": 1,
-            "revealed_to_opponent": false
+            "action": "deck_reorder_rest"
           }
         ]
       },
@@ -79383,11 +79301,6 @@
             "count": 3
           },
           {
-            "action": "add_to_hand",
-            "count": 1,
-            "revealed_to_opponent": false
-          },
-          {
             "action": "deck_reorder_rest"
           }
         ]
@@ -79422,11 +79335,6 @@
           {
             "action": "look_top_deck",
             "count": 3
-          },
-          {
-            "action": "add_to_hand",
-            "count": 1,
-            "revealed_to_opponent": false
           },
           {
             "action": "deck_reorder_rest"
@@ -81092,9 +81000,7 @@
             "count": 3
           },
           {
-            "action": "add_to_hand",
-            "count": 1,
-            "revealed_to_opponent": false
+            "action": "deck_top_rest"
           }
         ]
       }
@@ -81116,11 +81022,6 @@
           {
             "action": "look_top_deck",
             "count": 3
-          },
-          {
-            "action": "add_to_hand",
-            "count": 1,
-            "revealed_to_opponent": false
           },
           {
             "action": "deck_reorder_rest"

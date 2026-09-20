@@ -1859,10 +1859,23 @@ def test_on_own_effect_removes_char_dispara_gatilho_generico() -> None:
     b.field_chars = [target]
     match = OPTCGMatch((a.leader, []), (b.leader, []))
     ee = EffectExecutor(a, b)
+    # ATUALIZADO 20/09/2026: o texto oficial de EB02-023 e "look at 3
+    # cards from the top of your deck and place them at the top or
+    # bottom of the deck in any order" -- PURO REORDENAR, sem nenhum
+    # "add to hand" (achado real auditando as partidas CPU x CPU, Satori
+    # OP15-066 tem a MESMA forma). A asserção antiga (`hand == +1`)
+    # checava um add_to_hand que o parser inventava por engano (fix no
+    # mesmo commit) -- agora confere o disparo do gatilho pelo marcador
+    # once_per_turn que `_dispatch_own_effect_removes_char` grava no
+    # PROPRIO card (`_own_effect_removes_char_once_marker`), unica fonte
+    # de verdade de que `execute()` rodou (a chamada usa um
+    # EffectExecutor NOVO por dentro, entao `ee._once_used` nao capturaria).
     hand_antes = len(a.hand)
     ee._execute_step({'action': 'bounce', 'target': 'opp_character', 'count': 1}, croco)
     check("Crocodile dispara on_own_effect_removes_char quando MEU bounce remove personagem do oponente",
-          len(a.hand) == hand_antes + 1)
+          getattr(croco, '_own_effect_removes_char_once_marker', None) is not None)
+    check("on_own_effect_removes_char nao mexe na mao (so reordena o deck, sem add_to_hand)",
+          len(a.hand) == hand_antes)
     check("Personagem alvo de fato voltou pra mao do oponente (bounce aconteceu)",
           target in b.hand)
 

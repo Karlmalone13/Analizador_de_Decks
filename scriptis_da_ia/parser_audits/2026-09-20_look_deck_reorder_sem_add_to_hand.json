@@ -1,0 +1,15 @@
+{
+  "trigger_card": "OP15-066",
+  "problem": "'[When Attacking] ... look at N cards from the top of your deck and place them at the top or bottom of the deck in any order' -- PURO REORDENAR, sem NENHUM verbo reveal/add/play. O parser (parse_look_at) tinha um fallback incondicional: quando nenhum verbo reveal/add/play batia, `take_m` ficava None mas o codigo assumia `count=1, verbo_pega='add'` mesmo assim -- inventando um add_to_hand(count=1) que a carta nao tem no texto. Achado investigando por que a auditoria de efeitos (auditoria_efeitos.py) marcava Satori (OP15-066) como 'ATIVADO E NAO SURTIU EFEITO' nas partidas CPU x CPU de 19-20/09/2026: a mao nunca deveria crescer (comportamento correto do jogo), mas o parser achava que deveria.",
+  "grammar_family": "'look at N cards from the top of your deck and place/return them at/to the top or bottom of the deck in any order' -- sem 'reveal'/'add'/'play' em lugar nenhum do bloco.",
+  "queries": [
+    "grep -in \"look at .* place them at\" cards_rows.csv (achado inicial, 5 cartas)",
+    "diff_parser.py apos o fix generico (guard por AUSENCIA do verbo, nao por frase exata) -- achou 21 cartas-base afetadas, incluindo variantes de fraseado ('return them to' em vez de 'place them at', achado ao expandir: ST03-010) que o grep textual nao cobria"
+  ],
+  "cards_found": ["EB02-023", "EB03-023", "OP01-073", "OP01-077", "OP01-088", "OP02-056", "OP05-055", "OP06-059", "OP07-039", "OP11-049", "OP15-066", "OP17-050", "P-049", "P-068", "P-074", "P-109", "ST03-010", "ST12-013", "ST12-014", "ST17-003", "ST17-004"],
+  "resolution_scope": "global",
+  "decision": "Fix pela AUSENCIA do verbo reveal/add/play no bloco inteiro (regex negativo), nao por uma frase de destino especifica -- por isso pegou tanto 'place them at the top or bottom' quanto o sinonimo 'return them to the top or bottom' (ST03-010) sem precisar de um 2o achado separado. Cartas com o verbo presente (ex: OP02-057, 'reveal up to 1 ... and add it to your hand') continuam intocadas -- confirmado com diff_parser (GANHOU=0, PERDEU=0, MUDOU=21 exatamente as 21 sem verbo).",
+  "limitation": "Nenhuma -- ao contrario do achado irmao do dia (ST22-001), aqui a carta especifica revelada nao importa (o efeito e reordenar o TOPO DO DECK, nao a mao), entao nao ha aproximacao: o fix e exato.",
+  "tests_updated": ["smoke_fast.py: teste do Crocodile EB02-023 assumia hand+1 (o add_to_hand inventado) -- trocado pra checar o marcador once_per_turn (_own_effect_removes_char_once_marker) direto no card, que e a fonte de verdade de que o gatilho executou, independente de mexer na mao", "smoke_test.py: teste de EB03-023 (Kaya) e do Counter event OP01-088 tinham a mesma suposicao errada -- corrigidos pra esperar as cartas de volta no deck reordenado, nao na mao. Teste de OP02-057 (tem 'reveal...and add', nao afetado pelo fix) preservado sem mudanca."],
+  "validated_by": ["diff_parser.py (GANHOU=0, PERDEU=0, MUDOU=21)", "smoke_fast.py OK", "smoke_test.py OK (gramatica compartilhada de look_top_deck, suite ampla exigida pela regra do projeto)", "cards_rows.csv (texto oficial das 21 cartas, conferido campo a campo)"]
+}

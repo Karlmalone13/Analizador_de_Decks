@@ -3865,10 +3865,6 @@
     "trigger": "on_own_effect_removes_char"
    },
    {
-    "action": "add_to_hand",
-    "trigger": "on_own_effect_removes_char"
-   },
-   {
     "action": "deck_reorder_rest",
     "trigger": "on_own_effect_removes_char"
    }
@@ -6768,10 +6764,6 @@
   "effects": [
    {
     "action": "look_top_deck",
-    "trigger": "on_play"
-   },
-   {
-    "action": "add_to_hand",
     "trigger": "on_play"
    },
    {
@@ -14994,10 +14986,6 @@
     "trigger": "on_play"
    },
    {
-    "action": "add_to_hand",
-    "trigger": "on_play"
-   },
-   {
     "action": "deck_reorder_rest",
     "trigger": "on_play"
    },
@@ -15167,10 +15155,6 @@
   "effects": [
    {
     "action": "look_top_deck",
-    "trigger": "on_play"
-   },
-   {
-    "action": "add_to_hand",
     "trigger": "on_play"
    },
    {
@@ -15681,10 +15665,6 @@
   "effects": [
    {
     "action": "look_top_deck",
-    "trigger": "counter"
-   },
-   {
-    "action": "add_to_hand",
     "trigger": "counter"
    },
    {
@@ -19627,10 +19607,6 @@
   "effects": [
    {
     "action": "look_top_deck",
-    "trigger": "on_play"
-   },
-   {
-    "action": "add_to_hand",
     "trigger": "on_play"
    },
    {
@@ -36551,10 +36527,6 @@
     "trigger": "on_play"
    },
    {
-    "action": "add_to_hand",
-    "trigger": "on_play"
-   },
-   {
     "action": "deck_reorder_rest",
     "trigger": "on_play"
    },
@@ -42334,10 +42306,6 @@
     "trigger": "trigger"
    },
    {
-    "action": "add_to_hand",
-    "trigger": "trigger"
-   },
-   {
     "action": "deck_reorder_rest",
     "trigger": "trigger"
    },
@@ -46966,11 +46934,6 @@
   "effects": [
    {
     "action": "look_top_deck",
-    "trigger": "when_attacking",
-    "don_requirement": 1
-   },
-   {
-    "action": "add_to_hand",
     "trigger": "when_attacking",
     "don_requirement": 1
    },
@@ -69916,10 +69879,6 @@
   "effects": [
    {
     "action": "look_top_deck",
-    "trigger": "on_play"
-   },
-   {
-    "action": "add_to_hand",
     "trigger": "on_play"
    },
    {
@@ -92972,10 +92931,6 @@
     "trigger": "when_attacking"
    },
    {
-    "action": "add_to_hand",
-    "trigger": "when_attacking"
-   },
-   {
     "action": "deck_reorder_rest",
     "trigger": "when_attacking"
    }
@@ -103590,10 +103545,6 @@
     "trigger": "on_play"
    },
    {
-    "action": "add_to_hand",
-    "trigger": "on_play"
-   },
-   {
     "action": "deck_reorder_rest",
     "trigger": "on_play"
    },
@@ -108930,10 +108881,6 @@
     "trigger": "on_play"
    },
    {
-    "action": "add_to_hand",
-    "trigger": "on_play"
-   },
-   {
     "action": "deck_reorder_rest",
     "trigger": "on_play"
    }
@@ -109757,10 +109704,6 @@
     "trigger": "activate_main"
    },
    {
-    "action": "add_to_hand",
-    "trigger": "activate_main"
-   },
-   {
     "action": "deck_reorder_rest",
     "trigger": "activate_main"
    }
@@ -110015,10 +109958,6 @@
   "effects": [
    {
     "action": "look_top_deck",
-    "trigger": "activate_main"
-   },
-   {
-    "action": "add_to_hand",
     "trigger": "activate_main"
    }
   ],
@@ -111567,10 +111506,6 @@
   "effects": [
    {
     "action": "look_top_deck",
-    "trigger": "on_play"
-   },
-   {
-    "action": "add_to_hand",
     "trigger": "on_play"
    },
    {
@@ -116593,7 +116528,7 @@
     "trigger": "on_play"
    },
    {
-    "action": "add_to_hand",
+    "action": "deck_reorder_rest",
     "trigger": "on_play"
    },
    {
@@ -122857,10 +122792,6 @@
     "trigger": "on_play"
    },
    {
-    "action": "add_to_hand",
-    "trigger": "on_play"
-   },
-   {
     "action": "deck_reorder_rest",
     "trigger": "on_play"
    },
@@ -122909,10 +122840,6 @@
   "effects": [
    {
     "action": "look_top_deck",
-    "trigger": "on_play"
-   },
-   {
-    "action": "add_to_hand",
     "trigger": "on_play"
    },
    {
@@ -125364,7 +125291,7 @@
     "trigger": "on_play"
    },
    {
-    "action": "add_to_hand",
+    "action": "deck_top_rest",
     "trigger": "on_play"
    }
   ],
@@ -125406,10 +125333,6 @@
   "effects": [
    {
     "action": "look_top_deck",
-    "trigger": "on_play"
-   },
-   {
-    "action": "add_to_hand",
     "trigger": "on_play"
    },
    {

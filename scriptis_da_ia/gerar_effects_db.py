@@ -2005,6 +2005,29 @@ def parse_look_at(text):
             steps.append({'action': 'deck_bottom_rest'})
         return steps
 
+    # "look at N cards ... and place/return them at/to the top or bottom
+    # of your deck in any order" -- PURO REORDENAR, sem nenhum verbo
+    # reveal/add/play (nao pega NENHUMA carta). Mesma familia do guard de
+    # trash_look_m acima (mesmo bug, verbo ausente): sem este check, o
+    # fallback abaixo (`take_m` nao bate -> count=1, verbo_pega='add')
+    # inventava um add_to_hand(count=1) que a carta NAO TEM no texto.
+    # Achado real 20/09/2026 (auditoria das partidas CPU x CPU -- Satori
+    # OP15-066 marcado "efeito sem efeito" quando na verdade a mao NUNCA
+    # deveria crescer). Censo global (grep "look at ... place/return them
+    # at/to ... top or bottom of your deck"): 21 cartas-base com esta
+    # forma -- TODAS tinham o mesmo add_to_hand inventado. "return them"
+    # (achado ao ampliar a busca, ST03-010, unica carta com esse verbo)
+    # e sinonimo de "place them" pra esta gramatica -- generico pela
+    # FORMA (ausencia do verbo reveal/add/play), nao amarrado a carta.
+    if not re.search(r'\b(?:reveal|add|play)\b', t):
+        if re.search(r'(?:place|return) them (?:at|to) the top or bottom', t):
+            steps.append({'action': 'deck_reorder_rest'})
+        elif re.search(r'(?:place|return) (?:the rest|them) (?:at|to)(?: the)? bottom', t):
+            steps.append({'action': 'deck_bottom_rest'})
+        elif re.search(r'(?:place|return) (?:the rest|them) (?:at|to)(?: the)? top', t):
+            steps.append({'action': 'deck_top_rest'})
+        return steps
+
     # Quantas pega. "up to a total of N" (achado 19/07, OP15-101 Kalgara,
     # unica carta no banco com essa forma exata: as duas frases
     # aparecem JUNTAS, "up to " seguido de "a total of ", nao uma OU
