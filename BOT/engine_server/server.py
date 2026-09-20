@@ -1386,20 +1386,22 @@ def defense(req: DefenseRequest):
                       f"-> {len(out['counterIds'])} cartas", flush=True)
 
             elif req.phase == "trigger":
-                out["useTrigger"] = bool(bridge.resolve_trigger_choice(gs, req.triggerCode, opp_gs))
+                out["useTrigger"] = bool(bridge.resolve_trigger_choice(
+                    gs, req.triggerCode, opp_gs, trace_out=decision_trace))
                 print(f"[DEF] trigger {req.triggerCode} -> {out['useTrigger']}", flush=True)
 
             elif req.phase == "reaction":
                 out["useReaction"] = bridge.resolve_reaction(
                     gs, opp_gs, req.attackerPower, req.defenderPower,
-                    defender_uid=req.defenderId, actor_code=req.triggerCode)
+                    defender_uid=req.defenderId, actor_code=req.triggerCode,
+                    trace_out=decision_trace)
                 print(f"[DEF] reaction atk={req.attackerPower} def={req.defenderPower} "
                       f"defId={req.defenderId} -> {out['useReaction']}", flush=True)
 
             elif req.phase == "optional":
                 # Efeito opcional com custo no proprio turno do bot
                 out["useReaction"] = bridge.resolve_optional_effect(
-                    gs, opp_gs, actor_code=req.triggerCode)
+                    gs, opp_gs, actor_code=req.triggerCode, trace_out=decision_trace)
                 if not out["useReaction"] and req.triggerCode:
                     _declined_optional.add((req.triggerCode, req.state.turnNumber))
                 print(f"[DEF] optional -> {out['useReaction']}", flush=True)
@@ -1447,6 +1449,51 @@ def defense(req: DefenseRequest):
                       **({"score": _counter_trace["custo_counterar"]}
                          if _counter_trace else {})}]
                      + decision_trace.get("legal_actions", []))
+        elif req.phase == "reaction":
+            # `resolve_reaction` grava `ganho`/`custo_carta` em `decision_trace`
+            # (via `trace_out=`) so a partir do ponto em que a decisao vira
+            # uma comparacao de verdade -- os returns anteriores (mao
+            # pequena, sem alvo legal, vida 0) sao gates estruturais sem
+            # par comparavel, e ficam sem score (chaves ausentes).
+            legal = [{"type": "decline", "eligible": True,
+                      **({"score": decision_trace["custo_carta"]}
+                         if "custo_carta" in decision_trace else {})},
+                     {"type": "accept", "eligible": True,
+                      **({"score": decision_trace["ganho"]}
+                         if "ganho" in decision_trace else {})}]
+        elif req.phase == "optional":
+            # `_optional_trace` so vem preenchido quando `_worth_paying_
+            # optional_costs` caiu no fallback SEM modelo (ver comentario
+            # na propria funcao) -- na maioria das vezes, com modelo
+            # carregado, a decisao e deferida pra busca (ja medida em
+            # `main:play`/`main:activate`) e fica sem score aqui, de
+            # proposito -- cobertura baixa esperada, nao bug.
+            # Sinal INVERTIDO em relacao a blocker/counter: la, a acao ativa
+            # vence quando o PROPRIO valor e ALTO (custo>golpe/perda); aqui
+            # a decisao e "aceita se o SACRIFICIO for barato o bastante"
+            # (custo<=limiar) -- entao o score de cada lado e o NEGATIVO da
+            # sua grandeza, pra "maior score vence" continuar valendo:
+            # aceita quando -custo >= -limiar, ou seja custo <= limiar.
+            _optional_trace = decision_trace.get("optional_trace")
+            legal = [{"type": "decline", "eligible": True,
+                      **({"score": -_optional_trace["limiar_beneficio"]}
+                         if _optional_trace else {})},
+                     {"type": "accept", "eligible": True,
+                      **({"score": -_optional_trace["custo_sacrificio"]}
+                         if _optional_trace else {})}]
+        elif req.phase == "trigger":
+            # `_trigger_trace` so preenchido no ramo `activate_main_effect`
+            # (o unico com um LIMIAR real de verdade pra comparar, ver
+            # `resolve_trigger_choice`) -- os outros `action`s do gatilho
+            # (ko/bounce/draw seco/etc) sao despacho categorico, sem par
+            # comparavel, e ficam sem score de proposito.
+            _trigger_trace = decision_trace.get("trigger_trace")
+            legal = [{"type": "decline", "eligible": True,
+                      **({"score": _trigger_trace["limiar_manter_na_mao"]}
+                         if _trigger_trace else {})},
+                     {"type": "accept", "eligible": True,
+                      **({"score": _trigger_trace["on_ko_value"]}
+                         if _trigger_trace else {})}]
         else:
             legal = [{"type": "decline", "eligible": True},
                      {"type": "accept", "eligible": True}]
@@ -1478,6 +1525,17 @@ def defense(req: DefenseRequest):
             # rodar), entao o `if _counter_trace` acima ja cobre isso.
             chosen["score"] = (_counter_trace["custo_counterar"] if out["counterIds"]
                                else _counter_trace["perda_sem_counter"])
+        elif req.phase == "reaction" and "ganho" in decision_trace:
+            chosen["score"] = (decision_trace["ganho"] if out["useReaction"]
+                               else decision_trace["custo_carta"])
+        elif req.phase == "optional" and decision_trace.get("optional_trace"):
+            _ot = decision_trace["optional_trace"]
+            chosen["score"] = (-_ot["custo_sacrificio"] if out["useReaction"]
+                               else -_ot["limiar_beneficio"])
+        elif req.phase == "trigger" and decision_trace.get("trigger_trace"):
+            _tt = decision_trace["trigger_trace"]
+            chosen["score"] = (_tt["on_ko_value"] if out["useTrigger"]
+                               else _tt["limiar_manter_na_mao"])
         return _record_aux_decision(
             "defense", _model_dict(req.state), legal, chosen, out,
             phase=req.phase, turn=req.state.turnNumber,

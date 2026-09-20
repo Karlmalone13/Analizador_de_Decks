@@ -11752,6 +11752,17 @@ class EffectExecutor:
         custo achando "de graça" mesmo sem cartas suficientes, travando o
         jogo pedindo alvos que não existem (ver `_reveal_from_hand_matches`).
         """
+        # Instrumento (20/09, `defense:optional`). ATENCAO -- cobertura
+        # PARCIAL e baixa de proposito: a maioria dos returns aqui sao
+        # THRESHOLD FIXO por tipo de custo (60/80/etc, nao duas pontas na
+        # MESMA unidade) ou, com value_net carregado e beneficio > 0,
+        # `return True` INCONDICIONAL -- o julgamento de valor real e
+        # DEFERIDO pra busca (ja medido em `main:play`/`main:activate`,
+        # ver comentario "O LIMIAR DE VALOR SAI" mais abaixo nesta mesma
+        # funcao). So o ramo de FALLBACK final (`_trash_value(worst) <=
+        # limiar`, usado quando nao ha modelo carregado) tem duas pontas
+        # genuinamente comparaveis -- e o unico que fica com trace.
+        self._ultimo_optional_trace = None
         for c in costs:
             if c.get('type') != 'reveal_from_hand':
                 continue
@@ -11918,6 +11929,11 @@ class EffectExecutor:
                 return True
         except Exception:
             pass
+        self._ultimo_optional_trace = {
+            'metodo': 'limiar_fallback',
+            'custo_sacrificio': round(float(self._trash_value(worst)), 4),
+            'limiar_beneficio': round(float(limiar), 4),
+        }
         return self._trash_value(worst) <= limiar
 
 

@@ -1196,7 +1196,8 @@ import re as _re
 
 
 def resolve_trigger_choice(gs: GameState, card_code: str | None,
-                           opp_gs: GameState | None = None) -> bool:
+                           opp_gs: GameState | None = None,
+                           trace_out: Optional[dict] = None) -> bool:
     """
     Decide se o bot deve usar o Trigger Effect de uma carta revelada da vida.
 
@@ -1255,7 +1256,23 @@ def resolve_trigger_choice(gs: GameState, card_code: str | None,
                 ee_trig = EffectExecutor(gs, opp_stub)
                 card_obj = _make_card(card_code, data_ev)
                 return any(ee_trig._step_is_viable(s, card_obj) for s in main_steps)
-            return on_ko_value(card_code, opp_gs, owner=gs) >= 25
+            # Telemetria (20/09, `defense:trigger`). ATENCAO -- cobertura
+            # PARCIAL de proposito: os outros `action`s deste loop sao
+            # DESPACHO CATEGORICO (ko/bounce/etc sempre usa; draw seco
+            # sempre nao usa) sem par comparavel algum -- nao e "duas
+            # pontas escondidas", e literalmente uma tabela de regra, e
+            # forcar um score ali seria inventar numero. So este ramo
+            # (on-KO do proprio gatilho) tem um LIMIAR de verdade (25,
+            # valor implicito de manter a carta na mao) contra um valor
+            # calculado -- o unico com trace.
+            _on_ko = on_ko_value(card_code, opp_gs, owner=gs)
+            if trace_out is not None:
+                trace_out['trigger_trace'] = {
+                    'metodo': 'on_ko_threshold',
+                    'on_ko_value': round(float(_on_ko), 4),
+                    'limiar_manter_na_mao': 25.0,
+                }
+            return _on_ko >= 25
         if action in ('trash', 'trash_from_hand', 'discard'):
             return len(gs.hand) > 0
         if action == 'trash_life':
@@ -1454,7 +1471,8 @@ def select_counter_cards(gs: GameState, atk_power: int, def_power: int,
 def resolve_reaction(gs: GameState, opp_gs: GameState,
                      atk_power: int, def_power: int,
                      defender_uid: int = 0,
-                     actor_code: str | None = None) -> bool:
+                     actor_code: str | None = None,
+                     trace_out: Optional[dict] = None) -> bool:
     """
     Efeito opcional com custo oferecido durante uma janela de ataque
     (ex: lider Teach — trash 1 carta da mao para REDIRECIONAR o ataque).
@@ -1633,6 +1651,16 @@ def resolve_reaction(gs: GameState, opp_gs: GameState,
         return _log('vida 0, golpe letal -- redireciona sempre', True, opcoes=opcoes)
 
     ganho = max(opcoes) + salva
+    # Telemetria (20/09, mesmo padrao de blocker/counter): daqui pra baixo
+    # TODO return compara `ganho` contra `custo_carta` (a guarda de "segura
+    # pro ataque maior" so DOBRA o limiar, nao muda a regua) -- exporta o
+    # par pra `defense:reaction` deixar de ser um dos buckets sem score
+    # real. Os returns ANTERIORES a este ponto (mao pequena, sem alvo
+    # legal, vida 0) sao gates estruturais sem par comparavel -- ficam sem
+    # trace, honesto com o que da pra medir.
+    if trace_out is not None:
+        trace_out['ganho'] = round(float(ganho), 4)
+        trace_out['custo_carta'] = round(float(custo_carta), 4)
     if ganho < custo_carta:
         return _log('ganho < custo da carta', False,
                      custo_carta=round(custo_carta, 1), salva=round(salva, 1),
@@ -1662,7 +1690,8 @@ def resolve_optional_effect(gs: GameState, opp_gs: GameState,
                             attacker_power: int = 0,
                             defender_power: int = 0,
                             actor_defending: bool | None = None,
-                            defender_uid: int = 0) -> bool:
+                            defender_uid: int = 0,
+                            trace_out: Optional[dict] = None) -> bool:
     """
     Efeito opcional com custo no PROPRIO turno (downside pos-play, ex:
     "you may trash 1 card: ..."). SEM heuristica propria -- delega pra
@@ -1697,6 +1726,18 @@ def resolve_optional_effect(gs: GameState, opp_gs: GameState,
     from optcg_engine.decision_engine import get_card_effects, EffectExecutor
     ee = EffectExecutor(gs, opp_gs)
 
+    def _decide(*a, **kw):
+        # Telemetria (20/09, `defense:optional`): drena o que
+        # `_worth_paying_optional_costs` acabou de calcular em si mesma
+        # (`_ultimo_optional_trace`, so preenchido no ramo de fallback sem
+        # modelo -- ver comentario la). REGRA_SEM_DUPLICACAO: nao recalcula
+        # nada aqui, so centraliza o drain pros 3 pontos de retorno desta
+        # funcao em vez de repetir em cada um.
+        resultado = ee._worth_paying_optional_costs(*a, **kw)
+        if trace_out is not None:
+            trace_out['optional_trace'] = getattr(ee, '_ultimo_optional_trace', None)
+        return resultado
+
     # Achado real 27/07 (bloco HANDOFF 374, Katakuri OP11-062 pagando
     # don_minus toda vez que o oponente ataca): server.py nao sabe, so pela
     # fase "reaction", se e o bot atacando (proprio turno) ou defendendo
@@ -1709,7 +1750,7 @@ def resolve_optional_effect(gs: GameState, opp_gs: GameState,
         opp_gs.is_active_turn = actor_defending
 
     if not actor_code:
-        return ee._worth_paying_optional_costs(
+        return _decide(
             [{'type': 'trash_from_hand'}], card=None)
 
     # Inclui lider e stage na busca: o prompt opcional mais frequente do Imu
@@ -1723,7 +1764,7 @@ def resolve_optional_effect(gs: GameState, opp_gs: GameState,
         pool.append(gs.field_stage)
     card_obj = next((c for c in pool if c is not None and c.code == actor_code), None)
     if card_obj is None:
-        return ee._worth_paying_optional_costs(
+        return _decide(
             [{'type': 'trash_from_hand'}], card=None)
 
     effects = get_card_effects(actor_code)
@@ -1940,7 +1981,7 @@ def resolve_optional_effect(gs: GameState, opp_gs: GameState,
         # o BENEFICIO, nao so o custo -- mesma chamada que execute() faz no
         # simulador interno, pra os dois caminhos continuarem com a mesma
         # regua (regra do motor unico).
-        return ee._worth_paying_optional_costs(custos, card_obj, steps)
+        return _decide(custos, card_obj, steps)
 
     return False
 
