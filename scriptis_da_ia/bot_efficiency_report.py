@@ -222,6 +222,46 @@ def analyze_decision_log(path: Path) -> dict:
     return result
 
 
+def _index_cards_by_uid(state: dict | None) -> dict[int, tuple]:
+    """Mapa deckUniqueId -> assinatura (zona, lado, donAttached, rested,
+    cantAttack) pra achar QUAL carta um estado mudou entre dois snapshots.
+    `deckUniqueId` e unico pra partida inteira (os dois lados nunca
+    compartilham um id), entao dar bot/opp junto e seguro."""
+    idx: dict[int, tuple] = {}
+    if not isinstance(state, dict):
+        return idx
+    for side in ("bot", "opp"):
+        player = state.get(side)
+        if not isinstance(player, dict):
+            continue
+        for zone in ("hand", "board", "trash"):
+            for card in player.get(zone) or []:
+                if isinstance(card, dict) and card.get("deckUniqueId") is not None:
+                    idx[card["deckUniqueId"]] = (
+                        zone, side, card.get("donAttached"),
+                        card.get("rested"), card.get("cantAttack"))
+        for zone, card in (("leader", player.get("leader")), ("stage", player.get("stage"))):
+            if isinstance(card, dict) and card.get("deckUniqueId") is not None:
+                idx[card["deckUniqueId"]] = (
+                    zone, side, card.get("donAttached"), card.get("rested"), None)
+    return idx
+
+
+def _target_order_affected_id(state_before: dict | None, state_after: dict | None,
+                              candidate_ids: list) -> int | None:
+    """Qual candidato de uma decisao `target_order` o jogo de fato afetou,
+    por diff de estado (zona/donAttached/rested/cantAttack) entre antes e
+    depois DESTA execucao especifica. So responde quando EXATAMENTE um
+    candidato mudou -- ambiguo (0 ou 2+) devolve None em vez de arriscar um
+    palpite (mesmo principio de `_dedupe_scored_actions`: nao inventar
+    confianca que o dado nao sustenta)."""
+    before_idx = _index_cards_by_uid(state_before)
+    after_idx = _index_cards_by_uid(state_after)
+    changed = [cid for cid in candidate_ids
+              if cid is not None and before_idx.get(cid) != after_idx.get(cid)]
+    return changed[0] if len(changed) == 1 else None
+
+
 def analyze_decision_events(lines) -> dict:
     """Versao testavel em memoria do agregador JSONL."""
     decisions: dict[str, dict] = {}
@@ -300,6 +340,22 @@ def analyze_decision_events(lines) -> dict:
     # (pra nao reportar 0.0 como se fosse "decisao perfeita").
     gaps_by_bucket: dict[str, list[float]] = {}
     gap_bucket_unscored: dict[str, int] = {}
+    # `target:target_order` (498 decisoes so nesta sessao) nao tem um 'score'
+    # pontual pra comparar -- `order_target_candidates(with_scores=True)`
+    # (sim_bridge.py) devolve um `rank_key` (tupla bucket+desempate, ex:
+    # give_don ja despriorizando quem 'desperdica' o DON via
+    # `character_can_attack_now`) e a decisao logada e a ORDEM inteira, nao
+    # UMA escolha entre alternativas -- nao existe "score do escolhido vs
+    # score do melhor" no mesmo sentido que main/attack tem. O que da pra
+    # medir SEM tocar o motor: qual candidato o jogo de fato AFETOU (por
+    # diff de estado antes/depois, `_target_order_affected_id` abaixo) tinha
+    # a MESMA posicao que o rank_key ja elegia como melhor (rank 0)? Se nao
+    # bateu, e um sinal real de que a ordem que o motor pretendia nao foi o
+    # que aconteceu -- exatamente a pergunta que a investigacao Shura x
+    # Pudding (20/09) levantou, generalizada pra toda a categoria em vez de
+    # amarrada aquele caso.
+    target_order_rank_positions: list[int] = []
+    target_order_ambiguous = 0
     counterfactual_regrets = []
     counterfactual_eligible = 0
     latencies = []
@@ -538,6 +594,23 @@ def analyze_decision_events(lines) -> dict:
             semantic["checked"] += 1
             semantic["passed" if semantic_result else "failed"] += 1
 
+        if (kind == "target" and chosen and chosen.get("type") == "target_order"
+                and terminal and terminal.get("status") == "confirmed" and mesma_partida
+                and isinstance(decision.get("state_before"), dict)
+                and isinstance(terminal_state, dict)):
+            ranked = sorted(
+                (a for a in eligible if isinstance(a.get("rank_key"), list) and a.get("target_id") is not None),
+                key=lambda a: a["rank_key"])
+            if ranked:
+                affected_id = _target_order_affected_id(
+                    decision["state_before"], terminal_state,
+                    [a["target_id"] for a in ranked])
+                pos = next((i for i, a in enumerate(ranked) if a["target_id"] == affected_id), None)
+                if pos is None:
+                    target_order_ambiguous += 1
+                else:
+                    target_order_rank_positions.append(pos)
+
         search = decision.get("search_values") or []
         if search and chosen:
             def same_action(item):
@@ -721,6 +794,18 @@ def analyze_decision_events(lines) -> dict:
             for bucket, vals in sorted(gaps_by_bucket.items())
         },
         "decision_quality_unscored": dict(sorted(gap_bucket_unscored.items())),
+        "target_order_quality": {
+            "n_medido": len(target_order_rank_positions),
+            "n_ambiguo": target_order_ambiguous,
+            "pct_acertou_rank0": _round(_ratio(
+                sum(1 for p in target_order_rank_positions if p == 0),
+                len(target_order_rank_positions), 100)),
+            "mean_rank_position": _round(
+                sum(target_order_rank_positions) / len(target_order_rank_positions)
+                if target_order_rank_positions else None),
+            "max_rank_position": (max(target_order_rank_positions)
+                                  if target_order_rank_positions else None),
+        },
         "mean_counterfactual_regret": _round(
             sum(counterfactual_regrets) / len(counterfactual_regrets)
             if counterfactual_regrets else None),
@@ -830,10 +915,20 @@ def analyze_decision_events(lines) -> dict:
             "effect_option -- pra nao esconder qual CATEGORIA de decisao e ruim atras da media geral "
             "(achado 20/09: o gap de main:attack ficava bom mesmo com alocacao de DON ruim em outro "
             "lugar). decision_quality_unscored conta, por bucket, quantas decisoes NAO tinham nenhum "
-            "candidato com score real (hoje: decision_kind='target', usado por order_target_candidates "
-            "para target/give_don -- so tem 'rank_key' de ordem de clique, nao valor) -- essas NAO "
-            "entram em decision_quality_by_kind pra nao reportar gap=0.0 como se fosse decisao otima "
-            "quando na verdade e ausencia de score pra comparar.",
+            "candidato com score real (target:target_order, defense:*, effect_option, mulligan -- so "
+            "'rank_key'/sem valor comparavel) -- essas NAO entram em decision_quality_by_kind pra nao "
+            "reportar gap=0.0 como se fosse decisao otima quando na verdade e ausencia de score pra "
+            "comparar. target:target_order especificamente TEM uma medicao propria, ver "
+            "target_order_quality abaixo -- continua contado aqui porque a UNIDADE e diferente (posicao "
+            "no ranking, nao pontos de score), nao porque esteja de fato as escuras.",
+            "target_order_quality mede especificamente decision_kind='target' (chosen.type="
+            "'target_order', usado por order_target_candidates/give_don entre outros): sem score "
+            "pontual pra comparar, mas rank_key ja ordena os candidatos por preferencia -- pos=0 e o "
+            "candidato que o motor considerava melhor. Por diff de estado antes/depois da execucao "
+            "(_target_order_affected_id), acha QUAL candidato o jogo de fato afetou e mede a posicao "
+            "dele nessa ordem (0=bateu com o topo, N=perdeu pra N candidatos 'melhores' na propria "
+            "regua do motor). n_ambiguo conta decisoes onde 0 ou 2+ candidatos mudaram de estado -- "
+            "sem diagnostico seguro, descartadas em vez de contar como acerto ou erro.",
         ],
     }
 
@@ -879,6 +974,13 @@ def print_report(report: dict) -> None:
             print("  decision_quality_unscored (sem score real por candidato -- nao entra na media acima):")
             for bucket, n in unscored.items():
                 print(f"    {bucket:28s} n={n}")
+        toq = live.get("target_order_quality") or {}
+        if toq.get("n_medido"):
+            print(f"  target_order_quality (target:target_order, medido por diff de estado)")
+            print(f"    pct_acertou_rank0={toq['pct_acertou_rank0']}  "
+                  f"mean_rank_position={toq['mean_rank_position']}  "
+                  f"max_rank_position={toq['max_rank_position']}  "
+                  f"n={toq['n_medido']}  n_ambiguo={toq['n_ambiguo']}")
         for alert in live["alerts"]:
             print(f"  ALERTA {alert['severity'].upper():7s} {alert['code']}: {alert['message']}")
 
