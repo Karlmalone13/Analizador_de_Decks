@@ -278,6 +278,28 @@ def analyze_decision_events(lines) -> dict:
     chosen_with_scores = 0
     eligible_recorded = 0
     immediate_gaps = []
+    # Achado real 20/09/2026 (investigacao do give_don Shura x Pudding, log
+    # Enel-P x Rocks.D.Xebec-B 2026-09-20T16.32.36_p2): o pedido do usuario foi
+    # generalizar a medicao de qualidade de alvo/sequencia pra ALEM de
+    # atacante/DON -- blocker, counter, ordem de candidatos, efeitos ativados.
+    # `mean_immediate_score_gap` ja calculava o regret pra QUALQUER
+    # decision_kind (nunca foi so main/attack), mas so publicava UM numero
+    # agregado -- misturando categorias com regret real (main:attack,
+    # main:play) com categorias que sequer TEM score real por candidato
+    # (decision_kind='target', usado por order_target_candidates/give_don:
+    # scored_actions ali carregam 'rank_key' por ordem de clique, nunca
+    # 'score' de valor) numa mesma media. Isso escondia dois problemas
+    # diferentes atras de um numero so: (1) nenhuma categoria aparecia
+    # isolada pra saber ONDE a decisao era ruim, e (2) a categoria 'target'
+    # contribuia um gap de 0.0 SEMPRE (nenhum candidato tem 'score', o
+    # fallback -1e9 empata best com chosen), inflando artificialmente a
+    # media geral com zeros que nao significam "decisao otima" -- so
+    # significam "nao ha score pra comparar". `gaps_by_bucket` guarda o
+    # regret por (decision_kind, chosen.type); `gap_bucket_unscored` conta,
+    # por bucket, quantas decisoes nao tinham NENHUM score real de candidato
+    # (pra nao reportar 0.0 como se fosse "decisao perfeita").
+    gaps_by_bucket: dict[str, list[float]] = {}
+    gap_bucket_unscored: dict[str, int] = {}
     counterfactual_regrets = []
     counterfactual_eligible = 0
     latencies = []
@@ -458,7 +480,14 @@ def analyze_decision_events(lines) -> dict:
         if chosen is not None and eligible:
             chosen_with_scores += 1
             best = max(float(a.get("score", -1e9)) for a in eligible)
-            immediate_gaps.append(max(0.0, best - float(chosen.get("score", best))))
+            gap = max(0.0, best - float(chosen.get("score", best)))
+            immediate_gaps.append(gap)
+            quality_bucket = f"{kind}:{chosen.get('type') or '?'}"
+            has_real_score = any(a.get("score") is not None for a in eligible)
+            if has_real_score:
+                gaps_by_bucket.setdefault(quality_bucket, []).append(gap)
+            else:
+                gap_bucket_unscored[quality_bucket] = gap_bucket_unscored.get(quality_bucket, 0) + 1
 
         events = executions.get(decision_id, [])
         with_state_after += int(any(e.get("state_after") is not None for e in events))
@@ -684,6 +713,14 @@ def analyze_decision_events(lines) -> dict:
         "mean_immediate_score_gap": _round(
             sum(immediate_gaps) / len(immediate_gaps) if immediate_gaps else None
         ),
+        "decision_quality_by_kind": {
+            bucket: {
+                "mean_score_gap": _round(sum(vals) / len(vals)),
+                "n": len(vals),
+            }
+            for bucket, vals in sorted(gaps_by_bucket.items())
+        },
+        "decision_quality_unscored": dict(sorted(gap_bucket_unscored.items())),
         "mean_counterfactual_regret": _round(
             sum(counterfactual_regrets) / len(counterfactual_regrets)
             if counterfactual_regrets else None),
@@ -788,6 +825,15 @@ def analyze_decision_events(lines) -> dict:
             "no total/alerta (achado real 15/08: 6 fins de turno normais inflavam o alerta e o "
             "gate_status sem bug nenhum). lethal_certified_summary correlaciona can_lethal=True com o "
             "outcome real da partida",
+            "decision_quality_by_kind quebra mean_immediate_score_gap por (decision_kind, tipo da acao "
+            "escolhida) -- ex: main:attack, main:attach_don, defense:blocker, defense:counter, "
+            "effect_option -- pra nao esconder qual CATEGORIA de decisao e ruim atras da media geral "
+            "(achado 20/09: o gap de main:attack ficava bom mesmo com alocacao de DON ruim em outro "
+            "lugar). decision_quality_unscored conta, por bucket, quantas decisoes NAO tinham nenhum "
+            "candidato com score real (hoje: decision_kind='target', usado por order_target_candidates "
+            "para target/give_don -- so tem 'rank_key' de ordem de clique, nao valor) -- essas NAO "
+            "entram em decision_quality_by_kind pra nao reportar gap=0.0 como se fosse decisao otima "
+            "quando na verdade e ausencia de score pra comparar.",
         ],
     }
 
@@ -825,6 +871,14 @@ def print_report(report: dict) -> None:
         print(f"  {'bot_confusion':34s} {live['bot_confusion']}")
         print(f"  {'lethal_certified_summary':34s} {live['lethal_certified_summary']}")
         print(f"  {'gate_status':34s} {live['gate_status']}")
+        print("  decision_quality_by_kind (gap medio contra o melhor candidato pontuado):")
+        for bucket, stats in live.get("decision_quality_by_kind", {}).items():
+            print(f"    {bucket:28s} gap_medio={stats['mean_score_gap']:<8} n={stats['n']}")
+        unscored = live.get("decision_quality_unscored") or {}
+        if unscored:
+            print("  decision_quality_unscored (sem score real por candidato -- nao entra na media acima):")
+            for bucket, n in unscored.items():
+                print(f"    {bucket:28s} n={n}")
         for alert in live["alerts"]:
             print(f"  ALERTA {alert['severity'].upper():7s} {alert['code']}: {alert['message']}")
 
