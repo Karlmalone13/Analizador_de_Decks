@@ -16325,6 +16325,9 @@ class DecisionEngine:
                 'counter_na_mao': self.me.counter_in_hand(),
                 'mao': _cods(self.me.hand),
                 'chosen': bool(usar),
+                # None nos ramos legados (tabela por vida) -- so o caminho
+                # value_net tem duas pontas na mesma unidade pra comparar.
+                'trace': getattr(self, '_ultimo_counter_trace', None),
             })
         return usar
 
@@ -16361,6 +16364,13 @@ class DecisionEngine:
         char_value_score - on_ko_value) aqui; se vier preenchido, decide
         so por isso, ignorando a tabela de vida inteira.
         """
+        # Instrumento (20/09, mesmo padrao de `_ultimo_blocker_trace`):
+        # so o caminho value_net (abaixo) tem duas pontas DIRETAMENTE
+        # comparaveis (_custo de gastar as cartas vs _perda de levar o
+        # golpe) -- os ramos legados de tabela-por-vida nao tem um "custo
+        # de contraf actual" na mesma unidade, entao ficam sem trace em vez
+        # de forcar uma comparacao que misturaria reguas diferentes.
+        self._ultimo_counter_trace = None
         if atk_power < def_power:
             return False  # defesa já suficiente
         needed = atk_power - def_power + 1
@@ -16406,6 +16416,11 @@ class DecisionEngine:
                                       if alvo is not None
                                       else _vn.delta_perder_vida(self.me, self.opp, _b))
                             if _perda is not None:
+                                self._ultimo_counter_trace = {
+                                    'metodo': 'value_net',
+                                    'custo_counterar': round(float(_custo), 4),
+                                    'perda_sem_counter': round(float(_perda), 4),
+                                }
                                 return _custo > _perda
             except Exception:
                 pass

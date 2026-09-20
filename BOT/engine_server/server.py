@@ -1422,7 +1422,21 @@ def defense(req: DefenseRequest):
                     if getattr(c, '_deck_uid', 0) in _custo_by_uid else {})}
                 for c in gs.blockers_active()]
         elif req.phase == "counter":
-            legal = ([{"type": "no_counter", "eligible": True}]
+            # Achado 20/09 (mesmo padrao do blocker): `should_use_counter`
+            # (chamado POR DENTRO de `select_counter_cards`) tambem grava
+            # 'counter_use' em `_raciocinio` -- duas fontes com o MESMO
+            # `kind` no drain (a de `select_counter_cards`, sem 'trace';
+            # a de `should_use_counter`, com 'trace' quando o value_net
+            # decidiu). So a que tem 'trace' serve pra score comparavel.
+            _counter_trace = next(
+                (r.get("trace") for r in _raciocinio
+                 if r.get("kind") == "counter_use" and r.get("trace")), None)
+            legal = ([{"type": "no_counter", "eligible": True,
+                      **({"score": _counter_trace["perda_sem_counter"]}
+                         if _counter_trace else {})},
+                     {"type": "counter_combo", "eligible": True,
+                      **({"score": _counter_trace["custo_counterar"]}
+                         if _counter_trace else {})}]
                      + decision_trace.get("legal_actions", []))
         else:
             legal = [{"type": "decline", "eligible": True},
@@ -1447,6 +1461,14 @@ def defense(req: DefenseRequest):
                 _uid_escolhido = getattr(blocker, '_deck_uid', 0)
                 if _uid_escolhido in _custo_by_uid:
                     chosen["score"] = _custo_by_uid[_uid_escolhido]
+        elif req.phase == "counter" and _counter_trace:
+            # `out["counterIds"]` e vazio quando `select_counter_cards`
+            # recusou em QUALQUER um dos pontos antes do gate de
+            # `should_use_counter` (sem cobertura, sem pool) -- nesses
+            # casos nao ha 'trace' (o should_use_counter nem chegou a
+            # rodar), entao o `if _counter_trace` acima ja cobre isso.
+            chosen["score"] = (_counter_trace["custo_counterar"] if out["counterIds"]
+                               else _counter_trace["perda_sem_counter"])
         return _record_aux_decision(
             "defense", _model_dict(req.state), legal, chosen, out,
             phase=req.phase, turn=req.state.turnNumber,
