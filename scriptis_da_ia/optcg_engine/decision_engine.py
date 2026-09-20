@@ -8759,11 +8759,23 @@ class EffectExecutor:
             out = []
             if rested: out.append(f'restou: {", ".join(rested)}')
             if sub_logs: out.append(' | '.join(sub_logs))
-            if (not rested and not sub_logs and step.get('or_rest_opp_don')
-                    and opp.don_available > 0):
-                opp.don_available -= 1
-                opp.don_rested += 1
-                out.append('restou 1 DON do oponente')
+            # Orcamento que sobrou depois de restar Characters (achado
+            # 20/09, partida real Hody Jones OP06-035: "rest up to a TOTAL
+            # of 2 Characters or DON!!" com count=2 mas so 1 Character
+            # elegivel em campo -- a versao antiga so restava DON quando
+            # ZERO Characters foram restados, entao o 2o "rest" do
+            # orcamento era jogado fora em vez de virar 1 DON do oponente.
+            # Generico pra qualquer count/candidatos, nao amarrado ao
+            # Hody Jones -- vale igual pra Uta (EB03-061, don!! mencionado
+            # primeiro) e qualquer carta futura com a mesma forma.
+            if step.get('or_rest_opp_don'):
+                usados = len(rested) + len(sub_logs)
+                sobra = max(0, count - usados)
+                n_don = min(sobra, opp.don_available)
+                if n_don > 0:
+                    opp.don_available -= n_don
+                    opp.don_rested += n_don
+                    out.append(f'restou {n_don} DON do oponente')
             return ' | '.join(out)
 
         # ── rest_opp_don: restar DON!! do OPONENTE -- desvantagem de tempo

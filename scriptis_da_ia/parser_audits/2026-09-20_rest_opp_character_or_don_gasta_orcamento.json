@@ -1,0 +1,13 @@
+{
+  "trigger_card": "OP06-035",
+  "problem": "Rest up to a TOTAL of N of your opponent's Characters or DON!! cards -- o parser ja produzia o step (achado anterior, 15/07), mas sem a flag 'or_rest_opp_don' o engine gastava o orcamento SO em Characters e descartava o resto quando faltavam candidatos (Hody Jones OP06-035 numa partida real de 20/09: count=2, so 1 Character elegivel em campo, o 2o 'rest' do efeito era jogado fora em vez de virar 1 DON restado do oponente).",
+  "grammar_family": "rest up to (a total of) N of your opponent's Characters or DON!! cards",
+  "queries": [
+    "regex r'Characters?\\\\s+or\\\\s+DON!!' em cards_rows.csv",
+    "grammar 'DON!! cards or ... Characters' (ordem invertida, m_mixed_don_first) tambem revisada -- ja tinha or_rest_opp_don desde 15/07"
+  ],
+  "cards_found": ["OP06-035", "OP12-037"],
+  "resolution_scope": "global",
+  "decision": "1) gerar_effects_db.py: m_mixed (Characters-primeiro) passa a marcar 'or_rest_opp_don': True, igualando m_mixed_don_first (DON-primeiro) que ja tinha a flag desde 15/07. 2) decision_engine.py (execute, action=='rest_opp_character'): o fallback de DON deixou de exigir 'not rested and not sub_logs' (so disparava com ZERO Characters restados) e passou a gastar o ORCAMENTO RESTANTE (count - usados) em DON!!, ate o limite de opp.don_available -- generico pra qualquer count/candidatos, nao amarrado ao Hody Jones, cobre igual a Uta (EB03-061).",
+  "validated_by": ["diff_parser.py PERDEU=0 GANHOU=0 MUDOU=2 (OP06-035, OP12-037)", "smoke_fast.py"]
+}

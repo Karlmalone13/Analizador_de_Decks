@@ -2983,20 +2983,25 @@ def parse_rest_opp(text):
         })
         return steps
 
-    # Alvo MISTO "Characters or DON!! cards" (o jogador escolhe entre restar
-    # um Character ou um DON!! do oponente) -- achado 15/07 via
-    # audit_parser_coverage.py: OP06-035 (Hody Jones, 7x em deck real) e
-    # OP12-037 tinham essa clausula inteira AUSENTE do parseado (nenhum dos
-    # 2 ramos acima casava "Characters or DON!! cards" nem "up to a total
-    # of N"). Aproximacao (documentada, nao ideal): trata como
-    # rest_opp_character -- o engine ainda nao modela "escolha entre 2
-    # tipos de alvo" nessa acao, mas pelo menos produz UM step de verdade
-    # em vez de silencio total.
+    # Alvo MISTO "Characters or DON!! cards", "up to a TOTAL of N" -- achado
+    # 15/07 via audit_parser_coverage.py: OP06-035 (Hody Jones, 7x em deck
+    # real) e OP12-037 tinham essa clausula inteira AUSENTE do parseado
+    # (nenhum dos 2 ramos acima casava "Characters or DON!! cards" nem
+    # "up to a total of N"). `or_rest_opp_don` (achado 20/09, partida real
+    # Hody Jones): sem a flag, o engine gastava so o que dava pra restar em
+    # Characters e IGNORAVA o resto do orcamento -- na partida real, count=2
+    # mas so havia 1 Character elegivel (Sanji), e o 2o "rest" do efeito era
+    # jogado fora em vez de virar 1 DON restado do oponente (que teria
+    # negado o custo do Counter Event dele 2 turnos depois). MESMA flag que
+    # `m_mixed_don_first` (Uta, EB03-061) ja usa -- so faltava aqui porque a
+    # ordem das clausulas e invertida ("Characters or DON!!" vs "DON!! or
+    # Characters") e os dois ramos foram escritos em achados separados.
     m_mixed = re.search(
         r"rest up to (?:a total of )?(\d+) of your opponent.{0,10} "
         r"characters? or don!{0,2}\s*cards?", t)
     if m_mixed:
-        steps.append({'action': 'rest_opp_character', 'count': int(m_mixed.group(1))})
+        steps.append({'action': 'rest_opp_character', 'count': int(m_mixed.group(1)),
+                      'or_rest_opp_don': True})
         return steps
 
     m = re.search(r"rest up to (\d+) of your opponent.{0,10} characters? (?:with a cost of (\d+) or|that has)", t)
