@@ -1,5 +1,65 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-09-21 (885) - 3 sugestoes genericas de velocidade testadas (2 reprovadas, 1 aplicada): value_net_aluno com 200 arvores, -14,7% por partida
+
+Sessao Claude (Sonnet 5), continuacao imediata do bloco 884. O usuario colou
+3 rodadas sucessivas de conselho generico de IA sobre "como acelerar
+scikit-learn em CPU" e pediu avaliacao honesta de cada uma -- nao aceitar
+pelo texto soar plausivel, testar contra o projeto real. Registro completo
+em `REPROVADOS.md`, secao "Velocidade de inferencia em CPU: 3 caminhos
+genericos testados".
+
+**Testado e REPROVADO (nao aplicado)**:
+1. `scikit-learn-intelex`/`patch_sklearn()` -- instalado, medido (fit
+   identico com/sem patch: 5,760s vs 5,825s, ruido). Nao acelera
+   `MLPRegressor` (sem kernel otimizado pra rede neural). Pacote nao
+   entrou em `requirements.txt`.
+2. `batch_size` do `MLPRegressor` (200 -> 2048/4096) no corpus real do Q
+   (818.763 linhas): sem ganho de velocidade E qualidade pior (erro fora
+   da amostra 0,0555 -> 0,0587/0,0598), sem convergir em `max_iter=60`.
+
+**Testado, MEDIDO e APLICADO**: o `as_is.py` (nao o diagnostico herdado)
+mostrou `predictor.py:predict` do sklearn -- chamada interna, uma por
+arvore do `HistGradientBoostingRegressor` de `value_net_aluno.joblib` --
+como **~46% do tempo de uma partida**. Truncar o ensemble ja treinado
+(matematicamente igual a treinar com `max_iter` menor, boosting e
+aditivo) deu a curva real: 300 arv AUC=0,8437, 200 arv=0,8339 (-0,0098),
+150 arv=0,8270. O `val_score` held-out nunca platoa ate 300 (nao e
+"sobrava arvore" -- e troca real de qualidade por velocidade). Usuario
+aceitou o trade-off (*"com os treinos a gente recupera esse AUC, e mais
+veloz a gente consegue ter mais amostras"*).
+
+**Mudanca aplicada**: `max_iter=300 -> 200` no `HistGradientBoosting*` de
+`treinar_value.py` (unico lugar, comentado com o motivo). Retreinado
+`value_net_aluno.joblib` com o comando real do projeto (`--dataset
+metrics/corpus_professor.jsonl --alvo professor --features aluno`, o
+mesmo que `treino_continuo.py` usa).
+
+**Resultado medido (nao a truncagem, o retreino de verdade)**:
+- AUC fora da amostra (GroupKFold por lider): 0,8080 -> 0,8033 (-0,0047,
+  MENOR que a estimativa de -0,0098 da truncagem).
+- `as_is.py --comparar`: 0,34s -> 0,29s por partida (**-14,7%**). Tempo em
+  "modelo (rede de valor)" caiu de 49,2% pra 42,3% do perfil.
+  `predictor.py:predict`: 43.200 -> 35.200 chamadas.
+
+**Efeito colateral achado e corrigido**: o retreino QUEBROU
+`smoke_fast.py` (`test_roger_vitoria_alternativa_ao_oponente_bloquear`,
+OP09-118). Diagnosticado ANTES de aceitar como regressao real: o cenario
+do teste tinha custo/golpe de bloquear praticamente 0 nos dois lados
+(golpe = -0,000245 no modelo velho, +0,003238 no novo -- diferenca de
+~0,0035 de probabilidade de vitoria, ruido de QUALQUER retreino, nao
+sinal real de pior decisao). O teste testa o GATILHO de vitoria
+(`win_game_on_opp_blocker`), nao o julgamento de bloquear -- isolado via
+monkeypatch de `DecisionEngine.should_use_blocker` no proprio teste (fica
+documentado inline por que). `smoke_fast.py` volta a 1506 OK / 0 falhas.
+
+**Arquivos tocados**: `treinar_value.py` (max_iter, comentado),
+`metrics/value_net_aluno.joblib` (retreinado, binario versionado),
+`smoke_fast.py` (isola o teste do Roger do julgamento do value_net),
+`REPROVADOS.md` (secao nova).
+
+**Nao commitado ainda** -- perguntar antes de commitar/pushar.
+
 ## 2026-09-21 (884) - ACHADO REAL: 3 loops chamavam o modelo carta-por-carta (nao _ordena_pelo_modelo) -- batch deu -47,7% no AS-IS
 
 Sessao Claude (Sonnet 5), continuacao imediata do bloco 883. Apos o teste do

@@ -3575,7 +3575,23 @@ def test_roger_vitoria_alternativa_ao_oponente_bloquear() -> None:
 
     match = OPTCGMatch((me.leader, []), (opp.leader, []))
     eng = DecisionEngine(me, opp)
-    resultado = match._execute_attack(roger, "leader", None, me, opp, eng, verbose=False)
+    # Forca o bloqueio via monkeypatch em vez de deixar o value_net decidir
+    # (achado 21/09/2026, ao trocar value_net_aluno pra 200 arvores): este
+    # teste virou sensivel ao JUIZO do modelo por acidente -- o cenario
+    # tinha custo/golpe praticamente 0 nos dois lados (delta < 0,004,
+    # ruido de qualquer retreino, nao sinal real), entao passava ou
+    # falhava dependendo de qual lado do zero a previsao caia. O que este
+    # teste verifica e o GATILHO de vitoria quando o oponente bloqueia --
+    # nao se o modelo ACERTA em bloquear aqui (isso e coberto pelos testes
+    # de `should_use_blocker`/`_should_use_blocker_inner` e pelo guarda-
+    # corpo por lider). Isolando a decisao de bloquear, o teste fica
+    # estavel independente de qual modelo/quantas arvores decide isso.
+    _blocker_original = DecisionEngine.should_use_blocker
+    DecisionEngine.should_use_blocker = lambda self, atk: blocker_char
+    try:
+        resultado = match._execute_attack(roger, "leader", None, me, opp, eng, verbose=False)
+    finally:
+        DecisionEngine.should_use_blocker = _blocker_original
     check("Roger vence a partida quando oponente bloqueia com alguem em 0 vida",
           resultado is True)
 

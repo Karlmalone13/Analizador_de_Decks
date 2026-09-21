@@ -188,10 +188,18 @@ def main() -> None:
         # segura o sobre-ajuste com corpus pequeno.
         # Alvo continuo (professor) => REGRESSOR. Mesmos hiperparametros,
         # pra a comparacao isolar o ALVO e nao a capacidade do modelo.
+        # max_iter=200 (era 300, ate 21/09/2026): a curva de val_score do
+        # treino nunca platoa (early_stopping nao dispara antes de 300 --
+        # continua melhorando ate o teto), mas o ganho marginal fica pequeno
+        # (200->300 custa 0,0098 de AUC no corpus todo pra ~46% mais tempo
+        # de inferencia). predictor.py:predict do sklearn era ~46% do tempo
+        # de uma partida de self-play (as_is.py, bloco 21/09). Trade-off
+        # aceito pelo usuario: 1% de AUC por mais velocidade, recuperavel
+        # com mais volume de self-play (o proprio motivo da troca).
         cls = (HistGradientBoostingRegressor if args.alvo == 'professor'
                else HistGradientBoostingClassifier)
         return cls(
-            max_iter=300, learning_rate=0.02, max_depth=3,
+            max_iter=200, learning_rate=0.02, max_depth=3,
             min_samples_leaf=60, early_stopping=True, validation_fraction=0.15,
             l2_regularization=1.0,
             random_state=0)

@@ -1,7 +1,21 @@
 # TODO — Analisador de Decks OPTCG
 
-**Última atualização:** 21 de setembro de 2026 (bloco 884)
+**Última atualização:** 21 de setembro de 2026 (bloco 885)
 
+> **MEDIDO (bloco 885): mais -14,7% no tempo de self-play (0,34s -> 0,29s/
+> partida, `as_is.py`)**. 3 sugestoes genericas de velocidade em CPU
+> testadas de verdade: `scikit-learn-intelex` e `batch_size` maior no MLP
+> REPROVADAS (sem ganho, `batch_size` ainda piora qualidade) -- ver
+> `REPROVADOS.md`. A que funcionou: `predictor.py:predict` (chamada
+> interna do sklearn) era ~46% do tempo -- `value_net_aluno.joblib`
+> (HistGradientBoosting) tinha 300 arvores e o `val_score` held-out nunca
+> platoava. Reduzido `max_iter` 300->200 em `treinar_value.py` e
+> retreinado: AUC fora da amostra caiu so 0,0047 (0,8080->0,8033), tempo
+> de partida -14,7%. `smoke_fast.py` voltou a passar (1 teste dependia por
+> acidente do julgamento do modelo pra um cenario com custo ~0 -- isolado
+> via monkeypatch, nao mascarado). **NAO COMMITADO** -- confirmar com o
+> usuario antes.
+>
 > **MEDIDO (bloco 884): -47,7% no tempo de self-play (0,65s -> 0,34s/partida,
 > `as_is.py`)**, achado que a suspeita inicial (`_ordena_pelo_modelo`) estava
 > ERRADA -- ja tinha gate desligando ela quando o Q decide. O custo real

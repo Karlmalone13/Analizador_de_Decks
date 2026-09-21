@@ -811,3 +811,47 @@ piorou ligado no motor -- aqui o AUC nem foi alto, foi pior nos dois eixos).
 GENERICA (default continua 'arvores', nada muda pra quem ja chama o
 script) -- reaproveitavel se o corpus deste modelo crescer o bastante pra
 re-testar, ou pra outro dataset/feature-set futuro.
+
+## Velocidade de inferencia em CPU: 3 caminhos genericos testados (21/09/2026)
+
+Depois do batch de `_forward_rapido`/`_lote` (bloco 884, -47,7% medido),
+o usuario colou 3 rodadas sucessivas de sugestoes genericas de IA sobre
+"como acelerar scikit-learn em CPU". Duas delas foram testadas de verdade
+(nao aceitas por plausibilidade) e reprovadas; a terceira levou a uma
+mudanca real que ficou (ver bloco do HANDOFF do dia).
+
+- **`scikit-learn-intelex`/`sklearnex.patch_sklearn()`**: instalado e
+  medido em fit identico de `MLPRegressor` (50.000x101 sintetico).
+  **Sem patch: 5,760s. Com patch: 5,825s** -- diferenca dentro do ruido.
+  Confirmado tambem por identidade: `MLPRegressor.__module__` nao muda
+  com o patch aplicado (`sklearn.neural_network._multilayer_perceptron`
+  continua igual) -- a extensao nao tem kernel otimizado pra rede neural
+  (o foco dela e SVM/KMeans/regressao linear/arvores). Pacote nao
+  adicionado a `requirements.txt` -- nenhum modelo do projeto usa.
+
+- **`batch_size` do `MLPRegressor` (200/'auto' -> 2048/4096)**: testado no
+  corpus real do Q (818.763 linhas). **Sem ganho de velocidade** (auto:
+  80,7s | 2048: 79,8s | 4096: 86,6s -- diferencas dentro do ruido) **e
+  qualidade PIOR** (erro fora da amostra 0,0555 -> 0,0587 -> 0,0598).
+  Alem disso, os dois batches maiores **nao convergiram** dentro de
+  `max_iter=60` (bateram o teto ainda melhorando) -- o gap so tenderia a
+  piorar sem tambem subir `max_iter`/ajustar `learning_rate`, nao testado.
+  Nao aplicado.
+
+- **Numero de arvores do `HistGradientBoostingRegressor`** (nao veio das
+  sugestoes coladas, veio de medir de novo com `as_is.py` em vez de
+  aceitar o diagnostico anterior): perfil aquecido mostrou
+  `predictor.py:predict` (chamada interna do sklearn, uma por
+  estagio/arvore) como **~46% do tempo de uma partida**. Truncar o
+  ensemble ja treinado de `value_net_aluno.joblib` (equivalente
+  matematicamente a treinar com `max_iter` menor, boosting e aditivo) deu
+  a curva real: 300 arv AUC(corpus)=0,8437, 200 arv=0,8339 (-0,0098),
+  150 arv=0,8270 (-0,0167) -- o `val_score` HELD-OUT do proprio treino
+  nunca platoa ate 300 (`early_stopping` nunca disparou). **Nao e "sobrava
+  arvore", e troca real de 1% de qualidade por velocidade** -- aceita
+  pelo usuario (*"com os treinos a gente recupera esse AUC, e mais
+  veloz a gente consegue ter mais amostras"*) e APLICADA: `max_iter=300
+  -> 200` em `treinar_value.py`. Resultado real (retreino completo, nao a
+  truncagem): AUC fora da amostra 0,8080 -> 0,8033 (-0,0047, menor que a
+  estimativa), tempo de partida (`as_is.py`) -14,7% (0,34s -> 0,29s por
+  partida), tempo em modelo caiu de 49,2% pra 42,3% do perfil.
