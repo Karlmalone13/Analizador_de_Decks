@@ -690,6 +690,26 @@ def analisar(regs: list[dict], db: dict, filtro: str = "",
                          "tipo": r.get("decision_kind"), "fase": r.get("phase"),
                          "ok": ok, "porque": porque})
 
+    # PONTO CEGO CORRIGIDO (20/09/2026, achado numa partida real: Jewelry
+    # Bonney OP07-019 e Monkey D. Luffy OP13-001, ambos com a habilidade do
+    # lider disparando de verdade -- confirmado por delta de activeDon/
+    # restedDon no proprio decision log -- e mesmo assim aparecendo como
+    # "NUNCA OFERECIDO" abaixo). Causa: `ACAO_DO_GATILHO` so mapeia
+    # on_play/activate_main/main/when_attacking pra um tipo de acao do
+    # `main` (play/activate/attack) -- qualquer gatilho REATIVO
+    # (on_opp_attack, counter, on_ko, end_of_turn, opp_turn...) fica de fora
+    # desse mapa, entao `tipos` dava conjunto VAZIO e `of`/`es` (que so leem
+    # `ofertas`/`escolhas`, ambos populados so por decisoes `main`) davam
+    # SEMPRE zero -- incondicionalmente "nunca ofertado", mesmo disparando
+    # todo turno. A secao `reativos` logo acima ja conta isso CORRETAMENTE
+    # (bloco 655), so nunca era cruzada aqui.
+    reativos_ofertados = defaultdict(int)
+    reativos_usados = defaultdict(int)
+    for x in reativos:
+        reativos_ofertados[(x["match_id"], x["ator"])] += 1
+        if x["ok"]:
+            reativos_usados[(x["match_id"], x["ator"])] += 1
+
     # cartas com gatilho que NUNCA foram escolhidas
     nunca = []
     for mid, cards in tinha.items():
@@ -697,7 +717,9 @@ def analisar(regs: list[dict], db: dict, filtro: str = "",
             gats = sorted(_gatilhos(db, cod) & GATILHOS_ATIVOS)
             tipos = {ACAO_DO_GATILHO.get(g) for g in gats} - {None}
             of = sum(ofertas.get((mid, cod, t), 0) for t in tipos)
+            of += reativos_ofertados.get((mid, cod), 0)
             es = sum(escolhas.get((mid, cod, t), 0) for t in tipos)
+            es += reativos_usados.get((mid, cod), 0)
             if es:
                 continue
             if of:
