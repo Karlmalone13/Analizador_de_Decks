@@ -1,0 +1,1597 @@
+{
+  "meta": {
+    "players": {
+      "p1": {
+        "name": "You",
+        "leader": {
+          "name": "Portgas D. Ace",
+          "code": "OP16-001"
+        }
+      },
+      "p2": {
+        "name": "Opponent",
+        "leader": {
+          "name": "Ace & Newgate",
+          "code": "ST22-001"
+        }
+      }
+    },
+    "goes_first": null
+  },
+  "total_turns": 11,
+  "turns": [
+    {
+      "turn": 1,
+      "player": "You",
+      "card_drawn": null,
+      "don_drawn": 1,
+      "actions": [
+        {
+          "type": "play",
+          "card": "OP13-016",
+          "card_name": "Monkey D. Garp",
+          "effects": [
+            "<b>Reveal and Draw Izou [\"EB01-002\">EB01-002]</b>"
+          ]
+        }
+      ],
+      "snapshot": {
+        "You": {
+          "hand": [
+            "EB01-002",
+            "OP16-021",
+            "OP16-014",
+            "OP16-004",
+            "EB01-002"
+          ],
+          "board": [
+            "OP13-016"
+          ],
+          "trash": [],
+          "life": 5,
+          "deck": [
+            "OP13-016",
+            "OP16-010",
+            "OP16-021"
+          ],
+          "life_cards": [
+            "OP13-016",
+            "OP16-011",
+            "OP16-017",
+            "OP16-118",
+            "OP16-118"
+          ],
+          "don_cost": [
+            "Don"
+          ],
+          "rested_rz1": {
+            "don_cost": [
+              "Don"
+            ]
+          },
+          "rested": {
+            "OP13-016": 1
+          }
+        },
+        "Opponent": {
+          "hand": [
+            "OP08-043",
+            "ST22-009",
+            "OP08-056",
+            "OP08-056",
+            "OP09-044"
+          ],
+          "trash": [],
+          "board": [],
+          "life": 5,
+          "deck": [
+            "OP08-044",
+            "OP08-047",
+            "OP08-053",
+            "OP12-058",
+            "ST22-002",
+            "ST22-003",
+            "ST22-006",
+            "ST22-010",
+            "ST22-011",
+            "ST22-012",
+            "ST22-013",
+            "ST22-015"
+          ],
+          "life_cards": [
+            "OP08-050",
+            "OP08-050",
+            "OP09-044",
+            "ST22-005",
+            "ST22-016"
+          ]
+        }
+      }
+    },
+    {
+      "turn": 2,
+      "player": "Opponent",
+      "card_drawn": null,
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "play",
+          "card": "OP08-056",
+          "card_name": "Moby Dick",
+          "effects": []
+        },
+        {
+          "type": "activate",
+          "card": "ST22-001",
+          "card_name": "Ace & Newgate",
+          "effects": [
+            "Draw 1 Card"
+          ]
+        }
+      ],
+      "snapshot": {
+        "Opponent": {
+          "hand": [
+            "OP08-043",
+            "ST22-009",
+            "OP09-044",
+            "OP08-050",
+            "ST22-016"
+          ],
+          "board": [],
+          "trash": [],
+          "life": 5,
+          "deck": [
+            "OP08-044",
+            "OP08-047",
+            "OP08-053",
+            "OP08-056",
+            "OP12-058",
+            "ST22-002",
+            "ST22-003",
+            "ST22-006",
+            "ST22-010",
+            "ST22-011",
+            "ST22-012",
+            "ST22-013",
+            "ST22-015"
+          ],
+          "life_cards": [
+            "OP08-050",
+            "OP08-050",
+            "OP09-044",
+            "ST22-005",
+            "ST22-016"
+          ],
+          "don_cost": [
+            "Don",
+            "Don"
+          ],
+          "stage": [
+            "OP08-056"
+          ],
+          "rested_rz1": {
+            "don_cost": [
+              "Don"
+            ]
+          }
+        },
+        "You": {
+          "hand": [
+            "EB01-002",
+            "OP16-021",
+            "OP16-014",
+            "OP16-004",
+            "EB01-002"
+          ],
+          "trash": [],
+          "board": [
+            "OP13-016"
+          ],
+          "life": 5,
+          "deck": [
+            "OP13-016",
+            "OP16-010",
+            "OP16-021"
+          ],
+          "life_cards": [
+            "OP13-016",
+            "OP16-011",
+            "OP16-017",
+            "OP16-118",
+            "OP16-118"
+          ],
+          "don_cost": [
+            "Don"
+          ],
+          "rested_rz1": {
+            "don_cost": [
+              "Don"
+            ]
+          },
+          "rested": {
+            "OP13-016": 1
+          }
+        }
+      }
+    },
+    {
+      "turn": 3,
+      "player": "You",
+      "card_drawn": null,
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "attach_don",
+          "amount": 2,
+          "to": "OP16-001",
+          "to_name": "Portgas D. Ace",
+          "total": 2
+        },
+        {
+          "type": "attack",
+          "attacker": "Portgas D. Ace",
+          "attacker_code": "OP16-001",
+          "target": "Ace & Newgate [\"ST22-001\">ST22-001]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "play",
+          "card": "OP16-021",
+          "card_name": "Moby Dick",
+          "effects": [
+            "Added 1 Cards to Hand"
+          ]
+        }
+      ],
+      "snapshot": {
+        "You": {
+          "hand": [
+            "EB01-002",
+            "OP16-014",
+            "OP16-004",
+            "EB01-002",
+            "OP16-017",
+            "OP16-004"
+          ],
+          "board": [
+            "OP13-016"
+          ],
+          "trash": [],
+          "life": 5,
+          "deck": [
+            "OP13-016",
+            "OP16-005",
+            "OP16-010",
+            "OP16-011",
+            "OP16-021"
+          ],
+          "life_cards": [
+            "OP13-016",
+            "OP16-011",
+            "OP16-017",
+            "OP16-118",
+            "OP16-118"
+          ],
+          "don_cost": [
+            "Don"
+          ],
+          "attached_don": [
+            "Don",
+            "Don"
+          ],
+          "stage": [
+            "OP16-021"
+          ],
+          "rested_rz1": {
+            "don_cost": [
+              "Don"
+            ]
+          }
+        },
+        "Opponent": {
+          "hand": [
+            "OP08-043",
+            "ST22-009",
+            "OP09-044",
+            "OP08-050",
+            "ST22-016",
+            "ST22-016"
+          ],
+          "trash": [],
+          "board": [],
+          "life": 4,
+          "deck": [
+            "OP08-044",
+            "OP08-047",
+            "OP08-053",
+            "OP08-056",
+            "OP12-058",
+            "ST22-002",
+            "ST22-003",
+            "ST22-006",
+            "ST22-010",
+            "ST22-011",
+            "ST22-012",
+            "ST22-013",
+            "ST22-015"
+          ],
+          "life_cards": [
+            "OP08-050",
+            "OP08-050",
+            "OP09-044",
+            "ST22-005"
+          ],
+          "don_cost": [
+            "Don",
+            "Don"
+          ],
+          "stage": [
+            "OP08-056"
+          ],
+          "rested_rz1": {
+            "don_cost": [
+              "Don"
+            ]
+          }
+        }
+      }
+    },
+    {
+      "turn": 4,
+      "player": "Opponent",
+      "card_drawn": null,
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "activate",
+          "card": "ST22-001",
+          "card_name": "Ace & Newgate",
+          "effects": [
+            "Draw 1 Card"
+          ]
+        },
+        {
+          "type": "attack",
+          "attacker": "Ace & Newgate",
+          "attacker_code": "ST22-001",
+          "target": "Portgas D. Ace [\"OP16-001\">OP16-001]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "play",
+          "card": "OP09-044",
+          "card_name": "Izou",
+          "effects": []
+        },
+        {
+          "type": "play",
+          "card": "ST22-009",
+          "card_name": "Vista",
+          "effects": []
+        }
+      ],
+      "snapshot": {
+        "Opponent": {
+          "hand": [
+            "OP08-043",
+            "OP08-050",
+            "ST22-016",
+            "ST22-016",
+            "OP08-044"
+          ],
+          "board": [
+            "OP09-044",
+            "ST22-009"
+          ],
+          "trash": [],
+          "life": 4,
+          "deck": [
+            "OP08-047",
+            "OP08-053",
+            "OP08-056",
+            "OP12-058",
+            "ST22-002",
+            "ST22-003",
+            "ST22-006",
+            "ST22-010",
+            "ST22-011",
+            "ST22-012",
+            "ST22-013",
+            "ST22-015"
+          ],
+          "life_cards": [
+            "OP08-050",
+            "OP08-050",
+            "OP09-044",
+            "ST22-005"
+          ],
+          "don_cost": [
+            "Don",
+            "Don",
+            "Don",
+            "Don"
+          ],
+          "stage": [
+            "OP08-056"
+          ],
+          "rested_rz1": {
+            "don_cost": [
+              "Don"
+            ]
+          },
+          "rested": {
+            "OP09-044": 1,
+            "ST22-009": 1
+          }
+        },
+        "You": {
+          "hand": [
+            "EB01-002",
+            "OP16-014",
+            "OP16-004",
+            "EB01-002",
+            "OP16-017",
+            "OP16-004",
+            "OP16-011"
+          ],
+          "trash": [],
+          "board": [
+            "OP13-016"
+          ],
+          "life": 4,
+          "deck": [
+            "OP13-016",
+            "OP16-005",
+            "OP16-010",
+            "OP16-011",
+            "OP16-021"
+          ],
+          "life_cards": [
+            "OP13-016",
+            "OP16-017",
+            "OP16-118",
+            "OP16-118"
+          ],
+          "don_cost": [
+            "Don"
+          ],
+          "attached_don": [
+            "Don",
+            "Don"
+          ],
+          "stage": [
+            "OP16-021"
+          ],
+          "rested_rz1": {
+            "don_cost": [
+              "Don"
+            ]
+          }
+        }
+      }
+    },
+    {
+      "turn": 5,
+      "player": "You",
+      "card_drawn": null,
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "play",
+          "card": "EB01-002",
+          "card_name": "Izou",
+          "effects": [
+            "Attach 1 Rested Don to Portgas D. Ace [\"OP16-001\">OP16-001]"
+          ]
+        },
+        {
+          "type": "attack",
+          "attacker": "Portgas D. Ace",
+          "attacker_code": "OP16-001",
+          "target": "Ace & Newgate [\"ST22-001\">ST22-001]",
+          "result": "hit",
+          "damage": null,
+          "blocked_by": "ST22-009",
+          "countered_by": []
+        }
+      ],
+      "snapshot": {
+        "You": {
+          "hand": [
+            "OP16-014",
+            "OP16-004",
+            "EB01-002",
+            "OP16-017",
+            "OP16-004",
+            "OP16-011",
+            "OP16-003"
+          ],
+          "board": [
+            "OP13-016",
+            "EB01-002"
+          ],
+          "trash": [],
+          "life": 4,
+          "deck": [
+            "OP13-016",
+            "OP16-005",
+            "OP16-010",
+            "OP16-011",
+            "OP16-021"
+          ],
+          "life_cards": [
+            "OP13-016",
+            "OP16-017",
+            "OP16-118",
+            "OP16-118"
+          ],
+          "don_cost": [
+            "Don",
+            "Don",
+            "Don",
+            "Don"
+          ],
+          "attached_don": [
+            "Don"
+          ],
+          "stage": [
+            "OP16-021"
+          ],
+          "rested_rz1": {
+            "don_cost": [
+              "Don",
+              "Don"
+            ],
+            "attached_don": [
+              "Don"
+            ]
+          },
+          "rested": {
+            "EB01-002": 1
+          }
+        },
+        "Opponent": {
+          "hand": [
+            "OP08-043",
+            "OP08-050",
+            "ST22-016",
+            "ST22-016",
+            "OP08-044"
+          ],
+          "trash": [
+            "ST22-009"
+          ],
+          "board": [
+            "OP09-044"
+          ],
+          "life": 4,
+          "deck": [
+            "OP08-047",
+            "OP08-053",
+            "OP08-056",
+            "OP12-058",
+            "ST22-002",
+            "ST22-003",
+            "ST22-006",
+            "ST22-010",
+            "ST22-011",
+            "ST22-012",
+            "ST22-013",
+            "ST22-015"
+          ],
+          "life_cards": [
+            "OP08-050",
+            "OP08-050",
+            "OP09-044",
+            "ST22-005"
+          ],
+          "don_cost": [
+            "Don",
+            "Don",
+            "Don",
+            "Don"
+          ],
+          "stage": [
+            "OP08-056"
+          ],
+          "rested_rz1": {
+            "don_cost": [
+              "Don"
+            ]
+          },
+          "rested": {
+            "OP09-044": 1
+          }
+        }
+      }
+    },
+    {
+      "turn": 6,
+      "player": "Opponent",
+      "card_drawn": null,
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "ST22-001",
+          "to_name": "Ace & Newgate",
+          "total": 1
+        },
+        {
+          "type": "attack",
+          "attacker": "Ace & Newgate",
+          "attacker_code": "ST22-001",
+          "target": "Portgas D. Ace [\"OP16-001\">OP16-001]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "activate",
+          "card": "ST22-001",
+          "card_name": "Ace & Newgate",
+          "effects": [
+            "Draw 1 Card"
+          ]
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP09-044",
+          "to_name": "Izou",
+          "total": 1
+        },
+        {
+          "type": "attack",
+          "attacker": "Izou",
+          "attacker_code": "OP09-044",
+          "target": "Portgas D. Ace [\"OP16-001\">OP16-001]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": [
+            "OP16-004"
+          ]
+        },
+        {
+          "type": "activate",
+          "card": "OP09-044",
+          "card_name": "Izou",
+          "effects": [
+            "<b>Reveal and Draw Thank You... For Loving Me!!! [\"OP08-053\">OP08-053]</b>",
+            "Trash Whitey Bay [\"ST22-011\">ST22-011]"
+          ]
+        },
+        {
+          "type": "play",
+          "card": "OP08-050",
+          "card_name": "Namule",
+          "effects": [
+            "Draw 2 Card"
+          ]
+        },
+        {
+          "type": "activate",
+          "card": "OP08-053",
+          "card_name": "Thank You... For Loving Me!!!",
+          "effects": [
+            "Rest 1 Don",
+            "<b>Reveal and Draw Whitey Bay [\"ST22-011\">ST22-011]</b>"
+          ]
+        }
+      ],
+      "snapshot": {
+        "Opponent": {
+          "hand": [
+            "OP08-043",
+            "ST22-016",
+            "ST22-016",
+            "ST22-003",
+            "ST22-011"
+          ],
+          "board": [
+            "OP09-044",
+            "OP08-050"
+          ],
+          "trash": [
+            "ST22-009",
+            "ST22-011",
+            "OP08-053"
+          ],
+          "life": 4,
+          "deck": [
+            "OP08-044",
+            "OP08-047",
+            "OP08-050",
+            "OP08-056",
+            "OP12-058",
+            "ST22-002",
+            "ST22-006",
+            "ST22-010",
+            "ST22-012",
+            "ST22-013",
+            "ST22-015"
+          ],
+          "life_cards": [
+            "OP08-050",
+            "OP08-050",
+            "OP09-044",
+            "ST22-005"
+          ],
+          "don_cost": [
+            "Don",
+            "Don",
+            "Don",
+            "Don"
+          ],
+          "stage": [
+            "OP08-056"
+          ],
+          "attached_don": [
+            "Don",
+            "Don"
+          ],
+          "rested_rz1": {
+            "don_cost": [
+              "Don"
+            ]
+          },
+          "rested": {
+            "OP09-044": 1,
+            "OP08-050": 1
+          }
+        },
+        "You": {
+          "hand": [
+            "EB01-002",
+            "OP16-017",
+            "OP16-004",
+            "OP16-011",
+            "OP16-003"
+          ],
+          "trash": [
+            "OP16-014",
+            "OP16-004"
+          ],
+          "board": [
+            "OP13-016",
+            "EB01-002"
+          ],
+          "life": 4,
+          "deck": [
+            "OP13-016",
+            "OP16-005",
+            "OP16-010",
+            "OP16-011",
+            "OP16-021"
+          ],
+          "life_cards": [
+            "OP13-016",
+            "OP16-017",
+            "OP16-118",
+            "OP16-118"
+          ],
+          "don_cost": [
+            "Don",
+            "Don",
+            "Don",
+            "Don"
+          ],
+          "attached_don": [
+            "Don"
+          ],
+          "stage": [
+            "OP16-021"
+          ],
+          "rested_rz1": {
+            "don_cost": [
+              "Don",
+              "Don"
+            ],
+            "attached_don": [
+              "Don"
+            ]
+          },
+          "rested": {
+            "EB01-002": 1
+          }
+        }
+      }
+    },
+    {
+      "turn": 7,
+      "player": "You",
+      "card_drawn": null,
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "play",
+          "card": "OP16-011",
+          "card_name": "Vista",
+          "effects": [
+            "Draw 1 Card"
+          ]
+        },
+        {
+          "type": "attack",
+          "attacker": "Portgas D. Ace",
+          "attacker_code": "OP16-001",
+          "target": "Ace & Newgate [\"ST22-001\">ST22-001]",
+          "result": "hit",
+          "damage": null,
+          "blocked_by": "OP08-050",
+          "countered_by": []
+        },
+        {
+          "type": "attack",
+          "attacker": "Izou",
+          "attacker_code": "EB01-002",
+          "target": "Ace & Newgate [\"ST22-001\">ST22-001]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "activate",
+          "card": "OP16-001",
+          "card_name": "Portgas D. Ace",
+          "effects": [
+            "Give Vista [\"OP16-011\">OP16-011] Rush"
+          ]
+        },
+        {
+          "type": "attack",
+          "attacker": "Vista",
+          "attacker_code": "OP16-011",
+          "target": "Ace & Newgate [\"ST22-001\">ST22-001]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "play",
+          "card": "OP16-010",
+          "card_name": "Namule",
+          "effects": []
+        }
+      ],
+      "snapshot": {
+        "You": {
+          "hand": [
+            "EB01-002",
+            "OP16-017",
+            "OP16-004",
+            "OP16-003",
+            "OP16-014"
+          ],
+          "board": [
+            "OP13-016",
+            "EB01-002",
+            "OP16-011",
+            "OP16-010"
+          ],
+          "trash": [
+            "OP16-014",
+            "OP16-004"
+          ],
+          "life": 4,
+          "deck": [
+            "OP13-016",
+            "OP16-005",
+            "OP16-011",
+            "OP16-021"
+          ],
+          "life_cards": [
+            "OP13-016",
+            "OP16-017",
+            "OP16-118",
+            "OP16-118"
+          ],
+          "don_cost": [
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don"
+          ],
+          "stage": [
+            "OP16-021"
+          ],
+          "rested_rz1": {
+            "don_cost": [
+              "Don",
+              "Don",
+              "Don"
+            ]
+          },
+          "rested": {
+            "EB01-002": 1,
+            "OP16-011": 1,
+            "OP16-010": 1
+          }
+        },
+        "Opponent": {
+          "hand": [
+            "OP08-043",
+            "ST22-016",
+            "ST22-016",
+            "ST22-003",
+            "ST22-011",
+            "OP08-050",
+            "OP09-044"
+          ],
+          "trash": [
+            "ST22-009",
+            "ST22-011",
+            "OP08-053",
+            "OP08-050"
+          ],
+          "board": [
+            "OP09-044"
+          ],
+          "life": 2,
+          "deck": [
+            "OP08-044",
+            "OP08-047",
+            "OP08-050",
+            "OP08-056",
+            "OP12-058",
+            "ST22-002",
+            "ST22-006",
+            "ST22-010",
+            "ST22-012",
+            "ST22-013",
+            "ST22-015"
+          ],
+          "life_cards": [
+            "OP08-050",
+            "ST22-005"
+          ],
+          "don_cost": [
+            "Don",
+            "Don",
+            "Don",
+            "Don"
+          ],
+          "stage": [
+            "OP08-056"
+          ],
+          "attached_don": [
+            "Don",
+            "Don"
+          ],
+          "rested_rz1": {
+            "don_cost": [
+              "Don"
+            ]
+          },
+          "rested": {
+            "OP09-044": 1
+          }
+        }
+      }
+    },
+    {
+      "turn": 8,
+      "player": "Opponent",
+      "card_drawn": null,
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "activate",
+          "card": "ST22-001",
+          "card_name": "Ace & Newgate",
+          "effects": [
+            "Draw 1 Card"
+          ]
+        },
+        {
+          "type": "attach_don",
+          "amount": 2,
+          "to": "ST22-001",
+          "to_name": "Ace & Newgate",
+          "total": 2
+        },
+        {
+          "type": "attach_don",
+          "amount": 2,
+          "to": "ST22-001",
+          "to_name": "Ace & Newgate",
+          "total": 4
+        },
+        {
+          "type": "attack",
+          "attacker": "Ace & Newgate",
+          "attacker_code": "ST22-001",
+          "target": "Portgas D. Ace [\"OP16-001\">OP16-001]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": [
+            "OP16-004",
+            "OP16-017"
+          ]
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP09-044",
+          "to_name": "Izou",
+          "total": 1
+        },
+        {
+          "type": "attack",
+          "attacker": "Izou",
+          "attacker_code": "OP09-044",
+          "target": "Portgas D. Ace [\"OP16-001\">OP16-001]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "activate",
+          "card": "OP09-044",
+          "card_name": "Izou",
+          "effects": [
+            "<b>Reveal and Draw Jozu [\"OP08-047\">OP08-047]</b>",
+            "Trash Izou [\"OP09-044\">OP09-044]"
+          ]
+        },
+        {
+          "type": "play",
+          "card": "OP08-050",
+          "card_name": "Namule",
+          "effects": [
+            "Draw 2 Card"
+          ]
+        }
+      ],
+      "snapshot": {
+        "Opponent": {
+          "hand": [
+            "OP08-043",
+            "ST22-016",
+            "ST22-003",
+            "OP08-043",
+            "OP08-043",
+            "OP08-047",
+            "OP08-047"
+          ],
+          "board": [
+            "OP09-044",
+            "OP08-050"
+          ],
+          "trash": [
+            "ST22-009",
+            "ST22-011",
+            "OP08-053",
+            "OP08-050",
+            "OP09-044"
+          ],
+          "life": 2,
+          "deck": [
+            "OP08-044",
+            "OP08-050",
+            "OP08-056",
+            "OP12-058",
+            "ST22-002",
+            "ST22-005",
+            "ST22-006",
+            "ST22-009",
+            "ST22-010",
+            "ST22-011",
+            "ST22-012",
+            "ST22-013",
+            "ST22-015",
+            "ST22-016"
+          ],
+          "life_cards": [
+            "OP08-050",
+            "ST22-005"
+          ],
+          "don_cost": [
+            "Don",
+            "Don",
+            "Don"
+          ],
+          "stage": [
+            "OP08-056"
+          ],
+          "attached_don": [
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don"
+          ],
+          "rested_rz1": {
+            "don_cost": [
+              "Don"
+            ]
+          },
+          "rested": {
+            "OP08-050": 1
+          }
+        },
+        "You": {
+          "hand": [
+            "EB01-002",
+            "OP16-003",
+            "OP16-118"
+          ],
+          "trash": [
+            "OP16-014",
+            "OP16-004",
+            "OP16-014",
+            "OP16-004",
+            "OP16-017"
+          ],
+          "board": [
+            "OP13-016",
+            "EB01-002",
+            "OP16-011",
+            "OP16-010"
+          ],
+          "life": 3,
+          "deck": [
+            "OP13-016",
+            "OP16-005",
+            "OP16-011",
+            "OP16-021"
+          ],
+          "life_cards": [
+            "OP13-016",
+            "OP16-017",
+            "OP16-118"
+          ],
+          "don_cost": [
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don"
+          ],
+          "stage": [
+            "OP16-021"
+          ],
+          "rested_rz1": {
+            "don_cost": [
+              "Don",
+              "Don",
+              "Don"
+            ]
+          },
+          "rested": {
+            "EB01-002": 1,
+            "OP16-011": 1,
+            "OP16-010": 1
+          }
+        }
+      }
+    },
+    {
+      "turn": 9,
+      "player": "You",
+      "card_drawn": null,
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "play",
+          "card": "OP16-003",
+          "card_name": "Edward Newgate",
+          "effects": []
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP16-011",
+          "to_name": "Vista",
+          "total": 1
+        },
+        {
+          "type": "attack",
+          "attacker": "Vista",
+          "attacker_code": "OP16-011",
+          "target": "Ace & Newgate [\"ST22-001\">ST22-001]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "attack",
+          "attacker": "Izou",
+          "attacker_code": "EB01-002",
+          "target": "Ace & Newgate [\"ST22-001\">ST22-001]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "activate",
+          "card": "OP16-001",
+          "card_name": "Portgas D. Ace",
+          "effects": [
+            "Give Edward Newgate [\"OP16-003\">OP16-003] Rush"
+          ]
+        },
+        {
+          "type": "attack",
+          "attacker": "Edward Newgate",
+          "attacker_code": "OP16-003",
+          "target": "Ace & Newgate [\"ST22-001\">ST22-001]",
+          "result": "hit",
+          "damage": null,
+          "blocked_by": "OP08-050",
+          "countered_by": []
+        },
+        {
+          "type": "attack",
+          "attacker": "Portgas D. Ace",
+          "attacker_code": "OP16-001",
+          "target": "Izou [\"OP09-044\">OP09-044]",
+          "result": "hit",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": []
+        }
+      ],
+      "snapshot": {
+        "You": {
+          "hand": [
+            "EB01-002",
+            "OP16-118",
+            "OP16-005"
+          ],
+          "board": [
+            "OP13-016",
+            "EB01-002",
+            "OP16-011",
+            "OP16-010",
+            "OP16-003"
+          ],
+          "trash": [
+            "OP16-014",
+            "OP16-004",
+            "OP16-014",
+            "OP16-004",
+            "OP16-017"
+          ],
+          "life": 3,
+          "deck": [
+            "OP13-016",
+            "OP16-011",
+            "OP16-021"
+          ],
+          "life_cards": [
+            "OP13-016",
+            "OP16-017",
+            "OP16-118"
+          ],
+          "don_cost": [
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don"
+          ],
+          "attached_don": [
+            "Don"
+          ],
+          "stage": [
+            "OP16-021"
+          ],
+          "rested_rz1": {
+            "don_cost": [
+              "Don",
+              "Don"
+            ]
+          },
+          "rested": {
+            "EB01-002": 1,
+            "OP16-011": 1,
+            "OP16-003": 1
+          }
+        },
+        "Opponent": {
+          "hand": [
+            "OP08-043",
+            "ST22-016",
+            "ST22-003",
+            "OP08-043",
+            "OP08-043",
+            "OP08-047",
+            "OP08-047",
+            "ST22-005",
+            "OP08-050"
+          ],
+          "trash": [
+            "ST22-009",
+            "ST22-011",
+            "OP08-053",
+            "OP08-050",
+            "OP09-044",
+            "OP08-050",
+            "OP09-044"
+          ],
+          "board": [],
+          "life": 0,
+          "deck": [
+            "OP08-044",
+            "OP08-050",
+            "OP08-056",
+            "OP12-058",
+            "ST22-002",
+            "ST22-005",
+            "ST22-006",
+            "ST22-009",
+            "ST22-010",
+            "ST22-011",
+            "ST22-012",
+            "ST22-013",
+            "ST22-015",
+            "ST22-016"
+          ],
+          "don_cost": [
+            "Don",
+            "Don",
+            "Don",
+            "Don"
+          ],
+          "stage": [
+            "OP08-056"
+          ],
+          "attached_don": [
+            "Don",
+            "Don",
+            "Don",
+            "Don"
+          ],
+          "rested_rz1": {
+            "don_cost": [
+              "Don",
+              "Don"
+            ]
+          }
+        }
+      }
+    },
+    {
+      "turn": 10,
+      "player": "Opponent",
+      "card_drawn": null,
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "play",
+          "card": "OP08-047",
+          "card_name": "Jozu",
+          "effects": []
+        },
+        {
+          "type": "activate",
+          "card": "ST22-001",
+          "card_name": "Ace & Newgate",
+          "effects": [
+            "Draw 1 Card"
+          ]
+        },
+        {
+          "type": "play",
+          "card": "OP09-044",
+          "card_name": "Izou",
+          "effects": []
+        },
+        {
+          "type": "attack",
+          "attacker": "Ace & Newgate",
+          "attacker_code": "ST22-001",
+          "target": "Portgas D. Ace [\"OP16-001\">OP16-001]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": []
+        }
+      ],
+      "snapshot": {
+        "Opponent": {
+          "hand": [
+            "OP08-043",
+            "ST22-016",
+            "ST22-003",
+            "OP08-043",
+            "OP08-043",
+            "OP08-047",
+            "OP08-050",
+            "ST22-010"
+          ],
+          "board": [
+            "OP08-047",
+            "OP09-044"
+          ],
+          "trash": [
+            "ST22-009",
+            "ST22-011",
+            "OP08-053",
+            "OP08-050",
+            "OP09-044",
+            "OP08-050",
+            "OP09-044"
+          ],
+          "life": 0,
+          "deck": [
+            "OP08-044",
+            "OP08-050",
+            "OP08-056",
+            "OP12-058",
+            "ST22-002",
+            "ST22-005",
+            "ST22-005",
+            "ST22-006",
+            "ST22-009",
+            "ST22-011",
+            "ST22-012",
+            "ST22-013",
+            "ST22-015",
+            "ST22-016"
+          ],
+          "don_cost": [
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don"
+          ],
+          "stage": [
+            "OP08-056"
+          ],
+          "rested_rz1": {
+            "don_cost": [
+              "Don",
+              "Don",
+              "Don",
+              "Don",
+              "Don",
+              "Don"
+            ]
+          },
+          "rested": {
+            "OP08-047": 1,
+            "OP09-044": 1
+          }
+        },
+        "You": {
+          "hand": [
+            "EB01-002",
+            "OP16-005"
+          ],
+          "trash": [
+            "OP16-014",
+            "OP16-004",
+            "OP16-014",
+            "OP16-004",
+            "OP16-017",
+            "OP16-118"
+          ],
+          "board": [
+            "OP13-016",
+            "EB01-002",
+            "OP16-011",
+            "OP16-010",
+            "OP16-003"
+          ],
+          "life": 3,
+          "deck": [
+            "OP13-016",
+            "OP16-011",
+            "OP16-021"
+          ],
+          "life_cards": [
+            "OP13-016",
+            "OP16-017",
+            "OP16-118"
+          ],
+          "don_cost": [
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don"
+          ],
+          "attached_don": [
+            "Don"
+          ],
+          "stage": [
+            "OP16-021"
+          ],
+          "rested_rz1": {
+            "don_cost": [
+              "Don",
+              "Don"
+            ]
+          },
+          "rested": {
+            "EB01-002": 1,
+            "OP16-011": 1,
+            "OP16-003": 1
+          }
+        }
+      }
+    },
+    {
+      "turn": 11,
+      "player": "You",
+      "card_drawn": null,
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP16-001",
+          "to_name": "Portgas D. Ace",
+          "total": 1
+        },
+        {
+          "type": "attack",
+          "attacker": "Portgas D. Ace",
+          "attacker_code": "OP16-001",
+          "target": "Ace & Newgate [\"ST22-001\">ST22-001]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": [
+            "ST22-010",
+            "OP08-047",
+            "OP08-050"
+          ]
+        },
+        {
+          "type": "attach_don",
+          "amount": 3,
+          "to": "OP13-016",
+          "to_name": "Monkey D. Garp",
+          "total": 3
+        },
+        {
+          "type": "attack",
+          "attacker": "Monkey D. Garp",
+          "attacker_code": "OP13-016",
+          "target": "Ace & Newgate [\"ST22-001\">ST22-001]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        }
+      ],
+      "snapshot": {}
+    }
+  ]
+}

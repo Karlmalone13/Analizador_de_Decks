@@ -1,0 +1,962 @@
+{
+  "meta": {
+    "players": {
+      "p1": {
+        "name": "You",
+        "leader": {
+          "name": "Enel",
+          "code": "OP15-058"
+        }
+      },
+      "p2": {
+        "name": "Opponent",
+        "leader": {
+          "name": "Portgas D. Ace",
+          "code": "OP16-001"
+        }
+      }
+    },
+    "goes_first": null
+  },
+  "total_turns": 8,
+  "turns": [
+    {
+      "turn": 1,
+      "player": "You",
+      "card_drawn": null,
+      "don_drawn": 1,
+      "actions": [
+        {
+          "type": "play",
+          "card": "OP15-061",
+          "card_name": "Ohm",
+          "effects": [
+            "Minus 1 Don",
+            "Draw 1 Card"
+          ]
+        }
+      ],
+      "snapshot": {
+        "You": {
+          "hand": [
+            "OP15-075",
+            "OP05-077",
+            "OP15-118",
+            "OP15-118",
+            "OP15-078"
+          ],
+          "board": [
+            "OP15-061"
+          ],
+          "trash": [],
+          "life": 5,
+          "life_cards": [
+            "OP12-071",
+            "OP15-074",
+            "OP15-077",
+            "OP15-118",
+            "ST10-010"
+          ],
+          "don_deck": [
+            "Don"
+          ],
+          "rested": {
+            "OP15-061": 1
+          }
+        },
+        "Opponent": {
+          "hand": [
+            "OP16-014",
+            "OP16-011",
+            "OP16-011",
+            "OP16-005",
+            "OP10-005"
+          ],
+          "trash": [],
+          "board": [],
+          "life": 5,
+          "deck": [
+            "EB01-002",
+            "OP14-018",
+            "OP16-003",
+            "OP16-004",
+            "OP16-010",
+            "OP16-014",
+            "OP16-021",
+            "OP16-118"
+          ],
+          "life_cards": [
+            "OP10-005",
+            "OP13-016",
+            "OP16-015",
+            "OP16-015",
+            "OP16-017"
+          ]
+        }
+      }
+    },
+    {
+      "turn": 2,
+      "player": "Opponent",
+      "card_drawn": null,
+      "don_drawn": 2,
+      "actions": [],
+      "snapshot": {
+        "Opponent": {
+          "hand": [
+            "OP16-014",
+            "OP16-011",
+            "OP16-011",
+            "OP16-005",
+            "OP10-005",
+            "OP16-003"
+          ],
+          "board": [],
+          "trash": [],
+          "life": 5,
+          "deck": [
+            "EB01-002",
+            "OP14-018",
+            "OP16-004",
+            "OP16-010",
+            "OP16-014",
+            "OP16-021",
+            "OP16-118"
+          ],
+          "life_cards": [
+            "OP10-005",
+            "OP13-016",
+            "OP16-015",
+            "OP16-015",
+            "OP16-017"
+          ],
+          "don_cost": [
+            "Don",
+            "Don"
+          ]
+        },
+        "You": {
+          "hand": [
+            "OP15-075",
+            "OP05-077",
+            "OP15-118",
+            "OP15-118",
+            "OP15-078"
+          ],
+          "trash": [],
+          "board": [
+            "OP15-061"
+          ],
+          "life": 5,
+          "life_cards": [
+            "OP12-071",
+            "OP15-074",
+            "OP15-077",
+            "OP15-118",
+            "ST10-010"
+          ],
+          "don_deck": [
+            "Don"
+          ],
+          "rested": {
+            "OP15-061": 1
+          }
+        }
+      }
+    },
+    {
+      "turn": 3,
+      "player": "You",
+      "card_drawn": null,
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "attack",
+          "attacker": "Enel",
+          "attacker_code": "OP15-058",
+          "target": "Portgas D. Ace [\"OP16-001\">OP16-001]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "play",
+          "card": "OP15-066",
+          "card_name": "Satori",
+          "effects": [
+            "Minus 1 Don",
+            "Draw 1 Card"
+          ]
+        },
+        {
+          "type": "activate",
+          "card": "OP15-058",
+          "card_name": "Enel",
+          "effects": [
+            "Attach 1 Rested Don to Ohm [\"OP15-061\">OP15-061]",
+            "Attach 1 Rested Don to Ohm [\"OP15-061\">OP15-061]",
+            "Attach 1 Rested Don to Ohm [\"OP15-061\">OP15-061]",
+            "Attach 1 Rested Don to Ohm [\"OP15-061\">OP15-061]"
+          ]
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP15-061",
+          "to_name": "Ohm",
+          "total": 5
+        },
+        {
+          "type": "attack",
+          "attacker": "Ohm",
+          "attacker_code": "OP15-061",
+          "target": "Portgas D. Ace [\"OP16-001\">OP16-001]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        }
+      ],
+      "snapshot": {
+        "You": {
+          "hand": [
+            "OP15-075",
+            "OP05-077",
+            "OP15-118",
+            "OP15-118",
+            "OP15-078",
+            "OP10-067"
+          ],
+          "board": [
+            "OP15-061",
+            "OP15-066"
+          ],
+          "trash": [],
+          "life": 5,
+          "life_cards": [
+            "OP12-071",
+            "OP15-074",
+            "OP15-077",
+            "OP15-118",
+            "ST10-010"
+          ],
+          "don_cost": [
+            "Don"
+          ],
+          "attached_don": [
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don"
+          ],
+          "rested_rz1": {
+            "attached_don": [
+              "Don",
+              "Don",
+              "Don",
+              "Don"
+            ]
+          },
+          "rested": {
+            "OP15-061": 1,
+            "OP15-066": 1
+          }
+        },
+        "Opponent": {
+          "hand": [
+            "OP16-014",
+            "OP16-011",
+            "OP16-011",
+            "OP16-005",
+            "OP10-005",
+            "OP16-003",
+            "OP16-015",
+            "OP16-015"
+          ],
+          "trash": [],
+          "board": [],
+          "life": 3,
+          "deck": [
+            "EB01-002",
+            "OP14-018",
+            "OP16-004",
+            "OP16-010",
+            "OP16-014",
+            "OP16-021",
+            "OP16-118"
+          ],
+          "life_cards": [
+            "OP10-005",
+            "OP13-016",
+            "OP16-017"
+          ],
+          "don_cost": [
+            "Don",
+            "Don"
+          ]
+        }
+      }
+    },
+    {
+      "turn": 4,
+      "player": "Opponent",
+      "card_drawn": null,
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "play",
+          "card": "OP16-010",
+          "card_name": "Namule",
+          "effects": []
+        },
+        {
+          "type": "attack",
+          "attacker": "Portgas D. Ace",
+          "attacker_code": "OP16-001",
+          "target": "Enel [\"OP15-058\">OP15-058]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "play",
+          "card": "OP10-005",
+          "card_name": "Sanji",
+          "effects": []
+        }
+      ],
+      "snapshot": {
+        "Opponent": {
+          "hand": [
+            "OP16-014",
+            "OP16-011",
+            "OP16-011",
+            "OP16-005",
+            "OP16-003",
+            "OP16-015",
+            "OP16-015"
+          ],
+          "board": [
+            "OP16-010",
+            "OP10-005"
+          ],
+          "trash": [],
+          "life": 3,
+          "deck": [
+            "EB01-002",
+            "OP14-018",
+            "OP16-004",
+            "OP16-014",
+            "OP16-021",
+            "OP16-118"
+          ],
+          "life_cards": [
+            "OP10-005",
+            "OP13-016",
+            "OP16-017"
+          ],
+          "don_cost": [
+            "Don",
+            "Don",
+            "Don",
+            "Don"
+          ],
+          "rested_rz1": {
+            "don_cost": [
+              "Don"
+            ]
+          },
+          "rested": {
+            "OP16-010": 1,
+            "OP10-005": 1
+          }
+        },
+        "You": {
+          "hand": [
+            "OP15-075",
+            "OP05-077",
+            "OP15-118",
+            "OP15-118",
+            "OP10-067",
+            "OP13-076"
+          ],
+          "trash": [
+            "OP15-078"
+          ],
+          "board": [
+            "OP15-061",
+            "OP15-066"
+          ],
+          "life": 5,
+          "life_cards": [
+            "OP12-071",
+            "OP15-074",
+            "OP15-077",
+            "OP15-118",
+            "ST10-010"
+          ],
+          "don_cost": [
+            "Don"
+          ],
+          "attached_don": [
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don"
+          ],
+          "rested_rz1": {
+            "attached_don": [
+              "Don",
+              "Don",
+              "Don",
+              "Don"
+            ]
+          },
+          "rested": {
+            "OP15-061": 1,
+            "OP15-066": 1
+          }
+        }
+      }
+    },
+    {
+      "turn": 5,
+      "player": "You",
+      "card_drawn": null,
+      "don_drawn": 0,
+      "actions": [
+        {
+          "type": "play",
+          "card": "OP15-118",
+          "card_name": "Enel",
+          "effects": [
+            "Minus 1 Don",
+            "Added 1 Cards to Hand",
+            "Trash Senor Pink [\"OP10-067\">OP10-067]"
+          ]
+        },
+        {
+          "type": "attack",
+          "attacker": "Enel",
+          "attacker_code": "OP15-058",
+          "target": "Portgas D. Ace [\"OP16-001\">OP16-001]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "attack",
+          "attacker": "Ohm",
+          "attacker_code": "OP15-061",
+          "target": "Portgas D. Ace [\"OP16-001\">OP16-001]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "activate",
+          "card": "OP15-061",
+          "card_name": "Ohm",
+          "effects": [
+            "Buff Namule [\"OP16-010\">OP16-010] -1000"
+          ]
+        },
+        {
+          "type": "activate",
+          "card": "OP15-058",
+          "card_name": "Enel",
+          "effects": [
+            "Attach 1 Rested Don to Ohm [\"OP15-061\">OP15-061]",
+            "Attach 1 Rested Don to Ohm [\"OP15-061\">OP15-061]",
+            "Attach 1 Rested Don to Ohm [\"OP15-061\">OP15-061]",
+            "Attach 1 Rested Don to Ohm [\"OP15-061\">OP15-061]"
+          ]
+        }
+      ],
+      "snapshot": {
+        "You": {
+          "hand": [
+            "OP05-077",
+            "OP15-118",
+            "OP13-076",
+            "OP15-078"
+          ],
+          "board": [
+            "OP15-061",
+            "OP15-066",
+            "OP15-118"
+          ],
+          "trash": [
+            "OP15-078",
+            "OP10-067",
+            "OP15-075",
+            "OP15-076"
+          ],
+          "life": 5,
+          "deck": [
+            "OP15-061",
+            "OP15-067",
+            "OP15-074",
+            "OP15-075"
+          ],
+          "life_cards": [
+            "OP12-071",
+            "OP15-074",
+            "OP15-077",
+            "OP15-118",
+            "ST10-010"
+          ],
+          "don_cost": [
+            "Don",
+            "Don"
+          ],
+          "attached_don": [
+            "Don",
+            "Don",
+            "Don",
+            "Don"
+          ],
+          "rested_rz1": {
+            "attached_don": [
+              "Don",
+              "Don",
+              "Don",
+              "Don"
+            ]
+          },
+          "rested": {
+            "OP15-061": 1,
+            "OP15-118": 1
+          }
+        },
+        "Opponent": {
+          "hand": [
+            "OP16-014",
+            "OP16-011",
+            "OP16-011",
+            "OP16-005",
+            "OP16-003",
+            "OP16-015",
+            "OP16-015",
+            "OP16-017"
+          ],
+          "trash": [],
+          "board": [
+            "OP16-010",
+            "OP10-005"
+          ],
+          "life": 2,
+          "deck": [
+            "EB01-002",
+            "OP14-018",
+            "OP16-004",
+            "OP16-014",
+            "OP16-021",
+            "OP16-118"
+          ],
+          "life_cards": [
+            "OP10-005",
+            "OP13-016"
+          ],
+          "don_cost": [
+            "Don",
+            "Don",
+            "Don",
+            "Don"
+          ],
+          "rested_rz1": {
+            "don_cost": [
+              "Don"
+            ]
+          },
+          "rested": {
+            "OP16-010": 1,
+            "OP10-005": 1
+          }
+        }
+      }
+    },
+    {
+      "turn": 6,
+      "player": "Opponent",
+      "card_drawn": null,
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "play",
+          "card": "OP16-011",
+          "card_name": "Vista",
+          "effects": [
+            "Draw 1 Card"
+          ]
+        },
+        {
+          "type": "attack",
+          "attacker": "Sanji",
+          "attacker_code": "OP10-005",
+          "target": "Enel [\"OP15-058\">OP15-058]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "attack",
+          "attacker": "Portgas D. Ace",
+          "attacker_code": "OP16-001",
+          "target": "Enel [\"OP15-058\">OP15-058]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "attack",
+          "attacker": "Namule",
+          "attacker_code": "OP16-010",
+          "target": "Ohm [\"OP15-061\">OP15-061]",
+          "result": "hit",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "activate",
+          "card": "OP16-001",
+          "card_name": "Portgas D. Ace",
+          "effects": [
+            "Give Vista [\"OP16-011\">OP16-011] Rush"
+          ]
+        },
+        {
+          "type": "attack",
+          "attacker": "Vista",
+          "attacker_code": "OP16-011",
+          "target": "Enel [\"OP15-058\">OP15-058]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        }
+      ],
+      "snapshot": {
+        "Opponent": {
+          "hand": [
+            "OP16-014",
+            "OP16-011",
+            "OP16-005",
+            "OP16-003",
+            "OP16-015",
+            "OP16-015",
+            "OP16-017",
+            "OP16-014",
+            "OP16-010"
+          ],
+          "board": [
+            "OP16-010",
+            "OP10-005",
+            "OP16-011"
+          ],
+          "trash": [],
+          "life": 2,
+          "deck": [
+            "EB01-002",
+            "OP14-018",
+            "OP16-004",
+            "OP16-021",
+            "OP16-118"
+          ],
+          "life_cards": [
+            "OP10-005",
+            "OP13-016"
+          ],
+          "don_cost": [
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don"
+          ],
+          "rested_rz1": {
+            "don_cost": [
+              "Don"
+            ]
+          },
+          "rested": {
+            "OP16-010": 1,
+            "OP10-005": 1,
+            "OP16-011": 1
+          }
+        },
+        "You": {
+          "hand": [
+            "OP05-077",
+            "OP15-118",
+            "OP15-078",
+            "OP15-118",
+            "OP15-074",
+            "ST10-010"
+          ],
+          "trash": [
+            "OP15-078",
+            "OP10-067",
+            "OP15-075",
+            "OP15-076",
+            "OP13-076",
+            "OP15-061"
+          ],
+          "board": [
+            "OP15-066",
+            "OP15-118"
+          ],
+          "life": 2,
+          "deck": [
+            "OP15-061",
+            "OP15-067",
+            "OP15-074",
+            "OP15-075"
+          ],
+          "life_cards": [
+            "OP12-071",
+            "OP15-077"
+          ],
+          "don_cost": [
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don"
+          ],
+          "rested_rz1": {
+            "don_cost": [
+              "Don",
+              "Don",
+              "Don",
+              "Don"
+            ]
+          },
+          "rested": {
+            "OP15-118": 1
+          }
+        }
+      }
+    },
+    {
+      "turn": 7,
+      "player": "You",
+      "card_drawn": null,
+      "don_drawn": 0,
+      "actions": [
+        {
+          "type": "attack",
+          "attacker": "Enel",
+          "attacker_code": "OP15-118",
+          "target": "Portgas D. Ace [\"OP16-001\">OP16-001]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "play",
+          "card": "OP15-118",
+          "card_name": "Enel",
+          "effects": [
+            "Minus 1 Don",
+            "Added 1 Cards to Hand",
+            "Trash Satori [\"OP15-066\">OP15-066]"
+          ]
+        },
+        {
+          "type": "attack",
+          "attacker": "Enel",
+          "attacker_code": "OP15-058",
+          "target": "Portgas D. Ace [\"OP16-001\">OP16-001]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": [
+            "OP16-010"
+          ]
+        },
+        {
+          "type": "attack",
+          "attacker": "Satori",
+          "attacker_code": "OP15-066",
+          "target": "Portgas D. Ace [\"OP16-001\">OP16-001]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "activate",
+          "card": "OP15-058",
+          "card_name": "Enel",
+          "effects": [
+            "Attach 1 Rested Don to Satori [\"OP15-066\">OP15-066]",
+            "Attach 1 Rested Don to Satori [\"OP15-066\">OP15-066]",
+            "Attach 1 Rested Don to Satori [\"OP15-066\">OP15-066]",
+            "Attach 1 Rested Don to Satori [\"OP15-066\">OP15-066]"
+          ]
+        }
+      ],
+      "snapshot": {
+        "You": {
+          "hand": [
+            "OP05-077",
+            "OP15-078",
+            "OP15-118",
+            "OP15-074",
+            "ST10-010",
+            "OP09-077"
+          ],
+          "board": [
+            "OP15-066",
+            "OP15-118",
+            "OP15-118"
+          ],
+          "trash": [
+            "OP15-078",
+            "OP10-067",
+            "OP15-075",
+            "OP15-076",
+            "OP13-076",
+            "OP15-061",
+            "OP15-066"
+          ],
+          "life": 2,
+          "deck": [
+            "OP09-072",
+            "OP15-061",
+            "OP15-067",
+            "OP15-074",
+            "OP15-075",
+            "OP15-076",
+            "OP15-077"
+          ],
+          "life_cards": [
+            "OP12-071",
+            "OP15-077"
+          ],
+          "don_cost": [
+            "Don",
+            "Don"
+          ],
+          "attached_don": [
+            "Don",
+            "Don",
+            "Don",
+            "Don"
+          ],
+          "rested_rz1": {
+            "attached_don": [
+              "Don",
+              "Don",
+              "Don",
+              "Don"
+            ]
+          },
+          "rested": {
+            "OP15-118": 2
+          }
+        },
+        "Opponent": {
+          "hand": [
+            "OP16-014",
+            "OP16-011",
+            "OP16-005",
+            "OP16-003",
+            "OP16-015",
+            "OP16-015",
+            "OP16-017",
+            "OP16-014",
+            "OP10-005"
+          ],
+          "trash": [
+            "OP16-010"
+          ],
+          "board": [
+            "OP16-010",
+            "OP10-005",
+            "OP16-011"
+          ],
+          "life": 1,
+          "deck": [
+            "EB01-002",
+            "OP14-018",
+            "OP16-004",
+            "OP16-021",
+            "OP16-118"
+          ],
+          "life_cards": [
+            "OP13-016"
+          ],
+          "don_cost": [
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don"
+          ],
+          "rested_rz1": {
+            "don_cost": [
+              "Don"
+            ]
+          },
+          "rested": {
+            "OP16-010": 1,
+            "OP10-005": 1,
+            "OP16-011": 1
+          }
+        }
+      }
+    },
+    {
+      "turn": 8,
+      "player": "Opponent",
+      "card_drawn": null,
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "play",
+          "card": "OP16-003",
+          "card_name": "Edward Newgate",
+          "effects": [
+            "Buff Enel [\"OP15-118\">OP15-118] -6000"
+          ]
+        },
+        {
+          "type": "attack",
+          "attacker": "Portgas D. Ace",
+          "attacker_code": "OP16-001",
+          "target": "Enel [\"OP15-058\">OP15-058]",
+          "result": "hit",
+          "damage": 2,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "attack",
+          "attacker": "Vista",
+          "attacker_code": "OP16-011",
+          "target": "Enel [\"OP15-058\">OP15-058]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        }
+      ],
+      "snapshot": {}
+    }
+  ]
+}

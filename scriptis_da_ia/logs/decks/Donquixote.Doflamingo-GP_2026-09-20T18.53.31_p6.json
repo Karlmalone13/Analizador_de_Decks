@@ -1,0 +1,56 @@
+{
+  "cards": [
+    {
+      "code": "OP05-040",
+      "name": "OP05-040",
+      "count": 1
+    },
+    {
+      "code": "OP04-029",
+      "name": "OP04-029",
+      "count": 1
+    },
+    {
+      "code": "OP04-030",
+      "name": "Trebol",
+      "count": 1
+    },
+    {
+      "code": "ST05-004",
+      "name": "Uta",
+      "count": 1
+    },
+    {
+      "code": "OP07-021",
+      "name": "Uroge",
+      "count": 1
+    },
+    {
+      "code": "ST18-001",
+      "name": "ST18-001",
+      "count": 1
+    },
+    {
+      "code": "OP07-026",
+      "name": "OP07-026",
+      "count": 1
+    },
+    {
+      "code": "OP07-076",
+      "name": "OP07-076",
+      "count": 1
+    },
+    {
+      "code": "OP08-024",
+      "name": "OP08-024",
+      "count": 1
+    },
+    {
+      "code": "OP01-051",
+      "name": "Eustass \"Captain\" Kid",
+      "count": 1
+    }
+  ],
+  "total_seen": 10,
+  "leader": "OP04-019"
+}

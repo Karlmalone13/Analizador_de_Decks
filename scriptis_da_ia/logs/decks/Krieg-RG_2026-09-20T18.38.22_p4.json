@@ -1,0 +1,71 @@
+{
+  "cards": [
+    {
+      "code": "OP15-025",
+      "name": "OP15-025",
+      "count": 3
+    },
+    {
+      "code": "EB04-004",
+      "name": "EB04-004",
+      "count": 1
+    },
+    {
+      "code": "OP14-036",
+      "name": "OP14-036",
+      "count": 1
+    },
+    {
+      "code": "OP15-008",
+      "name": "Krieg",
+      "count": 1
+    },
+    {
+      "code": "OP15-017",
+      "name": "OP15-017",
+      "count": 1
+    },
+    {
+      "code": "OP15-028",
+      "name": "Meowban Brothers",
+      "count": 1
+    },
+    {
+      "code": "OP15-026",
+      "name": "Jango",
+      "count": 1
+    },
+    {
+      "code": "OP15-009",
+      "name": "Koby",
+      "count": 1
+    },
+    {
+      "code": "OP15-007",
+      "name": "Gin",
+      "count": 1
+    },
+    {
+      "code": "OP15-023",
+      "name": "OP15-023",
+      "count": 1
+    },
+    {
+      "code": "OP15-012",
+      "name": "OP15-012",
+      "count": 1
+    },
+    {
+      "code": "OP12-027",
+      "name": "OP12-027",
+      "count": 1
+    },
+    {
+      "code": "OP15-037",
+      "name": "OP15-037",
+      "count": 1
+    }
+  ],
+  "total_seen": 15,
+  "leader": "OP15-001"
+}

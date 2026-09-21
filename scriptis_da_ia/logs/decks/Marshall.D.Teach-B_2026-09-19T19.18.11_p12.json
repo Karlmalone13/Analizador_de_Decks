@@ -1,0 +1,61 @@
+{
+  "cards": [
+    {
+      "code": "OP09-096",
+      "name": "OP09-096",
+      "count": 2
+    },
+    {
+      "code": "OP09-095",
+      "name": "Laffitte",
+      "count": 2
+    },
+    {
+      "code": "OP16-114",
+      "name": "OP16-114",
+      "count": 2
+    },
+    {
+      "code": "OP16-119",
+      "name": "Marshall D. Teach",
+      "count": 2
+    },
+    {
+      "code": "EB04-058",
+      "name": "EB04-058",
+      "count": 2
+    },
+    {
+      "code": "OP09-093",
+      "name": "OP09-093",
+      "count": 2
+    },
+    {
+      "code": "OP16-104",
+      "name": "Catarina Devon",
+      "count": 1
+    },
+    {
+      "code": "OP16-108",
+      "name": "Shiryu",
+      "count": 1
+    },
+    {
+      "code": "OP16-109",
+      "name": "OP16-109",
+      "count": 1
+    },
+    {
+      "code": "OP09-091",
+      "name": "OP09-091",
+      "count": 1
+    },
+    {
+      "code": "OP09-099",
+      "name": "Fullalead",
+      "count": 1
+    }
+  ],
+  "total_seen": 17,
+  "leader": "OP09-081"
+}

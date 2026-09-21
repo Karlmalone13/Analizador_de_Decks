@@ -1,0 +1,1198 @@
+{
+  "meta": {
+    "players": {
+      "p1": {
+        "name": "You",
+        "leader": {
+          "name": "Nico Robin",
+          "code": "OP09-062"
+        }
+      },
+      "p2": {
+        "name": "Opponent",
+        "leader": {
+          "name": "Monkey D. Luffy",
+          "code": "ST01-001"
+        }
+      }
+    },
+    "goes_first": null
+  },
+  "total_turns": 9,
+  "turns": [
+    {
+      "turn": 1,
+      "player": "You",
+      "card_drawn": null,
+      "don_drawn": 1,
+      "actions": [
+        {
+          "type": "play",
+          "card": "OP11-070",
+          "card_name": "Charlotte Pudding",
+          "effects": [
+            "<b>Reveal and Draw Charlotte Pudding [\"OP17-109\">OP17-109]</b>"
+          ]
+        }
+      ],
+      "snapshot": {
+        "You": {
+          "hand": [
+            "OP08-076",
+            "OP17-102",
+            "OP17-109",
+            "OP09-078",
+            "OP17-109"
+          ],
+          "board": [
+            "OP11-070"
+          ],
+          "trash": [],
+          "life": 4,
+          "deck": [
+            "OP17-074",
+            "OP17-106",
+            "OP17-107",
+            "OP17-109"
+          ],
+          "life_cards": [
+            "OP17-074",
+            "OP17-102",
+            "OP17-107",
+            "OP17-114"
+          ],
+          "don_cost": [
+            "Don"
+          ],
+          "rested_rz1": {
+            "don_cost": [
+              "Don"
+            ]
+          },
+          "rested": {
+            "OP11-070": 1
+          }
+        },
+        "Opponent": {
+          "hand": [
+            "ST01-011",
+            "ST01-005",
+            "ST01-005",
+            "ST01-006",
+            "ST01-005"
+          ],
+          "trash": [],
+          "board": [],
+          "life": 5,
+          "deck": [
+            "ST01-002",
+            "ST01-003",
+            "ST01-004",
+            "ST01-010",
+            "ST01-012",
+            "ST01-013",
+            "ST01-014",
+            "ST01-016",
+            "ST01-017"
+          ],
+          "life_cards": [
+            "ST01-007",
+            "ST01-007",
+            "ST01-008",
+            "ST01-009",
+            "ST01-015"
+          ]
+        }
+      }
+    },
+    {
+      "turn": 2,
+      "player": "Opponent",
+      "card_drawn": null,
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "play",
+          "card": "ST01-011",
+          "card_name": "Brook",
+          "effects": [
+            "Attach 1 Rested Don to Monkey D. Luffy [\"ST01-001\">ST01-001]",
+            "Attach 1 Rested Don to Monkey D. Luffy [\"ST01-001\">ST01-001]"
+          ]
+        }
+      ],
+      "snapshot": {
+        "Opponent": {
+          "hand": [
+            "ST01-005",
+            "ST01-005",
+            "ST01-006",
+            "ST01-005",
+            "ST01-013"
+          ],
+          "board": [
+            "ST01-011"
+          ],
+          "trash": [],
+          "life": 5,
+          "deck": [
+            "ST01-002",
+            "ST01-003",
+            "ST01-004",
+            "ST01-010",
+            "ST01-012",
+            "ST01-014",
+            "ST01-016",
+            "ST01-017"
+          ],
+          "life_cards": [
+            "ST01-007",
+            "ST01-007",
+            "ST01-008",
+            "ST01-009",
+            "ST01-015"
+          ],
+          "attached_don": [
+            "Don",
+            "Don"
+          ],
+          "rested_rz1": {
+            "attached_don": [
+              "Don",
+              "Don"
+            ]
+          },
+          "rested": {
+            "ST01-011": 1
+          }
+        },
+        "You": {
+          "hand": [
+            "OP08-076",
+            "OP17-102",
+            "OP17-109",
+            "OP09-078",
+            "OP17-109"
+          ],
+          "trash": [],
+          "board": [
+            "OP11-070"
+          ],
+          "life": 4,
+          "deck": [
+            "OP17-074",
+            "OP17-106",
+            "OP17-107",
+            "OP17-109"
+          ],
+          "life_cards": [
+            "OP17-074",
+            "OP17-102",
+            "OP17-107",
+            "OP17-114"
+          ],
+          "don_cost": [
+            "Don"
+          ],
+          "rested_rz1": {
+            "don_cost": [
+              "Don"
+            ]
+          },
+          "rested": {
+            "OP11-070": 1
+          }
+        }
+      }
+    },
+    {
+      "turn": 3,
+      "player": "You",
+      "card_drawn": null,
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "play",
+          "card": "OP17-109",
+          "card_name": "Charlotte Pudding",
+          "effects": [
+            "Trash It's To Die For...! [\"OP08-076\">OP08-076]",
+            "Draw 3 Card"
+          ]
+        },
+        {
+          "type": "attack",
+          "attacker": "Nico Robin",
+          "attacker_code": "OP09-062",
+          "target": "Monkey D. Luffy [\"ST01-001\">ST01-001]",
+          "result": "hit",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "activate",
+          "card": "OP09-062",
+          "card_name": "Nico Robin",
+          "effects": [
+            "Trash It's To Die For...! [\"OP08-076\">OP08-076]"
+          ]
+        }
+      ],
+      "snapshot": {
+        "You": {
+          "hand": [
+            "OP17-102",
+            "OP09-078",
+            "OP17-109",
+            "OP09-078",
+            "OP17-106",
+            "OP17-114"
+          ],
+          "board": [
+            "OP11-070",
+            "OP17-109"
+          ],
+          "trash": [
+            "OP08-076",
+            "OP08-076"
+          ],
+          "life": 4,
+          "deck": [
+            "OP17-074",
+            "OP17-107",
+            "OP17-109"
+          ],
+          "life_cards": [
+            "OP17-074",
+            "OP17-102",
+            "OP17-107",
+            "OP17-114"
+          ],
+          "don_cost": [
+            "Don",
+            "Don",
+            "Don",
+            "Don"
+          ],
+          "rested_rz1": {
+            "don_cost": [
+              "Don",
+              "Don"
+            ]
+          },
+          "rested": {
+            "OP17-109": 1
+          }
+        },
+        "Opponent": {
+          "hand": [
+            "ST01-005",
+            "ST01-005",
+            "ST01-006",
+            "ST01-005",
+            "ST01-013"
+          ],
+          "trash": [
+            "ST01-008"
+          ],
+          "board": [
+            "ST01-011"
+          ],
+          "life": 4,
+          "deck": [
+            "ST01-002",
+            "ST01-003",
+            "ST01-004",
+            "ST01-010",
+            "ST01-012",
+            "ST01-014",
+            "ST01-016",
+            "ST01-017"
+          ],
+          "life_cards": [
+            "ST01-007",
+            "ST01-007",
+            "ST01-009",
+            "ST01-015"
+          ],
+          "attached_don": [
+            "Don",
+            "Don"
+          ],
+          "rested_rz1": {
+            "attached_don": [
+              "Don",
+              "Don"
+            ]
+          },
+          "rested": {
+            "ST01-011": 1
+          }
+        }
+      }
+    },
+    {
+      "turn": 4,
+      "player": "Opponent",
+      "card_drawn": null,
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "play",
+          "card": "ST01-005",
+          "card_name": "Jinbe",
+          "effects": []
+        },
+        {
+          "type": "attack",
+          "attacker": "Monkey D. Luffy",
+          "attacker_code": "ST01-001",
+          "target": "Nico Robin [\"OP09-062\">OP09-062]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "play",
+          "card": "ST01-006",
+          "card_name": "Tony Tony Chopper",
+          "effects": []
+        }
+      ],
+      "snapshot": {
+        "Opponent": {
+          "hand": [
+            "ST01-005",
+            "ST01-005",
+            "ST01-013",
+            "ST01-009"
+          ],
+          "board": [
+            "ST01-011",
+            "ST01-005",
+            "ST01-006"
+          ],
+          "trash": [
+            "ST01-008"
+          ],
+          "life": 4,
+          "deck": [
+            "ST01-002",
+            "ST01-003",
+            "ST01-004",
+            "ST01-010",
+            "ST01-012",
+            "ST01-014",
+            "ST01-016",
+            "ST01-017"
+          ],
+          "life_cards": [
+            "ST01-007",
+            "ST01-007",
+            "ST01-009",
+            "ST01-015"
+          ],
+          "don_cost": [
+            "Don",
+            "Don",
+            "Don",
+            "Don"
+          ],
+          "rested_rz1": {
+            "don_cost": [
+              "Don",
+              "Don"
+            ]
+          },
+          "rested": {
+            "ST01-005": 1,
+            "ST01-006": 1
+          }
+        },
+        "You": {
+          "hand": [
+            "OP17-102",
+            "OP09-078",
+            "OP17-109",
+            "OP09-078",
+            "OP17-106",
+            "OP17-114"
+          ],
+          "trash": [
+            "OP08-076",
+            "OP08-076"
+          ],
+          "board": [
+            "OP11-070",
+            "OP17-109",
+            "OP17-114"
+          ],
+          "life": 3,
+          "deck": [
+            "OP17-074",
+            "OP17-107",
+            "OP17-109"
+          ],
+          "life_cards": [
+            "OP17-074",
+            "OP17-102",
+            "OP17-107"
+          ],
+          "don_cost": [
+            "Don",
+            "Don",
+            "Don",
+            "Don"
+          ],
+          "rested_rz1": {
+            "don_cost": [
+              "Don",
+              "Don"
+            ]
+          },
+          "rested": {
+            "OP17-109": 1
+          }
+        }
+      }
+    },
+    {
+      "turn": 5,
+      "player": "You",
+      "card_drawn": null,
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "play",
+          "card": "OP17-114",
+          "card_name": "The 3 Sweet Commanders",
+          "effects": []
+        },
+        {
+          "type": "attack",
+          "attacker": "Nico Robin",
+          "attacker_code": "OP09-062",
+          "target": "Monkey D. Luffy [\"ST01-001\">ST01-001]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": [
+            "ST01-009"
+          ]
+        },
+        {
+          "type": "activate",
+          "card": "OP09-062",
+          "card_name": "Nico Robin",
+          "effects": [
+            "Trash It's To Die For...! [\"OP08-076\">OP08-076]"
+          ]
+        }
+      ],
+      "snapshot": {
+        "You": {
+          "hand": [
+            "OP17-102",
+            "OP09-078",
+            "OP17-109",
+            "OP09-078",
+            "OP17-106"
+          ],
+          "board": [
+            "OP11-070",
+            "OP17-109",
+            "OP17-114",
+            "OP17-114"
+          ],
+          "trash": [
+            "OP08-076",
+            "OP08-076",
+            "OP08-076"
+          ],
+          "life": 3,
+          "deck": [
+            "OP17-074",
+            "OP17-107",
+            "OP17-109"
+          ],
+          "life_cards": [
+            "OP17-074",
+            "OP17-102",
+            "OP17-107"
+          ],
+          "don_cost": [
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don"
+          ],
+          "rested_rz1": {
+            "don_cost": [
+              "Don",
+              "Don",
+              "Don"
+            ]
+          },
+          "rested": {
+            "OP17-114": 1
+          }
+        },
+        "Opponent": {
+          "hand": [
+            "ST01-005",
+            "ST01-005",
+            "ST01-013"
+          ],
+          "trash": [
+            "ST01-008",
+            "ST01-009"
+          ],
+          "board": [
+            "ST01-011",
+            "ST01-005",
+            "ST01-006"
+          ],
+          "life": 4,
+          "deck": [
+            "ST01-002",
+            "ST01-003",
+            "ST01-004",
+            "ST01-010",
+            "ST01-012",
+            "ST01-014",
+            "ST01-016",
+            "ST01-017"
+          ],
+          "life_cards": [
+            "ST01-007",
+            "ST01-007",
+            "ST01-009",
+            "ST01-015"
+          ],
+          "don_cost": [
+            "Don",
+            "Don",
+            "Don",
+            "Don"
+          ],
+          "rested_rz1": {
+            "don_cost": [
+              "Don",
+              "Don"
+            ]
+          },
+          "rested": {
+            "ST01-005": 1,
+            "ST01-006": 1
+          }
+        }
+      }
+    },
+    {
+      "turn": 6,
+      "player": "Opponent",
+      "card_drawn": null,
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "play",
+          "card": "ST01-005",
+          "card_name": "Jinbe",
+          "effects": []
+        },
+        {
+          "type": "play",
+          "card": "ST01-005",
+          "card_name": "Jinbe",
+          "effects": []
+        },
+        {
+          "type": "attack",
+          "attacker": "Jinbe",
+          "attacker_code": "ST01-005",
+          "target": "Nico Robin [\"OP09-062\">OP09-062]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": [
+            "OP17-102"
+          ]
+        },
+        {
+          "type": "attack",
+          "attacker": "Monkey D. Luffy",
+          "attacker_code": "ST01-001",
+          "target": "Nico Robin [\"OP09-062\">OP09-062]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": [
+            "OP17-109"
+          ]
+        }
+      ],
+      "snapshot": {
+        "Opponent": {
+          "hand": [
+            "ST01-013",
+            "ST01-004"
+          ],
+          "board": [
+            "ST01-011",
+            "ST01-005",
+            "ST01-006",
+            "ST01-005",
+            "ST01-005"
+          ],
+          "trash": [
+            "ST01-008",
+            "ST01-009"
+          ],
+          "life": 4,
+          "deck": [
+            "ST01-002",
+            "ST01-003",
+            "ST01-010",
+            "ST01-012",
+            "ST01-014",
+            "ST01-016",
+            "ST01-017"
+          ],
+          "life_cards": [
+            "ST01-007",
+            "ST01-007",
+            "ST01-009",
+            "ST01-015"
+          ],
+          "don_cost": [
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don"
+          ],
+          "rested_rz1": {
+            "don_cost": [
+              "Don",
+              "Don"
+            ]
+          },
+          "rested": {
+            "ST01-005": 3
+          }
+        },
+        "You": {
+          "hand": [
+            "OP09-078",
+            "OP09-078",
+            "OP17-106"
+          ],
+          "trash": [
+            "OP08-076",
+            "OP08-076",
+            "OP08-076",
+            "OP17-102",
+            "OP17-109"
+          ],
+          "board": [
+            "OP11-070",
+            "OP17-109",
+            "OP17-114",
+            "OP17-114"
+          ],
+          "life": 3,
+          "deck": [
+            "OP17-074",
+            "OP17-107",
+            "OP17-109"
+          ],
+          "life_cards": [
+            "OP17-074",
+            "OP17-102",
+            "OP17-107"
+          ],
+          "don_cost": [
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don"
+          ],
+          "rested_rz1": {
+            "don_cost": [
+              "Don",
+              "Don",
+              "Don"
+            ]
+          },
+          "rested": {
+            "OP17-114": 1
+          }
+        }
+      }
+    },
+    {
+      "turn": 7,
+      "player": "You",
+      "card_drawn": null,
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "attack",
+          "attacker": "Nico Robin",
+          "attacker_code": "OP09-062",
+          "target": "Monkey D. Luffy [\"ST01-001\">ST01-001]",
+          "result": null,
+          "damage": null,
+          "blocked_by": "ST01-006",
+          "countered_by": []
+        },
+        {
+          "type": "activate",
+          "card": "OP09-062",
+          "card_name": "Nico Robin",
+          "effects": [
+            "Trash Charlotte Smoothie [\"OP17-106\">OP17-106]"
+          ]
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP17-109",
+          "to_name": "Charlotte Pudding",
+          "total": 1
+        },
+        {
+          "type": "attack",
+          "attacker": "Charlotte Pudding",
+          "attacker_code": "OP17-109",
+          "target": "Monkey D. Luffy [\"ST01-001\">ST01-001]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP17-114",
+          "to_name": "The 3 Sweet Commanders",
+          "total": 1
+        },
+        {
+          "type": "attack",
+          "attacker": "The 3 Sweet Commanders",
+          "attacker_code": "OP17-114",
+          "target": "Monkey D. Luffy [\"ST01-001\">ST01-001]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": [
+            "ST01-009"
+          ]
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP17-114",
+          "to_name": "The 3 Sweet Commanders",
+          "total": 1
+        },
+        {
+          "type": "attack",
+          "attacker": "The 3 Sweet Commanders",
+          "attacker_code": "OP17-114",
+          "target": "Monkey D. Luffy [\"ST01-001\">ST01-001]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "attach_don",
+          "amount": 5,
+          "to": "OP11-070",
+          "to_name": "Charlotte Pudding",
+          "total": 5
+        },
+        {
+          "type": "attack",
+          "attacker": "Charlotte Pudding",
+          "attacker_code": "OP11-070",
+          "target": "Monkey D. Luffy [\"ST01-001\">ST01-001]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "play",
+          "card": "OP17-113",
+          "card_name": "Streusen",
+          "effects": [
+            "<b>Reveal and Draw Charlotte Linlin [\"OP17-112\">OP17-112]</b>"
+          ]
+        }
+      ],
+      "snapshot": {
+        "You": {
+          "hand": [
+            "OP09-078",
+            "OP09-078",
+            "OP17-112"
+          ],
+          "board": [
+            "OP11-070",
+            "OP17-114",
+            "OP17-114",
+            "OP17-113"
+          ],
+          "trash": [
+            "OP08-076",
+            "OP08-076",
+            "OP08-076",
+            "OP17-102",
+            "OP17-109",
+            "OP17-106",
+            "OP17-109"
+          ],
+          "life": 3,
+          "deck": [
+            "OP05-073",
+            "OP09-078",
+            "OP17-074",
+            "OP17-107",
+            "OP17-109"
+          ],
+          "life_cards": [
+            "OP17-074",
+            "OP17-102",
+            "OP17-107"
+          ],
+          "don_cost": [
+            "Don",
+            "Don",
+            "Don"
+          ],
+          "attached_don": [
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don"
+          ],
+          "rested_rz1": {
+            "don_cost": [
+              "Don"
+            ]
+          },
+          "rested": {
+            "OP11-070": 1,
+            "OP17-114": 2,
+            "OP17-113": 1
+          }
+        },
+        "Opponent": {
+          "hand": [
+            "ST01-013",
+            "ST01-004",
+            "ST01-007"
+          ],
+          "trash": [
+            "ST01-008",
+            "ST01-009",
+            "ST01-006",
+            "ST01-009",
+            "ST01-015"
+          ],
+          "board": [
+            "ST01-011",
+            "ST01-005",
+            "ST01-005",
+            "ST01-005"
+          ],
+          "life": 1,
+          "deck": [
+            "ST01-002",
+            "ST01-003",
+            "ST01-010",
+            "ST01-012",
+            "ST01-014",
+            "ST01-016",
+            "ST01-017"
+          ],
+          "life_cards": [
+            "ST01-007"
+          ],
+          "don_cost": [
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don"
+          ],
+          "rested_rz1": {
+            "don_cost": [
+              "Don",
+              "Don"
+            ]
+          },
+          "rested": {
+            "ST01-005": 3
+          }
+        }
+      }
+    },
+    {
+      "turn": 8,
+      "player": "Opponent",
+      "card_drawn": null,
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "attach_don",
+          "amount": 2,
+          "to": "ST01-001",
+          "to_name": "Monkey D. Luffy",
+          "total": 2
+        },
+        {
+          "type": "attach_don",
+          "amount": 2,
+          "to": "ST01-001",
+          "to_name": "Monkey D. Luffy",
+          "total": 4
+        },
+        {
+          "type": "attach_don",
+          "amount": 2,
+          "to": "ST01-001",
+          "to_name": "Monkey D. Luffy",
+          "total": 6
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "ST01-005",
+          "to_name": "Jinbe",
+          "total": 1
+        },
+        {
+          "type": "attack",
+          "attacker": "Jinbe",
+          "attacker_code": "ST01-005",
+          "target": "Nico Robin [\"OP09-062\">OP09-062]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "activate",
+          "card": "ST01-005",
+          "card_name": "Jinbe",
+          "effects": [
+            "Buff Monkey D. Luffy [\"ST01-001\">ST01-001] 1000",
+            "Buff Monkey D. Luffy [\"ST01-001\">ST01-001] 1000"
+          ]
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "ST01-005",
+          "to_name": "Jinbe",
+          "total": 1
+        },
+        {
+          "type": "attack",
+          "attacker": "Jinbe",
+          "attacker_code": "ST01-005",
+          "target": "Nico Robin [\"OP09-062\">OP09-062]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "attack",
+          "attacker": "Monkey D. Luffy",
+          "attacker_code": "ST01-001",
+          "target": "Nico Robin [\"OP09-062\">OP09-062]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "attack",
+          "attacker": "Jinbe",
+          "attacker_code": "ST01-005",
+          "target": "The 3 Sweet Commanders [\"OP17-114\">OP17-114]",
+          "result": "hit",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": []
+        }
+      ],
+      "snapshot": {
+        "Opponent": {
+          "hand": [
+            "ST01-013",
+            "ST01-004",
+            "ST01-007",
+            "ST01-002"
+          ],
+          "board": [
+            "ST01-011",
+            "ST01-005",
+            "ST01-005",
+            "ST01-005"
+          ],
+          "trash": [
+            "ST01-008",
+            "ST01-009",
+            "ST01-006",
+            "ST01-009",
+            "ST01-015"
+          ],
+          "life": 1,
+          "deck": [
+            "ST01-003",
+            "ST01-010",
+            "ST01-012",
+            "ST01-014",
+            "ST01-016",
+            "ST01-017"
+          ],
+          "life_cards": [
+            "ST01-007"
+          ],
+          "attached_don": [
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don"
+          ],
+          "rested": {
+            "ST01-005": 3
+          }
+        },
+        "You": {
+          "hand": [
+            "OP09-078",
+            "OP09-078",
+            "OP17-112",
+            "OP17-074"
+          ],
+          "trash": [
+            "OP08-076",
+            "OP08-076",
+            "OP08-076",
+            "OP17-102",
+            "OP17-109",
+            "OP17-106",
+            "OP17-109",
+            "OP11-070",
+            "OP17-114"
+          ],
+          "board": [
+            "OP17-114",
+            "OP17-113",
+            "OP17-107",
+            "OP17-102"
+          ],
+          "life": 0,
+          "deck": [
+            "OP05-073",
+            "OP09-078",
+            "OP17-074",
+            "OP17-107",
+            "OP17-109"
+          ],
+          "don_cost": [
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don"
+          ],
+          "attached_don": [
+            "Don"
+          ],
+          "rested_rz1": {
+            "don_cost": [
+              "Don",
+              "Don",
+              "Don",
+              "Don",
+              "Don",
+              "Don",
+              "Don"
+            ]
+          },
+          "rested": {
+            "OP17-114": 1,
+            "OP17-113": 1
+          }
+        }
+      }
+    },
+    {
+      "turn": 9,
+      "player": "You",
+      "card_drawn": null,
+      "don_drawn": 0,
+      "actions": [
+        {
+          "type": "play",
+          "card": "OP17-112",
+          "card_name": "Charlotte Linlin",
+          "effects": [
+            "Draw 1 Card",
+            "Add card to top of Life from Deck"
+          ]
+        },
+        {
+          "type": "attack",
+          "attacker": "The 3 Sweet Commanders",
+          "attacker_code": "OP17-114",
+          "target": "Monkey D. Luffy [\"ST01-001\">ST01-001]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "attack",
+          "attacker": "Charlotte Daifuku",
+          "attacker_code": "OP17-107",
+          "target": "Monkey D. Luffy [\"ST01-001\">ST01-001]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        }
+      ],
+      "snapshot": {}
+    }
+  ]
+}

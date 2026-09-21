@@ -1,0 +1,1532 @@
+{
+  "meta": {
+    "players": {
+      "p1": {
+        "name": "You",
+        "leader": {
+          "name": "Kaido",
+          "code": "ST04-001"
+        }
+      },
+      "p2": {
+        "name": "Opponent",
+        "leader": {
+          "name": "Smoker",
+          "code": "OP02-093"
+        }
+      }
+    },
+    "goes_first": null
+  },
+  "total_turns": 11,
+  "turns": [
+    {
+      "turn": 1,
+      "player": "You",
+      "card_drawn": null,
+      "don_drawn": 1,
+      "actions": [
+        {
+          "type": "play",
+          "card": "OP11-070",
+          "card_name": "Charlotte Pudding",
+          "effects": [
+            "<b>Reveal and Draw It's To Die For...! [\"OP08-076\">OP08-076]</b>"
+          ]
+        }
+      ],
+      "snapshot": {
+        "You": {
+          "hand": [
+            "EB02-035",
+            "OP01-119",
+            "EB02-035",
+            "OP08-074",
+            "OP08-076"
+          ],
+          "board": [
+            "OP11-070"
+          ],
+          "trash": [],
+          "life": 5,
+          "deck": [
+            "OP08-074",
+            "ST04-003",
+            "ST04-014",
+            "ST04-016"
+          ],
+          "life_cards": [
+            "EB02-035",
+            "OP07-066",
+            "OP11-072",
+            "ST04-005",
+            "ST04-005"
+          ],
+          "don_cost": [
+            "Don"
+          ],
+          "rested_rz1": {
+            "don_cost": [
+              "Don"
+            ]
+          },
+          "rested": {
+            "OP11-070": 1
+          }
+        },
+        "Opponent": {
+          "hand": [
+            "OP02-121",
+            "OP03-078",
+            "OP02-106",
+            "ST06-017",
+            "ST19-003"
+          ],
+          "trash": [],
+          "board": [],
+          "life": 5,
+          "deck": [
+            "EB01-049",
+            "EB02-050",
+            "OP02-096",
+            "OP02-098",
+            "OP02-110",
+            "OP02-114",
+            "OP02-119",
+            "OP03-097",
+            "OP10-098",
+            "ST06-006",
+            "ST06-008",
+            "ST19-004"
+          ],
+          "life_cards": [
+            "OP03-089",
+            "OP05-091",
+            "OP07-085",
+            "ST06-016",
+            "ST19-002"
+          ]
+        }
+      }
+    },
+    {
+      "turn": 2,
+      "player": "Opponent",
+      "card_drawn": null,
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP02-093",
+          "to_name": "Smoker",
+          "total": 1
+        },
+        {
+          "type": "activate",
+          "card": "OP02-093",
+          "card_name": "Smoker",
+          "effects": [
+            "Charlotte Pudding [\"OP11-070\">OP11-070] Cost -1",
+            "Buff Self 1000"
+          ]
+        },
+        {
+          "type": "play",
+          "card": "ST06-017",
+          "card_name": "Marineford",
+          "effects": [
+            "Charlotte Pudding [\"OP11-070\">OP11-070] Cost -1"
+          ]
+        }
+      ],
+      "snapshot": {
+        "Opponent": {
+          "hand": [
+            "OP02-121",
+            "OP03-078",
+            "OP02-106",
+            "ST19-003",
+            "ST19-002"
+          ],
+          "board": [],
+          "trash": [],
+          "life": 5,
+          "deck": [
+            "EB01-049",
+            "EB02-050",
+            "OP02-096",
+            "OP02-098",
+            "OP02-110",
+            "OP02-114",
+            "OP02-119",
+            "OP03-097",
+            "OP10-098",
+            "ST06-006",
+            "ST06-008",
+            "ST19-004"
+          ],
+          "life_cards": [
+            "OP03-089",
+            "OP05-091",
+            "OP07-085",
+            "ST06-016",
+            "ST19-002"
+          ],
+          "don_cost": [
+            "Don"
+          ],
+          "attached_don": [
+            "Don"
+          ],
+          "stage": [
+            "ST06-017"
+          ],
+          "rested_rz1": {
+            "don_cost": [
+              "Don"
+            ]
+          }
+        },
+        "You": {
+          "hand": [
+            "EB02-035",
+            "OP01-119",
+            "EB02-035",
+            "OP08-074",
+            "OP08-076"
+          ],
+          "trash": [],
+          "board": [
+            "OP11-070"
+          ],
+          "life": 5,
+          "deck": [
+            "OP08-074",
+            "ST04-003",
+            "ST04-014",
+            "ST04-016"
+          ],
+          "life_cards": [
+            "EB02-035",
+            "OP07-066",
+            "OP11-072",
+            "ST04-005",
+            "ST04-005"
+          ],
+          "don_cost": [
+            "Don"
+          ],
+          "rested_rz1": {
+            "don_cost": [
+              "Don"
+            ]
+          },
+          "rested": {
+            "OP11-070": 1
+          }
+        }
+      }
+    },
+    {
+      "turn": 3,
+      "player": "You",
+      "card_drawn": null,
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "activate",
+          "card": "OP08-076",
+          "card_name": "It's To Die For...!",
+          "effects": [
+            "Rest 3 Don"
+          ]
+        },
+        {
+          "type": "attack",
+          "attacker": "Kaido",
+          "attacker_code": "ST04-001",
+          "target": "Smoker [\"OP02-093\">OP02-093]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP11-070",
+          "to_name": "Charlotte Pudding",
+          "total": 1
+        }
+      ],
+      "snapshot": {
+        "You": {
+          "hand": [
+            "EB02-035",
+            "OP01-119",
+            "EB02-035",
+            "OP08-074",
+            "OP07-066"
+          ],
+          "board": [
+            "OP11-070"
+          ],
+          "trash": [
+            "OP08-076"
+          ],
+          "life": 5,
+          "deck": [
+            "OP08-074",
+            "ST04-003",
+            "ST04-014",
+            "ST04-016"
+          ],
+          "life_cards": [
+            "EB02-035",
+            "OP07-066",
+            "OP11-072",
+            "ST04-005",
+            "ST04-005"
+          ],
+          "don_cost": [
+            "Don",
+            "Don",
+            "Don"
+          ],
+          "attached_don": [
+            "Don"
+          ]
+        },
+        "Opponent": {
+          "hand": [
+            "OP02-121",
+            "OP03-078",
+            "OP02-106",
+            "ST19-003",
+            "ST19-002",
+            "OP07-085"
+          ],
+          "trash": [],
+          "board": [],
+          "life": 4,
+          "deck": [
+            "EB01-049",
+            "EB02-050",
+            "OP02-096",
+            "OP02-098",
+            "OP02-110",
+            "OP02-114",
+            "OP02-119",
+            "OP03-097",
+            "OP10-098",
+            "ST06-006",
+            "ST06-008",
+            "ST19-004"
+          ],
+          "life_cards": [
+            "OP03-089",
+            "OP05-091",
+            "ST06-016",
+            "ST19-002"
+          ],
+          "don_cost": [
+            "Don"
+          ],
+          "attached_don": [
+            "Don"
+          ],
+          "stage": [
+            "ST06-017"
+          ],
+          "rested_rz1": {
+            "don_cost": [
+              "Don"
+            ]
+          }
+        }
+      }
+    },
+    {
+      "turn": 4,
+      "player": "Opponent",
+      "card_drawn": null,
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "activate",
+          "card": "ST06-017",
+          "card_name": "Marineford",
+          "effects": [
+            "Rest Marineford [\"ST06-017\">ST06-017]",
+            "Charlotte Pudding [\"OP11-070\">OP11-070] Cost -1"
+          ]
+        },
+        {
+          "type": "attack",
+          "attacker": "Smoker",
+          "attacker_code": "OP02-093",
+          "target": "Kaido [\"ST04-001\">ST04-001]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP02-093",
+          "to_name": "Smoker",
+          "total": 1
+        },
+        {
+          "type": "activate",
+          "card": "OP02-093",
+          "card_name": "Smoker",
+          "effects": [
+            "Charlotte Pudding [\"OP11-070\">OP11-070] Cost -1",
+            "Buff Self 1000"
+          ]
+        },
+        {
+          "type": "play",
+          "card": "ST19-002",
+          "card_name": "Sengoku",
+          "effects": [
+            "Trash Tashigi [\"ST19-003\">ST19-003]",
+            "Trash Tsuru [\"OP02-106\">OP02-106]",
+            "Draw 3 Card"
+          ]
+        },
+        {
+          "type": "activate",
+          "card": "OP02-119",
+          "card_name": "Meteor Volcano",
+          "effects": [
+            "Destroy Charlotte Pudding [\"OP11-070\">OP11-070]"
+          ]
+        }
+      ],
+      "snapshot": {
+        "Opponent": {
+          "hand": [
+            "OP02-121",
+            "OP03-078",
+            "OP07-085",
+            "OP10-098",
+            "OP02-098",
+            "ST06-016"
+          ],
+          "board": [
+            "ST19-002"
+          ],
+          "trash": [
+            "ST19-003",
+            "OP02-106",
+            "OP02-119"
+          ],
+          "life": 4,
+          "deck": [
+            "EB01-049",
+            "EB02-050",
+            "OP02-096",
+            "OP02-110",
+            "OP02-114",
+            "OP03-097",
+            "ST06-006",
+            "ST06-008",
+            "ST19-004"
+          ],
+          "life_cards": [
+            "OP03-089",
+            "OP05-091",
+            "ST06-016",
+            "ST19-002"
+          ],
+          "don_cost": [
+            "Don",
+            "Don",
+            "Don"
+          ],
+          "attached_don": [
+            "Don"
+          ],
+          "stage": [
+            "ST06-017"
+          ],
+          "rested_rz1": {
+            "don_cost": [
+              "Don"
+            ]
+          },
+          "rested": {
+            "ST19-002": 1
+          }
+        },
+        "You": {
+          "hand": [
+            "EB02-035",
+            "OP01-119",
+            "EB02-035",
+            "OP08-074",
+            "OP07-066",
+            "OP11-072"
+          ],
+          "trash": [
+            "OP08-076",
+            "OP11-070"
+          ],
+          "board": [],
+          "life": 4,
+          "deck": [
+            "OP08-074",
+            "ST04-003",
+            "ST04-014",
+            "ST04-016"
+          ],
+          "life_cards": [
+            "EB02-035",
+            "OP07-066",
+            "ST04-005",
+            "ST04-005"
+          ],
+          "don_cost": [
+            "Don",
+            "Don",
+            "Don",
+            "Don"
+          ],
+          "rested_rz1": {
+            "don_cost": [
+              "Don"
+            ]
+          }
+        }
+      }
+    },
+    {
+      "turn": 5,
+      "player": "You",
+      "card_drawn": null,
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "play",
+          "card": "EB02-035",
+          "card_name": "Sanji & Pudding",
+          "effects": []
+        },
+        {
+          "type": "attack",
+          "attacker": "Kaido",
+          "attacker_code": "ST04-001",
+          "target": "Smoker [\"OP02-093\">OP02-093]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        }
+      ],
+      "snapshot": {
+        "You": {
+          "hand": [
+            "OP01-119",
+            "EB02-035",
+            "OP08-074",
+            "OP07-066",
+            "OP11-072",
+            "OP11-072"
+          ],
+          "board": [
+            "EB02-035"
+          ],
+          "trash": [
+            "OP08-076",
+            "OP11-070"
+          ],
+          "life": 4,
+          "deck": [
+            "OP08-074",
+            "ST04-003",
+            "ST04-014",
+            "ST04-016"
+          ],
+          "life_cards": [
+            "EB02-035",
+            "OP07-066",
+            "ST04-005",
+            "ST04-005"
+          ],
+          "don_cost": [
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don"
+          ],
+          "rested_rz1": {
+            "don_cost": [
+              "Don"
+            ]
+          },
+          "rested": {
+            "EB02-035": 1
+          }
+        },
+        "Opponent": {
+          "hand": [
+            "OP02-121",
+            "OP03-078",
+            "OP07-085",
+            "OP10-098",
+            "OP02-098",
+            "ST06-016",
+            "OP05-091"
+          ],
+          "trash": [
+            "ST19-003",
+            "OP02-106",
+            "OP02-119"
+          ],
+          "board": [
+            "ST19-002"
+          ],
+          "life": 3,
+          "deck": [
+            "EB01-049",
+            "EB02-050",
+            "OP02-096",
+            "OP02-110",
+            "OP02-114",
+            "OP03-097",
+            "ST06-006",
+            "ST06-008",
+            "ST19-004"
+          ],
+          "life_cards": [
+            "OP03-089",
+            "ST06-016",
+            "ST19-002"
+          ],
+          "don_cost": [
+            "Don",
+            "Don",
+            "Don"
+          ],
+          "attached_don": [
+            "Don"
+          ],
+          "stage": [
+            "ST06-017"
+          ],
+          "rested_rz1": {
+            "don_cost": [
+              "Don"
+            ]
+          },
+          "rested": {
+            "ST19-002": 1
+          }
+        }
+      }
+    },
+    {
+      "turn": 6,
+      "player": "Opponent",
+      "card_drawn": null,
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "activate",
+          "card": "ST06-017",
+          "card_name": "Marineford",
+          "effects": [
+            "Rest Marineford [\"ST06-017\">ST06-017]",
+            "Sanji & Pudding [\"EB02-035\">EB02-035] Cost -1"
+          ]
+        },
+        {
+          "type": "attach_don",
+          "amount": 2,
+          "to": "OP02-093",
+          "to_name": "Smoker",
+          "total": 2
+        },
+        {
+          "type": "activate",
+          "card": "OP02-093",
+          "card_name": "Smoker",
+          "effects": [
+            "Sanji & Pudding [\"EB02-035\">EB02-035] Cost -1"
+          ]
+        },
+        {
+          "type": "attack",
+          "attacker": "Smoker",
+          "attacker_code": "OP02-093",
+          "target": "Kaido [\"ST04-001\">ST04-001]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "play",
+          "card": "OP02-098",
+          "card_name": "Koby",
+          "effects": []
+        }
+      ],
+      "snapshot": {
+        "Opponent": {
+          "hand": [
+            "OP02-121",
+            "OP03-078",
+            "OP07-085",
+            "OP10-098",
+            "ST06-016",
+            "OP05-091",
+            "EB02-044"
+          ],
+          "board": [
+            "ST19-002",
+            "OP02-098"
+          ],
+          "trash": [
+            "ST19-003",
+            "OP02-106",
+            "OP02-119"
+          ],
+          "life": 3,
+          "deck": [
+            "EB01-049",
+            "EB02-050",
+            "OP02-096",
+            "OP02-110",
+            "OP02-114",
+            "OP03-097",
+            "ST06-006",
+            "ST06-008",
+            "ST19-004"
+          ],
+          "life_cards": [
+            "OP03-089",
+            "ST06-016",
+            "ST19-002"
+          ],
+          "don_cost": [
+            "Don",
+            "Don",
+            "Don",
+            "Don"
+          ],
+          "attached_don": [
+            "Don",
+            "Don"
+          ],
+          "stage": [
+            "ST06-017"
+          ],
+          "rested_rz1": {
+            "don_cost": [
+              "Don"
+            ]
+          },
+          "rested": {
+            "OP02-098": 1
+          }
+        },
+        "You": {
+          "hand": [
+            "OP01-119",
+            "EB02-035",
+            "OP08-074",
+            "OP07-066",
+            "OP11-072",
+            "OP11-072",
+            "OP07-066"
+          ],
+          "trash": [
+            "OP08-076",
+            "OP11-070"
+          ],
+          "board": [
+            "EB02-035"
+          ],
+          "life": 3,
+          "deck": [
+            "OP08-074",
+            "ST04-003",
+            "ST04-014",
+            "ST04-016"
+          ],
+          "life_cards": [
+            "EB02-035",
+            "ST04-005",
+            "ST04-005"
+          ],
+          "don_cost": [
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don"
+          ],
+          "rested_rz1": {
+            "don_cost": [
+              "Don"
+            ]
+          },
+          "rested": {
+            "EB02-035": 1
+          }
+        }
+      }
+    },
+    {
+      "turn": 7,
+      "player": "You",
+      "card_drawn": null,
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "play",
+          "card": "EB02-035",
+          "card_name": "Sanji & Pudding",
+          "effects": []
+        },
+        {
+          "type": "attack",
+          "attacker": "Kaido",
+          "attacker_code": "ST04-001",
+          "target": "Smoker [\"OP02-093\">OP02-093]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "attack",
+          "attacker": "Sanji & Pudding",
+          "attacker_code": "EB02-035",
+          "target": "Smoker [\"OP02-093\">OP02-093]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "play",
+          "card": "OP11-072",
+          "card_name": "Charlotte Montdor",
+          "effects": []
+        }
+      ],
+      "snapshot": {
+        "You": {
+          "hand": [
+            "OP01-119",
+            "OP08-074",
+            "OP07-066",
+            "OP11-072",
+            "OP07-066",
+            "ST04-016"
+          ],
+          "board": [
+            "EB02-035",
+            "EB02-035",
+            "OP11-072"
+          ],
+          "trash": [
+            "OP08-076",
+            "OP11-070"
+          ],
+          "life": 3,
+          "deck": [
+            "OP08-074",
+            "ST04-003",
+            "ST04-014"
+          ],
+          "life_cards": [
+            "EB02-035",
+            "ST04-005",
+            "ST04-005"
+          ],
+          "don_cost": [
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don"
+          ],
+          "rested_rz1": {
+            "don_cost": [
+              "Don"
+            ]
+          },
+          "rested": {
+            "EB02-035": 2,
+            "OP11-072": 1
+          }
+        },
+        "Opponent": {
+          "hand": [
+            "OP02-121",
+            "OP03-078",
+            "OP07-085",
+            "OP10-098",
+            "OP05-091",
+            "EB02-044",
+            "ST19-002"
+          ],
+          "trash": [
+            "ST19-003",
+            "OP02-106",
+            "OP02-119",
+            "ST06-016"
+          ],
+          "board": [
+            "ST19-002",
+            "OP02-098"
+          ],
+          "life": 2,
+          "deck": [
+            "EB01-049",
+            "EB02-050",
+            "OP02-096",
+            "OP02-110",
+            "OP02-114",
+            "OP03-097",
+            "ST06-006",
+            "ST06-008",
+            "ST19-004"
+          ],
+          "life_cards": [
+            "OP03-089",
+            "ST06-016"
+          ],
+          "don_cost": [
+            "Don",
+            "Don",
+            "Don",
+            "Don"
+          ],
+          "attached_don": [
+            "Don",
+            "Don"
+          ],
+          "stage": [
+            "ST06-017"
+          ],
+          "rested_rz1": {
+            "don_cost": [
+              "Don"
+            ]
+          },
+          "rested": {
+            "OP02-098": 1
+          }
+        }
+      }
+    },
+    {
+      "turn": 8,
+      "player": "Opponent",
+      "card_drawn": null,
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "attach_don",
+          "amount": 2,
+          "to": "OP02-093",
+          "to_name": "Smoker",
+          "total": 2
+        },
+        {
+          "type": "activate",
+          "card": "OP02-093",
+          "card_name": "Smoker",
+          "effects": [
+            "Sanji & Pudding [\"EB02-035\">EB02-035] Cost -1"
+          ]
+        },
+        {
+          "type": "activate",
+          "card": "ST06-017",
+          "card_name": "Marineford",
+          "effects": [
+            "Rest Marineford [\"ST06-017\">ST06-017]",
+            "Sanji & Pudding [\"EB02-035\">EB02-035] Cost -1"
+          ]
+        },
+        {
+          "type": "attach_don",
+          "amount": 2,
+          "to": "OP02-093",
+          "to_name": "Smoker",
+          "total": 4
+        },
+        {
+          "type": "attack",
+          "attacker": "Smoker",
+          "attacker_code": "OP02-093",
+          "target": "Kaido [\"ST04-001\">ST04-001]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": [
+            "OP07-066",
+            "OP07-066",
+            "OP08-074",
+            "OP11-072"
+          ]
+        },
+        {
+          "type": "play",
+          "card": "ST19-002",
+          "card_name": "Sengoku",
+          "effects": [
+            "Trash Issho [\"OP03-078\">OP03-078]",
+            "Trash Tashigi [\"ST06-006\">ST06-006]",
+            "Draw 3 Card"
+          ]
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP02-098",
+          "to_name": "Koby",
+          "total": 1
+        },
+        {
+          "type": "attack",
+          "attacker": "Koby",
+          "attacker_code": "OP02-098",
+          "target": "Kaido [\"ST04-001\">ST04-001]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "play",
+          "card": "OP03-089",
+          "card_name": "Brannew",
+          "effects": [
+            "<b>Reveal and Draw Hina [\"OP02-110\">OP02-110]</b>",
+            "Trash 2 Remaining Cards"
+          ]
+        }
+      ],
+      "snapshot": {
+        "Opponent": {
+          "hand": [
+            "OP02-121",
+            "OP07-085",
+            "OP10-098",
+            "OP05-091",
+            "EB02-044",
+            "EB02-044",
+            "OP03-097",
+            "OP02-110"
+          ],
+          "board": [
+            "ST19-002",
+            "OP02-098",
+            "ST19-002",
+            "OP03-089"
+          ],
+          "trash": [
+            "ST19-003",
+            "OP02-106",
+            "OP02-119",
+            "ST06-016",
+            "OP03-078",
+            "ST06-006",
+            "ST19-003",
+            "ST06-006"
+          ],
+          "life": 2,
+          "deck": [
+            "EB01-049",
+            "EB02-050",
+            "OP02-096",
+            "OP02-114",
+            "ST06-008",
+            "ST19-004"
+          ],
+          "life_cards": [
+            "OP03-089",
+            "ST06-016"
+          ],
+          "don_cost": [
+            "Don",
+            "Don",
+            "Don"
+          ],
+          "attached_don": [
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don"
+          ],
+          "stage": [
+            "ST06-017"
+          ],
+          "rested_rz1": {
+            "don_cost": [
+              "Don"
+            ]
+          },
+          "rested": {
+            "OP02-098": 1,
+            "ST19-002": 1,
+            "OP03-089": 1
+          }
+        },
+        "You": {
+          "hand": [
+            "OP01-119",
+            "ST04-016",
+            "EB02-035"
+          ],
+          "trash": [
+            "OP08-076",
+            "OP11-070",
+            "OP07-066",
+            "OP07-066",
+            "OP08-074",
+            "OP11-072"
+          ],
+          "board": [
+            "EB02-035",
+            "EB02-035",
+            "OP11-072"
+          ],
+          "life": 2,
+          "deck": [
+            "OP08-074",
+            "ST04-003",
+            "ST04-014"
+          ],
+          "life_cards": [
+            "ST04-005",
+            "ST04-005"
+          ],
+          "don_cost": [
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don"
+          ],
+          "rested_rz1": {
+            "don_cost": [
+              "Don"
+            ]
+          },
+          "rested": {
+            "EB02-035": 2,
+            "OP11-072": 1
+          }
+        }
+      }
+    },
+    {
+      "turn": 9,
+      "player": "You",
+      "card_drawn": null,
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "play",
+          "card": "OP08-069",
+          "card_name": "Charlotte Linlin",
+          "effects": []
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "ST04-001",
+          "to_name": "Kaido",
+          "total": 1
+        },
+        {
+          "type": "attack",
+          "attacker": "Sanji & Pudding",
+          "attacker_code": "EB02-035",
+          "target": "Smoker [\"OP02-093\">OP02-093]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": [
+            "OP05-091",
+            "EB02-044",
+            "EB02-044"
+          ]
+        },
+        {
+          "type": "attack",
+          "attacker": "Sanji & Pudding",
+          "attacker_code": "EB02-035",
+          "target": "Smoker [\"OP02-093\">OP02-093]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "attack",
+          "attacker": "Kaido",
+          "attacker_code": "ST04-001",
+          "target": "Smoker [\"OP02-093\">OP02-093]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "attack",
+          "attacker": "Charlotte Montdor",
+          "attacker_code": "OP11-072",
+          "target": "Koby [\"OP02-098\">OP02-098]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": [
+            "OP02-110"
+          ]
+        }
+      ],
+      "snapshot": {
+        "You": {
+          "hand": [
+            "OP01-119",
+            "ST04-016",
+            "EB02-035"
+          ],
+          "board": [
+            "EB02-035",
+            "EB02-035",
+            "OP11-072",
+            "OP08-069"
+          ],
+          "trash": [
+            "OP08-076",
+            "OP11-070",
+            "OP07-066",
+            "OP07-066",
+            "OP08-074",
+            "OP11-072"
+          ],
+          "life": 2,
+          "deck": [
+            "OP08-074",
+            "ST04-003",
+            "ST04-014"
+          ],
+          "life_cards": [
+            "ST04-005",
+            "ST04-005"
+          ],
+          "don_cost": [
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don"
+          ],
+          "attached_don": [
+            "Don"
+          ],
+          "rested": {
+            "EB02-035": 2,
+            "OP11-072": 1,
+            "OP08-069": 1
+          }
+        },
+        "Opponent": {
+          "hand": [
+            "OP02-121",
+            "OP07-085",
+            "ST06-016",
+            "OP03-089"
+          ],
+          "trash": [
+            "ST19-003",
+            "OP02-106",
+            "OP02-119",
+            "ST06-016",
+            "OP03-078",
+            "ST06-006",
+            "ST19-003",
+            "ST06-006",
+            "OP10-098",
+            "OP03-097",
+            "OP05-091",
+            "EB02-044",
+            "EB02-044",
+            "OP02-110"
+          ],
+          "board": [
+            "ST19-002",
+            "OP02-098",
+            "ST19-002",
+            "OP03-089"
+          ],
+          "life": 0,
+          "deck": [
+            "EB01-049",
+            "EB02-050",
+            "OP02-096",
+            "OP02-114",
+            "ST06-008",
+            "ST19-004"
+          ],
+          "don_cost": [
+            "Don",
+            "Don",
+            "Don"
+          ],
+          "attached_don": [
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don"
+          ],
+          "stage": [
+            "ST06-017"
+          ],
+          "rested_rz1": {
+            "don_cost": [
+              "Don"
+            ]
+          },
+          "rested": {
+            "OP02-098": 1,
+            "ST19-002": 1,
+            "OP03-089": 1
+          }
+        }
+      }
+    },
+    {
+      "turn": 10,
+      "player": "Opponent",
+      "card_drawn": null,
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "play",
+          "card": "OP07-085",
+          "card_name": "Stussy",
+          "effects": []
+        },
+        {
+          "type": "activate",
+          "card": "ST06-017",
+          "card_name": "Marineford",
+          "effects": [
+            "Rest Marineford [\"ST06-017\">ST06-017]",
+            "Charlotte Linlin [\"OP08-069\">OP08-069] Cost -1"
+          ]
+        },
+        {
+          "type": "attack",
+          "attacker": "Smoker",
+          "attacker_code": "OP02-093",
+          "target": "Kaido [\"ST04-001\">ST04-001]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP02-098",
+          "to_name": "Koby",
+          "total": 1
+        },
+        {
+          "type": "attack",
+          "attacker": "Koby",
+          "attacker_code": "OP02-098",
+          "target": "Kaido [\"ST04-001\">ST04-001]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": [
+            "ST04-005"
+          ]
+        }
+      ],
+      "snapshot": {
+        "Opponent": {
+          "hand": [
+            "OP02-121",
+            "ST06-016",
+            "OP03-089",
+            "ST06-008"
+          ],
+          "board": [
+            "ST19-002",
+            "OP02-098",
+            "ST19-002",
+            "OP03-089",
+            "OP07-085"
+          ],
+          "trash": [
+            "ST19-003",
+            "OP02-106",
+            "OP02-119",
+            "ST06-016",
+            "OP03-078",
+            "ST06-006",
+            "ST19-003",
+            "ST06-006",
+            "OP10-098",
+            "OP03-097",
+            "OP05-091",
+            "EB02-044",
+            "EB02-044",
+            "OP02-110"
+          ],
+          "life": 0,
+          "deck": [
+            "EB01-049",
+            "EB02-050",
+            "OP02-096",
+            "OP02-114",
+            "ST19-004"
+          ],
+          "don_cost": [
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don"
+          ],
+          "attached_don": [
+            "Don"
+          ],
+          "stage": [
+            "ST06-017"
+          ],
+          "rested_rz1": {
+            "don_cost": [
+              "Don",
+              "Don",
+              "Don",
+              "Don",
+              "Don"
+            ]
+          },
+          "rested": {
+            "OP02-098": 1,
+            "OP07-085": 1
+          }
+        },
+        "You": {
+          "hand": [
+            "OP01-119",
+            "ST04-016",
+            "EB02-035"
+          ],
+          "trash": [
+            "OP08-076",
+            "OP11-070",
+            "OP07-066",
+            "OP07-066",
+            "OP08-074",
+            "OP11-072",
+            "ST04-005"
+          ],
+          "board": [
+            "EB02-035",
+            "EB02-035",
+            "OP11-072",
+            "OP08-069"
+          ],
+          "life": 1,
+          "deck": [
+            "OP08-074",
+            "ST04-003",
+            "ST04-014"
+          ],
+          "life_cards": [
+            "ST04-005"
+          ],
+          "don_cost": [
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don"
+          ],
+          "attached_don": [
+            "Don"
+          ],
+          "rested": {
+            "EB02-035": 2,
+            "OP11-072": 1,
+            "OP08-069": 1
+          }
+        }
+      }
+    },
+    {
+      "turn": 11,
+      "player": "You",
+      "card_drawn": null,
+      "don_drawn": 0,
+      "actions": [
+        {
+          "type": "attack",
+          "attacker": "Kaido",
+          "attacker_code": "ST04-001",
+          "target": "Smoker [\"OP02-093\">OP02-093]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": [
+            "OP03-089"
+          ]
+        },
+        {
+          "type": "attack",
+          "attacker": "Sanji & Pudding",
+          "attacker_code": "EB02-035",
+          "target": "Smoker [\"OP02-093\">OP02-093]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        }
+      ],
+      "snapshot": {}
+    }
+  ]
+}

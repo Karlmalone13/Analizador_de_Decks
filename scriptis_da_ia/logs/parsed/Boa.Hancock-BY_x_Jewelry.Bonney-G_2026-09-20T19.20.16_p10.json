@@ -1,0 +1,2018 @@
+{
+  "meta": {
+    "players": {
+      "p1": {
+        "name": "You",
+        "leader": {
+          "name": "Boa Hancock",
+          "code": "OP14-041"
+        }
+      },
+      "p2": {
+        "name": "Opponent",
+        "leader": {
+          "name": "Jewelry Bonney",
+          "code": "OP07-019"
+        }
+      }
+    },
+    "goes_first": null
+  },
+  "total_turns": 14,
+  "turns": [
+    {
+      "turn": 1,
+      "player": "You",
+      "card_drawn": null,
+      "don_drawn": 1,
+      "actions": [
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP14-041",
+          "to_name": "Boa Hancock",
+          "total": 1
+        }
+      ],
+      "snapshot": {
+        "You": {
+          "hand": [
+            "OP14-105",
+            "OP06-106",
+            "OP06-115",
+            "OP16-113",
+            "OP14-112"
+          ],
+          "board": [],
+          "trash": [],
+          "life": 4,
+          "life_cards": [
+            "OP14-104",
+            "OP14-114",
+            "OP15-113",
+            "OP16-113"
+          ],
+          "attached_don": [
+            "Don"
+          ]
+        },
+        "Opponent": {
+          "hand": [
+            "OP01-058",
+            "EB01-015",
+            "ST02-007",
+            "OP07-026",
+            "OP07-029"
+          ],
+          "trash": [],
+          "board": [],
+          "life": 5,
+          "deck": [
+            "OP01-051",
+            "OP04-031",
+            "OP04-119",
+            "OP05-030",
+            "OP05-034",
+            "OP07-021",
+            "ST02-013"
+          ],
+          "life_cards": [
+            "EB01-015",
+            "OP05-037",
+            "OP06-035",
+            "OP06-035",
+            "ST16-004"
+          ]
+        }
+      }
+    },
+    {
+      "turn": 2,
+      "player": "Opponent",
+      "card_drawn": null,
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "play",
+          "card": "ST02-007",
+          "card_name": "Jewelry Bonney",
+          "effects": [
+            "Rest 1 Don",
+            "Rest Jewelry Bonney [\"ST02-007\">ST02-007]",
+            "<b>Reveal and Draw Jewelry Bonney [\"ST02-007\">ST02-007]</b>"
+          ]
+        }
+      ],
+      "snapshot": {
+        "Opponent": {
+          "hand": [
+            "OP01-058",
+            "EB01-015",
+            "OP07-026",
+            "OP07-029",
+            "ST02-013",
+            "ST02-007"
+          ],
+          "board": [
+            "ST02-007"
+          ],
+          "trash": [],
+          "life": 5,
+          "deck": [
+            "EB01-015",
+            "OP01-051",
+            "OP04-031",
+            "OP04-119",
+            "OP05-030",
+            "OP05-034",
+            "OP07-021",
+            "OP07-026",
+            "OP07-029"
+          ],
+          "life_cards": [
+            "EB01-015",
+            "OP05-037",
+            "OP06-035",
+            "OP06-035",
+            "ST16-004"
+          ],
+          "don_cost": [
+            "Don",
+            "Don"
+          ],
+          "rested_rz1": {
+            "don_cost": [
+              "Don"
+            ]
+          },
+          "rested": {
+            "ST02-007": 1
+          }
+        },
+        "You": {
+          "hand": [
+            "OP14-105",
+            "OP06-106",
+            "OP06-115",
+            "OP16-113",
+            "OP14-112"
+          ],
+          "trash": [],
+          "board": [],
+          "life": 4,
+          "life_cards": [
+            "OP14-104",
+            "OP14-114",
+            "OP15-113",
+            "OP16-113"
+          ],
+          "attached_don": [
+            "Don"
+          ]
+        }
+      }
+    },
+    {
+      "turn": 3,
+      "player": "You",
+      "card_drawn": null,
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "attack",
+          "attacker": "Boa Hancock",
+          "attacker_code": "OP14-041",
+          "target": "Jewelry Bonney [\"OP07-019\">OP07-019]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": [
+            "OP07-026"
+          ]
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP14-041",
+          "to_name": "Boa Hancock",
+          "total": 1
+        },
+        {
+          "type": "play",
+          "card": "OP06-106",
+          "card_name": "Kouzuki Hiyori",
+          "effects": [
+            "Takes Bottom Life",
+            "Added card to top of Life from Hand"
+          ]
+        }
+      ],
+      "snapshot": {
+        "You": {
+          "hand": [
+            "OP14-105",
+            "OP06-115",
+            "OP16-113",
+            "OP14-112",
+            "OP16-119"
+          ],
+          "board": [
+            "OP06-106"
+          ],
+          "trash": [],
+          "life": 4,
+          "life_cards": [
+            "OP14-104",
+            "OP14-114",
+            "OP15-113",
+            "OP16-113"
+          ],
+          "don_cost": [
+            "Don",
+            "Don"
+          ],
+          "attached_don": [
+            "Don"
+          ],
+          "rested_rz1": {
+            "don_cost": [
+              "Don"
+            ]
+          },
+          "rested": {
+            "OP06-106": 1
+          }
+        },
+        "Opponent": {
+          "hand": [
+            "OP01-058",
+            "EB01-015",
+            "OP07-029",
+            "ST02-013",
+            "ST02-007"
+          ],
+          "trash": [
+            "OP07-026"
+          ],
+          "board": [
+            "ST02-007"
+          ],
+          "life": 5,
+          "deck": [
+            "EB01-015",
+            "OP01-051",
+            "OP04-031",
+            "OP04-119",
+            "OP05-030",
+            "OP05-034",
+            "OP07-021",
+            "OP07-026",
+            "OP07-029"
+          ],
+          "life_cards": [
+            "EB01-015",
+            "OP05-037",
+            "OP06-035",
+            "OP06-035",
+            "ST16-004"
+          ],
+          "don_cost": [
+            "Don",
+            "Don"
+          ],
+          "rested_rz1": {
+            "don_cost": [
+              "Don"
+            ]
+          },
+          "rested": {
+            "ST02-007": 1
+          }
+        }
+      }
+    },
+    {
+      "turn": 4,
+      "player": "Opponent",
+      "card_drawn": null,
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "activate",
+          "card": "ST02-007",
+          "card_name": "Jewelry Bonney",
+          "effects": [
+            "Rest 1 Don",
+            "Rest Jewelry Bonney [\"ST02-007\">ST02-007]",
+            "<b>Reveal and Draw Uroge [\"OP07-021\">OP07-021]</b>",
+            "Rest 1 Don",
+            "Rest Jewelry Bonney [\"ST02-007\">ST02-007]",
+            "<b>Reveal and Draw Scratchmen Apoo [\"EB01-015\">EB01-015]</b>"
+          ]
+        },
+        {
+          "type": "play",
+          "card": "EB01-015",
+          "card_name": "Scratchmen Apoo",
+          "effects": [
+            "Rest Kouzuki Hiyori [\"OP06-106\">OP06-106]"
+          ]
+        },
+        {
+          "type": "attack",
+          "attacker": "Jewelry Bonney",
+          "attacker_code": "OP07-019",
+          "target": "Boa Hancock [\"OP14-041\">OP14-041]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "play",
+          "card": "ST02-007",
+          "card_name": "Jewelry Bonney",
+          "effects": []
+        }
+      ],
+      "snapshot": {
+        "Opponent": {
+          "hand": [
+            "OP01-058",
+            "OP07-029",
+            "ST02-013",
+            "OP07-021",
+            "OP07-021",
+            "EB01-015"
+          ],
+          "board": [
+            "ST02-007",
+            "EB01-015",
+            "ST02-007"
+          ],
+          "trash": [
+            "OP07-026"
+          ],
+          "life": 5,
+          "deck": [
+            "OP01-051",
+            "OP04-031",
+            "OP04-119",
+            "OP05-030",
+            "OP05-034",
+            "OP05-037",
+            "OP07-026",
+            "OP07-029",
+            "ST02-007",
+            "ST02-013"
+          ],
+          "life_cards": [
+            "EB01-015",
+            "OP05-037",
+            "OP06-035",
+            "OP06-035",
+            "ST16-004"
+          ],
+          "don_cost": [
+            "Don",
+            "Don",
+            "Don",
+            "Don"
+          ],
+          "rested_rz1": {
+            "don_cost": [
+              "Don"
+            ]
+          },
+          "rested": {
+            "ST02-007": 2,
+            "EB01-015": 1
+          }
+        },
+        "You": {
+          "hand": [
+            "OP14-105",
+            "OP14-112",
+            "OP16-119"
+          ],
+          "trash": [
+            "OP06-115",
+            "OP16-113"
+          ],
+          "board": [
+            "OP06-106"
+          ],
+          "life": 4,
+          "life_cards": [
+            "OP14-104",
+            "OP14-114",
+            "OP15-113",
+            "OP16-113"
+          ],
+          "don_cost": [
+            "Don",
+            "Don"
+          ],
+          "attached_don": [
+            "Don"
+          ],
+          "rested_rz1": {
+            "don_cost": [
+              "Don"
+            ]
+          },
+          "rested": {
+            "OP06-106": 1
+          }
+        }
+      }
+    },
+    {
+      "turn": 5,
+      "player": "You",
+      "card_drawn": null,
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "attack",
+          "attacker": "Boa Hancock",
+          "attacker_code": "OP14-041",
+          "target": "Jewelry Bonney [\"OP07-019\">OP07-019]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "attach_don",
+          "amount": 5,
+          "to": "OP06-106",
+          "to_name": "Kouzuki Hiyori",
+          "total": 5
+        },
+        {
+          "type": "attack",
+          "attacker": "Kouzuki Hiyori",
+          "attacker_code": "OP06-106",
+          "target": "Jewelry Bonney [\"OP07-019\">OP07-019]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": [
+            "OP07-021"
+          ]
+        }
+      ],
+      "snapshot": {
+        "You": {
+          "hand": [
+            "OP14-105",
+            "OP14-112",
+            "OP16-119",
+            "OP06-115"
+          ],
+          "board": [
+            "OP06-106"
+          ],
+          "trash": [
+            "OP06-115",
+            "OP16-113"
+          ],
+          "life": 4,
+          "life_cards": [
+            "OP14-104",
+            "OP14-114",
+            "OP15-113",
+            "OP16-113"
+          ],
+          "attached_don": [
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don"
+          ],
+          "rested": {
+            "OP06-106": 1
+          }
+        },
+        "Opponent": {
+          "hand": [
+            "OP01-058",
+            "OP07-029",
+            "ST02-013",
+            "OP07-021",
+            "EB01-015",
+            "ST16-004"
+          ],
+          "trash": [
+            "OP07-026",
+            "OP07-021"
+          ],
+          "board": [
+            "ST02-007",
+            "EB01-015",
+            "ST02-007"
+          ],
+          "life": 4,
+          "deck": [
+            "OP01-051",
+            "OP04-031",
+            "OP04-119",
+            "OP05-030",
+            "OP05-034",
+            "OP05-037",
+            "OP07-026",
+            "OP07-029",
+            "ST02-007",
+            "ST02-013"
+          ],
+          "life_cards": [
+            "EB01-015",
+            "OP05-037",
+            "OP06-035",
+            "OP06-035"
+          ],
+          "don_cost": [
+            "Don",
+            "Don",
+            "Don",
+            "Don"
+          ],
+          "rested_rz1": {
+            "don_cost": [
+              "Don"
+            ]
+          },
+          "rested": {
+            "ST02-007": 2,
+            "EB01-015": 1
+          }
+        }
+      }
+    },
+    {
+      "turn": 6,
+      "player": "Opponent",
+      "card_drawn": null,
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "play",
+          "card": "OP07-021",
+          "card_name": "Uroge",
+          "effects": [
+            "Activate 1 Don"
+          ]
+        },
+        {
+          "type": "activate",
+          "card": "ST02-007",
+          "card_name": "Jewelry Bonney",
+          "effects": [
+            "Rest 1 Don",
+            "Rest Jewelry Bonney [\"ST02-007\">ST02-007]",
+            "<b>Reveal and Draw Cavendish [\"EB01-012\">EB01-012]</b>"
+          ]
+        },
+        {
+          "type": "play",
+          "card": "EB01-015",
+          "card_name": "Scratchmen Apoo",
+          "effects": []
+        },
+        {
+          "type": "attack",
+          "attacker": "Jewelry Bonney",
+          "attacker_code": "OP07-019",
+          "target": "Kouzuki Hiyori [\"OP06-106\">OP06-106]",
+          "result": "hit",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": []
+        }
+      ],
+      "snapshot": {
+        "Opponent": {
+          "hand": [
+            "OP01-058",
+            "OP07-029",
+            "ST02-013",
+            "ST16-004",
+            "OP05-030",
+            "EB01-012"
+          ],
+          "board": [
+            "ST02-007",
+            "EB01-015",
+            "ST02-007",
+            "OP07-021",
+            "EB01-015"
+          ],
+          "trash": [
+            "OP07-026",
+            "OP07-021"
+          ],
+          "life": 4,
+          "deck": [
+            "OP01-051",
+            "OP01-058",
+            "OP04-031",
+            "OP04-119",
+            "OP05-034",
+            "OP05-037",
+            "OP07-026",
+            "OP07-029",
+            "ST02-007",
+            "ST02-013"
+          ],
+          "life_cards": [
+            "EB01-015",
+            "OP05-037",
+            "OP06-035",
+            "OP06-035"
+          ],
+          "don_cost": [
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don"
+          ],
+          "rested": {
+            "ST02-007": 1,
+            "OP07-021": 1,
+            "EB01-015": 1
+          }
+        },
+        "You": {
+          "hand": [
+            "OP14-105",
+            "OP14-112",
+            "OP16-119",
+            "OP06-115"
+          ],
+          "trash": [
+            "OP06-115",
+            "OP16-113",
+            "OP06-106"
+          ],
+          "board": [],
+          "life": 4,
+          "life_cards": [
+            "OP14-104",
+            "OP14-114",
+            "OP15-113",
+            "OP16-113"
+          ],
+          "don_cost": [
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don"
+          ],
+          "rested_rz1": {
+            "don_cost": [
+              "Don",
+              "Don",
+              "Don",
+              "Don",
+              "Don"
+            ]
+          }
+        }
+      }
+    },
+    {
+      "turn": 7,
+      "player": "You",
+      "card_drawn": null,
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "play",
+          "card": "OP11-054",
+          "card_name": "Nami",
+          "effects": [
+            "Draw 3 Card"
+          ]
+        },
+        {
+          "type": "attach_don",
+          "amount": 2,
+          "to": "OP14-041",
+          "to_name": "Boa Hancock",
+          "total": 2
+        },
+        {
+          "type": "attack",
+          "attacker": "Boa Hancock",
+          "attacker_code": "OP14-041",
+          "target": "Jewelry Bonney [\"ST02-007\">ST02-007]",
+          "result": "hit",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": []
+        }
+      ],
+      "snapshot": {
+        "You": {
+          "hand": [
+            "OP14-112",
+            "OP16-119",
+            "OP06-115",
+            "OP14-112",
+            "OP14-112"
+          ],
+          "board": [
+            "OP11-054"
+          ],
+          "trash": [
+            "OP06-115",
+            "OP16-113",
+            "OP06-106"
+          ],
+          "life": 4,
+          "deck": [
+            "OP14-105",
+            "OP14-107"
+          ],
+          "life_cards": [
+            "OP14-104",
+            "OP14-114",
+            "OP15-113",
+            "OP16-113"
+          ],
+          "don_cost": [
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don"
+          ],
+          "attached_don": [
+            "Don",
+            "Don"
+          ],
+          "rested_rz1": {
+            "don_cost": [
+              "Don",
+              "Don",
+              "Don"
+            ]
+          },
+          "rested": {
+            "OP11-054": 1
+          }
+        },
+        "Opponent": {
+          "hand": [
+            "OP01-058",
+            "OP07-029",
+            "ST02-013",
+            "ST16-004",
+            "OP05-030",
+            "EB01-012"
+          ],
+          "trash": [
+            "OP07-026",
+            "OP07-021",
+            "ST02-007"
+          ],
+          "board": [
+            "EB01-015",
+            "ST02-007",
+            "OP07-021",
+            "EB01-015"
+          ],
+          "life": 4,
+          "deck": [
+            "OP01-051",
+            "OP01-058",
+            "OP04-031",
+            "OP04-119",
+            "OP05-034",
+            "OP05-037",
+            "OP07-026",
+            "OP07-029",
+            "ST02-007",
+            "ST02-013"
+          ],
+          "life_cards": [
+            "EB01-015",
+            "OP05-037",
+            "OP06-035",
+            "OP06-035"
+          ],
+          "don_cost": [
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don"
+          ],
+          "rested_rz1": {
+            "don_cost": [
+              "Don"
+            ]
+          },
+          "rested": {
+            "OP07-021": 1,
+            "EB01-015": 1
+          }
+        }
+      }
+    },
+    {
+      "turn": 8,
+      "player": "Opponent",
+      "card_drawn": null,
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "play",
+          "card": "EB01-012",
+          "card_name": "Cavendish",
+          "effects": [
+            "Activate 1 Don",
+            "Activate 1 Don"
+          ]
+        },
+        {
+          "type": "attach_don",
+          "amount": 2,
+          "to": "OP07-019",
+          "to_name": "Jewelry Bonney",
+          "total": 2
+        },
+        {
+          "type": "attack",
+          "attacker": "Jewelry Bonney",
+          "attacker_code": "OP07-019",
+          "target": "Nami [\"OP11-054\">OP11-054]",
+          "result": null,
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP07-021",
+          "to_name": "Uroge",
+          "total": 1
+        },
+        {
+          "type": "attack",
+          "attacker": "Uroge",
+          "attacker_code": "OP07-021",
+          "target": "Boa Hancock [\"OP14-041\">OP14-041]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "activate",
+          "card": "ST02-007",
+          "card_name": "Jewelry Bonney",
+          "effects": [
+            "Rest 1 Don",
+            "Rest Jewelry Bonney [\"ST02-007\">ST02-007]",
+            "<b>Reveal and Draw Uroge [\"OP07-021\">OP07-021]</b>"
+          ]
+        }
+      ],
+      "snapshot": {
+        "Opponent": {
+          "hand": [
+            "OP01-058",
+            "OP07-029",
+            "ST02-013",
+            "ST16-004",
+            "OP05-030",
+            "OP04-031",
+            "OP07-021"
+          ],
+          "board": [
+            "EB01-015",
+            "ST02-007",
+            "OP07-021",
+            "EB01-015",
+            "EB01-012"
+          ],
+          "trash": [
+            "OP07-026",
+            "OP07-021",
+            "ST02-007"
+          ],
+          "life": 4,
+          "deck": [
+            "EB01-012",
+            "OP01-051",
+            "OP01-058",
+            "OP04-119",
+            "OP05-034",
+            "OP05-037",
+            "OP06-035",
+            "OP07-021",
+            "OP07-026",
+            "OP07-029",
+            "ST02-007",
+            "ST02-013",
+            "ST16-004"
+          ],
+          "life_cards": [
+            "EB01-015",
+            "OP05-037",
+            "OP06-035",
+            "OP06-035"
+          ],
+          "don_cost": [
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don"
+          ],
+          "attached_don": [
+            "Don",
+            "Don",
+            "Don"
+          ],
+          "rested_rz1": {
+            "don_cost": [
+              "Don"
+            ]
+          },
+          "rested": {
+            "ST02-007": 1,
+            "OP07-021": 1,
+            "EB01-012": 1
+          }
+        },
+        "You": {
+          "hand": [
+            "OP14-112",
+            "OP16-119",
+            "OP14-112",
+            "OP14-112",
+            "OP15-113"
+          ],
+          "trash": [
+            "OP06-115",
+            "OP16-113",
+            "OP06-106",
+            "OP06-115",
+            "OP11-054"
+          ],
+          "board": [],
+          "life": 3,
+          "deck": [
+            "OP14-105",
+            "OP14-107"
+          ],
+          "life_cards": [
+            "OP14-104",
+            "OP14-114",
+            "OP16-113"
+          ],
+          "don_cost": [
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don"
+          ],
+          "attached_don": [
+            "Don",
+            "Don"
+          ],
+          "rested_rz1": {
+            "don_cost": [
+              "Don",
+              "Don",
+              "Don"
+            ]
+          }
+        }
+      }
+    },
+    {
+      "turn": 9,
+      "player": "You",
+      "card_drawn": null,
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "play",
+          "card": "OP16-119",
+          "card_name": "Marshall D. Teach",
+          "effects": [
+            "Added card to top of Life from Hand"
+          ]
+        },
+        {
+          "type": "attack",
+          "attacker": "Boa Hancock",
+          "attacker_code": "OP14-041",
+          "target": "Uroge [\"OP07-021\">OP07-021]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": [
+            "OP05-030"
+          ]
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP14-041",
+          "to_name": "Boa Hancock",
+          "total": 1
+        }
+      ],
+      "snapshot": {
+        "You": {
+          "hand": [
+            "OP14-112",
+            "OP14-112",
+            "OP14-112",
+            "OP15-113",
+            "OP16-119"
+          ],
+          "board": [
+            "OP16-119"
+          ],
+          "trash": [
+            "OP06-115",
+            "OP16-113",
+            "OP06-106",
+            "OP06-115",
+            "OP11-054"
+          ],
+          "life": 4,
+          "deck": [
+            "OP07-057",
+            "OP14-105",
+            "OP14-107",
+            "OP15-113"
+          ],
+          "life_cards": [
+            "OP14-104",
+            "OP14-114",
+            "OP16-113",
+            "OP17-109"
+          ],
+          "don_cost": [
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don"
+          ],
+          "attached_don": [
+            "Don"
+          ],
+          "rested_rz1": {
+            "don_cost": [
+              "Don",
+              "Don",
+              "Don",
+              "Don"
+            ]
+          },
+          "rested": {
+            "OP16-119": 1
+          }
+        },
+        "Opponent": {
+          "hand": [
+            "OP01-058",
+            "OP07-029",
+            "ST02-013",
+            "ST16-004",
+            "OP04-031",
+            "OP07-021"
+          ],
+          "trash": [
+            "OP07-026",
+            "OP07-021",
+            "ST02-007",
+            "OP05-030"
+          ],
+          "board": [
+            "EB01-015",
+            "ST02-007",
+            "OP07-021",
+            "EB01-015",
+            "EB01-012"
+          ],
+          "life": 4,
+          "deck": [
+            "EB01-012",
+            "OP01-051",
+            "OP01-058",
+            "OP04-119",
+            "OP05-034",
+            "OP05-037",
+            "OP06-035",
+            "OP07-021",
+            "OP07-026",
+            "OP07-029",
+            "ST02-007",
+            "ST02-013",
+            "ST16-004"
+          ],
+          "life_cards": [
+            "EB01-015",
+            "OP05-037",
+            "OP06-035",
+            "OP06-035"
+          ],
+          "don_cost": [
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don"
+          ],
+          "attached_don": [
+            "Don",
+            "Don",
+            "Don"
+          ],
+          "rested_rz1": {
+            "don_cost": [
+              "Don"
+            ]
+          },
+          "rested": {
+            "ST02-007": 1,
+            "OP07-021": 1,
+            "EB01-012": 1
+          }
+        }
+      }
+    },
+    {
+      "turn": 10,
+      "player": "Opponent",
+      "card_drawn": null,
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "play",
+          "card": "ST16-004",
+          "card_name": "Shanks",
+          "effects": [
+            "Destroy Marshall D. Teach [\"OP16-119\">OP16-119]"
+          ]
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP07-019",
+          "to_name": "Jewelry Bonney",
+          "total": 1
+        },
+        {
+          "type": "attack",
+          "attacker": "Jewelry Bonney",
+          "attacker_code": "OP07-019",
+          "target": "Boa Hancock [\"OP14-041\">OP14-041]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "attack",
+          "attacker": "Cavendish",
+          "attacker_code": "EB01-012",
+          "target": "Boa Hancock [\"OP14-041\">OP14-041]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "activate",
+          "card": "EB01-012",
+          "card_name": "Cavendish",
+          "effects": [
+            "Activate 1 Don",
+            "Activate 1 Don"
+          ]
+        },
+        {
+          "type": "activate",
+          "card": "ST02-007",
+          "card_name": "Jewelry Bonney",
+          "effects": [
+            "Rest 1 Don",
+            "Rest Jewelry Bonney [\"ST02-007\">ST02-007]",
+            "<b>Reveal and Draw Scratchmen Apoo [\"EB01-015\">EB01-015]</b>"
+          ]
+        },
+        {
+          "type": "attack",
+          "attacker": "Uroge",
+          "attacker_code": "OP07-021",
+          "target": "Boa Hancock [\"OP14-041\">OP14-041]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        }
+      ],
+      "snapshot": {
+        "Opponent": {
+          "hand": [
+            "OP01-058",
+            "OP07-029",
+            "ST02-013",
+            "OP04-031",
+            "OP07-021",
+            "ST02-007",
+            "EB01-015"
+          ],
+          "board": [
+            "ST02-007",
+            "OP07-021",
+            "EB01-015",
+            "EB01-012",
+            "ST16-004"
+          ],
+          "trash": [
+            "OP07-026",
+            "OP07-021",
+            "ST02-007",
+            "OP05-030",
+            "EB01-015"
+          ],
+          "life": 4,
+          "deck": [
+            "EB01-012",
+            "OP01-051",
+            "OP01-058",
+            "OP04-119",
+            "OP05-034",
+            "OP05-037",
+            "OP06-035",
+            "OP07-021",
+            "OP07-026",
+            "OP07-029",
+            "ST02-013",
+            "ST16-004"
+          ],
+          "life_cards": [
+            "EB01-015",
+            "OP05-037",
+            "OP06-035",
+            "OP06-035"
+          ],
+          "don_cost": [
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don"
+          ],
+          "attached_don": [
+            "Don"
+          ],
+          "rested_rz1": {
+            "don_cost": [
+              "Don"
+            ]
+          },
+          "rested": {
+            "ST02-007": 1,
+            "OP07-021": 1,
+            "EB01-012": 1,
+            "ST16-004": 1
+          }
+        },
+        "You": {
+          "hand": [
+            "OP14-112",
+            "OP14-112",
+            "OP14-112",
+            "OP15-113",
+            "OP16-119",
+            "OP17-109",
+            "OP14-114",
+            "OP14-104"
+          ],
+          "trash": [
+            "OP06-115",
+            "OP16-113",
+            "OP06-106",
+            "OP06-115",
+            "OP11-054",
+            "OP16-119"
+          ],
+          "board": [
+            "OP14-114",
+            "OP16-113"
+          ],
+          "life": 1,
+          "deck": [
+            "OP07-057",
+            "OP14-105",
+            "OP14-107",
+            "OP15-113"
+          ],
+          "life_cards": [
+            "OP14-104"
+          ],
+          "don_cost": [
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don"
+          ],
+          "attached_don": [
+            "Don"
+          ],
+          "rested_rz1": {
+            "don_cost": [
+              "Don",
+              "Don",
+              "Don",
+              "Don"
+            ]
+          }
+        }
+      }
+    },
+    {
+      "turn": 11,
+      "player": "You",
+      "card_drawn": null,
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "play",
+          "card": "OP16-119",
+          "card_name": "Marshall D. Teach",
+          "effects": [
+            "Added card to top of Life from Hand"
+          ]
+        },
+        {
+          "type": "attach_don",
+          "amount": 2,
+          "to": "OP14-041",
+          "to_name": "Boa Hancock",
+          "total": 2
+        },
+        {
+          "type": "attack",
+          "attacker": "Boa Hancock",
+          "attacker_code": "OP14-041",
+          "target": "Uroge [\"OP07-021\">OP07-021]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": [
+            "OP07-021",
+            "ST02-007",
+            "EB01-015"
+          ]
+        },
+        {
+          "type": "attack",
+          "attacker": "Boa Marigold",
+          "attacker_code": "OP16-113",
+          "target": "Uroge [\"OP07-021\">OP07-021]",
+          "result": "hit",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "attack",
+          "attacker": "Ran",
+          "attacker_code": "OP14-114",
+          "target": "Jewelry Bonney [\"OP07-019\">OP07-019]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        }
+      ],
+      "snapshot": {
+        "You": {
+          "hand": [
+            "OP14-112",
+            "OP14-112",
+            "OP14-112",
+            "OP15-113",
+            "OP17-109",
+            "OP14-114",
+            "OP14-104",
+            "OP14-112"
+          ],
+          "board": [
+            "OP14-114",
+            "OP16-113",
+            "OP16-119"
+          ],
+          "trash": [
+            "OP06-115",
+            "OP16-113",
+            "OP06-106",
+            "OP06-115",
+            "OP11-054",
+            "OP16-119"
+          ],
+          "life": 2,
+          "deck": [
+            "OP07-057",
+            "OP11-054",
+            "OP14-107",
+            "OP15-113",
+            "OP17-109"
+          ],
+          "life_cards": [
+            "OP14-104",
+            "OP14-105"
+          ],
+          "don_cost": [
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don"
+          ],
+          "attached_don": [
+            "Don",
+            "Don"
+          ],
+          "rested_rz1": {
+            "don_cost": [
+              "Don",
+              "Don",
+              "Don"
+            ]
+          },
+          "rested": {
+            "OP14-114": 1,
+            "OP16-113": 1,
+            "OP16-119": 1
+          }
+        },
+        "Opponent": {
+          "hand": [
+            "OP01-058",
+            "OP07-029",
+            "ST02-013",
+            "OP04-031",
+            "OP05-037"
+          ],
+          "trash": [
+            "OP07-026",
+            "OP07-021",
+            "ST02-007",
+            "OP05-030",
+            "EB01-015",
+            "OP07-021",
+            "ST02-007",
+            "EB01-015",
+            "OP07-021"
+          ],
+          "board": [
+            "ST02-007",
+            "EB01-015",
+            "EB01-012",
+            "ST16-004"
+          ],
+          "life": 3,
+          "deck": [
+            "EB01-012",
+            "OP01-051",
+            "OP01-058",
+            "OP04-119",
+            "OP05-034",
+            "OP05-037",
+            "OP06-035",
+            "OP07-021",
+            "OP07-026",
+            "OP07-029",
+            "ST02-013",
+            "ST16-004"
+          ],
+          "life_cards": [
+            "EB01-015",
+            "OP06-035",
+            "OP06-035"
+          ],
+          "don_cost": [
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don"
+          ],
+          "attached_don": [
+            "Don"
+          ],
+          "rested_rz1": {
+            "don_cost": [
+              "Don"
+            ]
+          },
+          "rested": {
+            "ST02-007": 1,
+            "EB01-012": 1,
+            "ST16-004": 1
+          }
+        }
+      }
+    },
+    {
+      "turn": 12,
+      "player": "Opponent",
+      "card_drawn": null,
+      "don_drawn": 0,
+      "actions": [
+        {
+          "type": "play",
+          "card": "OP04-031",
+          "card_name": "Donquixote Doflamingo",
+          "effects": [
+            "Marshall D. Teach [\"OP16-119\">OP16-119] will not Activate during next Refresh",
+            "Ran [\"OP14-114\">OP14-114] will not Activate during next Refresh",
+            "Boa Marigold [\"OP16-113\">OP16-113] will not Activate during next Refresh"
+          ]
+        },
+        {
+          "type": "attack",
+          "attacker": "Jewelry Bonney",
+          "attacker_code": "OP07-019",
+          "target": "Boa Marigold [\"OP16-113\">OP16-113]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": [
+            "OP17-109"
+          ]
+        },
+        {
+          "type": "attack",
+          "attacker": "Shanks",
+          "attacker_code": "ST16-004",
+          "target": "Boa Marigold [\"OP16-113\">OP16-113]",
+          "result": "hit",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "attack",
+          "attacker": "Cavendish",
+          "attacker_code": "EB01-012",
+          "target": "Boa Hancock [\"OP14-041\">OP14-041]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "activate",
+          "card": "EB01-012",
+          "card_name": "Cavendish",
+          "effects": [
+            "Activate 1 Don",
+            "Activate 1 Don"
+          ]
+        },
+        {
+          "type": "activate",
+          "card": "ST02-007",
+          "card_name": "Jewelry Bonney",
+          "effects": [
+            "Rest 1 Don",
+            "Rest Jewelry Bonney [\"ST02-007\">ST02-007]",
+            "<b>Reveal and Draw Eustass \"Captain\" Kid [\"ST02-013\">ST02-013]</b>"
+          ]
+        }
+      ],
+      "snapshot": {
+        "Opponent": {
+          "hand": [
+            "OP01-058",
+            "OP07-029",
+            "ST02-013",
+            "OP05-037",
+            "OP01-051",
+            "ST02-013"
+          ],
+          "board": [
+            "ST02-007",
+            "EB01-015",
+            "EB01-012",
+            "ST16-004",
+            "OP04-031"
+          ],
+          "trash": [
+            "OP07-026",
+            "OP07-021",
+            "ST02-007",
+            "OP05-030",
+            "EB01-015",
+            "OP07-021",
+            "ST02-007",
+            "EB01-015",
+            "OP07-021"
+          ],
+          "life": 3,
+          "deck": [
+            "EB01-012",
+            "OP01-058",
+            "OP04-119",
+            "OP05-030",
+            "OP05-034",
+            "OP05-037",
+            "OP06-035",
+            "OP07-021",
+            "OP07-026",
+            "OP07-029",
+            "ST16-004"
+          ],
+          "life_cards": [
+            "EB01-015",
+            "OP06-035",
+            "OP06-035"
+          ],
+          "don_cost": [
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don"
+          ],
+          "rested_rz1": {
+            "don_cost": [
+              "Don"
+            ]
+          },
+          "rested": {
+            "ST02-007": 1,
+            "EB01-012": 1,
+            "ST16-004": 1,
+            "OP04-031": 1
+          }
+        },
+        "You": {
+          "hand": [
+            "OP14-112",
+            "OP14-112",
+            "OP14-112",
+            "OP15-113",
+            "OP14-114",
+            "OP14-104",
+            "OP14-112",
+            "OP14-104"
+          ],
+          "trash": [
+            "OP06-115",
+            "OP16-113",
+            "OP06-106",
+            "OP06-115",
+            "OP11-054",
+            "OP16-119",
+            "OP17-109",
+            "OP16-113"
+          ],
+          "board": [
+            "OP14-114",
+            "OP16-119",
+            "OP14-105"
+          ],
+          "life": 1,
+          "deck": [
+            "OP07-057",
+            "OP11-054",
+            "OP14-107",
+            "OP15-113",
+            "OP17-109"
+          ],
+          "life_cards": [
+            "OP14-104"
+          ],
+          "don_cost": [
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don"
+          ],
+          "attached_don": [
+            "Don",
+            "Don"
+          ],
+          "rested_rz1": {
+            "don_cost": [
+              "Don",
+              "Don",
+              "Don"
+            ]
+          },
+          "rested": {
+            "OP14-114": 1,
+            "OP16-119": 1
+          }
+        }
+      }
+    },
+    {
+      "turn": 13,
+      "player": "You",
+      "card_drawn": null,
+      "don_drawn": 0,
+      "actions": [
+        {
+          "type": "play",
+          "card": "OP14-112",
+          "card_name": "Boa Hancock",
+          "effects": [
+            "Add card to top of Life from Deck"
+          ]
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP14-041",
+          "to_name": "Boa Hancock",
+          "total": 1
+        },
+        {
+          "type": "attack",
+          "attacker": "Boa Hancock",
+          "attacker_code": "OP14-041",
+          "target": "Jewelry Bonney [\"OP07-019\">OP07-019]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "attack",
+          "attacker": "Gorgon Sisters",
+          "attacker_code": "OP14-105",
+          "target": "Jewelry Bonney [\"OP07-019\">OP07-019]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": [
+            "EB01-015"
+          ]
+        }
+      ],
+      "snapshot": {
+        "You": {
+          "hand": [
+            "OP14-112",
+            "OP14-112",
+            "OP15-113",
+            "OP14-114",
+            "OP14-104",
+            "OP14-112",
+            "OP14-104",
+            "OP14-104"
+          ],
+          "board": [
+            "OP14-114",
+            "OP16-119",
+            "OP14-105",
+            "OP14-112"
+          ],
+          "trash": [
+            "OP06-115",
+            "OP16-113",
+            "OP06-106",
+            "OP06-115",
+            "OP11-054",
+            "OP16-119",
+            "OP17-109",
+            "OP16-113"
+          ],
+          "life": 2,
+          "deck": [
+            "OP07-057",
+            "OP11-054",
+            "OP14-107",
+            "OP15-113",
+            "OP17-109"
+          ],
+          "life_cards": [
+            "EB04-058",
+            "OP14-104"
+          ],
+          "don_cost": [
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don"
+          ],
+          "attached_don": [
+            "Don"
+          ],
+          "rested_rz1": {
+            "don_cost": [
+              "Don",
+              "Don",
+              "Don",
+              "Don"
+            ]
+          },
+          "rested": {
+            "OP14-105": 1,
+            "OP14-112": 1
+          }
+        },
+        "Opponent": {
+          "hand": [
+            "OP01-058",
+            "OP07-029",
+            "ST02-013",
+            "ST02-013"
+          ],
+          "trash": [
+            "OP07-026",
+            "OP07-021",
+            "ST02-007",
+            "OP05-030",
+            "EB01-015",
+            "OP07-021",
+            "ST02-007",
+            "EB01-015",
+            "OP07-021",
+            "OP01-051",
+            "OP05-037",
+            "EB01-015"
+          ],
+          "board": [
+            "ST02-007",
+            "EB01-015",
+            "EB01-012",
+            "ST16-004",
+            "OP04-031"
+          ],
+          "life": 2,
+          "deck": [
+            "EB01-012",
+            "OP01-058",
+            "OP04-119",
+            "OP05-030",
+            "OP05-034",
+            "OP05-037",
+            "OP06-035",
+            "OP07-021",
+            "OP07-026",
+            "OP07-029",
+            "ST16-004"
+          ],
+          "life_cards": [
+            "OP06-035",
+            "OP06-035"
+          ],
+          "don_cost": [
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don"
+          ],
+          "rested_rz1": {
+            "don_cost": [
+              "Don"
+            ]
+          },
+          "rested": {
+            "ST02-007": 1,
+            "EB01-012": 1,
+            "ST16-004": 1,
+            "OP04-031": 1
+          }
+        }
+      }
+    },
+    {
+      "turn": 14,
+      "player": "Opponent",
+      "card_drawn": null,
+      "don_drawn": 0,
+      "actions": [
+        {
+          "type": "play",
+          "card": "OP07-029",
+          "card_name": "Basil Hawkins",
+          "effects": []
+        },
+        {
+          "type": "attach_don",
+          "amount": 2,
+          "to": "OP07-019",
+          "to_name": "Jewelry Bonney",
+          "total": 2
+        },
+        {
+          "type": "attack",
+          "attacker": "Jewelry Bonney",
+          "attacker_code": "OP07-019",
+          "target": "Boa Hancock [\"OP14-041\">OP14-041]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "attack",
+          "attacker": "Cavendish",
+          "attacker_code": "EB01-012",
+          "target": "Boa Hancock [\"OP14-041\">OP14-041]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": [
+            "OP14-114",
+            "EB04-058"
+          ]
+        },
+        {
+          "type": "activate",
+          "card": "EB01-012",
+          "card_name": "Cavendish",
+          "effects": [
+            "Activate 1 Don",
+            "Activate 1 Don"
+          ]
+        },
+        {
+          "type": "attack",
+          "attacker": "Shanks",
+          "attacker_code": "ST16-004",
+          "target": "Boa Hancock [\"OP14-041\">OP14-041]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "attack",
+          "attacker": "Donquixote Doflamingo",
+          "attacker_code": "OP04-031",
+          "target": "Boa Hancock [\"OP14-041\">OP14-041]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        }
+      ],
+      "snapshot": {}
+    }
+  ]
+}

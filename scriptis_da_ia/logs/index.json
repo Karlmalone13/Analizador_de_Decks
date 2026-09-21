@@ -6269,5 +6269,906 @@
       "You": "decks_full/Enel-P_2026-09-19T14.35.16_p8.json",
       "Opponent": "decks_full/Portgas.D.Ace-R_2026-09-19T14.35.16_p8.json"
     }
+  },
+  {
+    "id": "2026-09-19T19.03.44_p9",
+    "impressao": "c3323a85f3fab0329049e7e07f6edf50",
+    "friendly_name": "Enel-P_x_Portgas.D.Ace-R",
+    "date": "2026-09-19",
+    "p1": {
+      "name": "You",
+      "leader_code": "OP15-058",
+      "leader_name": "Enel",
+      "slug": "Enel-P"
+    },
+    "p2": {
+      "name": "Opponent",
+      "leader_code": "OP16-001",
+      "leader_name": "Portgas D. Ace",
+      "slug": "Portgas.D.Ace-R"
+    },
+    "turns": 9,
+    "winner": "p1",
+    "bot_side": null,
+    "tipo": "cpu_vs_cpu",
+    "log_file": "raw/Enel-P_x_Portgas.D.Ace-R_2026-09-19T19.03.44_p9.log",
+    "parsed_file": "parsed/Enel-P_x_Portgas.D.Ace-R_2026-09-19T19.03.44_p9.json",
+    "deck_files": {
+      "You": "decks/Enel-P_2026-09-19T19.03.44_p9.json",
+      "Opponent": "decks/Portgas.D.Ace-R_2026-09-19T19.03.44_p9.json"
+    },
+    "deck_full_files": {
+      "You": "decks_full/Enel-P_2026-09-19T19.03.44_p9.json",
+      "Opponent": "decks_full/Portgas.D.Ace-R_2026-09-19T19.03.44_p9.json"
+    }
+  },
+  {
+    "id": "2026-09-19T19.08.43_p10",
+    "impressao": "9f96547f14e6b16a1223a8e3f0a007ba",
+    "friendly_name": "Marshall.D.Teach-BY_x_Edward.Newgate-R",
+    "date": "2026-09-19",
+    "p1": {
+      "name": "You",
+      "leader_code": "OP16-080",
+      "leader_name": "Marshall D. Teach",
+      "slug": "Marshall.D.Teach-BY"
+    },
+    "p2": {
+      "name": "Opponent",
+      "leader_code": "OP02-001",
+      "leader_name": "Edward Newgate",
+      "slug": "Edward.Newgate-R"
+    },
+    "turns": 9,
+    "winner": "p1",
+    "bot_side": null,
+    "tipo": "cpu_vs_cpu",
+    "log_file": "raw/Marshall.D.Teach-BY_x_Edward.Newgate-R_2026-09-19T19.08.43_p10.log",
+    "parsed_file": "parsed/Marshall.D.Teach-BY_x_Edward.Newgate-R_2026-09-19T19.08.43_p10.json",
+    "deck_files": {
+      "You": "decks/Marshall.D.Teach-BY_2026-09-19T19.08.43_p10.json",
+      "Opponent": "decks/Edward.Newgate-R_2026-09-19T19.08.43_p10.json"
+    },
+    "deck_full_files": {
+      "You": "decks_full/Marshall.D.Teach-BY_2026-09-19T19.08.43_p10.json",
+      "Opponent": "decks_full/Edward.Newgate-R_2026-09-19T19.08.43_p10.json"
+    }
+  },
+  {
+    "id": "2026-09-19T19.14.36_p11",
+    "impressao": "4e59bcf599a23a399f13145f801c79f1",
+    "friendly_name": "Marshall.D.Teach-BY_x_Portgas.D.Ace-R",
+    "date": "2026-09-19",
+    "p1": {
+      "name": "You",
+      "leader_code": "OP16-080",
+      "leader_name": "Marshall D. Teach",
+      "slug": "Marshall.D.Teach-BY"
+    },
+    "p2": {
+      "name": "Opponent",
+      "leader_code": "OP16-001",
+      "leader_name": "Portgas D. Ace",
+      "slug": "Portgas.D.Ace-R"
+    },
+    "turns": 10,
+    "winner": "p2",
+    "bot_side": null,
+    "tipo": "cpu_vs_cpu",
+    "log_file": "raw/Marshall.D.Teach-BY_x_Portgas.D.Ace-R_2026-09-19T19.14.36_p11.log",
+    "parsed_file": "parsed/Marshall.D.Teach-BY_x_Portgas.D.Ace-R_2026-09-19T19.14.36_p11.json",
+    "deck_files": {
+      "You": "decks/Marshall.D.Teach-BY_2026-09-19T19.14.36_p11.json",
+      "Opponent": "decks/Portgas.D.Ace-R_2026-09-19T19.14.36_p11.json"
+    },
+    "deck_full_files": {
+      "You": "decks_full/Marshall.D.Teach-BY_2026-09-19T19.14.36_p11.json",
+      "Opponent": "decks_full/Portgas.D.Ace-R_2026-09-19T19.14.36_p11.json"
+    }
+  },
+  {
+    "id": "2026-09-19T19.18.11_p12",
+    "impressao": "28b769ce958c78af7b641976e6e3e072",
+    "friendly_name": "Marshall.D.Teach-B_x_Portgas.D.Ace-RB",
+    "date": "2026-09-19",
+    "p1": {
+      "name": "You",
+      "leader_code": "OP09-081",
+      "leader_name": "Marshall D. Teach",
+      "slug": "Marshall.D.Teach-B"
+    },
+    "p2": {
+      "name": "Opponent",
+      "leader_code": "OP13-002",
+      "leader_name": "Portgas D. Ace",
+      "slug": "Portgas.D.Ace-RB"
+    },
+    "turns": 10,
+    "winner": "p2",
+    "bot_side": null,
+    "tipo": "cpu_vs_cpu",
+    "log_file": "raw/Marshall.D.Teach-B_x_Portgas.D.Ace-RB_2026-09-19T19.18.11_p12.log",
+    "parsed_file": "parsed/Marshall.D.Teach-B_x_Portgas.D.Ace-RB_2026-09-19T19.18.11_p12.json",
+    "deck_files": {
+      "You": "decks/Marshall.D.Teach-B_2026-09-19T19.18.11_p12.json",
+      "Opponent": "decks/Portgas.D.Ace-RB_2026-09-19T19.18.11_p12.json"
+    },
+    "deck_full_files": {
+      "You": "decks_full/Marshall.D.Teach-B_2026-09-19T19.18.11_p12.json",
+      "Opponent": "decks_full/Portgas.D.Ace-RB_2026-09-19T19.18.11_p12.json"
+    }
+  },
+  {
+    "id": "2026-09-19T19.23.55_p13",
+    "impressao": "188a4399f7a12a41103ad050358c87b4",
+    "friendly_name": "Ace.&.Newgate-B_x_Marshall.D.Teach-BY",
+    "date": "2026-09-19",
+    "p1": {
+      "name": "You",
+      "leader_code": "ST22-001",
+      "leader_name": "Ace & Newgate",
+      "slug": "Ace.&.Newgate-B"
+    },
+    "p2": {
+      "name": "Opponent",
+      "leader_code": "OP16-080",
+      "leader_name": "Marshall D. Teach",
+      "slug": "Marshall.D.Teach-BY"
+    },
+    "turns": 11,
+    "winner": "p1",
+    "bot_side": null,
+    "tipo": "cpu_vs_cpu",
+    "log_file": "raw/Ace.&.Newgate-B_x_Marshall.D.Teach-BY_2026-09-19T19.23.55_p13.log",
+    "parsed_file": "parsed/Ace.&.Newgate-B_x_Marshall.D.Teach-BY_2026-09-19T19.23.55_p13.json",
+    "deck_files": {
+      "You": "decks/Ace.&.Newgate-B_2026-09-19T19.23.55_p13.json",
+      "Opponent": "decks/Marshall.D.Teach-BY_2026-09-19T19.23.55_p13.json"
+    },
+    "deck_full_files": {
+      "You": "decks_full/Ace.&.Newgate-B_2026-09-19T19.23.55_p13.json",
+      "Opponent": "decks_full/Marshall.D.Teach-BY_2026-09-19T19.23.55_p13.json"
+    }
+  },
+  {
+    "id": "2026-09-19T19.30.43_p14",
+    "impressao": "6ce93f3e8af9edf94065cc079b7c22ba",
+    "friendly_name": "Portgas.D.Ace-R_x_Portgas.D.Ace-R",
+    "date": "2026-09-19",
+    "p1": {
+      "name": "You",
+      "leader_code": "OP16-001",
+      "leader_name": "Portgas D. Ace",
+      "slug": "Portgas.D.Ace-R"
+    },
+    "p2": {
+      "name": "Opponent",
+      "leader_code": "OP16-001",
+      "leader_name": "Portgas D. Ace",
+      "slug": "Portgas.D.Ace-R"
+    },
+    "turns": 9,
+    "winner": "p1",
+    "bot_side": null,
+    "tipo": "cpu_vs_cpu",
+    "log_file": "raw/Portgas.D.Ace-R_x_Portgas.D.Ace-R_2026-09-19T19.30.43_p14.log",
+    "parsed_file": "parsed/Portgas.D.Ace-R_x_Portgas.D.Ace-R_2026-09-19T19.30.43_p14.json",
+    "deck_files": {
+      "You": "decks/Portgas.D.Ace-R_2026-09-19T19.30.43_p14.json",
+      "Opponent": "decks/Portgas.D.Ace-R_2026-09-19T19.30.43_p14.json"
+    },
+    "deck_full_files": {
+      "You": "decks_full/Portgas.D.Ace-R_2026-09-19T19.30.43_p14.json",
+      "Opponent": "decks_full/Portgas.D.Ace-R_2026-09-19T19.30.43_p14.json"
+    }
+  },
+  {
+    "id": "2026-09-19T19.36.57_p15",
+    "impressao": "b2faaa4bc572159d94e96ee267cb0275",
+    "friendly_name": "Edward.Newgate-R_x_Marshall.D.Teach-B",
+    "date": "2026-09-19",
+    "p1": {
+      "name": "You",
+      "leader_code": "OP02-001",
+      "leader_name": "Edward Newgate",
+      "slug": "Edward.Newgate-R"
+    },
+    "p2": {
+      "name": "Opponent",
+      "leader_code": "OP09-081",
+      "leader_name": "Marshall D. Teach",
+      "slug": "Marshall.D.Teach-B"
+    },
+    "turns": 10,
+    "winner": "p2",
+    "bot_side": null,
+    "tipo": "cpu_vs_cpu",
+    "log_file": "raw/Edward.Newgate-R_x_Marshall.D.Teach-B_2026-09-19T19.36.57_p15.log",
+    "parsed_file": "parsed/Edward.Newgate-R_x_Marshall.D.Teach-B_2026-09-19T19.36.57_p15.json",
+    "deck_files": {
+      "You": "decks/Edward.Newgate-R_2026-09-19T19.36.57_p15.json",
+      "Opponent": "decks/Marshall.D.Teach-B_2026-09-19T19.36.57_p15.json"
+    },
+    "deck_full_files": {
+      "You": "decks_full/Edward.Newgate-R_2026-09-19T19.36.57_p15.json",
+      "Opponent": "decks_full/Marshall.D.Teach-B_2026-09-19T19.36.57_p15.json"
+    }
+  },
+  {
+    "id": "2026-09-19T19.45.41_p16",
+    "impressao": "fbc13723a974fe7919a1215ab57590c1",
+    "friendly_name": "Portgas.D.Ace-RB_x_Marshall.D.Teach-BY",
+    "date": "2026-09-19",
+    "p1": {
+      "name": "You",
+      "leader_code": "OP13-002",
+      "leader_name": "Portgas D. Ace",
+      "slug": "Portgas.D.Ace-RB"
+    },
+    "p2": {
+      "name": "Opponent",
+      "leader_code": "OP16-080",
+      "leader_name": "Marshall D. Teach",
+      "slug": "Marshall.D.Teach-BY"
+    },
+    "turns": 11,
+    "winner": "p1",
+    "bot_side": null,
+    "tipo": "cpu_vs_cpu",
+    "log_file": "raw/Portgas.D.Ace-RB_x_Marshall.D.Teach-BY_2026-09-19T19.45.41_p16.log",
+    "parsed_file": "parsed/Portgas.D.Ace-RB_x_Marshall.D.Teach-BY_2026-09-19T19.45.41_p16.json",
+    "deck_files": {
+      "You": "decks/Portgas.D.Ace-RB_2026-09-19T19.45.41_p16.json",
+      "Opponent": "decks/Marshall.D.Teach-BY_2026-09-19T19.45.41_p16.json"
+    },
+    "deck_full_files": {
+      "You": "decks_full/Portgas.D.Ace-RB_2026-09-19T19.45.41_p16.json",
+      "Opponent": "decks_full/Marshall.D.Teach-BY_2026-09-19T19.45.41_p16.json"
+    }
+  },
+  {
+    "id": "2026-09-19T19.54.45_p17",
+    "impressao": "f2ab351aa264a2d68870029ae37799e5",
+    "friendly_name": "Portgas.D.Ace-R_x_Ace.&.Newgate-B",
+    "date": "2026-09-19",
+    "p1": {
+      "name": "You",
+      "leader_code": "OP16-001",
+      "leader_name": "Portgas D. Ace",
+      "slug": "Portgas.D.Ace-R"
+    },
+    "p2": {
+      "name": "Opponent",
+      "leader_code": "ST22-001",
+      "leader_name": "Ace & Newgate",
+      "slug": "Ace.&.Newgate-B"
+    },
+    "turns": 11,
+    "winner": "p1",
+    "bot_side": null,
+    "tipo": "cpu_vs_cpu",
+    "log_file": "raw/Portgas.D.Ace-R_x_Ace.&.Newgate-B_2026-09-19T19.54.45_p17.log",
+    "parsed_file": "parsed/Portgas.D.Ace-R_x_Ace.&.Newgate-B_2026-09-19T19.54.45_p17.json",
+    "deck_files": {
+      "You": "decks/Portgas.D.Ace-R_2026-09-19T19.54.45_p17.json",
+      "Opponent": "decks/Ace.&.Newgate-B_2026-09-19T19.54.45_p17.json"
+    },
+    "deck_full_files": {
+      "You": "decks_full/Portgas.D.Ace-R_2026-09-19T19.54.45_p17.json",
+      "Opponent": "decks_full/Ace.&.Newgate-B_2026-09-19T19.54.45_p17.json"
+    }
+  },
+  {
+    "id": "2026-09-19T20.06.47_p18",
+    "impressao": "ceecccb3d37ff054ab775547ad847556",
+    "friendly_name": "Marshall.D.Teach-BY_x_Portgas.D.Ace-R",
+    "date": "2026-09-19",
+    "p1": {
+      "name": "You",
+      "leader_code": "OP16-080",
+      "leader_name": "Marshall D. Teach",
+      "slug": "Marshall.D.Teach-BY"
+    },
+    "p2": {
+      "name": "Opponent",
+      "leader_code": "OP16-001",
+      "leader_name": "Portgas D. Ace",
+      "slug": "Portgas.D.Ace-R"
+    },
+    "turns": 11,
+    "winner": "p1",
+    "bot_side": null,
+    "tipo": "cpu_vs_cpu",
+    "log_file": "raw/Marshall.D.Teach-BY_x_Portgas.D.Ace-R_2026-09-19T20.06.47_p18.log",
+    "parsed_file": "parsed/Marshall.D.Teach-BY_x_Portgas.D.Ace-R_2026-09-19T20.06.47_p18.json",
+    "deck_files": {
+      "You": "decks/Marshall.D.Teach-BY_2026-09-19T20.06.47_p18.json",
+      "Opponent": "decks/Portgas.D.Ace-R_2026-09-19T20.06.47_p18.json"
+    },
+    "deck_full_files": {
+      "You": "decks_full/Marshall.D.Teach-BY_2026-09-19T20.06.47_p18.json",
+      "Opponent": "decks_full/Portgas.D.Ace-R_2026-09-19T20.06.47_p18.json"
+    }
+  },
+  {
+    "id": "2026-09-19T23.14.00_p19",
+    "impressao": "efef44d2c7982894882c9aea043e6a1e",
+    "friendly_name": "Ace.&.Newgate-B_x_Ace.&.Newgate-B",
+    "date": "2026-09-19",
+    "p1": {
+      "name": "You",
+      "leader_code": "ST22-001",
+      "leader_name": "Ace & Newgate",
+      "slug": "Ace.&.Newgate-B"
+    },
+    "p2": {
+      "name": "Opponent",
+      "leader_code": "ST22-001",
+      "leader_name": "Ace & Newgate",
+      "slug": "Ace.&.Newgate-B"
+    },
+    "turns": 10,
+    "winner": "p2",
+    "bot_side": null,
+    "tipo": "cpu_vs_cpu",
+    "log_file": "raw/Ace.&.Newgate-B_x_Ace.&.Newgate-B_2026-09-19T23.14.00_p19.log",
+    "parsed_file": "parsed/Ace.&.Newgate-B_x_Ace.&.Newgate-B_2026-09-19T23.14.00_p19.json",
+    "deck_files": {
+      "You": "decks/Ace.&.Newgate-B_2026-09-19T23.14.00_p19.json",
+      "Opponent": "decks/Ace.&.Newgate-B_2026-09-19T23.14.00_p19.json"
+    },
+    "deck_full_files": {
+      "You": "decks_full/Ace.&.Newgate-B_2026-09-19T23.14.00_p19.json",
+      "Opponent": "decks_full/Ace.&.Newgate-B_2026-09-19T23.14.00_p19.json"
+    }
+  },
+  {
+    "id": "2026-09-20T14.00.40",
+    "impressao": "b53320e65edf69718dd2717ab4acc6f5",
+    "friendly_name": "Ace.&.Newgate-B_x_Ace.&.Newgate-B",
+    "date": "2026-09-20",
+    "p1": {
+      "name": "You",
+      "leader_code": "ST22-001",
+      "leader_name": "Ace & Newgate",
+      "slug": "Ace.&.Newgate-B"
+    },
+    "p2": {
+      "name": "Opponent",
+      "leader_code": "ST22-001",
+      "leader_name": "Ace & Newgate",
+      "slug": "Ace.&.Newgate-B"
+    },
+    "turns": 11,
+    "winner": "p1",
+    "bot_side": null,
+    "tipo": "cpu_vs_cpu",
+    "log_file": "raw/Ace.&.Newgate-B_x_Ace.&.Newgate-B_2026-09-20T14.00.40.log",
+    "parsed_file": "parsed/Ace.&.Newgate-B_x_Ace.&.Newgate-B_2026-09-20T14.00.40.json",
+    "deck_files": {
+      "You": "decks/Ace.&.Newgate-B_2026-09-20T14.00.40.json",
+      "Opponent": "decks/Ace.&.Newgate-B_2026-09-20T14.00.40.json"
+    },
+    "deck_full_files": {
+      "You": "decks_full/Ace.&.Newgate-B_2026-09-20T14.00.40.json",
+      "Opponent": "decks_full/Ace.&.Newgate-B_2026-09-20T14.00.40.json"
+    },
+    "decision_log_file": "decisions/decisions_2026-09-20T14.00.40.jsonl"
+  },
+  {
+    "id": "2026-09-20T14.11.15",
+    "impressao": "fd0d08f2c569d0abc9d71244368338f6",
+    "friendly_name": "Ace.&.Newgate-B_x_Ace.&.Newgate-B",
+    "date": "2026-09-20",
+    "p1": {
+      "name": "You",
+      "leader_code": "ST22-001",
+      "leader_name": "Ace & Newgate",
+      "slug": "Ace.&.Newgate-B"
+    },
+    "p2": {
+      "name": "Opponent",
+      "leader_code": "ST22-001",
+      "leader_name": "Ace & Newgate",
+      "slug": "Ace.&.Newgate-B"
+    },
+    "turns": 14,
+    "winner": "p2",
+    "bot_side": null,
+    "tipo": "cpu_vs_cpu",
+    "log_file": "raw/Ace.&.Newgate-B_x_Ace.&.Newgate-B_2026-09-20T14.11.15.log",
+    "parsed_file": "parsed/Ace.&.Newgate-B_x_Ace.&.Newgate-B_2026-09-20T14.11.15.json",
+    "deck_files": {
+      "You": "decks/Ace.&.Newgate-B_2026-09-20T14.11.15.json",
+      "Opponent": "decks/Ace.&.Newgate-B_2026-09-20T14.11.15.json"
+    },
+    "deck_full_files": {
+      "You": "decks_full/Ace.&.Newgate-B_2026-09-20T14.11.15.json",
+      "Opponent": "decks_full/Ace.&.Newgate-B_2026-09-20T14.11.15.json"
+    },
+    "decision_log_file": "decisions/decisions_2026-09-20T14.11.15.jsonl"
+  },
+  {
+    "id": "2026-09-20T16.32.36_p2",
+    "impressao": "6be9c3df8f8209351cbdfb3772e9fda0",
+    "friendly_name": "Enel-P_x_Rocks.D.Xebec-B",
+    "date": "2026-09-20",
+    "p1": {
+      "name": "You",
+      "leader_code": "OP15-058",
+      "leader_name": "Enel",
+      "slug": "Enel-P"
+    },
+    "p2": {
+      "name": "Opponent",
+      "leader_code": "OP17-039",
+      "leader_name": "Rocks D. Xebec",
+      "slug": "Rocks.D.Xebec-B"
+    },
+    "turns": 12,
+    "winner": "p2",
+    "bot_side": "p1",
+    "tipo": "com_bot",
+    "log_file": "raw/Enel-P_x_Rocks.D.Xebec-B_2026-09-20T16.32.36_p2.log",
+    "parsed_file": "parsed/Enel-P_x_Rocks.D.Xebec-B_2026-09-20T16.32.36_p2.json",
+    "deck_files": {
+      "You": "decks/Enel-P_2026-09-20T16.32.36_p2.json",
+      "Opponent": "decks/Rocks.D.Xebec-B_2026-09-20T16.32.36_p2.json"
+    },
+    "deck_full_files": {
+      "You": "decks_full/Enel-P_2026-09-20T16.32.36_p2.json",
+      "Opponent": "decks_full/Rocks.D.Xebec-B_2026-09-20T16.32.36_p2.json"
+    }
+  },
+  {
+    "id": "2026-09-20T18.32.49_p3",
+    "impressao": "c2ad1419f548d3a255be5132bda7f126",
+    "friendly_name": "Imu-B_x_Charlotte.Katakuri-P",
+    "date": "2026-09-20",
+    "p1": {
+      "name": "You",
+      "leader_code": "OP13-079",
+      "leader_name": "Imu",
+      "slug": "Imu-B"
+    },
+    "p2": {
+      "name": "Opponent",
+      "leader_code": "OP11-062",
+      "leader_name": "Charlotte Katakuri",
+      "slug": "Charlotte.Katakuri-P"
+    },
+    "turns": 15,
+    "winner": "p1",
+    "bot_side": null,
+    "tipo": "cpu_vs_cpu",
+    "log_file": "raw/Imu-B_x_Charlotte.Katakuri-P_2026-09-20T18.32.49_p3.log",
+    "parsed_file": "parsed/Imu-B_x_Charlotte.Katakuri-P_2026-09-20T18.32.49_p3.json",
+    "deck_files": {
+      "You": "decks/Imu-B_2026-09-20T18.32.49_p3.json",
+      "Opponent": "decks/Charlotte.Katakuri-P_2026-09-20T18.32.49_p3.json"
+    },
+    "deck_full_files": {
+      "You": "decks_full/Imu-B_2026-09-20T18.32.49_p3.json",
+      "Opponent": "decks_full/Charlotte.Katakuri-P_2026-09-20T18.32.49_p3.json"
+    }
+  },
+  {
+    "id": "2026-09-20T18.38.22_p4",
+    "impressao": "2dbf1a6c5461863677f6b109e1fec42e",
+    "friendly_name": "Eustass.Captain.Kid-Y_x_Krieg-RG",
+    "date": "2026-09-20",
+    "p1": {
+      "name": "You",
+      "leader_code": "OP10-099",
+      "leader_name": "Eustass \"Captain\" Kid",
+      "slug": "Eustass.Captain.Kid-Y"
+    },
+    "p2": {
+      "name": "Opponent",
+      "leader_code": "OP15-001",
+      "leader_name": "Krieg",
+      "slug": "Krieg-RG"
+    },
+    "turns": 11,
+    "winner": "p1",
+    "bot_side": null,
+    "tipo": "cpu_vs_cpu",
+    "log_file": "raw/Eustass.Captain.Kid-Y_x_Krieg-RG_2026-09-20T18.38.22_p4.log",
+    "parsed_file": "parsed/Eustass.Captain.Kid-Y_x_Krieg-RG_2026-09-20T18.38.22_p4.json",
+    "deck_files": {
+      "You": "decks/Eustass.Captain.Kid-Y_2026-09-20T18.38.22_p4.json",
+      "Opponent": "decks/Krieg-RG_2026-09-20T18.38.22_p4.json"
+    },
+    "deck_full_files": {
+      "You": "decks_full/Eustass.Captain.Kid-Y_2026-09-20T18.38.22_p4.json",
+      "Opponent": "decks_full/Krieg-RG_2026-09-20T18.38.22_p4.json"
+    }
+  },
+  {
+    "id": "2026-09-20T18.46.30_p5",
+    "impressao": "43826673453576d466a69d5b3aa7b084",
+    "friendly_name": "Monkey.D.Luffy-RG_x_Dracule.Mihawk-G",
+    "date": "2026-09-20",
+    "p1": {
+      "name": "You",
+      "leader_code": "OP13-001",
+      "leader_name": "Monkey D. Luffy",
+      "slug": "Monkey.D.Luffy-RG"
+    },
+    "p2": {
+      "name": "Opponent",
+      "leader_code": "OP14-020",
+      "leader_name": "Dracule Mihawk",
+      "slug": "Dracule.Mihawk-G"
+    },
+    "turns": 11,
+    "winner": "p1",
+    "bot_side": null,
+    "tipo": "cpu_vs_cpu",
+    "log_file": "raw/Monkey.D.Luffy-RG_x_Dracule.Mihawk-G_2026-09-20T18.46.30_p5.log",
+    "parsed_file": "parsed/Monkey.D.Luffy-RG_x_Dracule.Mihawk-G_2026-09-20T18.46.30_p5.json",
+    "deck_files": {
+      "You": "decks/Monkey.D.Luffy-RG_2026-09-20T18.46.30_p5.json",
+      "Opponent": "decks/Dracule.Mihawk-G_2026-09-20T18.46.30_p5.json"
+    },
+    "deck_full_files": {
+      "You": "decks_full/Monkey.D.Luffy-RG_2026-09-20T18.46.30_p5.json",
+      "Opponent": "decks_full/Dracule.Mihawk-G_2026-09-20T18.46.30_p5.json"
+    }
+  },
+  {
+    "id": "2026-09-20T18.53.31_p6",
+    "impressao": "83cc3b89607a90ace745fdb63658d410",
+    "friendly_name": "Crocodile-B_x_Donquixote.Doflamingo-GP",
+    "date": "2026-09-20",
+    "p1": {
+      "name": "You",
+      "leader_code": "OP14-079",
+      "leader_name": "Crocodile",
+      "slug": "Crocodile-B"
+    },
+    "p2": {
+      "name": "Opponent",
+      "leader_code": "OP04-019",
+      "leader_name": "Donquixote Doflamingo",
+      "slug": "Donquixote.Doflamingo-GP"
+    },
+    "turns": 10,
+    "winner": "p2",
+    "bot_side": null,
+    "tipo": "cpu_vs_cpu",
+    "log_file": "raw/Crocodile-B_x_Donquixote.Doflamingo-GP_2026-09-20T18.53.31_p6.log",
+    "parsed_file": "parsed/Crocodile-B_x_Donquixote.Doflamingo-GP_2026-09-20T18.53.31_p6.json",
+    "deck_files": {
+      "You": "decks/Crocodile-B_2026-09-20T18.53.31_p6.json",
+      "Opponent": "decks/Donquixote.Doflamingo-GP_2026-09-20T18.53.31_p6.json"
+    },
+    "deck_full_files": {
+      "You": "decks_full/Crocodile-B_2026-09-20T18.53.31_p6.json",
+      "Opponent": "decks_full/Donquixote.Doflamingo-GP_2026-09-20T18.53.31_p6.json"
+    }
+  },
+  {
+    "id": "2026-09-20T18.59.10_p7",
+    "impressao": "575079f67de84f41af5f9be800280689",
+    "friendly_name": "Kaido-P_x_Smoker-B",
+    "date": "2026-09-20",
+    "p1": {
+      "name": "You",
+      "leader_code": "ST04-001",
+      "leader_name": "Kaido",
+      "slug": "Kaido-P"
+    },
+    "p2": {
+      "name": "Opponent",
+      "leader_code": "OP02-093",
+      "leader_name": "Smoker",
+      "slug": "Smoker-B"
+    },
+    "turns": 11,
+    "winner": "p1",
+    "bot_side": null,
+    "tipo": "cpu_vs_cpu",
+    "log_file": "raw/Kaido-P_x_Smoker-B_2026-09-20T18.59.10_p7.log",
+    "parsed_file": "parsed/Kaido-P_x_Smoker-B_2026-09-20T18.59.10_p7.json",
+    "deck_files": {
+      "You": "decks/Kaido-P_2026-09-20T18.59.10_p7.json",
+      "Opponent": "decks/Smoker-B_2026-09-20T18.59.10_p7.json"
+    },
+    "deck_full_files": {
+      "You": "decks_full/Kaido-P_2026-09-20T18.59.10_p7.json",
+      "Opponent": "decks_full/Smoker-B_2026-09-20T18.59.10_p7.json"
+    }
+  },
+  {
+    "id": "2026-09-20T19.07.17_p8",
+    "impressao": "83a44d6a1b1e6932a2fb57264ea85f92",
+    "friendly_name": "Sakazuki-BB_x_Yamato-B",
+    "date": "2026-09-20",
+    "p1": {
+      "name": "You",
+      "leader_code": "OP05-041",
+      "leader_name": "Sakazuki",
+      "slug": "Sakazuki-BB"
+    },
+    "p2": {
+      "name": "Opponent",
+      "leader_code": "OP16-079",
+      "leader_name": "Yamato",
+      "slug": "Yamato-B"
+    },
+    "turns": 12,
+    "winner": "p2",
+    "bot_side": null,
+    "tipo": "cpu_vs_cpu",
+    "log_file": "raw/Sakazuki-BB_x_Yamato-B_2026-09-20T19.07.17_p8.log",
+    "parsed_file": "parsed/Sakazuki-BB_x_Yamato-B_2026-09-20T19.07.17_p8.json",
+    "deck_files": {
+      "You": "decks/Sakazuki-BB_2026-09-20T19.07.17_p8.json",
+      "Opponent": "decks/Yamato-B_2026-09-20T19.07.17_p8.json"
+    },
+    "deck_full_files": {
+      "You": "decks_full/Sakazuki-BB_2026-09-20T19.07.17_p8.json",
+      "Opponent": "decks_full/Yamato-B_2026-09-20T19.07.17_p8.json"
+    }
+  },
+  {
+    "id": "2026-09-20T19.12.16_p9",
+    "impressao": "15adc5310584dc10adef441619ef7b33",
+    "friendly_name": "Roronoa.Zoro-G_x_Jinbe-B",
+    "date": "2026-09-20",
+    "p1": {
+      "name": "You",
+      "leader_code": "OP12-020",
+      "leader_name": "Roronoa Zoro",
+      "slug": "Roronoa.Zoro-G"
+    },
+    "p2": {
+      "name": "Opponent",
+      "leader_code": "OP14-040",
+      "leader_name": "Jinbe",
+      "slug": "Jinbe-B"
+    },
+    "turns": 10,
+    "winner": "p2",
+    "bot_side": null,
+    "tipo": "cpu_vs_cpu",
+    "log_file": "raw/Roronoa.Zoro-G_x_Jinbe-B_2026-09-20T19.12.16_p9.log",
+    "parsed_file": "parsed/Roronoa.Zoro-G_x_Jinbe-B_2026-09-20T19.12.16_p9.json",
+    "deck_files": {
+      "You": "decks/Roronoa.Zoro-G_2026-09-20T19.12.16_p9.json",
+      "Opponent": "decks/Jinbe-B_2026-09-20T19.12.16_p9.json"
+    },
+    "deck_full_files": {
+      "You": "decks_full/Roronoa.Zoro-G_2026-09-20T19.12.16_p9.json",
+      "Opponent": "decks_full/Jinbe-B_2026-09-20T19.12.16_p9.json"
+    }
+  },
+  {
+    "id": "2026-09-20T19.20.16_p10",
+    "impressao": "f2b5ca3b6ad252a300689f5b09d838af",
+    "friendly_name": "Boa.Hancock-BY_x_Jewelry.Bonney-G",
+    "date": "2026-09-20",
+    "p1": {
+      "name": "You",
+      "leader_code": "OP14-041",
+      "leader_name": "Boa Hancock",
+      "slug": "Boa.Hancock-BY"
+    },
+    "p2": {
+      "name": "Opponent",
+      "leader_code": "OP07-019",
+      "leader_name": "Jewelry Bonney",
+      "slug": "Jewelry.Bonney-G"
+    },
+    "turns": 14,
+    "winner": "p2",
+    "bot_side": null,
+    "tipo": "cpu_vs_cpu",
+    "log_file": "raw/Boa.Hancock-BY_x_Jewelry.Bonney-G_2026-09-20T19.20.16_p10.log",
+    "parsed_file": "parsed/Boa.Hancock-BY_x_Jewelry.Bonney-G_2026-09-20T19.20.16_p10.json",
+    "deck_files": {
+      "You": "decks/Boa.Hancock-BY_2026-09-20T19.20.16_p10.json",
+      "Opponent": "decks/Jewelry.Bonney-G_2026-09-20T19.20.16_p10.json"
+    },
+    "deck_full_files": {
+      "You": "decks_full/Boa.Hancock-BY_2026-09-20T19.20.16_p10.json",
+      "Opponent": "decks_full/Jewelry.Bonney-G_2026-09-20T19.20.16_p10.json"
+    }
+  },
+  {
+    "id": "2026-09-20T19.24.14_p11",
+    "impressao": "db0f3b47ce0b12d2013104768264f4a3",
+    "friendly_name": "Nico.Robin-PY_x_Monkey.D.Luffy-R",
+    "date": "2026-09-20",
+    "p1": {
+      "name": "You",
+      "leader_code": "OP09-062",
+      "leader_name": "Nico Robin",
+      "slug": "Nico.Robin-PY"
+    },
+    "p2": {
+      "name": "Opponent",
+      "leader_code": "ST01-001",
+      "leader_name": "Monkey D. Luffy",
+      "slug": "Monkey.D.Luffy-R"
+    },
+    "turns": 9,
+    "winner": "p1",
+    "bot_side": null,
+    "tipo": "cpu_vs_cpu",
+    "log_file": "raw/Nico.Robin-PY_x_Monkey.D.Luffy-R_2026-09-20T19.24.14_p11.log",
+    "parsed_file": "parsed/Nico.Robin-PY_x_Monkey.D.Luffy-R_2026-09-20T19.24.14_p11.json",
+    "deck_files": {
+      "You": "decks/Nico.Robin-PY_2026-09-20T19.24.14_p11.json",
+      "Opponent": "decks/Monkey.D.Luffy-R_2026-09-20T19.24.14_p11.json"
+    },
+    "deck_full_files": {
+      "You": "decks_full/Nico.Robin-PY_2026-09-20T19.24.14_p11.json",
+      "Opponent": "decks_full/Monkey.D.Luffy-R_2026-09-20T19.24.14_p11.json"
+    }
+  },
+  {
+    "id": "2026-09-20T19.29.52_p12",
+    "impressao": "3bed87fdb59445b803aa77d34d487b9c",
+    "friendly_name": "Eustass.Captain.Kid-G_x_Crocodile-B",
+    "date": "2026-09-20",
+    "p1": {
+      "name": "You",
+      "leader_code": "ST02-001",
+      "leader_name": "Eustass \"Captain\" Kid",
+      "slug": "Eustass.Captain.Kid-G"
+    },
+    "p2": {
+      "name": "Opponent",
+      "leader_code": "ST03-001",
+      "leader_name": "Crocodile",
+      "slug": "Crocodile-B"
+    },
+    "turns": 15,
+    "winner": "p1",
+    "bot_side": null,
+    "tipo": "cpu_vs_cpu",
+    "log_file": "raw/Eustass.Captain.Kid-G_x_Crocodile-B_2026-09-20T19.29.52_p12.log",
+    "parsed_file": "parsed/Eustass.Captain.Kid-G_x_Crocodile-B_2026-09-20T19.29.52_p12.json",
+    "deck_files": {
+      "You": "decks/Eustass.Captain.Kid-G_2026-09-20T19.29.52_p12.json",
+      "Opponent": "decks/Crocodile-B_2026-09-20T19.29.52_p12.json"
+    },
+    "deck_full_files": {
+      "You": "decks_full/Eustass.Captain.Kid-G_2026-09-20T19.29.52_p12.json",
+      "Opponent": "decks_full/Crocodile-B_2026-09-20T19.29.52_p12.json"
+    }
+  },
+  {
+    "id": "2026-09-20T20.06.50_p13",
+    "impressao": "50561c881dc223a165b85948a65d1c57",
+    "friendly_name": "Donquixote.Doflamingo-GP_x_Charlotte.Katakuri-P",
+    "date": "2026-09-20",
+    "p1": {
+      "name": "You",
+      "leader_code": "OP04-019",
+      "leader_name": "Donquixote Doflamingo",
+      "slug": "Donquixote.Doflamingo-GP"
+    },
+    "p2": {
+      "name": "Opponent",
+      "leader_code": "OP11-062",
+      "leader_name": "Charlotte Katakuri",
+      "slug": "Charlotte.Katakuri-P"
+    },
+    "turns": 14,
+    "winner": "p2",
+    "bot_side": null,
+    "tipo": "cpu_vs_cpu",
+    "log_file": "raw/Donquixote.Doflamingo-GP_x_Charlotte.Katakuri-P_2026-09-20T20.06.50_p13.log",
+    "parsed_file": "parsed/Donquixote.Doflamingo-GP_x_Charlotte.Katakuri-P_2026-09-20T20.06.50_p13.json",
+    "deck_files": {
+      "You": "decks/Donquixote.Doflamingo-GP_2026-09-20T20.06.50_p13.json",
+      "Opponent": "decks/Charlotte.Katakuri-P_2026-09-20T20.06.50_p13.json"
+    },
+    "deck_full_files": {
+      "You": "decks_full/Donquixote.Doflamingo-GP_2026-09-20T20.06.50_p13.json",
+      "Opponent": "decks_full/Charlotte.Katakuri-P_2026-09-20T20.06.50_p13.json"
+    }
+  },
+  {
+    "id": "2026-09-20T20.24.48",
+    "impressao": "33b2a920430ed1b3e321b06efb2a2f4a",
+    "friendly_name": "Jewelry.Bonney-G_x_Monkey.D.Luffy-RG",
+    "date": "2026-09-20",
+    "p1": {
+      "name": "You",
+      "leader_code": "OP07-019",
+      "leader_name": "Jewelry Bonney",
+      "slug": "Jewelry.Bonney-G"
+    },
+    "p2": {
+      "name": "Opponent",
+      "leader_code": "OP13-001",
+      "leader_name": "Monkey D. Luffy",
+      "slug": "Monkey.D.Luffy-RG"
+    },
+    "turns": 11,
+    "winner": "p1",
+    "bot_side": null,
+    "tipo": "cpu_vs_cpu",
+    "log_file": "raw/Jewelry.Bonney-G_x_Monkey.D.Luffy-RG_2026-09-20T20.24.48.log",
+    "parsed_file": "parsed/Jewelry.Bonney-G_x_Monkey.D.Luffy-RG_2026-09-20T20.24.48.json",
+    "deck_files": {
+      "You": "decks/Jewelry.Bonney-G_2026-09-20T20.24.48.json",
+      "Opponent": "decks/Monkey.D.Luffy-RG_2026-09-20T20.24.48.json"
+    },
+    "deck_full_files": {
+      "You": "decks_full/Jewelry.Bonney-G_2026-09-20T20.24.48.json",
+      "Opponent": "decks_full/Monkey.D.Luffy-RG_2026-09-20T20.24.48.json"
+    },
+    "decision_log_file": "decisions/decisions_2026-09-20T20.24.48.jsonl"
+  },
+  {
+    "id": "2026-09-20T21.09.28",
+    "impressao": "6215a786ee09e059282d327608bd49d5",
+    "friendly_name": "Jewelry.Bonney-G_x_Monkey.D.Luffy-RG",
+    "date": "2026-09-20",
+    "p1": {
+      "name": "You",
+      "leader_code": "OP07-019",
+      "leader_name": "Jewelry Bonney",
+      "slug": "Jewelry.Bonney-G"
+    },
+    "p2": {
+      "name": "Opponent",
+      "leader_code": "OP13-001",
+      "leader_name": "Monkey D. Luffy",
+      "slug": "Monkey.D.Luffy-RG"
+    },
+    "turns": 12,
+    "winner": "p2",
+    "bot_side": null,
+    "tipo": "cpu_vs_cpu",
+    "log_file": "raw/Jewelry.Bonney-G_x_Monkey.D.Luffy-RG_2026-09-20T21.09.28.log",
+    "parsed_file": "parsed/Jewelry.Bonney-G_x_Monkey.D.Luffy-RG_2026-09-20T21.09.28.json",
+    "deck_files": {
+      "You": "decks/Jewelry.Bonney-G_2026-09-20T21.09.28.json",
+      "Opponent": "decks/Monkey.D.Luffy-RG_2026-09-20T21.09.28.json"
+    },
+    "deck_full_files": {
+      "You": "decks_full/Jewelry.Bonney-G_2026-09-20T21.09.28.json",
+      "Opponent": "decks_full/Monkey.D.Luffy-RG_2026-09-20T21.09.28.json"
+    },
+    "decision_log_file": "decisions/decisions_2026-09-20T21.09.28.jsonl"
+  },
+  {
+    "id": "2026-09-20T21.39.19",
+    "impressao": "523da5edbf09304fe7e5bdb4375163f9",
+    "friendly_name": "Jewelry.Bonney-G_x_Monkey.D.Luffy-RG",
+    "date": "2026-09-20",
+    "p1": {
+      "name": "You",
+      "leader_code": "OP07-019",
+      "leader_name": "Jewelry Bonney",
+      "slug": "Jewelry.Bonney-G"
+    },
+    "p2": {
+      "name": "Opponent",
+      "leader_code": "OP13-001",
+      "leader_name": "Monkey D. Luffy",
+      "slug": "Monkey.D.Luffy-RG"
+    },
+    "turns": 11,
+    "winner": "p1",
+    "bot_side": null,
+    "tipo": "cpu_vs_cpu",
+    "log_file": "raw/Jewelry.Bonney-G_x_Monkey.D.Luffy-RG_2026-09-20T21.39.19.log",
+    "parsed_file": "parsed/Jewelry.Bonney-G_x_Monkey.D.Luffy-RG_2026-09-20T21.39.19.json",
+    "deck_files": {
+      "You": "decks/Jewelry.Bonney-G_2026-09-20T21.39.19.json",
+      "Opponent": "decks/Monkey.D.Luffy-RG_2026-09-20T21.39.19.json"
+    },
+    "deck_full_files": {
+      "You": "decks_full/Jewelry.Bonney-G_2026-09-20T21.39.19.json",
+      "Opponent": "decks_full/Monkey.D.Luffy-RG_2026-09-20T21.39.19.json"
+    },
+    "decision_log_file": "decisions/decisions_2026-09-20T21.39.19.jsonl"
   }
 ]

@@ -1,0 +1,73 @@
+{
+  "leader": "OP13-001",
+  "source_deck": "Luffy RG",
+  "source_dir": "E:\\Games\\OnePieceSimulador\\Builds_Windows\\Decks",
+  "captured_at_ingest": true,
+  "cards": [
+    {
+      "code": "EB02-017",
+      "count": 4
+    },
+    {
+      "code": "EB04-007",
+      "count": 4
+    },
+    {
+      "code": "OP01-016",
+      "count": 4
+    },
+    {
+      "code": "OP05-038",
+      "count": 4
+    },
+    {
+      "code": "OP10-011",
+      "count": 1
+    },
+    {
+      "code": "OP13-027",
+      "count": 4
+    },
+    {
+      "code": "OP13-037",
+      "count": 3
+    },
+    {
+      "code": "OP13-040",
+      "count": 4
+    },
+    {
+      "code": "OP13-118",
+      "count": 3
+    },
+    {
+      "code": "OP14-022",
+      "count": 4
+    },
+    {
+      "code": "OP14-031",
+      "count": 3
+    },
+    {
+      "code": "OP15-032",
+      "count": 1
+    },
+    {
+      "code": "OP15-035",
+      "count": 3
+    },
+    {
+      "code": "OP16-004",
+      "count": 3
+    },
+    {
+      "code": "ST21-003",
+      "count": 1
+    },
+    {
+      "code": "ST31-005",
+      "count": 4
+    }
+  ],
+  "total": 50
+}

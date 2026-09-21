@@ -1,0 +1,71 @@
+{
+  "cards": [
+    {
+      "code": "EB01-015",
+      "name": "Scratchmen Apoo",
+      "count": 4
+    },
+    {
+      "code": "ST02-007",
+      "name": "Jewelry Bonney",
+      "count": 3
+    },
+    {
+      "code": "OP07-021",
+      "name": "Uroge",
+      "count": 3
+    },
+    {
+      "code": "ST02-013",
+      "name": "ST02-013",
+      "count": 2
+    },
+    {
+      "code": "OP01-058",
+      "name": "OP01-058",
+      "count": 1
+    },
+    {
+      "code": "OP07-026",
+      "name": "OP07-026",
+      "count": 1
+    },
+    {
+      "code": "OP07-029",
+      "name": "Basil Hawkins",
+      "count": 1
+    },
+    {
+      "code": "ST16-004",
+      "name": "Shanks",
+      "count": 1
+    },
+    {
+      "code": "OP05-030",
+      "name": "OP05-030",
+      "count": 1
+    },
+    {
+      "code": "EB01-012",
+      "name": "Cavendish",
+      "count": 1
+    },
+    {
+      "code": "OP04-031",
+      "name": "Donquixote Doflamingo",
+      "count": 1
+    },
+    {
+      "code": "OP05-037",
+      "name": "OP05-037",
+      "count": 1
+    },
+    {
+      "code": "OP01-051",
+      "name": "OP01-051",
+      "count": 1
+    }
+  ],
+  "total_seen": 21,
+  "leader": "OP07-019"
+}

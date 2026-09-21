@@ -1,0 +1,66 @@
+{
+  "cards": [
+    {
+      "code": "OP05-037",
+      "name": "OP05-037",
+      "count": 2
+    },
+    {
+      "code": "OP01-058",
+      "name": "OP01-058",
+      "count": 2
+    },
+    {
+      "code": "OP04-029",
+      "name": "Dellinger",
+      "count": 2
+    },
+    {
+      "code": "OP08-036",
+      "name": "OP08-036",
+      "count": 1
+    },
+    {
+      "code": "OP07-029",
+      "name": "OP07-029",
+      "count": 1
+    },
+    {
+      "code": "OP04-031",
+      "name": "Donquixote Doflamingo",
+      "count": 1
+    },
+    {
+      "code": "ST02-013",
+      "name": "ST02-013",
+      "count": 1
+    },
+    {
+      "code": "OP04-032",
+      "name": "OP04-032",
+      "count": 1
+    },
+    {
+      "code": "ST16-004",
+      "name": "Shanks",
+      "count": 1
+    },
+    {
+      "code": "OP05-034",
+      "name": "OP05-034",
+      "count": 1
+    },
+    {
+      "code": "EB01-015",
+      "name": "EB01-015",
+      "count": 1
+    },
+    {
+      "code": "OP01-051",
+      "name": "OP01-051",
+      "count": 1
+    }
+  ],
+  "total_seen": 15,
+  "leader": "OP07-019"
+}

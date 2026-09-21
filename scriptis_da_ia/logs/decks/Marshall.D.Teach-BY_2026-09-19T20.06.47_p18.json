@@ -1,0 +1,51 @@
+{
+  "cards": [
+    {
+      "code": "OP09-095",
+      "name": "Laffitte",
+      "count": 4
+    },
+    {
+      "code": "OP16-110",
+      "name": "Vasco Shot",
+      "count": 4
+    },
+    {
+      "code": "OP16-109",
+      "name": "OP16-109",
+      "count": 3
+    },
+    {
+      "code": "OP16-104",
+      "name": "Catarina Devon",
+      "count": 3
+    },
+    {
+      "code": "OP09-093",
+      "name": "OP09-093",
+      "count": 3
+    },
+    {
+      "code": "EB04-058",
+      "name": "EB04-058",
+      "count": 2
+    },
+    {
+      "code": "OP16-119",
+      "name": "Marshall D. Teach",
+      "count": 1
+    },
+    {
+      "code": "OP16-108",
+      "name": "Shiryu",
+      "count": 1
+    },
+    {
+      "code": "OP16-115",
+      "name": "OP16-115",
+      "count": 1
+    }
+  ],
+  "total_seen": 22,
+  "leader": "OP16-080"
+}

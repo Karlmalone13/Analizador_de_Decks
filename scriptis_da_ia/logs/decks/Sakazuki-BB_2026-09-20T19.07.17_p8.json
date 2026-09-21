@@ -1,0 +1,71 @@
+{
+  "cards": [
+    {
+      "code": "EB01-049",
+      "name": "T Bone",
+      "count": 4
+    },
+    {
+      "code": "ST27-005",
+      "name": "Marshall D. Teach",
+      "count": 2
+    },
+    {
+      "code": "OP02-106",
+      "name": "OP02-106",
+      "count": 2
+    },
+    {
+      "code": "OP06-050",
+      "name": "Tashigi",
+      "count": 2
+    },
+    {
+      "code": "OP02-098",
+      "name": "Koby",
+      "count": 2
+    },
+    {
+      "code": "OP05-057",
+      "name": "OP05-057",
+      "count": 1
+    },
+    {
+      "code": "OP03-089",
+      "name": "Brannew",
+      "count": 1
+    },
+    {
+      "code": "EB01-051",
+      "name": "EB01-051",
+      "count": 1
+    },
+    {
+      "code": "OP02-114",
+      "name": "OP02-114",
+      "count": 1
+    },
+    {
+      "code": "OP05-093",
+      "name": "Rob Lucci",
+      "count": 1
+    },
+    {
+      "code": "ST06-008",
+      "name": "ST06-008",
+      "count": 1
+    },
+    {
+      "code": "ST06-006",
+      "name": "ST06-006",
+      "count": 1
+    },
+    {
+      "code": "OP05-091",
+      "name": "OP05-091",
+      "count": 1
+    }
+  ],
+  "total_seen": 20,
+  "leader": "OP05-041"
+}

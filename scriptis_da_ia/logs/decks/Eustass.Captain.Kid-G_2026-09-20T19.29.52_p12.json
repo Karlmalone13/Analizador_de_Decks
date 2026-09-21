@@ -1,0 +1,56 @@
+{
+  "cards": [
+    {
+      "code": "ST02-012",
+      "name": "ST02-012",
+      "count": 3
+    },
+    {
+      "code": "ST02-011",
+      "name": "Heat",
+      "count": 2
+    },
+    {
+      "code": "ST02-013",
+      "name": "Eustass \"Captain\" Kid",
+      "count": 2
+    },
+    {
+      "code": "ST02-014",
+      "name": "ST02-014",
+      "count": 1
+    },
+    {
+      "code": "ST02-004",
+      "name": "Capone \"Gang\" Bege",
+      "count": 1
+    },
+    {
+      "code": "ST02-008",
+      "name": "Scratchmen Apoo",
+      "count": 1
+    },
+    {
+      "code": "ST02-015",
+      "name": "ST02-015",
+      "count": 1
+    },
+    {
+      "code": "ST02-005",
+      "name": "Killer",
+      "count": 1
+    },
+    {
+      "code": "ST02-016",
+      "name": "ST02-016",
+      "count": 1
+    },
+    {
+      "code": "ST02-002",
+      "name": "ST02-002",
+      "count": 1
+    }
+  ],
+  "total_seen": 14,
+  "leader": "ST02-001"
+}

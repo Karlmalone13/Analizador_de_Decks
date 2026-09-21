@@ -1,0 +1,66 @@
+{
+  "cards": [
+    {
+      "code": "OP15-118",
+      "name": "Enel",
+      "count": 3
+    },
+    {
+      "code": "OP15-078",
+      "name": "OP15-078",
+      "count": 2
+    },
+    {
+      "code": "OP15-066",
+      "name": "Satori",
+      "count": 2
+    },
+    {
+      "code": "OP15-075",
+      "name": "OP15-075",
+      "count": 1
+    },
+    {
+      "code": "OP05-077",
+      "name": "OP05-077",
+      "count": 1
+    },
+    {
+      "code": "OP15-061",
+      "name": "Ohm",
+      "count": 1
+    },
+    {
+      "code": "OP10-067",
+      "name": "OP10-067",
+      "count": 1
+    },
+    {
+      "code": "OP13-076",
+      "name": "OP13-076",
+      "count": 1
+    },
+    {
+      "code": "OP15-076",
+      "name": "OP15-076",
+      "count": 1
+    },
+    {
+      "code": "OP15-074",
+      "name": "OP15-074",
+      "count": 1
+    },
+    {
+      "code": "ST10-010",
+      "name": "ST10-010",
+      "count": 1
+    },
+    {
+      "code": "OP09-077",
+      "name": "OP09-077",
+      "count": 1
+    }
+  ],
+  "total_seen": 16,
+  "leader": "OP15-058"
+}

@@ -1,0 +1,66 @@
+{
+  "cards": [
+    {
+      "code": "ST03-002",
+      "name": "ST03-002",
+      "count": 3
+    },
+    {
+      "code": "ST03-013",
+      "name": "ST03-013",
+      "count": 3
+    },
+    {
+      "code": "ST03-012",
+      "name": "ST03-012",
+      "count": 2
+    },
+    {
+      "code": "ST03-014",
+      "name": "Marshall D. Teach",
+      "count": 1
+    },
+    {
+      "code": "ST03-007",
+      "name": "ST03-007",
+      "count": 1
+    },
+    {
+      "code": "ST03-011",
+      "name": "ST03-011",
+      "count": 1
+    },
+    {
+      "code": "ST03-010",
+      "name": "ST03-010",
+      "count": 1
+    },
+    {
+      "code": "ST03-006",
+      "name": "Jinbe",
+      "count": 1
+    },
+    {
+      "code": "ST03-015",
+      "name": "ST03-015",
+      "count": 1
+    },
+    {
+      "code": "ST03-003",
+      "name": "Crocodile",
+      "count": 1
+    },
+    {
+      "code": "ST03-016",
+      "name": "ST03-016",
+      "count": 1
+    },
+    {
+      "code": "ST03-004",
+      "name": "ST03-004",
+      "count": 1
+    }
+  ],
+  "total_seen": 17,
+  "leader": "ST03-001"
+}

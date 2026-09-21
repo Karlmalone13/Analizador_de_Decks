@@ -1,0 +1,1390 @@
+{
+  "meta": {
+    "players": {
+      "p1": {
+        "name": "You",
+        "leader": {
+          "name": "Ace & Newgate",
+          "code": "ST22-001"
+        }
+      },
+      "p2": {
+        "name": "Opponent",
+        "leader": {
+          "name": "Ace & Newgate",
+          "code": "ST22-001"
+        }
+      }
+    },
+    "goes_first": null
+  },
+  "total_turns": 10,
+  "turns": [
+    {
+      "turn": 1,
+      "player": "You",
+      "card_drawn": null,
+      "don_drawn": 1,
+      "actions": [
+        {
+          "type": "activate",
+          "card": "OP08-053",
+          "card_name": "Thank You... For Loving Me!!!",
+          "effects": [
+            "Rest 1 Don",
+            "<b>Reveal and Draw Whitey Bay [\"ST22-011\">ST22-011]</b>"
+          ]
+        },
+        {
+          "type": "activate",
+          "card": "ST22-001",
+          "card_name": "Ace & Newgate",
+          "effects": [
+            "Draw 1 Card"
+          ]
+        }
+      ],
+      "snapshot": {
+        "You": {
+          "hand": [
+            "OP12-058",
+            "OP08-044",
+            "ST22-016",
+            "ST22-011",
+            "ST22-003"
+          ],
+          "board": [],
+          "trash": [
+            "OP08-053"
+          ],
+          "life": 5,
+          "deck": [
+            "OP08-047",
+            "ST22-010",
+            "ST22-012"
+          ],
+          "life_cards": [
+            "OP08-047",
+            "OP08-053",
+            "ST22-010",
+            "ST22-011",
+            "ST22-016"
+          ],
+          "don_cost": [
+            "Don"
+          ],
+          "rested_rz1": {
+            "don_cost": [
+              "Don"
+            ]
+          }
+        },
+        "Opponent": {
+          "hand": [
+            "ST22-009",
+            "OP08-043",
+            "OP08-044",
+            "ST22-009",
+            "ST22-016"
+          ],
+          "trash": [],
+          "board": [],
+          "life": 5,
+          "deck": [
+            "OP08-050",
+            "OP08-056",
+            "OP09-044",
+            "OP12-058",
+            "ST22-003",
+            "ST22-005",
+            "ST22-010",
+            "ST22-011",
+            "ST22-012",
+            "ST22-013"
+          ],
+          "life_cards": [
+            "OP08-047",
+            "OP08-053",
+            "ST22-006",
+            "ST22-015",
+            "ST22-016"
+          ]
+        }
+      }
+    },
+    {
+      "turn": 2,
+      "player": "Opponent",
+      "card_drawn": null,
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "play",
+          "card": "OP08-056",
+          "card_name": "Moby Dick",
+          "effects": []
+        },
+        {
+          "type": "activate",
+          "card": "ST22-001",
+          "card_name": "Ace & Newgate",
+          "effects": [
+            "Draw 1 Card"
+          ]
+        }
+      ],
+      "snapshot": {
+        "Opponent": {
+          "hand": [
+            "OP08-043",
+            "OP08-044",
+            "ST22-009",
+            "ST22-016",
+            "ST22-010"
+          ],
+          "board": [],
+          "trash": [],
+          "life": 5,
+          "deck": [
+            "OP08-050",
+            "OP09-044",
+            "OP12-058",
+            "ST22-003",
+            "ST22-005",
+            "ST22-009",
+            "ST22-011",
+            "ST22-012",
+            "ST22-013"
+          ],
+          "life_cards": [
+            "OP08-047",
+            "OP08-053",
+            "ST22-006",
+            "ST22-015",
+            "ST22-016"
+          ],
+          "don_cost": [
+            "Don",
+            "Don"
+          ],
+          "stage": [
+            "OP08-056"
+          ],
+          "rested_rz1": {
+            "don_cost": [
+              "Don"
+            ]
+          }
+        },
+        "You": {
+          "hand": [
+            "OP12-058",
+            "OP08-044",
+            "ST22-016",
+            "ST22-011",
+            "ST22-003"
+          ],
+          "trash": [
+            "OP08-053"
+          ],
+          "board": [],
+          "life": 5,
+          "deck": [
+            "OP08-047",
+            "ST22-010",
+            "ST22-012"
+          ],
+          "life_cards": [
+            "OP08-047",
+            "OP08-053",
+            "ST22-010",
+            "ST22-011",
+            "ST22-016"
+          ],
+          "don_cost": [
+            "Don"
+          ],
+          "rested_rz1": {
+            "don_cost": [
+              "Don"
+            ]
+          }
+        }
+      }
+    },
+    {
+      "turn": 3,
+      "player": "You",
+      "card_drawn": null,
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "ST22-001",
+          "to_name": "Ace & Newgate",
+          "total": 1
+        },
+        {
+          "type": "attack",
+          "attacker": "Ace & Newgate",
+          "attacker_code": "ST22-001",
+          "target": "Ace & Newgate [\"ST22-001\">ST22-001]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "activate",
+          "card": "ST22-001",
+          "card_name": "Ace & Newgate",
+          "effects": [
+            "Draw 1 Card"
+          ]
+        },
+        {
+          "type": "play",
+          "card": "ST22-011",
+          "card_name": "Whitey Bay",
+          "effects": []
+        },
+        {
+          "type": "play",
+          "card": "ST22-011",
+          "card_name": "Whitey Bay",
+          "effects": []
+        }
+      ],
+      "snapshot": {
+        "You": {
+          "hand": [
+            "OP12-058",
+            "OP08-044",
+            "ST22-016",
+            "ST22-003"
+          ],
+          "board": [
+            "ST22-011",
+            "ST22-011"
+          ],
+          "trash": [
+            "OP08-053"
+          ],
+          "life": 5,
+          "deck": [
+            "OP08-047",
+            "ST22-010",
+            "ST22-012"
+          ],
+          "life_cards": [
+            "OP08-047",
+            "OP08-053",
+            "ST22-010",
+            "ST22-011",
+            "ST22-016"
+          ],
+          "don_cost": [
+            "Don",
+            "Don"
+          ],
+          "attached_don": [
+            "Don"
+          ],
+          "rested_rz1": {
+            "don_cost": [
+              "Don"
+            ]
+          },
+          "rested": {
+            "ST22-011": 2
+          }
+        },
+        "Opponent": {
+          "hand": [
+            "OP08-043",
+            "OP08-044",
+            "ST22-009",
+            "ST22-016",
+            "ST22-010",
+            "ST22-016"
+          ],
+          "trash": [],
+          "board": [],
+          "life": 4,
+          "deck": [
+            "OP08-050",
+            "OP09-044",
+            "OP12-058",
+            "ST22-003",
+            "ST22-005",
+            "ST22-009",
+            "ST22-011",
+            "ST22-012",
+            "ST22-013"
+          ],
+          "life_cards": [
+            "OP08-047",
+            "OP08-053",
+            "ST22-006",
+            "ST22-015"
+          ],
+          "don_cost": [
+            "Don",
+            "Don"
+          ],
+          "stage": [
+            "OP08-056"
+          ],
+          "rested_rz1": {
+            "don_cost": [
+              "Don"
+            ]
+          }
+        }
+      }
+    },
+    {
+      "turn": 4,
+      "player": "Opponent",
+      "card_drawn": null,
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "attack",
+          "attacker": "Ace & Newgate",
+          "attacker_code": "ST22-001",
+          "target": "Ace & Newgate [\"ST22-001\">ST22-001]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "play",
+          "card": "OP08-044",
+          "card_name": "Kingdew",
+          "effects": [
+            "Buff Kingdew [\"OP08-044\">OP08-044] 2000"
+          ]
+        },
+        {
+          "type": "activate",
+          "card": "ST22-001",
+          "card_name": "Ace & Newgate",
+          "effects": [
+            "Draw 1 Card"
+          ]
+        }
+      ],
+      "snapshot": {
+        "Opponent": {
+          "hand": [
+            "OP08-043",
+            "ST22-016",
+            "ST22-010",
+            "ST22-016",
+            "ST22-009",
+            "ST22-006"
+          ],
+          "board": [
+            "OP08-044"
+          ],
+          "trash": [],
+          "life": 4,
+          "deck": [
+            "OP08-050",
+            "OP09-044",
+            "OP12-058",
+            "ST22-003",
+            "ST22-005",
+            "ST22-009",
+            "ST22-011",
+            "ST22-012",
+            "ST22-013"
+          ],
+          "life_cards": [
+            "OP08-047",
+            "OP08-053",
+            "ST22-006",
+            "ST22-015"
+          ],
+          "don_cost": [
+            "Don",
+            "Don",
+            "Don",
+            "Don"
+          ],
+          "stage": [
+            "OP08-056"
+          ],
+          "rested_rz1": {
+            "don_cost": [
+              "Don"
+            ]
+          },
+          "rested": {
+            "OP08-044": 1
+          }
+        },
+        "You": {
+          "hand": [
+            "OP12-058",
+            "OP08-044",
+            "ST22-016",
+            "ST22-003",
+            "OP08-047"
+          ],
+          "trash": [
+            "OP08-053"
+          ],
+          "board": [
+            "ST22-011",
+            "ST22-011"
+          ],
+          "life": 4,
+          "deck": [
+            "OP08-047",
+            "ST22-010",
+            "ST22-012"
+          ],
+          "life_cards": [
+            "OP08-053",
+            "ST22-010",
+            "ST22-011",
+            "ST22-016"
+          ],
+          "don_cost": [
+            "Don",
+            "Don"
+          ],
+          "attached_don": [
+            "Don"
+          ],
+          "rested_rz1": {
+            "don_cost": [
+              "Don"
+            ]
+          },
+          "rested": {
+            "ST22-011": 2
+          }
+        }
+      }
+    },
+    {
+      "turn": 5,
+      "player": "You",
+      "card_drawn": null,
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "play",
+          "card": "ST22-012",
+          "card_name": "Marco",
+          "effects": []
+        },
+        {
+          "type": "activate",
+          "card": "ST22-001",
+          "card_name": "Ace & Newgate",
+          "effects": [
+            "Draw 1 Card"
+          ]
+        },
+        {
+          "type": "attack",
+          "attacker": "Ace & Newgate",
+          "attacker_code": "ST22-001",
+          "target": "Ace & Newgate [\"ST22-001\">ST22-001]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        }
+      ],
+      "snapshot": {
+        "You": {
+          "hand": [
+            "OP12-058",
+            "ST22-016",
+            "ST22-003",
+            "OP08-047",
+            "ST22-013"
+          ],
+          "board": [
+            "ST22-011",
+            "ST22-011",
+            "ST22-012"
+          ],
+          "trash": [
+            "OP08-053"
+          ],
+          "life": 4,
+          "deck": [
+            "OP08-044",
+            "OP08-047",
+            "ST22-010"
+          ],
+          "life_cards": [
+            "OP08-053",
+            "ST22-010",
+            "ST22-011",
+            "ST22-016"
+          ],
+          "don_cost": [
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don"
+          ],
+          "rested_rz1": {
+            "don_cost": [
+              "Don",
+              "Don"
+            ]
+          },
+          "rested": {
+            "ST22-012": 1
+          }
+        },
+        "Opponent": {
+          "hand": [
+            "OP08-043",
+            "ST22-016",
+            "ST22-010",
+            "ST22-016",
+            "ST22-009",
+            "ST22-006",
+            "ST22-015"
+          ],
+          "trash": [],
+          "board": [
+            "OP08-044"
+          ],
+          "life": 3,
+          "deck": [
+            "OP08-050",
+            "OP09-044",
+            "OP12-058",
+            "ST22-003",
+            "ST22-005",
+            "ST22-009",
+            "ST22-011",
+            "ST22-012",
+            "ST22-013"
+          ],
+          "life_cards": [
+            "OP08-047",
+            "OP08-053",
+            "ST22-006"
+          ],
+          "don_cost": [
+            "Don",
+            "Don",
+            "Don",
+            "Don"
+          ],
+          "stage": [
+            "OP08-056"
+          ],
+          "rested_rz1": {
+            "don_cost": [
+              "Don"
+            ]
+          },
+          "rested": {
+            "OP08-044": 1
+          }
+        }
+      }
+    },
+    {
+      "turn": 6,
+      "player": "Opponent",
+      "card_drawn": null,
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "attack",
+          "attacker": "Ace & Newgate",
+          "attacker_code": "ST22-001",
+          "target": "Ace & Newgate [\"ST22-001\">ST22-001]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP08-044",
+          "to_name": "Kingdew",
+          "total": 1
+        },
+        {
+          "type": "attack",
+          "attacker": "Kingdew",
+          "attacker_code": "OP08-044",
+          "target": "Ace & Newgate [\"ST22-001\">ST22-001]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": [
+            "OP08-047"
+          ]
+        },
+        {
+          "type": "activate",
+          "card": "ST22-001",
+          "card_name": "Ace & Newgate",
+          "effects": [
+            "Draw 1 Card"
+          ]
+        },
+        {
+          "type": "play",
+          "card": "OP09-044",
+          "card_name": "Izou",
+          "effects": []
+        },
+        {
+          "type": "play",
+          "card": "ST22-009",
+          "card_name": "Vista",
+          "effects": []
+        },
+        {
+          "type": "play",
+          "card": "ST22-009",
+          "card_name": "Vista",
+          "effects": []
+        }
+      ],
+      "snapshot": {
+        "Opponent": {
+          "hand": [
+            "OP08-043",
+            "ST22-016",
+            "ST22-010",
+            "ST22-016",
+            "ST22-015"
+          ],
+          "board": [
+            "OP08-044",
+            "OP09-044",
+            "ST22-009",
+            "ST22-009"
+          ],
+          "trash": [],
+          "life": 3,
+          "deck": [
+            "OP08-050",
+            "OP12-058",
+            "ST22-003",
+            "ST22-005",
+            "ST22-006",
+            "ST22-011",
+            "ST22-012",
+            "ST22-013"
+          ],
+          "life_cards": [
+            "OP08-047",
+            "OP08-053",
+            "ST22-006"
+          ],
+          "don_cost": [
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don"
+          ],
+          "stage": [
+            "OP08-056"
+          ],
+          "attached_don": [
+            "Don"
+          ],
+          "rested_rz1": {
+            "don_cost": [
+              "Don"
+            ]
+          },
+          "rested": {
+            "OP08-044": 1,
+            "OP09-044": 1,
+            "ST22-009": 2
+          }
+        },
+        "You": {
+          "hand": [
+            "OP12-058",
+            "ST22-016",
+            "ST22-003",
+            "ST22-013",
+            "ST22-011"
+          ],
+          "trash": [
+            "OP08-053",
+            "OP08-047"
+          ],
+          "board": [
+            "ST22-011",
+            "ST22-011",
+            "ST22-012"
+          ],
+          "life": 3,
+          "deck": [
+            "OP08-044",
+            "OP08-047",
+            "ST22-010"
+          ],
+          "life_cards": [
+            "OP08-053",
+            "ST22-010",
+            "ST22-016"
+          ],
+          "don_cost": [
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don"
+          ],
+          "rested_rz1": {
+            "don_cost": [
+              "Don",
+              "Don"
+            ]
+          },
+          "rested": {
+            "ST22-012": 1
+          }
+        }
+      }
+    },
+    {
+      "turn": 7,
+      "player": "You",
+      "card_drawn": null,
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "play",
+          "card": "OP08-044",
+          "card_name": "Kingdew",
+          "effects": [
+            "Buff Kingdew [\"OP08-044\">OP08-044] 2000"
+          ]
+        },
+        {
+          "type": "activate",
+          "card": "ST22-001",
+          "card_name": "Ace & Newgate",
+          "effects": [
+            "Draw 1 Card"
+          ]
+        },
+        {
+          "type": "attack",
+          "attacker": "Marco",
+          "attacker_code": "ST22-012",
+          "target": "Ace & Newgate [\"ST22-001\">ST22-001]",
+          "result": "hit",
+          "damage": null,
+          "blocked_by": "ST22-009",
+          "countered_by": []
+        },
+        {
+          "type": "activate",
+          "card": "ST22-012",
+          "card_name": "Marco",
+          "effects": [
+            "Grant Marco [\"ST22-012\">ST22-012] 1000 until opponent's next turn end"
+          ]
+        },
+        {
+          "type": "attack",
+          "attacker": "Ace & Newgate",
+          "attacker_code": "ST22-001",
+          "target": "Ace & Newgate [\"ST22-001\">ST22-001]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": [
+            "ST22-010"
+          ]
+        },
+        {
+          "type": "attach_don",
+          "amount": 3,
+          "to": "ST22-011",
+          "to_name": "Whitey Bay",
+          "total": 3
+        },
+        {
+          "type": "attack",
+          "attacker": "Whitey Bay",
+          "attacker_code": "ST22-011",
+          "target": "Kingdew [\"OP08-044\">OP08-044]",
+          "result": "hit",
+          "damage": null,
+          "blocked_by": "ST22-009",
+          "countered_by": []
+        }
+      ],
+      "snapshot": {
+        "You": {
+          "hand": [
+            "OP12-058",
+            "ST22-016",
+            "ST22-003",
+            "ST22-011",
+            "ST22-015"
+          ],
+          "board": [
+            "ST22-011",
+            "ST22-011",
+            "ST22-012",
+            "OP08-044"
+          ],
+          "trash": [
+            "OP08-053",
+            "OP08-047"
+          ],
+          "life": 3,
+          "deck": [
+            "OP08-047",
+            "ST22-010",
+            "ST22-013"
+          ],
+          "life_cards": [
+            "OP08-053",
+            "ST22-010",
+            "ST22-016"
+          ],
+          "don_cost": [
+            "Don",
+            "Don",
+            "Don",
+            "Don"
+          ],
+          "attached_don": [
+            "Don",
+            "Don",
+            "Don"
+          ],
+          "rested": {
+            "ST22-011": 1,
+            "ST22-012": 1,
+            "OP08-044": 1
+          }
+        },
+        "Opponent": {
+          "hand": [
+            "OP08-043",
+            "ST22-016",
+            "ST22-016",
+            "ST22-015"
+          ],
+          "trash": [
+            "ST22-009",
+            "ST22-010",
+            "ST22-009"
+          ],
+          "board": [
+            "OP08-044",
+            "OP09-044"
+          ],
+          "life": 3,
+          "deck": [
+            "OP08-050",
+            "OP12-058",
+            "ST22-003",
+            "ST22-005",
+            "ST22-006",
+            "ST22-011",
+            "ST22-012",
+            "ST22-013"
+          ],
+          "life_cards": [
+            "OP08-047",
+            "OP08-053",
+            "ST22-006"
+          ],
+          "don_cost": [
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don"
+          ],
+          "stage": [
+            "OP08-056"
+          ],
+          "attached_don": [
+            "Don"
+          ],
+          "rested_rz1": {
+            "don_cost": [
+              "Don"
+            ]
+          },
+          "rested": {
+            "OP08-044": 1,
+            "OP09-044": 1
+          }
+        }
+      }
+    },
+    {
+      "turn": 8,
+      "player": "Opponent",
+      "card_drawn": null,
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "activate",
+          "card": "ST22-001",
+          "card_name": "Ace & Newgate",
+          "effects": [
+            "Draw 1 Card"
+          ]
+        },
+        {
+          "type": "attack",
+          "attacker": "Ace & Newgate",
+          "attacker_code": "ST22-001",
+          "target": "Ace & Newgate [\"ST22-001\">ST22-001]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": [
+            "ST22-011"
+          ]
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP09-044",
+          "to_name": "Izou",
+          "total": 1
+        },
+        {
+          "type": "attack",
+          "attacker": "Izou",
+          "attacker_code": "OP09-044",
+          "target": "Ace & Newgate [\"ST22-001\">ST22-001]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "activate",
+          "card": "OP09-044",
+          "card_name": "Izou",
+          "effects": [
+            "<b>Reveal and Draw Jozu [\"OP08-047\">OP08-047]</b>",
+            "Trash Edward Newgate [\"OP08-043\">OP08-043]"
+          ]
+        },
+        {
+          "type": "play",
+          "card": "OP08-047",
+          "card_name": "Jozu",
+          "effects": []
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP08-044",
+          "to_name": "Kingdew",
+          "total": 1
+        },
+        {
+          "type": "attack",
+          "attacker": "Kingdew",
+          "attacker_code": "OP08-044",
+          "target": "Ace & Newgate [\"ST22-001\">ST22-001]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        }
+      ],
+      "snapshot": {
+        "Opponent": {
+          "hand": [
+            "ST22-016",
+            "ST22-015",
+            "ST22-006",
+            "ST22-005"
+          ],
+          "board": [
+            "OP08-044",
+            "OP09-044",
+            "OP08-047"
+          ],
+          "trash": [
+            "ST22-009",
+            "ST22-010",
+            "ST22-009",
+            "OP08-043"
+          ],
+          "life": 3,
+          "deck": [
+            "OP08-050",
+            "OP12-058",
+            "ST22-003",
+            "ST22-009",
+            "ST22-011",
+            "ST22-012",
+            "ST22-013",
+            "ST22-016"
+          ],
+          "life_cards": [
+            "OP08-047",
+            "OP08-053",
+            "ST22-006"
+          ],
+          "don_cost": [
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don"
+          ],
+          "stage": [
+            "OP08-056"
+          ],
+          "attached_don": [
+            "Don",
+            "Don"
+          ],
+          "rested": {
+            "OP08-044": 1,
+            "OP09-044": 1,
+            "OP08-047": 1
+          }
+        },
+        "You": {
+          "hand": [
+            "OP12-058",
+            "ST22-016",
+            "ST22-003",
+            "ST22-015",
+            "OP08-053",
+            "ST22-010"
+          ],
+          "trash": [
+            "OP08-053",
+            "OP08-047",
+            "ST22-011"
+          ],
+          "board": [
+            "ST22-011",
+            "ST22-011",
+            "ST22-012",
+            "OP08-044"
+          ],
+          "life": 1,
+          "deck": [
+            "OP08-047",
+            "ST22-010",
+            "ST22-013"
+          ],
+          "life_cards": [
+            "ST22-016"
+          ],
+          "don_cost": [
+            "Don",
+            "Don",
+            "Don",
+            "Don"
+          ],
+          "attached_don": [
+            "Don",
+            "Don",
+            "Don"
+          ],
+          "rested": {
+            "ST22-011": 1,
+            "ST22-012": 1,
+            "OP08-044": 1
+          }
+        }
+      }
+    },
+    {
+      "turn": 9,
+      "player": "You",
+      "card_drawn": null,
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "activate",
+          "card": "ST22-015",
+          "card_name": "I Am Whitebeard!",
+          "effects": [
+            "Rest 8 Don",
+            "Deploy Edward Newgate [\"ST22-003\">ST22-003]",
+            "Takes Bottom Life",
+            "Grant Ace & Newgate [\"ST22-001\">ST22-001] 2000 until opponent's next turn end"
+          ]
+        },
+        {
+          "type": "activate",
+          "card": "ST22-003",
+          "card_name": "Edward Newgate",
+          "effects": [
+            "Draw 2 Card"
+          ]
+        },
+        {
+          "type": "activate",
+          "card": "ST22-001",
+          "card_name": "Ace & Newgate",
+          "effects": [
+            "Draw 1 Card"
+          ]
+        },
+        {
+          "type": "attack",
+          "attacker": "Marco",
+          "attacker_code": "ST22-012",
+          "target": "Ace & Newgate [\"ST22-001\">ST22-001]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "activate",
+          "card": "ST22-012",
+          "card_name": "Marco",
+          "effects": [
+            "Grant Marco [\"ST22-012\">ST22-012] 1000 until opponent's next turn end"
+          ]
+        },
+        {
+          "type": "attack",
+          "attacker": "Ace & Newgate",
+          "attacker_code": "ST22-001",
+          "target": "Ace & Newgate [\"ST22-001\">ST22-001]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP08-044",
+          "to_name": "Kingdew",
+          "total": 1
+        },
+        {
+          "type": "attack",
+          "attacker": "Kingdew",
+          "attacker_code": "OP08-044",
+          "target": "Ace & Newgate [\"ST22-001\">ST22-001]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": [
+            "ST22-006"
+          ]
+        }
+      ],
+      "snapshot": {
+        "You": {
+          "hand": [
+            "OP12-058",
+            "ST22-016",
+            "OP08-053",
+            "ST22-010",
+            "ST22-013",
+            "ST22-016",
+            "ST22-005",
+            "OP08-050"
+          ],
+          "board": [
+            "ST22-011",
+            "ST22-011",
+            "ST22-012",
+            "OP08-044",
+            "ST22-003"
+          ],
+          "trash": [
+            "OP08-053",
+            "OP08-047",
+            "ST22-011",
+            "ST22-015"
+          ],
+          "life": 0,
+          "deck": [
+            "OP08-047",
+            "OP08-056",
+            "ST22-010"
+          ],
+          "don_cost": [
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don"
+          ],
+          "attached_don": [
+            "Don"
+          ],
+          "rested_rz1": {
+            "don_cost": [
+              "Don",
+              "Don"
+            ]
+          },
+          "rested": {
+            "ST22-012": 1,
+            "OP08-044": 1
+          }
+        },
+        "Opponent": {
+          "hand": [
+            "ST22-016",
+            "ST22-015",
+            "ST22-005",
+            "OP08-047",
+            "OP08-053"
+          ],
+          "trash": [
+            "ST22-009",
+            "ST22-010",
+            "ST22-009",
+            "OP08-043",
+            "ST22-006"
+          ],
+          "board": [
+            "OP08-044",
+            "OP09-044",
+            "OP08-047"
+          ],
+          "life": 1,
+          "deck": [
+            "OP08-050",
+            "OP12-058",
+            "ST22-003",
+            "ST22-009",
+            "ST22-011",
+            "ST22-012",
+            "ST22-013",
+            "ST22-016"
+          ],
+          "life_cards": [
+            "ST22-006"
+          ],
+          "don_cost": [
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don"
+          ],
+          "stage": [
+            "OP08-056"
+          ],
+          "attached_don": [
+            "Don",
+            "Don"
+          ],
+          "rested": {
+            "OP08-044": 1,
+            "OP09-044": 1,
+            "OP08-047": 1
+          }
+        }
+      }
+    },
+    {
+      "turn": 10,
+      "player": "Opponent",
+      "card_drawn": null,
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP08-047",
+          "to_name": "Jozu",
+          "total": 1
+        },
+        {
+          "type": "attack",
+          "attacker": "Jozu",
+          "attacker_code": "OP08-047",
+          "target": "Ace & Newgate [\"ST22-001\">ST22-001]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": [
+            "ST22-013",
+            "OP08-050"
+          ]
+        },
+        {
+          "type": "attach_don",
+          "amount": 3,
+          "to": "OP08-044",
+          "to_name": "Kingdew",
+          "total": 3
+        },
+        {
+          "type": "attack",
+          "attacker": "Kingdew",
+          "attacker_code": "OP08-044",
+          "target": "Ace & Newgate [\"ST22-001\">ST22-001]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": [
+            "ST22-010"
+          ]
+        },
+        {
+          "type": "attach_don",
+          "amount": 3,
+          "to": "OP09-044",
+          "to_name": "Izou",
+          "total": 3
+        },
+        {
+          "type": "attack",
+          "attacker": "Izou",
+          "attacker_code": "OP09-044",
+          "target": "Ace & Newgate [\"ST22-001\">ST22-001]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "activate",
+          "card": "OP09-044",
+          "card_name": "Izou",
+          "effects": [
+            "<b>Reveal and Draw Jozu [\"OP08-047\">OP08-047]</b>",
+            "Trash Kouzuki Oden [\"ST22-005\">ST22-005]"
+          ]
+        }
+      ],
+      "snapshot": {}
+    }
+  ]
+}

@@ -1,0 +1,46 @@
+{
+  "cards": [
+    {
+      "code": "OP16-096",
+      "name": "OP16-096",
+      "count": 3
+    },
+    {
+      "code": "OP16-097",
+      "name": "Yamato",
+      "count": 2
+    },
+    {
+      "code": "OP16-098",
+      "name": "Yamato",
+      "count": 2
+    },
+    {
+      "code": "OP14-096",
+      "name": "OP14-096",
+      "count": 2
+    },
+    {
+      "code": "OP16-081",
+      "name": "Otama",
+      "count": 1
+    },
+    {
+      "code": "OP16-084",
+      "name": "OP16-084",
+      "count": 1
+    },
+    {
+      "code": "OP16-087",
+      "name": "OP16-087",
+      "count": 1
+    },
+    {
+      "code": "OP16-099",
+      "name": "OP16-099",
+      "count": 1
+    }
+  ],
+  "total_seen": 13,
+  "leader": "OP16-079"
+}

@@ -1,0 +1,56 @@
+{
+  "cards": [
+    {
+      "code": "EB02-035",
+      "name": "Sanji & Pudding",
+      "count": 3
+    },
+    {
+      "code": "OP07-066",
+      "name": "OP07-066",
+      "count": 2
+    },
+    {
+      "code": "OP11-072",
+      "name": "Charlotte Montdor",
+      "count": 2
+    },
+    {
+      "code": "OP01-119",
+      "name": "OP01-119",
+      "count": 1
+    },
+    {
+      "code": "OP08-074",
+      "name": "OP08-074",
+      "count": 1
+    },
+    {
+      "code": "OP08-076",
+      "name": "OP08-076",
+      "count": 1
+    },
+    {
+      "code": "OP11-070",
+      "name": "Charlotte Pudding",
+      "count": 1
+    },
+    {
+      "code": "ST04-016",
+      "name": "ST04-016",
+      "count": 1
+    },
+    {
+      "code": "OP08-069",
+      "name": "Charlotte Linlin",
+      "count": 1
+    },
+    {
+      "code": "ST04-005",
+      "name": "ST04-005",
+      "count": 1
+    }
+  ],
+  "total_seen": 14,
+  "leader": "ST04-001"
+}

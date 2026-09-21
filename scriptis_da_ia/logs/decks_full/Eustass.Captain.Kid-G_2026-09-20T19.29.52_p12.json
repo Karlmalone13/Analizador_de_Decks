@@ -1,0 +1,73 @@
+{
+  "leader": "ST02-001",
+  "source_deck": "ST02 - Worst Generation",
+  "source_dir": "E:\\Games\\OnePieceSimulador\\Builds_Windows\\Decks",
+  "captured_at_ingest": true,
+  "cards": [
+    {
+      "code": "ST02-002",
+      "count": 4
+    },
+    {
+      "code": "ST02-003",
+      "count": 2
+    },
+    {
+      "code": "ST02-004",
+      "count": 4
+    },
+    {
+      "code": "ST02-005",
+      "count": 2
+    },
+    {
+      "code": "ST02-006",
+      "count": 4
+    },
+    {
+      "code": "ST02-007",
+      "count": 4
+    },
+    {
+      "code": "ST02-008",
+      "count": 4
+    },
+    {
+      "code": "ST02-009",
+      "count": 2
+    },
+    {
+      "code": "ST02-010",
+      "count": 2
+    },
+    {
+      "code": "ST02-011",
+      "count": 4
+    },
+    {
+      "code": "ST02-012",
+      "count": 4
+    },
+    {
+      "code": "ST02-013",
+      "count": 2
+    },
+    {
+      "code": "ST02-014",
+      "count": 4
+    },
+    {
+      "code": "ST02-015",
+      "count": 2
+    },
+    {
+      "code": "ST02-016",
+      "count": 4
+    },
+    {
+      "code": "ST02-017",
+      "count": 2
+    }
+  ],
+  "total": 50
+}

@@ -1,0 +1,56 @@
+{
+  "cards": [
+    {
+      "code": "EB04-007",
+      "name": "Roronoa Zoro",
+      "count": 3
+    },
+    {
+      "code": "OP05-038",
+      "name": "OP05-038",
+      "count": 3
+    },
+    {
+      "code": "OP14-022",
+      "name": "Usopp",
+      "count": 2
+    },
+    {
+      "code": "ST21-003",
+      "name": "Sanji",
+      "count": 1
+    },
+    {
+      "code": "OP15-035",
+      "name": "OP15-035",
+      "count": 1
+    },
+    {
+      "code": "OP14-031",
+      "name": "OP14-031",
+      "count": 1
+    },
+    {
+      "code": "OP13-027",
+      "name": "Sanji",
+      "count": 1
+    },
+    {
+      "code": "ST31-005",
+      "name": "Thousand Sunny",
+      "count": 1
+    },
+    {
+      "code": "OP16-004",
+      "name": "OP16-004",
+      "count": 1
+    },
+    {
+      "code": "OP10-011",
+      "name": "OP10-011",
+      "count": 1
+    }
+  ],
+  "total_seen": 15,
+  "leader": "OP13-001"
+}

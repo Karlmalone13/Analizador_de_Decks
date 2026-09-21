@@ -1,0 +1,1792 @@
+{
+  "meta": {
+    "players": {
+      "p1": {
+        "name": "You",
+        "leader": {
+          "name": "Donquixote Doflamingo",
+          "code": "OP04-019"
+        }
+      },
+      "p2": {
+        "name": "Opponent",
+        "leader": {
+          "name": "Charlotte Katakuri",
+          "code": "OP11-062"
+        }
+      }
+    },
+    "goes_first": null
+  },
+  "total_turns": 14,
+  "turns": [
+    {
+      "turn": 1,
+      "player": "You",
+      "card_drawn": null,
+      "don_drawn": 1,
+      "actions": [],
+      "snapshot": {
+        "You": {
+          "hand": [
+            "OP04-035",
+            "OP04-037",
+            "OP14-078",
+            "OP04-035",
+            "OP04-035"
+          ],
+          "board": [],
+          "trash": [],
+          "life": 4,
+          "life_cards": [
+            "OP04-029",
+            "OP04-037",
+            "OP10-062",
+            "OP14-069"
+          ],
+          "don_cost": [
+            "Don"
+          ]
+        },
+        "Opponent": {
+          "hand": [
+            "OP15-078",
+            "ST34-004",
+            "OP11-067",
+            "OP11-073",
+            "OP13-076"
+          ],
+          "trash": [],
+          "board": [],
+          "life": 5,
+          "deck": [
+            "OP07-077",
+            "OP08-069",
+            "OP15-069",
+            "PRB02-010",
+            "ST18-001",
+            "ST34-003",
+            "ST34-005"
+          ],
+          "life_cards": [
+            "OP11-067",
+            "OP11-070",
+            "OP15-078",
+            "ST34-001",
+            "ST34-002"
+          ]
+        }
+      }
+    },
+    {
+      "turn": 2,
+      "player": "Opponent",
+      "card_drawn": null,
+      "don_drawn": 2,
+      "actions": [],
+      "snapshot": {
+        "Opponent": {
+          "hand": [
+            "OP15-078",
+            "ST34-004",
+            "OP11-067",
+            "OP11-073",
+            "OP13-076",
+            "OP11-067"
+          ],
+          "board": [],
+          "trash": [],
+          "life": 5,
+          "deck": [
+            "OP07-077",
+            "OP08-069",
+            "OP15-069",
+            "PRB02-010",
+            "ST18-001",
+            "ST34-003",
+            "ST34-005"
+          ],
+          "life_cards": [
+            "OP11-067",
+            "OP11-070",
+            "OP15-078",
+            "ST34-001",
+            "ST34-002"
+          ],
+          "don_cost": [
+            "Don",
+            "Don"
+          ]
+        },
+        "You": {
+          "hand": [
+            "OP04-035",
+            "OP04-037",
+            "OP14-078",
+            "OP04-035",
+            "OP04-035"
+          ],
+          "trash": [],
+          "board": [],
+          "life": 4,
+          "life_cards": [
+            "OP04-029",
+            "OP04-037",
+            "OP10-062",
+            "OP14-069"
+          ],
+          "don_cost": [
+            "Don"
+          ]
+        }
+      }
+    },
+    {
+      "turn": 3,
+      "player": "You",
+      "card_drawn": null,
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP04-019",
+          "to_name": "Donquixote Doflamingo",
+          "total": 1
+        },
+        {
+          "type": "attack",
+          "attacker": "Donquixote Doflamingo",
+          "attacker_code": "OP04-019",
+          "target": "Charlotte Katakuri [\"OP11-062\">OP11-062]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "play",
+          "card": "OP05-034",
+          "card_name": "Baby 5",
+          "effects": [
+            "<b>Reveal and Draw Charlestone [\"OP05-038\">OP05-038]</b>"
+          ]
+        },
+        {
+          "type": "activate",
+          "card": "OP04-019",
+          "card_name": "Donquixote Doflamingo",
+          "effects": [
+            "Activate 2 Don"
+          ]
+        }
+      ],
+      "snapshot": {
+        "You": {
+          "hand": [
+            "OP04-035",
+            "OP04-037",
+            "OP14-078",
+            "OP04-035",
+            "OP04-035",
+            "OP05-038"
+          ],
+          "board": [
+            "OP05-034"
+          ],
+          "trash": [],
+          "life": 4,
+          "deck": [
+            "OP04-031",
+            "OP05-037",
+            "OP12-037"
+          ],
+          "life_cards": [
+            "OP04-029",
+            "OP04-037",
+            "OP10-062",
+            "OP14-069"
+          ],
+          "don_cost": [
+            "Don",
+            "Don"
+          ],
+          "attached_don": [
+            "Don"
+          ],
+          "rested": {
+            "OP05-034": 1
+          }
+        },
+        "Opponent": {
+          "hand": [
+            "OP15-078",
+            "ST34-004",
+            "OP11-067",
+            "OP11-073",
+            "OP11-067",
+            "ST34-001"
+          ],
+          "trash": [
+            "OP13-076"
+          ],
+          "board": [],
+          "life": 4,
+          "deck": [
+            "OP07-077",
+            "OP08-069",
+            "OP15-069",
+            "PRB02-010",
+            "ST18-001",
+            "ST34-003",
+            "ST34-005"
+          ],
+          "life_cards": [
+            "OP11-067",
+            "OP11-070",
+            "OP15-078",
+            "ST34-002"
+          ],
+          "don_cost": [
+            "Don",
+            "Don"
+          ]
+        }
+      }
+    },
+    {
+      "turn": 4,
+      "player": "Opponent",
+      "card_drawn": null,
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "attack",
+          "attacker": "Charlotte Katakuri",
+          "attacker_code": "OP11-062",
+          "target": "Donquixote Doflamingo [\"OP04-019\">OP04-019]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": []
+        }
+      ],
+      "snapshot": {
+        "Opponent": {
+          "hand": [
+            "ST34-004",
+            "OP11-067",
+            "OP11-073",
+            "OP11-067",
+            "ST34-001",
+            "ST18-001"
+          ],
+          "board": [],
+          "trash": [
+            "OP13-076",
+            "OP15-078"
+          ],
+          "life": 4,
+          "deck": [
+            "OP07-077",
+            "OP08-069",
+            "OP15-069",
+            "PRB02-010",
+            "ST34-003",
+            "ST34-005"
+          ],
+          "life_cards": [
+            "OP11-067",
+            "OP11-070",
+            "OP15-078",
+            "ST34-002"
+          ],
+          "don_cost": [
+            "Don",
+            "Don",
+            "Don",
+            "Don"
+          ]
+        },
+        "You": {
+          "hand": [
+            "OP04-037",
+            "OP14-078",
+            "OP04-035",
+            "OP04-035",
+            "OP05-038"
+          ],
+          "trash": [
+            "OP04-035"
+          ],
+          "board": [
+            "OP05-034"
+          ],
+          "life": 4,
+          "deck": [
+            "OP04-031",
+            "OP05-037",
+            "OP12-037"
+          ],
+          "life_cards": [
+            "OP04-029",
+            "OP04-037",
+            "OP10-062",
+            "OP14-069"
+          ],
+          "don_cost": [
+            "Don",
+            "Don"
+          ],
+          "attached_don": [
+            "Don"
+          ],
+          "rested_rz1": {
+            "don_cost": [
+              "Don"
+            ]
+          },
+          "rested": {
+            "OP05-034": 1
+          }
+        }
+      }
+    },
+    {
+      "turn": 5,
+      "player": "You",
+      "card_drawn": null,
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "attack",
+          "attacker": "Donquixote Doflamingo",
+          "attacker_code": "OP04-019",
+          "target": "Charlotte Katakuri [\"OP11-062\">OP11-062]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "attach_don",
+          "amount": 4,
+          "to": "OP05-034",
+          "to_name": "Baby 5",
+          "total": 4
+        },
+        {
+          "type": "attack",
+          "attacker": "Baby 5",
+          "attacker_code": "OP05-034",
+          "target": "Charlotte Katakuri [\"OP11-062\">OP11-062]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        }
+      ],
+      "snapshot": {
+        "You": {
+          "hand": [
+            "OP04-037",
+            "OP14-078",
+            "OP04-035",
+            "OP04-035",
+            "OP05-038",
+            "OP04-024"
+          ],
+          "board": [
+            "OP05-034"
+          ],
+          "trash": [
+            "OP04-035"
+          ],
+          "life": 4,
+          "deck": [
+            "OP04-031",
+            "OP05-037",
+            "OP12-037"
+          ],
+          "life_cards": [
+            "OP04-029",
+            "OP04-037",
+            "OP10-062",
+            "OP14-069"
+          ],
+          "don_cost": [
+            "Don"
+          ],
+          "attached_don": [
+            "Don",
+            "Don",
+            "Don",
+            "Don"
+          ],
+          "rested": {
+            "OP05-034": 1
+          }
+        },
+        "Opponent": {
+          "hand": [
+            "ST34-004",
+            "OP11-067",
+            "OP11-073",
+            "OP11-067",
+            "ST34-001",
+            "ST18-001",
+            "OP11-070"
+          ],
+          "trash": [
+            "OP13-076",
+            "OP15-078"
+          ],
+          "board": [],
+          "life": 3,
+          "deck": [
+            "OP07-077",
+            "OP08-069",
+            "OP15-069",
+            "PRB02-010",
+            "ST34-003",
+            "ST34-005"
+          ],
+          "life_cards": [
+            "OP11-067",
+            "OP15-078",
+            "ST34-002"
+          ],
+          "don_deck": [
+            "Don"
+          ],
+          "don_cost": [
+            "Don",
+            "Don",
+            "Don"
+          ]
+        }
+      }
+    },
+    {
+      "turn": 6,
+      "player": "Opponent",
+      "card_drawn": null,
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "play",
+          "card": "ST34-001",
+          "card_name": "Charlotte Katakuri",
+          "effects": []
+        },
+        {
+          "type": "attack",
+          "attacker": "Charlotte Katakuri",
+          "attacker_code": "OP11-062",
+          "target": "Baby 5 [\"OP05-034\">OP05-034]",
+          "result": "hit",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "activate",
+          "card": "OP11-062",
+          "card_name": "Charlotte Katakuri",
+          "effects": [
+            "Minus 1 Don",
+            "<b>Looked at opponent's top deck</b>",
+            "<b>Finished looking at opponent's top deck</b>",
+            "Buff Charlotte Katakuri [\"OP11-062\">OP11-062] 1000 for the Combat"
+          ]
+        }
+      ],
+      "snapshot": {
+        "Opponent": {
+          "hand": [
+            "ST34-004",
+            "OP11-067",
+            "OP11-073",
+            "OP11-067",
+            "ST18-001",
+            "OP11-070",
+            "PRB02-010"
+          ],
+          "board": [
+            "ST34-001"
+          ],
+          "trash": [
+            "OP13-076",
+            "OP15-078"
+          ],
+          "life": 3,
+          "deck": [
+            "OP07-077",
+            "OP08-069",
+            "OP15-069",
+            "ST34-003",
+            "ST34-005"
+          ],
+          "life_cards": [
+            "OP11-067",
+            "OP15-078",
+            "ST34-002"
+          ],
+          "don_cost": [
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don"
+          ],
+          "rested_rz1": {
+            "don_cost": [
+              "Don",
+              "Don"
+            ]
+          },
+          "rested": {
+            "ST34-001": 1
+          }
+        },
+        "You": {
+          "hand": [
+            "OP04-037",
+            "OP14-078",
+            "OP04-035",
+            "OP04-035",
+            "OP05-038",
+            "OP04-024"
+          ],
+          "trash": [
+            "OP04-035",
+            "OP05-034"
+          ],
+          "board": [],
+          "life": 4,
+          "deck": [
+            "OP04-031",
+            "OP05-037",
+            "OP12-037"
+          ],
+          "life_cards": [
+            "OP04-029",
+            "OP04-037",
+            "OP10-062",
+            "OP14-069"
+          ],
+          "don_cost": [
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don"
+          ],
+          "rested_rz1": {
+            "don_cost": [
+              "Don",
+              "Don",
+              "Don",
+              "Don"
+            ]
+          }
+        }
+      }
+    },
+    {
+      "turn": 7,
+      "player": "You",
+      "card_drawn": null,
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP04-019",
+          "to_name": "Donquixote Doflamingo",
+          "total": 1
+        },
+        {
+          "type": "attack",
+          "attacker": "Donquixote Doflamingo",
+          "attacker_code": "OP04-019",
+          "target": "Charlotte Katakuri [\"OP11-062\">OP11-062]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": [
+            "OP11-070",
+            "PRB02-010"
+          ]
+        },
+        {
+          "type": "play",
+          "card": "OP04-024",
+          "card_name": "Sugar",
+          "effects": []
+        },
+        {
+          "type": "activate",
+          "card": "OP04-019",
+          "card_name": "Donquixote Doflamingo",
+          "effects": [
+            "Activate 2 Don"
+          ]
+        }
+      ],
+      "snapshot": {
+        "You": {
+          "hand": [
+            "OP04-037",
+            "OP14-078",
+            "OP04-035",
+            "OP04-035",
+            "OP05-038",
+            "OP04-024"
+          ],
+          "board": [
+            "OP04-024"
+          ],
+          "trash": [
+            "OP04-035",
+            "OP05-034"
+          ],
+          "life": 4,
+          "deck": [
+            "OP04-031",
+            "OP05-037",
+            "OP12-037"
+          ],
+          "life_cards": [
+            "OP04-029",
+            "OP04-037",
+            "OP10-062",
+            "OP14-069"
+          ],
+          "don_cost": [
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don"
+          ],
+          "attached_don": [
+            "Don"
+          ],
+          "rested_rz1": {
+            "don_cost": [
+              "Don"
+            ]
+          },
+          "rested": {
+            "OP04-024": 1
+          }
+        },
+        "Opponent": {
+          "hand": [
+            "ST34-004",
+            "OP11-067",
+            "OP11-073",
+            "OP11-067",
+            "ST18-001"
+          ],
+          "trash": [
+            "OP13-076",
+            "OP15-078",
+            "OP11-070",
+            "PRB02-010"
+          ],
+          "board": [
+            "ST34-001"
+          ],
+          "life": 3,
+          "deck": [
+            "OP07-077",
+            "OP08-069",
+            "OP15-069",
+            "ST34-003",
+            "ST34-005"
+          ],
+          "life_cards": [
+            "OP11-067",
+            "OP15-078",
+            "ST34-002"
+          ],
+          "don_cost": [
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don"
+          ],
+          "rested_rz1": {
+            "don_cost": [
+              "Don",
+              "Don"
+            ]
+          },
+          "rested": {
+            "ST34-001": 1
+          }
+        }
+      }
+    },
+    {
+      "turn": 8,
+      "player": "Opponent",
+      "card_drawn": null,
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "play",
+          "card": "OP11-067",
+          "card_name": "Charlotte Katakuri",
+          "effects": [
+            "Set Charlotte Katakuri [\"OP11-067\">OP11-067] to Active",
+            "Set Charlotte Katakuri [\"ST34-001\">ST34-001] to Active"
+          ]
+        },
+        {
+          "type": "attack",
+          "attacker": "Charlotte Katakuri",
+          "attacker_code": "ST34-001",
+          "target": "Donquixote Doflamingo [\"OP04-019\">OP04-019]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "attack",
+          "attacker": "Charlotte Katakuri",
+          "attacker_code": "OP11-062",
+          "target": "Donquixote Doflamingo [\"OP04-019\">OP04-019]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "activate",
+          "card": "OP11-062",
+          "card_name": "Charlotte Katakuri",
+          "effects": [
+            "Minus 1 Don",
+            "<b>Looked at opponent's top deck</b>",
+            "<b>Finished looking at opponent's top deck</b>",
+            "Buff Charlotte Katakuri [\"OP11-062\">OP11-062] 1000 for the Combat"
+          ]
+        }
+      ],
+      "snapshot": {
+        "Opponent": {
+          "hand": [
+            "ST34-004",
+            "OP11-073",
+            "OP11-067",
+            "ST18-001",
+            "OP11-070"
+          ],
+          "board": [
+            "ST34-001",
+            "OP11-067"
+          ],
+          "trash": [
+            "OP13-076",
+            "OP15-078",
+            "OP11-070",
+            "PRB02-010"
+          ],
+          "life": 3,
+          "deck": [
+            "OP07-077",
+            "OP08-069",
+            "OP15-069",
+            "ST34-003",
+            "ST34-005"
+          ],
+          "life_cards": [
+            "OP11-067",
+            "OP15-078",
+            "ST34-002"
+          ],
+          "don_cost": [
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don"
+          ],
+          "rested_rz1": {
+            "don_cost": [
+              "Don",
+              "Don",
+              "Don",
+              "Don"
+            ]
+          },
+          "rested": {
+            "ST34-001": 1,
+            "OP11-067": 1
+          }
+        },
+        "You": {
+          "hand": [
+            "OP04-037",
+            "OP14-078",
+            "OP04-035",
+            "OP05-038",
+            "OP04-024",
+            "OP04-037"
+          ],
+          "trash": [
+            "OP04-035",
+            "OP05-034",
+            "OP04-035"
+          ],
+          "board": [
+            "OP04-024"
+          ],
+          "life": 3,
+          "deck": [
+            "OP04-031",
+            "OP05-037",
+            "OP12-037"
+          ],
+          "life_cards": [
+            "OP04-029",
+            "OP10-062",
+            "OP14-069"
+          ],
+          "don_cost": [
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don"
+          ],
+          "attached_don": [
+            "Don"
+          ],
+          "rested_rz1": {
+            "don_cost": [
+              "Don"
+            ]
+          },
+          "rested": {
+            "OP04-024": 1
+          }
+        }
+      }
+    },
+    {
+      "turn": 9,
+      "player": "You",
+      "card_drawn": null,
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP04-019",
+          "to_name": "Donquixote Doflamingo",
+          "total": 1
+        },
+        {
+          "type": "attack",
+          "attacker": "Donquixote Doflamingo",
+          "attacker_code": "OP04-019",
+          "target": "Charlotte Katakuri [\"OP11-062\">OP11-062]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": [
+            "ST18-001"
+          ]
+        },
+        {
+          "type": "play",
+          "card": "OP05-040",
+          "card_name": "Bird Cage",
+          "effects": []
+        },
+        {
+          "type": "play",
+          "card": "OP04-024",
+          "card_name": "Sugar",
+          "effects": []
+        },
+        {
+          "type": "activate",
+          "card": "OP04-019",
+          "card_name": "Donquixote Doflamingo",
+          "effects": [
+            "Activate 2 Don"
+          ]
+        }
+      ],
+      "snapshot": {
+        "You": {
+          "hand": [
+            "OP04-037",
+            "OP14-078",
+            "OP04-035",
+            "OP05-038",
+            "OP04-037"
+          ],
+          "board": [
+            "OP04-024",
+            "OP04-024"
+          ],
+          "trash": [
+            "OP04-035",
+            "OP05-034",
+            "OP04-035"
+          ],
+          "life": 3,
+          "deck": [
+            "OP04-031",
+            "OP05-037",
+            "OP12-037"
+          ],
+          "life_cards": [
+            "OP04-029",
+            "OP10-062",
+            "OP14-069"
+          ],
+          "don_cost": [
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don"
+          ],
+          "attached_don": [
+            "Don"
+          ],
+          "stage": [
+            "OP05-040"
+          ],
+          "rested": {
+            "OP04-024": 1
+          }
+        },
+        "Opponent": {
+          "hand": [
+            "ST34-004",
+            "OP11-073",
+            "OP11-067",
+            "OP11-070"
+          ],
+          "trash": [
+            "OP13-076",
+            "OP15-078",
+            "OP11-070",
+            "PRB02-010",
+            "ST18-001"
+          ],
+          "board": [
+            "ST34-001",
+            "OP11-067"
+          ],
+          "life": 3,
+          "deck": [
+            "OP07-077",
+            "OP08-069",
+            "OP15-069",
+            "ST34-003",
+            "ST34-005"
+          ],
+          "life_cards": [
+            "OP11-067",
+            "OP15-078",
+            "ST34-002"
+          ],
+          "don_cost": [
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don"
+          ],
+          "rested_rz1": {
+            "don_cost": [
+              "Don",
+              "Don",
+              "Don",
+              "Don"
+            ]
+          },
+          "rested": {
+            "ST34-001": 1,
+            "OP11-067": 1
+          }
+        }
+      }
+    },
+    {
+      "turn": 10,
+      "player": "Opponent",
+      "card_drawn": null,
+      "don_drawn": 0,
+      "actions": [
+        {
+          "type": "play",
+          "card": "OP11-073",
+          "card_name": "Charlotte Linlin",
+          "effects": []
+        },
+        {
+          "type": "attack",
+          "attacker": "Charlotte Katakuri",
+          "attacker_code": "ST34-001",
+          "target": "Donquixote Doflamingo [\"OP04-019\">OP04-019]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "attack",
+          "attacker": "Charlotte Katakuri",
+          "attacker_code": "OP11-062",
+          "target": "Donquixote Doflamingo [\"OP04-019\">OP04-019]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "activate",
+          "card": "OP11-062",
+          "card_name": "Charlotte Katakuri",
+          "effects": [
+            "Minus 1 Don",
+            "<b>Looked at opponent's top deck</b>",
+            "<b>Finished looking at opponent's top deck</b>",
+            "Buff Charlotte Katakuri [\"OP11-062\">OP11-062] 1000 for the Combat"
+          ]
+        },
+        {
+          "type": "activate",
+          "card": "OP15-078",
+          "card_name": "Mamaragan",
+          "effects": [
+            "Minus 2 Don",
+            "Draw 1 Card",
+            "Rest Sugar [\"OP04-024\">OP04-024]"
+          ]
+        },
+        {
+          "type": "activate",
+          "card": "OP11-067",
+          "card_name": "Charlotte Katakuri",
+          "effects": [
+            "Set Charlotte Linlin [\"OP11-073\">OP11-073] to Active",
+            "Set Charlotte Katakuri [\"OP11-067\">OP11-067] to Active"
+          ]
+        }
+      ],
+      "snapshot": {
+        "Opponent": {
+          "hand": [
+            "ST34-004",
+            "OP11-067",
+            "OP11-070",
+            "ST34-002"
+          ],
+          "board": [
+            "ST34-001",
+            "OP11-067",
+            "OP11-073"
+          ],
+          "trash": [
+            "OP13-076",
+            "OP15-078",
+            "OP11-070",
+            "PRB02-010",
+            "ST18-001",
+            "OP15-078"
+          ],
+          "life": 3,
+          "deck": [
+            "OP07-077",
+            "OP08-069",
+            "OP15-069",
+            "ST34-003",
+            "ST34-005"
+          ],
+          "life_cards": [
+            "OP11-067",
+            "OP15-078",
+            "ST34-002"
+          ],
+          "don_deck": [
+            "Don"
+          ],
+          "don_cost": [
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don"
+          ],
+          "rested_rz1": {
+            "don_cost": [
+              "Don",
+              "Don",
+              "Don"
+            ]
+          },
+          "rested": {
+            "ST34-001": 1
+          }
+        },
+        "You": {
+          "hand": [
+            "OP04-037",
+            "OP14-078",
+            "OP05-038",
+            "OP04-037",
+            "OP10-062"
+          ],
+          "trash": [
+            "OP04-035",
+            "OP05-034",
+            "OP04-035",
+            "OP04-035"
+          ],
+          "board": [
+            "OP04-024",
+            "OP04-024"
+          ],
+          "life": 2,
+          "deck": [
+            "OP04-031",
+            "OP05-037",
+            "OP12-037"
+          ],
+          "life_cards": [
+            "OP04-029",
+            "OP14-069"
+          ],
+          "don_cost": [
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don"
+          ],
+          "attached_don": [
+            "Don"
+          ],
+          "stage": [
+            "OP05-040"
+          ],
+          "rested_rz1": {
+            "don_cost": [
+              "Don"
+            ]
+          },
+          "rested": {
+            "OP04-024": 2
+          }
+        }
+      }
+    },
+    {
+      "turn": 11,
+      "player": "You",
+      "card_drawn": null,
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "attach_don",
+          "amount": 2,
+          "to": "OP04-019",
+          "to_name": "Donquixote Doflamingo",
+          "total": 2
+        },
+        {
+          "type": "attack",
+          "attacker": "Donquixote Doflamingo",
+          "attacker_code": "OP04-019",
+          "target": "Charlotte Katakuri [\"OP11-062\">OP11-062]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": "OP11-067",
+          "countered_by": []
+        },
+        {
+          "type": "play",
+          "card": "OP10-072",
+          "card_name": "Donquixote Rosinante",
+          "effects": [
+            "Trash Bullet String [\"OP14-078\">OP14-078]",
+            "Draw 2 Card",
+            "Activate 1 Don",
+            "Activate 1 Don"
+          ]
+        },
+        {
+          "type": "play",
+          "card": "OP10-062",
+          "card_name": "Viola",
+          "effects": []
+        },
+        {
+          "type": "activate",
+          "card": "OP04-019",
+          "card_name": "Donquixote Doflamingo",
+          "effects": [
+            "Activate 2 Don"
+          ]
+        },
+        {
+          "type": "activate",
+          "card": "OP05-040",
+          "card_name": "Bird Cage",
+          "effects": [
+            "Trash Bird Cage [\"OP05-040\">OP05-040]",
+            "Destroy Sugar [\"OP04-024\">OP04-024]",
+            "Destroy Sugar [\"OP04-024\">OP04-024]",
+            "Destroy Charlotte Katakuri [\"ST34-001\">ST34-001]"
+          ]
+        }
+      ],
+      "snapshot": {
+        "You": {
+          "hand": [
+            "OP04-037",
+            "OP05-038",
+            "OP04-037",
+            "EB01-019",
+            "OP14-069"
+          ],
+          "board": [
+            "OP10-072",
+            "OP10-062"
+          ],
+          "trash": [
+            "OP04-035",
+            "OP05-034",
+            "OP04-035",
+            "OP04-035",
+            "OP14-078",
+            "OP05-040",
+            "OP04-024",
+            "OP04-024"
+          ],
+          "life": 2,
+          "deck": [
+            "OP04-031",
+            "OP05-037",
+            "OP12-037"
+          ],
+          "life_cards": [
+            "OP04-029",
+            "OP14-069"
+          ],
+          "don_cost": [
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don"
+          ],
+          "attached_don": [
+            "Don",
+            "Don"
+          ],
+          "rested": {
+            "OP10-072": 1,
+            "OP10-062": 1
+          }
+        },
+        "Opponent": {
+          "hand": [
+            "ST34-004",
+            "OP11-067",
+            "OP11-070"
+          ],
+          "trash": [
+            "OP13-076",
+            "OP15-078",
+            "OP11-070",
+            "PRB02-010",
+            "ST18-001",
+            "OP15-078",
+            "ST34-001"
+          ],
+          "board": [
+            "OP11-067",
+            "OP11-073",
+            "ST34-002"
+          ],
+          "life": 3,
+          "deck": [
+            "OP07-077",
+            "OP08-069",
+            "OP15-069",
+            "ST34-003",
+            "ST34-005"
+          ],
+          "life_cards": [
+            "OP11-067",
+            "OP15-078",
+            "ST34-002"
+          ],
+          "don_deck": [
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don"
+          ],
+          "don_cost": [
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don"
+          ],
+          "rested_rz1": {
+            "don_cost": [
+              "Don"
+            ]
+          }
+        }
+      }
+    },
+    {
+      "turn": 12,
+      "player": "Opponent",
+      "card_drawn": null,
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "attack",
+          "attacker": "Charlotte Katakuri",
+          "attacker_code": "OP11-062",
+          "target": "Donquixote Doflamingo [\"OP04-019\">OP04-019]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "attack",
+          "attacker": "Charlotte Katakuri",
+          "attacker_code": "OP11-067",
+          "target": "Donquixote Doflamingo [\"OP04-019\">OP04-019]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "attack",
+          "attacker": "Charlotte Linlin",
+          "attacker_code": "OP11-073",
+          "target": "Donquixote Doflamingo [\"OP04-019\">OP04-019]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "play",
+          "card": "OP11-070",
+          "card_name": "Charlotte Pudding",
+          "effects": [
+            "<b>Reveal and Draw Charlotte Katakuri [\"ST34-001\">ST34-001]</b>"
+          ]
+        },
+        {
+          "type": "play",
+          "card": "ST34-001",
+          "card_name": "Charlotte Katakuri",
+          "effects": []
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "ST34-002",
+          "to_name": "Charlotte Cracker",
+          "total": 1
+        },
+        {
+          "type": "attack",
+          "attacker": "Charlotte Cracker",
+          "attacker_code": "ST34-002",
+          "target": "Donquixote Doflamingo [\"OP04-019\">OP04-019]",
+          "result": "hit",
+          "damage": null,
+          "blocked_by": "OP10-062",
+          "countered_by": []
+        },
+        {
+          "type": "activate",
+          "card": "OP11-067",
+          "card_name": "Charlotte Katakuri",
+          "effects": [
+            "Set Charlotte Cracker [\"ST34-002\">ST34-002] to Active",
+            "Set Charlotte Katakuri [\"OP11-067\">OP11-067] to Active"
+          ]
+        }
+      ],
+      "snapshot": {
+        "Opponent": {
+          "hand": [
+            "ST34-004",
+            "OP11-067"
+          ],
+          "board": [
+            "OP11-067",
+            "OP11-073",
+            "ST34-002",
+            "OP11-070",
+            "ST34-001"
+          ],
+          "trash": [
+            "OP13-076",
+            "OP15-078",
+            "OP11-070",
+            "PRB02-010",
+            "ST18-001",
+            "OP15-078",
+            "ST34-001",
+            "OP15-078"
+          ],
+          "life": 3,
+          "deck": [
+            "OP07-077",
+            "OP08-069",
+            "OP11-067",
+            "OP15-069",
+            "ST34-003",
+            "ST34-004",
+            "ST34-005"
+          ],
+          "life_cards": [
+            "OP11-067",
+            "OP15-078",
+            "ST34-002"
+          ],
+          "don_deck": [
+            "Don",
+            "Don"
+          ],
+          "don_cost": [
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don"
+          ],
+          "attached_don": [
+            "Don"
+          ],
+          "rested_rz1": {
+            "don_cost": [
+              "Don"
+            ]
+          },
+          "rested": {
+            "OP11-067": 1,
+            "OP11-073": 1,
+            "ST34-002": 1,
+            "OP11-070": 1,
+            "ST34-001": 1
+          }
+        },
+        "You": {
+          "hand": [
+            "OP04-037",
+            "OP04-037",
+            "OP14-069",
+            "OP04-024",
+            "OP04-029",
+            "OP14-069"
+          ],
+          "trash": [
+            "OP04-035",
+            "OP05-034",
+            "OP04-035",
+            "OP04-035",
+            "OP14-078",
+            "OP05-040",
+            "OP04-024",
+            "OP04-024",
+            "OP05-038",
+            "EB01-019",
+            "OP10-062"
+          ],
+          "board": [
+            "OP10-072"
+          ],
+          "life": 0,
+          "deck": [
+            "EB01-019",
+            "OP04-031",
+            "OP05-037",
+            "OP10-072",
+            "OP12-037"
+          ],
+          "don_cost": [
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don"
+          ],
+          "attached_don": [
+            "Don",
+            "Don"
+          ],
+          "rested_rz1": {
+            "don_cost": [
+              "Don"
+            ]
+          },
+          "rested": {
+            "OP10-072": 1
+          }
+        }
+      }
+    },
+    {
+      "turn": 13,
+      "player": "You",
+      "card_drawn": null,
+      "don_drawn": 0,
+      "actions": [
+        {
+          "type": "play",
+          "card": "OP14-069",
+          "card_name": "Donquixote Doflamingo",
+          "effects": [
+            "Minus 3 Don",
+            "Destroy Charlotte Katakuri [\"OP11-067\">OP11-067]"
+          ]
+        },
+        {
+          "type": "attack",
+          "attacker": "Donquixote Rosinante",
+          "attacker_code": "OP10-072",
+          "target": "Charlotte Katakuri [\"OP11-062\">OP11-062]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "attack",
+          "attacker": "Donquixote Doflamingo",
+          "attacker_code": "OP04-019",
+          "target": "Charlotte Katakuri [\"OP11-062\">OP11-062]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "activate",
+          "card": "OP04-019",
+          "card_name": "Donquixote Doflamingo",
+          "effects": [
+            "Activate 2 Don"
+          ]
+        }
+      ],
+      "snapshot": {
+        "You": {
+          "hand": [
+            "OP04-037",
+            "OP04-037",
+            "OP04-024",
+            "OP04-029",
+            "OP14-069",
+            "OP10-065"
+          ],
+          "board": [
+            "OP10-072",
+            "OP14-069"
+          ],
+          "trash": [
+            "OP04-035",
+            "OP05-034",
+            "OP04-035",
+            "OP04-035",
+            "OP14-078",
+            "OP05-040",
+            "OP04-024",
+            "OP04-024",
+            "OP05-038",
+            "EB01-019",
+            "OP10-062"
+          ],
+          "life": 0,
+          "deck": [
+            "EB01-019",
+            "OP04-031",
+            "OP05-037",
+            "OP10-062",
+            "OP10-072",
+            "OP12-037"
+          ],
+          "don_deck": [
+            "Don",
+            "Don",
+            "Don"
+          ],
+          "don_cost": [
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don"
+          ],
+          "rested": {
+            "OP10-072": 1,
+            "OP14-069": 1
+          }
+        },
+        "Opponent": {
+          "hand": [
+            "ST34-004",
+            "OP11-067",
+            "OP15-078"
+          ],
+          "trash": [
+            "OP13-076",
+            "OP15-078",
+            "OP11-070",
+            "PRB02-010",
+            "ST18-001",
+            "OP15-078",
+            "ST34-001",
+            "OP15-078",
+            "OP11-067"
+          ],
+          "board": [
+            "OP11-073",
+            "ST34-002",
+            "OP11-070",
+            "ST34-001"
+          ],
+          "life": 2,
+          "deck": [
+            "OP07-077",
+            "OP08-069",
+            "OP11-067",
+            "OP15-069",
+            "ST34-003",
+            "ST34-004",
+            "ST34-005"
+          ],
+          "life_cards": [
+            "OP11-067",
+            "ST34-002"
+          ],
+          "don_deck": [
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don"
+          ],
+          "don_cost": [
+            "Don"
+          ],
+          "attached_don": [
+            "Don"
+          ],
+          "rested": {
+            "OP11-073": 1,
+            "ST34-002": 1,
+            "OP11-070": 1,
+            "ST34-001": 1
+          }
+        }
+      }
+    },
+    {
+      "turn": 14,
+      "player": "Opponent",
+      "card_drawn": null,
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "attack",
+          "attacker": "Charlotte Katakuri",
+          "attacker_code": "OP11-062",
+          "target": "Donquixote Doflamingo [\"OP04-019\">OP04-019]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "activate",
+          "card": "OP11-062",
+          "card_name": "Charlotte Katakuri",
+          "effects": [
+            "Minus 1 Don",
+            "<b>Looked at opponent's top deck</b>",
+            "<b>Finished looking at opponent's top deck</b>",
+            "Buff Charlotte Katakuri [\"OP11-062\">OP11-062] 1000 for the Combat"
+          ]
+        },
+        {
+          "type": "attack",
+          "attacker": "Charlotte Linlin",
+          "attacker_code": "OP11-073",
+          "target": "Donquixote Doflamingo [\"OP04-019\">OP04-019]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        }
+      ],
+      "snapshot": {}
+    }
+  ]
+}

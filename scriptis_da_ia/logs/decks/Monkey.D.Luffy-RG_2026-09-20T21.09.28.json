@@ -1,0 +1,51 @@
+{
+  "cards": [
+    {
+      "code": "OP14-022",
+      "name": "Usopp",
+      "count": 3
+    },
+    {
+      "code": "OP13-037",
+      "name": "Roronoa Zoro",
+      "count": 3
+    },
+    {
+      "code": "EB02-017",
+      "name": "Nami",
+      "count": 2
+    },
+    {
+      "code": "OP01-016",
+      "name": "OP01-016",
+      "count": 2
+    },
+    {
+      "code": "OP13-118",
+      "name": "Monkey D. Luffy",
+      "count": 1
+    },
+    {
+      "code": "OP16-004",
+      "name": "OP16-004",
+      "count": 1
+    },
+    {
+      "code": "ST31-005",
+      "name": "Thousand Sunny",
+      "count": 1
+    },
+    {
+      "code": "OP10-011",
+      "name": "OP10-011",
+      "count": 1
+    },
+    {
+      "code": "OP14-031",
+      "name": "Nami",
+      "count": 1
+    }
+  ],
+  "total_seen": 15,
+  "leader": "OP13-001"
+}

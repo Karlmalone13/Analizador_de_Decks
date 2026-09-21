@@ -1,0 +1,1778 @@
+{
+  "meta": {
+    "players": {
+      "p1": {
+        "name": "You",
+        "leader": {
+          "name": "Eustass \"Captain\" Kid",
+          "code": "ST02-001"
+        }
+      },
+      "p2": {
+        "name": "Opponent",
+        "leader": {
+          "name": "Crocodile",
+          "code": "ST03-001"
+        }
+      }
+    },
+    "goes_first": null
+  },
+  "total_turns": 15,
+  "turns": [
+    {
+      "turn": 1,
+      "player": "You",
+      "card_drawn": null,
+      "don_drawn": 1,
+      "actions": [
+        {
+          "type": "play",
+          "card": "ST02-004",
+          "card_name": "Capone \"Gang\" Bege",
+          "effects": []
+        }
+      ],
+      "snapshot": {
+        "You": {
+          "hand": [
+            "ST02-011",
+            "ST02-012",
+            "ST02-014",
+            "ST02-013"
+          ],
+          "board": [
+            "ST02-004"
+          ],
+          "trash": [],
+          "life": 5,
+          "life_cards": [
+            "ST02-008",
+            "ST02-011",
+            "ST02-012",
+            "ST02-015",
+            "ST02-016"
+          ],
+          "don_cost": [
+            "Don"
+          ],
+          "rested_rz1": {
+            "don_cost": [
+              "Don"
+            ]
+          },
+          "rested": {
+            "ST02-004": 1
+          }
+        },
+        "Opponent": {
+          "hand": [
+            "ST03-014",
+            "ST03-002",
+            "ST03-013",
+            "ST03-012",
+            "ST03-007"
+          ],
+          "trash": [],
+          "board": [],
+          "life": 5,
+          "deck": [
+            "ST03-003",
+            "ST03-005",
+            "ST03-006",
+            "ST03-008",
+            "ST03-009",
+            "ST03-011",
+            "ST03-015",
+            "ST03-017"
+          ],
+          "life_cards": [
+            "ST03-004",
+            "ST03-010",
+            "ST03-013",
+            "ST03-013",
+            "ST03-016"
+          ]
+        }
+      }
+    },
+    {
+      "turn": 2,
+      "player": "Opponent",
+      "card_drawn": null,
+      "don_drawn": 2,
+      "actions": [],
+      "snapshot": {
+        "Opponent": {
+          "hand": [
+            "ST03-014",
+            "ST03-002",
+            "ST03-013",
+            "ST03-012",
+            "ST03-007",
+            "ST03-011"
+          ],
+          "board": [],
+          "trash": [],
+          "life": 5,
+          "deck": [
+            "ST03-003",
+            "ST03-005",
+            "ST03-006",
+            "ST03-008",
+            "ST03-009",
+            "ST03-015",
+            "ST03-017"
+          ],
+          "life_cards": [
+            "ST03-004",
+            "ST03-010",
+            "ST03-013",
+            "ST03-013",
+            "ST03-016"
+          ],
+          "don_cost": [
+            "Don",
+            "Don"
+          ]
+        },
+        "You": {
+          "hand": [
+            "ST02-011",
+            "ST02-012",
+            "ST02-014",
+            "ST02-013"
+          ],
+          "trash": [],
+          "board": [
+            "ST02-004"
+          ],
+          "life": 5,
+          "life_cards": [
+            "ST02-008",
+            "ST02-011",
+            "ST02-012",
+            "ST02-015",
+            "ST02-016"
+          ],
+          "don_cost": [
+            "Don"
+          ],
+          "rested_rz1": {
+            "don_cost": [
+              "Don"
+            ]
+          },
+          "rested": {
+            "ST02-004": 1
+          }
+        }
+      }
+    },
+    {
+      "turn": 3,
+      "player": "You",
+      "card_drawn": null,
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "play",
+          "card": "ST02-011",
+          "card_name": "Heat",
+          "effects": []
+        },
+        {
+          "type": "attack",
+          "attacker": "Eustass \"Captain\" Kid",
+          "attacker_code": "ST02-001",
+          "target": "Crocodile [\"ST03-001\">ST03-001]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        }
+      ],
+      "snapshot": {
+        "You": {
+          "hand": [
+            "ST02-012",
+            "ST02-014",
+            "ST02-013",
+            "ST02-012"
+          ],
+          "board": [
+            "ST02-004",
+            "ST02-011"
+          ],
+          "trash": [],
+          "life": 5,
+          "life_cards": [
+            "ST02-008",
+            "ST02-011",
+            "ST02-012",
+            "ST02-015",
+            "ST02-016"
+          ],
+          "don_cost": [
+            "Don",
+            "Don",
+            "Don"
+          ],
+          "rested_rz1": {
+            "don_cost": [
+              "Don"
+            ]
+          },
+          "rested": {
+            "ST02-011": 1
+          }
+        },
+        "Opponent": {
+          "hand": [
+            "ST03-014",
+            "ST03-002",
+            "ST03-013",
+            "ST03-012",
+            "ST03-007",
+            "ST03-011"
+          ],
+          "trash": [],
+          "board": [
+            "ST03-010"
+          ],
+          "life": 4,
+          "deck": [
+            "ST03-003",
+            "ST03-005",
+            "ST03-006",
+            "ST03-008",
+            "ST03-009",
+            "ST03-015",
+            "ST03-016",
+            "ST03-017"
+          ],
+          "life_cards": [
+            "ST03-004",
+            "ST03-013",
+            "ST03-013",
+            "ST03-016"
+          ],
+          "don_cost": [
+            "Don",
+            "Don"
+          ]
+        }
+      }
+    },
+    {
+      "turn": 4,
+      "player": "Opponent",
+      "card_drawn": null,
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "play",
+          "card": "ST03-014",
+          "card_name": "Marshall D. Teach",
+          "effects": [
+            "Send Capone \"Gang\" Bege [\"ST02-004\">ST02-004] to Hand"
+          ]
+        },
+        {
+          "type": "attack",
+          "attacker": "Crocodile",
+          "attacker_code": "ST03-001",
+          "target": "Eustass \"Captain\" Kid [\"ST02-001\">ST02-001]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        }
+      ],
+      "snapshot": {
+        "Opponent": {
+          "hand": [
+            "ST03-002",
+            "ST03-013",
+            "ST03-012",
+            "ST03-007",
+            "ST03-011",
+            "ST03-006"
+          ],
+          "board": [
+            "ST03-010",
+            "ST03-014"
+          ],
+          "trash": [],
+          "life": 4,
+          "deck": [
+            "ST03-003",
+            "ST03-005",
+            "ST03-008",
+            "ST03-009",
+            "ST03-015",
+            "ST03-016",
+            "ST03-017"
+          ],
+          "life_cards": [
+            "ST03-004",
+            "ST03-013",
+            "ST03-013",
+            "ST03-016"
+          ],
+          "don_cost": [
+            "Don",
+            "Don",
+            "Don",
+            "Don"
+          ],
+          "rested_rz1": {
+            "don_cost": [
+              "Don"
+            ]
+          },
+          "rested": {
+            "ST03-014": 1
+          }
+        },
+        "You": {
+          "hand": [
+            "ST02-012",
+            "ST02-014",
+            "ST02-013",
+            "ST02-012",
+            "ST02-004",
+            "ST02-012"
+          ],
+          "trash": [],
+          "board": [
+            "ST02-011"
+          ],
+          "life": 4,
+          "life_cards": [
+            "ST02-008",
+            "ST02-011",
+            "ST02-015",
+            "ST02-016"
+          ],
+          "don_cost": [
+            "Don",
+            "Don",
+            "Don"
+          ],
+          "rested_rz1": {
+            "don_cost": [
+              "Don"
+            ]
+          },
+          "rested": {
+            "ST02-011": 1
+          }
+        }
+      }
+    },
+    {
+      "turn": 5,
+      "player": "You",
+      "card_drawn": null,
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "attack",
+          "attacker": "Eustass \"Captain\" Kid",
+          "attacker_code": "ST02-001",
+          "target": "Crocodile [\"ST03-001\">ST03-001]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": [
+            "ST03-002"
+          ]
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "ST02-011",
+          "to_name": "Heat",
+          "total": 1
+        },
+        {
+          "type": "attack",
+          "attacker": "Heat",
+          "attacker_code": "ST02-011",
+          "target": "Crocodile [\"ST03-001\">ST03-001]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "play",
+          "card": "ST02-008",
+          "card_name": "Scratchmen Apoo",
+          "effects": []
+        },
+        {
+          "type": "play",
+          "card": "ST02-004",
+          "card_name": "Capone \"Gang\" Bege",
+          "effects": []
+        }
+      ],
+      "snapshot": {
+        "You": {
+          "hand": [
+            "ST02-012",
+            "ST02-014",
+            "ST02-013",
+            "ST02-012",
+            "ST02-012"
+          ],
+          "board": [
+            "ST02-011",
+            "ST02-008",
+            "ST02-004"
+          ],
+          "trash": [],
+          "life": 4,
+          "life_cards": [
+            "ST02-008",
+            "ST02-011",
+            "ST02-015",
+            "ST02-016"
+          ],
+          "don_cost": [
+            "Don",
+            "Don",
+            "Don",
+            "Don"
+          ],
+          "attached_don": [
+            "Don"
+          ],
+          "rested_rz1": {
+            "don_cost": [
+              "Don"
+            ]
+          },
+          "rested": {
+            "ST02-011": 1,
+            "ST02-008": 1,
+            "ST02-004": 1
+          }
+        },
+        "Opponent": {
+          "hand": [
+            "ST03-013",
+            "ST03-012",
+            "ST03-007",
+            "ST03-011",
+            "ST03-006"
+          ],
+          "trash": [
+            "ST03-002"
+          ],
+          "board": [
+            "ST03-010",
+            "ST03-014",
+            "ST03-013"
+          ],
+          "life": 3,
+          "deck": [
+            "ST03-003",
+            "ST03-005",
+            "ST03-008",
+            "ST03-009",
+            "ST03-015",
+            "ST03-016",
+            "ST03-017"
+          ],
+          "life_cards": [
+            "ST03-004",
+            "ST03-013",
+            "ST03-016"
+          ],
+          "don_cost": [
+            "Don",
+            "Don",
+            "Don",
+            "Don"
+          ],
+          "rested_rz1": {
+            "don_cost": [
+              "Don"
+            ]
+          },
+          "rested": {
+            "ST03-014": 1
+          }
+        }
+      }
+    },
+    {
+      "turn": 6,
+      "player": "Opponent",
+      "card_drawn": null,
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "activate",
+          "card": "ST03-001",
+          "card_name": "Crocodile",
+          "effects": [
+            "Minus 4 Don",
+            "Send Scratchmen Apoo [\"ST02-008\">ST02-008] to Hand"
+          ]
+        },
+        {
+          "type": "attack",
+          "attacker": "Crocodile",
+          "attacker_code": "ST03-001",
+          "target": "Eustass \"Captain\" Kid [\"ST02-001\">ST02-001]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "play",
+          "card": "ST03-006",
+          "card_name": "Jinbe",
+          "effects": []
+        },
+        {
+          "type": "attack",
+          "attacker": "Marshall D. Teach",
+          "attacker_code": "ST03-014",
+          "target": "Heat [\"ST02-011\">ST02-011]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": [
+            "ST02-012"
+          ]
+        }
+      ],
+      "snapshot": {
+        "Opponent": {
+          "hand": [
+            "ST03-013",
+            "ST03-012",
+            "ST03-007",
+            "ST03-011",
+            "ST03-012"
+          ],
+          "board": [
+            "ST03-010",
+            "ST03-014",
+            "ST03-013",
+            "ST03-006"
+          ],
+          "trash": [
+            "ST03-002"
+          ],
+          "life": 3,
+          "deck": [
+            "ST03-003",
+            "ST03-005",
+            "ST03-008",
+            "ST03-009",
+            "ST03-015",
+            "ST03-016",
+            "ST03-017"
+          ],
+          "life_cards": [
+            "ST03-004",
+            "ST03-013",
+            "ST03-016"
+          ],
+          "don_deck": [
+            "Don",
+            "Don",
+            "Don",
+            "Don"
+          ],
+          "don_cost": [
+            "Don",
+            "Don"
+          ],
+          "rested_rz1": {
+            "don_cost": [
+              "Don"
+            ]
+          },
+          "rested": {
+            "ST03-014": 1,
+            "ST03-006": 1
+          }
+        },
+        "You": {
+          "hand": [
+            "ST02-014",
+            "ST02-013",
+            "ST02-012",
+            "ST02-012",
+            "ST02-008"
+          ],
+          "trash": [
+            "ST02-015",
+            "ST02-012"
+          ],
+          "board": [
+            "ST02-011",
+            "ST02-004"
+          ],
+          "life": 3,
+          "life_cards": [
+            "ST02-008",
+            "ST02-011",
+            "ST02-016"
+          ],
+          "don_cost": [
+            "Don",
+            "Don",
+            "Don",
+            "Don"
+          ],
+          "attached_don": [
+            "Don"
+          ],
+          "rested": {
+            "ST02-011": 1,
+            "ST02-004": 1
+          }
+        }
+      }
+    },
+    {
+      "turn": 7,
+      "player": "You",
+      "card_drawn": null,
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "play",
+          "card": "ST02-005",
+          "card_name": "Killer",
+          "effects": []
+        },
+        {
+          "type": "play",
+          "card": "ST02-008",
+          "card_name": "Scratchmen Apoo",
+          "effects": []
+        },
+        {
+          "type": "attack",
+          "attacker": "Eustass \"Captain\" Kid",
+          "attacker_code": "ST02-001",
+          "target": "Crocodile [\"ST03-001\">ST03-001]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": "ST03-013",
+          "countered_by": [
+            "ST03-013",
+            "ST03-012",
+            "ST03-007",
+            "ST03-011",
+            "ST03-012"
+          ]
+        },
+        {
+          "type": "attack",
+          "attacker": "Heat",
+          "attacker_code": "ST02-011",
+          "target": "Boa Hancock [\"ST03-013\">ST03-013]",
+          "result": "hit",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": []
+        }
+      ],
+      "snapshot": {
+        "You": {
+          "hand": [
+            "ST02-014",
+            "ST02-013",
+            "ST02-012",
+            "ST02-012"
+          ],
+          "board": [
+            "ST02-011",
+            "ST02-004",
+            "ST02-005",
+            "ST02-008"
+          ],
+          "trash": [
+            "ST02-015",
+            "ST02-012"
+          ],
+          "life": 3,
+          "life_cards": [
+            "ST02-008",
+            "ST02-011",
+            "ST02-016"
+          ],
+          "don_cost": [
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don"
+          ],
+          "rested_rz1": {
+            "don_cost": [
+              "Don"
+            ]
+          },
+          "rested": {
+            "ST02-011": 1,
+            "ST02-005": 1,
+            "ST02-008": 1
+          }
+        },
+        "Opponent": {
+          "hand": [],
+          "trash": [
+            "ST03-002",
+            "ST03-013",
+            "ST03-012",
+            "ST03-007",
+            "ST03-011",
+            "ST03-012",
+            "ST03-013"
+          ],
+          "board": [
+            "ST03-010",
+            "ST03-014",
+            "ST03-006"
+          ],
+          "life": 3,
+          "deck": [
+            "ST03-003",
+            "ST03-005",
+            "ST03-008",
+            "ST03-009",
+            "ST03-015",
+            "ST03-016",
+            "ST03-017"
+          ],
+          "life_cards": [
+            "ST03-004",
+            "ST03-013",
+            "ST03-016"
+          ],
+          "don_deck": [
+            "Don",
+            "Don",
+            "Don",
+            "Don"
+          ],
+          "don_cost": [
+            "Don",
+            "Don"
+          ],
+          "rested_rz1": {
+            "don_cost": [
+              "Don"
+            ]
+          },
+          "rested": {
+            "ST03-014": 1,
+            "ST03-006": 1
+          }
+        }
+      }
+    },
+    {
+      "turn": 8,
+      "player": "Opponent",
+      "card_drawn": null,
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "activate",
+          "card": "ST03-015",
+          "card_name": "Sables",
+          "effects": [
+            "Rest 4 Don",
+            "Send Killer [\"ST02-005\">ST02-005] to Hand"
+          ]
+        },
+        {
+          "type": "activate",
+          "card": "ST03-001",
+          "card_name": "Crocodile",
+          "effects": [
+            "Minus 4 Don",
+            "Send Scratchmen Apoo [\"ST02-008\">ST02-008] to Hand"
+          ]
+        },
+        {
+          "type": "attack",
+          "attacker": "Marshall D. Teach",
+          "attacker_code": "ST03-014",
+          "target": "Heat [\"ST02-011\">ST02-011]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": "ST02-004",
+          "countered_by": [
+            "ST02-014",
+            "ST02-012",
+            "ST02-012",
+            "ST02-005"
+          ]
+        },
+        {
+          "type": "attack",
+          "attacker": "Bartholomew Kuma",
+          "attacker_code": "ST03-010",
+          "target": "Capone \"Gang\" Bege [\"ST02-004\">ST02-004]",
+          "result": "hit",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "attack",
+          "attacker": "Jinbe",
+          "attacker_code": "ST03-006",
+          "target": "Heat [\"ST02-011\">ST02-011]",
+          "result": "hit",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "attack",
+          "attacker": "Crocodile",
+          "attacker_code": "ST03-001",
+          "target": "Eustass \"Captain\" Kid [\"ST02-001\">ST02-001]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": [
+            "ST02-008"
+          ]
+        }
+      ],
+      "snapshot": {
+        "Opponent": {
+          "hand": [],
+          "board": [
+            "ST03-010",
+            "ST03-014",
+            "ST03-006"
+          ],
+          "trash": [
+            "ST03-002",
+            "ST03-013",
+            "ST03-012",
+            "ST03-007",
+            "ST03-011",
+            "ST03-012",
+            "ST03-013",
+            "ST03-015"
+          ],
+          "life": 3,
+          "deck": [
+            "ST03-003",
+            "ST03-005",
+            "ST03-008",
+            "ST03-009",
+            "ST03-016",
+            "ST03-017"
+          ],
+          "life_cards": [
+            "ST03-004",
+            "ST03-013",
+            "ST03-016"
+          ],
+          "don_deck": [
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don"
+          ],
+          "rested": {
+            "ST03-010": 1,
+            "ST03-014": 1,
+            "ST03-006": 1
+          }
+        },
+        "You": {
+          "hand": [
+            "ST02-013"
+          ],
+          "trash": [
+            "ST02-015",
+            "ST02-012",
+            "ST02-014",
+            "ST02-012",
+            "ST02-012",
+            "ST02-005",
+            "ST02-004",
+            "ST02-011",
+            "ST02-008"
+          ],
+          "board": [],
+          "life": 3,
+          "life_cards": [
+            "ST02-008",
+            "ST02-011",
+            "ST02-016"
+          ],
+          "don_cost": [
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don"
+          ],
+          "rested_rz1": {
+            "don_cost": [
+              "Don"
+            ]
+          }
+        }
+      }
+    },
+    {
+      "turn": 9,
+      "player": "You",
+      "card_drawn": null,
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "play",
+          "card": "ST02-013",
+          "card_name": "Eustass \"Captain\" Kid",
+          "effects": [
+            "Set Eustass \"Captain\" Kid [\"ST02-013\">ST02-013] to Active"
+          ]
+        },
+        {
+          "type": "attack",
+          "attacker": "Eustass \"Captain\" Kid",
+          "attacker_code": "ST02-001",
+          "target": "Crocodile [\"ST03-001\">ST03-001]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "ST02-013",
+          "to_name": "Eustass \"Captain\" Kid",
+          "total": 1
+        }
+      ],
+      "snapshot": {
+        "You": {
+          "hand": [
+            "ST02-016"
+          ],
+          "board": [
+            "ST02-013"
+          ],
+          "trash": [
+            "ST02-015",
+            "ST02-012",
+            "ST02-014",
+            "ST02-012",
+            "ST02-012",
+            "ST02-005",
+            "ST02-004",
+            "ST02-011",
+            "ST02-008"
+          ],
+          "life": 3,
+          "life_cards": [
+            "ST02-008",
+            "ST02-011",
+            "ST02-016"
+          ],
+          "don_cost": [
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don"
+          ],
+          "attached_don": [
+            "Don"
+          ],
+          "rested": {
+            "ST02-013": 1
+          }
+        },
+        "Opponent": {
+          "hand": [],
+          "trash": [
+            "ST03-002",
+            "ST03-013",
+            "ST03-012",
+            "ST03-007",
+            "ST03-011",
+            "ST03-012",
+            "ST03-013",
+            "ST03-015"
+          ],
+          "board": [
+            "ST03-010",
+            "ST03-014",
+            "ST03-006",
+            "ST03-013"
+          ],
+          "life": 2,
+          "deck": [
+            "ST03-003",
+            "ST03-005",
+            "ST03-008",
+            "ST03-009",
+            "ST03-016",
+            "ST03-017"
+          ],
+          "life_cards": [
+            "ST03-004",
+            "ST03-016"
+          ],
+          "don_deck": [
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don"
+          ],
+          "rested": {
+            "ST03-010": 1,
+            "ST03-014": 1,
+            "ST03-006": 1
+          }
+        }
+      }
+    },
+    {
+      "turn": 10,
+      "player": "Opponent",
+      "card_drawn": null,
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "attack",
+          "attacker": "Crocodile",
+          "attacker_code": "ST03-001",
+          "target": "Eustass \"Captain\" Kid [\"ST02-001\">ST02-001]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": "ST02-013",
+          "countered_by": []
+        },
+        {
+          "type": "attach_don",
+          "amount": 2,
+          "to": "ST03-010",
+          "to_name": "Bartholomew Kuma",
+          "total": 2
+        },
+        {
+          "type": "attack",
+          "attacker": "Bartholomew Kuma",
+          "attacker_code": "ST03-010",
+          "target": "Eustass \"Captain\" Kid [\"ST02-001\">ST02-001]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        }
+      ],
+      "snapshot": {
+        "Opponent": {
+          "hand": [
+            "ST03-002"
+          ],
+          "board": [
+            "ST03-010",
+            "ST03-014",
+            "ST03-006",
+            "ST03-013"
+          ],
+          "trash": [
+            "ST03-002",
+            "ST03-013",
+            "ST03-012",
+            "ST03-007",
+            "ST03-011",
+            "ST03-012",
+            "ST03-013",
+            "ST03-015"
+          ],
+          "life": 2,
+          "deck": [
+            "ST03-003",
+            "ST03-005",
+            "ST03-008",
+            "ST03-009",
+            "ST03-016",
+            "ST03-017"
+          ],
+          "life_cards": [
+            "ST03-004",
+            "ST03-016"
+          ],
+          "don_deck": [
+            "Don",
+            "Don",
+            "Don",
+            "Don"
+          ],
+          "attached_don": [
+            "Don",
+            "Don"
+          ],
+          "rested": {
+            "ST03-010": 1
+          }
+        },
+        "You": {
+          "hand": [
+            "ST02-016",
+            "ST02-011"
+          ],
+          "trash": [
+            "ST02-015",
+            "ST02-012",
+            "ST02-014",
+            "ST02-012",
+            "ST02-012",
+            "ST02-005",
+            "ST02-004",
+            "ST02-011",
+            "ST02-008"
+          ],
+          "board": [
+            "ST02-013"
+          ],
+          "life": 2,
+          "life_cards": [
+            "ST02-008",
+            "ST02-016"
+          ],
+          "don_cost": [
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don"
+          ],
+          "attached_don": [
+            "Don"
+          ],
+          "rested": {
+            "ST02-013": 1
+          }
+        }
+      }
+    },
+    {
+      "turn": 11,
+      "player": "You",
+      "card_drawn": null,
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "play",
+          "card": "ST02-013",
+          "card_name": "Eustass \"Captain\" Kid",
+          "effects": []
+        },
+        {
+          "type": "activate",
+          "card": "ST02-001",
+          "card_name": "Eustass \"Captain\" Kid",
+          "effects": [
+            "Trash Heat [\"ST02-011\">ST02-011]",
+            "Rest 3 Don",
+            "Set Eustass \"Captain\" Kid [\"ST02-001\">ST02-001] to Active"
+          ]
+        },
+        {
+          "type": "attack",
+          "attacker": "Eustass \"Captain\" Kid",
+          "attacker_code": "ST02-013",
+          "target": "Crocodile [\"ST03-001\">ST03-001]",
+          "result": "hit",
+          "damage": null,
+          "blocked_by": "ST03-013",
+          "countered_by": []
+        },
+        {
+          "type": "attack",
+          "attacker": "Eustass \"Captain\" Kid",
+          "attacker_code": "ST02-001",
+          "target": "Crocodile [\"ST03-001\">ST03-001]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": [
+            "ST03-002"
+          ]
+        }
+      ],
+      "snapshot": {
+        "You": {
+          "hand": [
+            "ST02-016"
+          ],
+          "board": [
+            "ST02-013",
+            "ST02-013"
+          ],
+          "trash": [
+            "ST02-015",
+            "ST02-012",
+            "ST02-014",
+            "ST02-012",
+            "ST02-012",
+            "ST02-005",
+            "ST02-004",
+            "ST02-011",
+            "ST02-008",
+            "ST02-011"
+          ],
+          "life": 2,
+          "life_cards": [
+            "ST02-008",
+            "ST02-016"
+          ],
+          "don_cost": [
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don"
+          ],
+          "rested_rz1": {
+            "don_cost": [
+              "Don"
+            ]
+          },
+          "rested": {
+            "ST02-013": 2
+          }
+        },
+        "Opponent": {
+          "hand": [],
+          "trash": [
+            "ST03-002",
+            "ST03-013",
+            "ST03-012",
+            "ST03-007",
+            "ST03-011",
+            "ST03-012",
+            "ST03-013",
+            "ST03-015",
+            "ST03-013",
+            "ST03-002"
+          ],
+          "board": [
+            "ST03-010",
+            "ST03-014",
+            "ST03-006"
+          ],
+          "life": 2,
+          "deck": [
+            "ST03-003",
+            "ST03-005",
+            "ST03-008",
+            "ST03-009",
+            "ST03-016",
+            "ST03-017"
+          ],
+          "life_cards": [
+            "ST03-004",
+            "ST03-016"
+          ],
+          "don_deck": [
+            "Don",
+            "Don",
+            "Don",
+            "Don"
+          ],
+          "attached_don": [
+            "Don",
+            "Don"
+          ],
+          "rested": {
+            "ST03-010": 1
+          }
+        }
+      }
+    },
+    {
+      "turn": 12,
+      "player": "Opponent",
+      "card_drawn": null,
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "attach_don",
+          "amount": 2,
+          "to": "ST03-001",
+          "to_name": "Crocodile",
+          "total": 2
+        },
+        {
+          "type": "attack",
+          "attacker": "Crocodile",
+          "attacker_code": "ST03-001",
+          "target": "Eustass \"Captain\" Kid [\"ST02-013\">ST02-013]",
+          "result": null,
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "attach_don",
+          "amount": 2,
+          "to": "ST03-010",
+          "to_name": "Bartholomew Kuma",
+          "total": 2
+        },
+        {
+          "type": "attack",
+          "attacker": "Bartholomew Kuma",
+          "attacker_code": "ST03-010",
+          "target": "Eustass \"Captain\" Kid [\"ST02-001\">ST02-001]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": "ST02-013",
+          "countered_by": []
+        }
+      ],
+      "snapshot": {
+        "Opponent": {
+          "hand": [
+            "ST03-003"
+          ],
+          "board": [
+            "ST03-010",
+            "ST03-014",
+            "ST03-006"
+          ],
+          "trash": [
+            "ST03-002",
+            "ST03-013",
+            "ST03-012",
+            "ST03-007",
+            "ST03-011",
+            "ST03-012",
+            "ST03-013",
+            "ST03-015",
+            "ST03-013",
+            "ST03-002"
+          ],
+          "life": 2,
+          "deck": [
+            "ST03-005",
+            "ST03-008",
+            "ST03-009",
+            "ST03-016",
+            "ST03-017"
+          ],
+          "life_cards": [
+            "ST03-004",
+            "ST03-016"
+          ],
+          "don_deck": [
+            "Don",
+            "Don"
+          ],
+          "attached_don": [
+            "Don",
+            "Don",
+            "Don",
+            "Don"
+          ],
+          "rested": {
+            "ST03-010": 1
+          }
+        },
+        "You": {
+          "hand": [
+            "ST02-016"
+          ],
+          "trash": [
+            "ST02-015",
+            "ST02-012",
+            "ST02-014",
+            "ST02-012",
+            "ST02-012",
+            "ST02-005",
+            "ST02-004",
+            "ST02-011",
+            "ST02-008",
+            "ST02-011",
+            "ST02-013"
+          ],
+          "board": [
+            "ST02-013"
+          ],
+          "life": 2,
+          "life_cards": [
+            "ST02-008",
+            "ST02-016"
+          ],
+          "don_cost": [
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don"
+          ],
+          "rested_rz1": {
+            "don_cost": [
+              "Don"
+            ]
+          },
+          "rested": {
+            "ST02-013": 1
+          }
+        }
+      }
+    },
+    {
+      "turn": 13,
+      "player": "You",
+      "card_drawn": null,
+      "don_drawn": 0,
+      "actions": [
+        {
+          "type": "attack",
+          "attacker": "Eustass \"Captain\" Kid",
+          "attacker_code": "ST02-013",
+          "target": "Crocodile [\"ST03-001\">ST03-001]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "attack",
+          "attacker": "Eustass \"Captain\" Kid",
+          "attacker_code": "ST02-001",
+          "target": "Crocodile [\"ST03-001\">ST03-001]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "ST02-013",
+          "to_name": "Eustass \"Captain\" Kid",
+          "total": 1
+        },
+        {
+          "type": "activate",
+          "card": "ST02-013",
+          "card_name": "Eustass \"Captain\" Kid",
+          "effects": [
+            "Set Eustass \"Captain\" Kid [\"ST02-013\">ST02-013] to Active"
+          ]
+        }
+      ],
+      "snapshot": {
+        "You": {
+          "hand": [
+            "ST02-016",
+            "ST02-002"
+          ],
+          "board": [
+            "ST02-013"
+          ],
+          "trash": [
+            "ST02-015",
+            "ST02-012",
+            "ST02-014",
+            "ST02-012",
+            "ST02-012",
+            "ST02-005",
+            "ST02-004",
+            "ST02-011",
+            "ST02-008",
+            "ST02-011",
+            "ST02-013"
+          ],
+          "life": 2,
+          "life_cards": [
+            "ST02-008",
+            "ST02-016"
+          ],
+          "don_cost": [
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don"
+          ],
+          "attached_don": [
+            "Don"
+          ],
+          "rested": {
+            "ST02-013": 1
+          }
+        },
+        "Opponent": {
+          "hand": [
+            "ST03-003",
+            "ST03-016",
+            "ST03-004"
+          ],
+          "trash": [
+            "ST03-002",
+            "ST03-013",
+            "ST03-012",
+            "ST03-007",
+            "ST03-011",
+            "ST03-012",
+            "ST03-013",
+            "ST03-015",
+            "ST03-013",
+            "ST03-002"
+          ],
+          "board": [
+            "ST03-010",
+            "ST03-014",
+            "ST03-006"
+          ],
+          "life": 0,
+          "deck": [
+            "ST03-005",
+            "ST03-008",
+            "ST03-009",
+            "ST03-016",
+            "ST03-017"
+          ],
+          "don_deck": [
+            "Don",
+            "Don"
+          ],
+          "attached_don": [
+            "Don",
+            "Don",
+            "Don",
+            "Don"
+          ],
+          "rested": {
+            "ST03-010": 1
+          }
+        }
+      }
+    },
+    {
+      "turn": 14,
+      "player": "Opponent",
+      "card_drawn": null,
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "play",
+          "card": "ST03-003",
+          "card_name": "Crocodile",
+          "effects": []
+        },
+        {
+          "type": "attack",
+          "attacker": "Crocodile",
+          "attacker_code": "ST03-001",
+          "target": "Eustass \"Captain\" Kid [\"ST02-001\">ST02-001]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": [
+            "ST02-002"
+          ]
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "ST03-014",
+          "to_name": "Marshall D. Teach",
+          "total": 1
+        },
+        {
+          "type": "attack",
+          "attacker": "Marshall D. Teach",
+          "attacker_code": "ST03-014",
+          "target": "Eustass \"Captain\" Kid [\"ST02-001\">ST02-001]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": "ST02-013",
+          "countered_by": []
+        }
+      ],
+      "snapshot": {
+        "Opponent": {
+          "hand": [
+            "ST03-016",
+            "ST03-004",
+            "ST03-002"
+          ],
+          "board": [
+            "ST03-010",
+            "ST03-014",
+            "ST03-006",
+            "ST03-003"
+          ],
+          "trash": [
+            "ST03-002",
+            "ST03-013",
+            "ST03-012",
+            "ST03-007",
+            "ST03-011",
+            "ST03-012",
+            "ST03-013",
+            "ST03-015",
+            "ST03-013",
+            "ST03-002"
+          ],
+          "life": 0,
+          "deck": [
+            "ST03-005",
+            "ST03-008",
+            "ST03-009",
+            "ST03-016",
+            "ST03-017"
+          ],
+          "don_cost": [
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don"
+          ],
+          "attached_don": [
+            "Don"
+          ],
+          "rested_rz1": {
+            "don_cost": [
+              "Don",
+              "Don",
+              "Don"
+            ]
+          },
+          "rested": {
+            "ST03-014": 1,
+            "ST03-003": 1
+          }
+        },
+        "You": {
+          "hand": [],
+          "trash": [
+            "ST02-015",
+            "ST02-012",
+            "ST02-014",
+            "ST02-012",
+            "ST02-012",
+            "ST02-005",
+            "ST02-004",
+            "ST02-011",
+            "ST02-008",
+            "ST02-011",
+            "ST02-013",
+            "ST02-016",
+            "ST02-002"
+          ],
+          "board": [
+            "ST02-013"
+          ],
+          "life": 2,
+          "life_cards": [
+            "ST02-008",
+            "ST02-016"
+          ],
+          "don_cost": [
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don"
+          ],
+          "attached_don": [
+            "Don"
+          ],
+          "rested": {
+            "ST02-013": 1
+          }
+        }
+      }
+    },
+    {
+      "turn": 15,
+      "player": "You",
+      "card_drawn": null,
+      "don_drawn": 0,
+      "actions": [
+        {
+          "type": "attack",
+          "attacker": "Eustass \"Captain\" Kid",
+          "attacker_code": "ST02-013",
+          "target": "Crocodile [\"ST03-001\">ST03-001]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": "ST03-003",
+          "countered_by": [
+            "ST03-004",
+            "ST03-002"
+          ]
+        },
+        {
+          "type": "attack",
+          "attacker": "Eustass \"Captain\" Kid",
+          "attacker_code": "ST02-001",
+          "target": "Crocodile [\"ST03-001\">ST03-001]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        }
+      ],
+      "snapshot": {}
+    }
+  ]
+}

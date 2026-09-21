@@ -1,0 +1,1172 @@
+{
+  "meta": {
+    "players": {
+      "p1": {
+        "name": "You",
+        "leader": {
+          "name": "Marshall D. Teach",
+          "code": "OP09-081"
+        }
+      },
+      "p2": {
+        "name": "Opponent",
+        "leader": {
+          "name": "Portgas D. Ace",
+          "code": "OP13-002"
+        }
+      }
+    },
+    "goes_first": null
+  },
+  "total_turns": 10,
+  "turns": [
+    {
+      "turn": 1,
+      "player": "You",
+      "card_drawn": null,
+      "don_drawn": 1,
+      "actions": [
+        {
+          "type": "play",
+          "card": "OP09-095",
+          "card_name": "Laffitte",
+          "effects": []
+        },
+        {
+          "type": "activate",
+          "card": "OP09-081",
+          "card_name": "Marshall D. Teach",
+          "effects": [
+            "Trash Laffite [\"OP16-114\">OP16-114]",
+            "Opponent can't activate On Play abilities next turn!"
+          ]
+        }
+      ],
+      "snapshot": {
+        "You": {
+          "hand": [
+            "OP09-096",
+            "OP09-095",
+            "OP16-104"
+          ],
+          "board": [
+            "OP09-095"
+          ],
+          "trash": [
+            "OP16-114"
+          ],
+          "life": 5,
+          "life_cards": [
+            "EB04-058",
+            "OP09-091",
+            "OP09-099",
+            "OP16-106",
+            "OP16-108"
+          ],
+          "don_cost": [
+            "Don"
+          ],
+          "rested_rz1": {
+            "don_cost": [
+              "Don"
+            ]
+          },
+          "rested": {
+            "OP09-095": 1
+          }
+        },
+        "Opponent": {
+          "hand": [
+            "OP13-054",
+            "OP13-057",
+            "OP13-042",
+            "OP13-054",
+            "EB04-007"
+          ],
+          "trash": [],
+          "board": [],
+          "life": 3,
+          "deck": [
+            "OP08-043",
+            "OP08-044",
+            "OP08-047",
+            "OP08-050",
+            "OP09-118",
+            "OP13-016",
+            "PRB02-008",
+            "ST15-004",
+            "ST22-015",
+            "ST23-001"
+          ],
+          "life_cards": [
+            "OP13-043",
+            "OP13-054",
+            "ST22-002"
+          ]
+        }
+      }
+    },
+    {
+      "turn": 2,
+      "player": "Opponent",
+      "card_drawn": null,
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP13-002",
+          "to_name": "Portgas D. Ace",
+          "total": 1
+        }
+      ],
+      "snapshot": {
+        "Opponent": {
+          "hand": [
+            "OP13-054",
+            "OP13-057",
+            "OP13-042",
+            "OP13-054",
+            "EB04-007",
+            "ST23-001"
+          ],
+          "board": [],
+          "trash": [],
+          "life": 3,
+          "deck": [
+            "OP08-043",
+            "OP08-044",
+            "OP08-047",
+            "OP08-050",
+            "OP09-118",
+            "OP13-016",
+            "PRB02-008",
+            "ST15-004",
+            "ST22-015"
+          ],
+          "life_cards": [
+            "OP13-043",
+            "OP13-054",
+            "ST22-002"
+          ],
+          "don_cost": [
+            "Don"
+          ],
+          "attached_don": [
+            "Don"
+          ]
+        },
+        "You": {
+          "hand": [
+            "OP09-096",
+            "OP09-095",
+            "OP16-104"
+          ],
+          "trash": [
+            "OP16-114"
+          ],
+          "board": [
+            "OP09-095"
+          ],
+          "life": 5,
+          "life_cards": [
+            "EB04-058",
+            "OP09-091",
+            "OP09-099",
+            "OP16-106",
+            "OP16-108"
+          ],
+          "don_cost": [
+            "Don"
+          ],
+          "rested_rz1": {
+            "don_cost": [
+              "Don"
+            ]
+          },
+          "rested": {
+            "OP09-095": 1
+          }
+        }
+      }
+    },
+    {
+      "turn": 3,
+      "player": "You",
+      "card_drawn": null,
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP09-081",
+          "to_name": "Marshall D. Teach",
+          "total": 1
+        },
+        {
+          "type": "attack",
+          "attacker": "Marshall D. Teach",
+          "attacker_code": "OP09-081",
+          "target": "Portgas D. Ace [\"OP13-002\">OP13-002]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "activate",
+          "card": "OP09-096",
+          "card_name": "This is MY AGE!!!!",
+          "effects": [
+            "Rest 1 Don",
+            "<b>Reveal and Draw Laffite [\"OP16-114\">OP16-114]</b>",
+            "Trash 2 Remaining Cards"
+          ]
+        },
+        {
+          "type": "play",
+          "card": "OP09-095",
+          "card_name": "Laffitte",
+          "effects": []
+        },
+        {
+          "type": "activate",
+          "card": "OP09-081",
+          "card_name": "Marshall D. Teach",
+          "effects": [
+            "Trash Laffite [\"OP16-114\">OP16-114]",
+            "Opponent can't activate On Play abilities next turn!"
+          ]
+        }
+      ],
+      "snapshot": {
+        "You": {
+          "hand": [
+            "OP16-104",
+            "OP16-119"
+          ],
+          "board": [
+            "OP09-095",
+            "OP09-095"
+          ],
+          "trash": [
+            "OP16-114",
+            "OP09-096",
+            "EB04-058",
+            "OP09-096",
+            "OP16-114"
+          ],
+          "life": 5,
+          "life_cards": [
+            "EB04-058",
+            "OP09-091",
+            "OP09-099",
+            "OP16-106",
+            "OP16-108"
+          ],
+          "don_cost": [
+            "Don",
+            "Don"
+          ],
+          "attached_don": [
+            "Don"
+          ],
+          "rested_rz1": {
+            "don_cost": [
+              "Don"
+            ]
+          },
+          "rested": {
+            "OP09-095": 1
+          }
+        },
+        "Opponent": {
+          "hand": [
+            "OP13-054",
+            "OP13-057",
+            "OP13-042",
+            "OP13-054",
+            "EB04-007"
+          ],
+          "trash": [
+            "ST23-001"
+          ],
+          "board": [],
+          "life": 3,
+          "deck": [
+            "OP08-043",
+            "OP08-044",
+            "OP08-047",
+            "OP08-050",
+            "OP09-118",
+            "OP13-016",
+            "PRB02-008",
+            "ST15-004",
+            "ST22-015"
+          ],
+          "life_cards": [
+            "OP13-043",
+            "OP13-054",
+            "ST22-002"
+          ],
+          "don_cost": [
+            "Don"
+          ],
+          "attached_don": [
+            "Don"
+          ]
+        }
+      }
+    },
+    {
+      "turn": 4,
+      "player": "Opponent",
+      "card_drawn": null,
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "attach_don",
+          "amount": 2,
+          "to": "OP13-002",
+          "to_name": "Portgas D. Ace",
+          "total": 2
+        },
+        {
+          "type": "attack",
+          "attacker": "Portgas D. Ace",
+          "attacker_code": "OP13-002",
+          "target": "Marshall D. Teach [\"OP09-081\">OP09-081]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        }
+      ],
+      "snapshot": {
+        "Opponent": {
+          "hand": [
+            "OP13-054",
+            "OP13-057",
+            "OP13-042",
+            "OP13-054",
+            "EB04-007",
+            "ST22-015"
+          ],
+          "board": [],
+          "trash": [
+            "ST23-001"
+          ],
+          "life": 3,
+          "deck": [
+            "OP08-043",
+            "OP08-044",
+            "OP08-047",
+            "OP08-050",
+            "OP09-118",
+            "OP13-016",
+            "PRB02-008",
+            "ST15-004"
+          ],
+          "life_cards": [
+            "OP13-043",
+            "OP13-054",
+            "ST22-002"
+          ],
+          "don_cost": [
+            "Don",
+            "Don"
+          ],
+          "attached_don": [
+            "Don",
+            "Don"
+          ]
+        },
+        "You": {
+          "hand": [
+            "OP16-104",
+            "OP16-119",
+            "OP16-108"
+          ],
+          "trash": [
+            "OP16-114",
+            "OP09-096",
+            "EB04-058",
+            "OP09-096",
+            "OP16-114"
+          ],
+          "board": [
+            "OP09-095",
+            "OP09-095"
+          ],
+          "life": 4,
+          "life_cards": [
+            "EB04-058",
+            "OP09-091",
+            "OP09-099",
+            "OP16-106"
+          ],
+          "don_cost": [
+            "Don",
+            "Don"
+          ],
+          "attached_don": [
+            "Don"
+          ],
+          "rested_rz1": {
+            "don_cost": [
+              "Don"
+            ]
+          },
+          "rested": {
+            "OP09-095": 1
+          }
+        }
+      }
+    },
+    {
+      "turn": 5,
+      "player": "You",
+      "card_drawn": null,
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "play",
+          "card": "OP16-104",
+          "card_name": "Catarina Devon",
+          "effects": []
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP09-081",
+          "to_name": "Marshall D. Teach",
+          "total": 1
+        },
+        {
+          "type": "attack",
+          "attacker": "Marshall D. Teach",
+          "attacker_code": "OP09-081",
+          "target": "Portgas D. Ace [\"OP13-002\">OP13-002]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "activate",
+          "card": "OP09-081",
+          "card_name": "Marshall D. Teach",
+          "effects": [
+            "Trash Doc Q [\"OP16-109\">OP16-109]",
+            "Opponent can't activate On Play abilities next turn!"
+          ]
+        }
+      ],
+      "snapshot": {
+        "You": {
+          "hand": [
+            "OP16-119",
+            "OP16-108"
+          ],
+          "board": [
+            "OP09-095",
+            "OP09-095",
+            "OP16-104"
+          ],
+          "trash": [
+            "OP16-114",
+            "OP09-096",
+            "EB04-058",
+            "OP09-096",
+            "OP16-114",
+            "OP16-109"
+          ],
+          "life": 4,
+          "life_cards": [
+            "EB04-058",
+            "OP09-091",
+            "OP09-099",
+            "OP16-106"
+          ],
+          "don_cost": [
+            "Don",
+            "Don",
+            "Don",
+            "Don"
+          ],
+          "attached_don": [
+            "Don"
+          ],
+          "rested_rz1": {
+            "don_cost": [
+              "Don"
+            ]
+          },
+          "rested": {
+            "OP16-104": 1
+          }
+        },
+        "Opponent": {
+          "hand": [
+            "OP13-042",
+            "OP13-054",
+            "EB04-007",
+            "ST22-015"
+          ],
+          "trash": [
+            "ST23-001",
+            "OP13-054",
+            "OP13-057"
+          ],
+          "board": [],
+          "life": 3,
+          "deck": [
+            "OP08-043",
+            "OP08-044",
+            "OP08-047",
+            "OP08-050",
+            "OP09-118",
+            "OP13-016",
+            "PRB02-008",
+            "ST15-004"
+          ],
+          "life_cards": [
+            "OP13-043",
+            "OP13-054",
+            "ST22-002"
+          ],
+          "don_cost": [
+            "Don",
+            "Don"
+          ],
+          "attached_don": [
+            "Don",
+            "Don"
+          ],
+          "rested_rz1": {
+            "don_cost": [
+              "Don"
+            ]
+          }
+        }
+      }
+    },
+    {
+      "turn": 6,
+      "player": "Opponent",
+      "card_drawn": null,
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "play",
+          "card": "OP13-054",
+          "card_name": "Yamato",
+          "effects": []
+        },
+        {
+          "type": "attack",
+          "attacker": "Portgas D. Ace",
+          "attacker_code": "OP13-002",
+          "target": "Marshall D. Teach [\"OP09-081\">OP09-081]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "play",
+          "card": "OP13-016",
+          "card_name": "Monkey D. Garp",
+          "effects": []
+        }
+      ],
+      "snapshot": {
+        "Opponent": {
+          "hand": [
+            "OP13-042",
+            "EB04-007",
+            "ST22-015"
+          ],
+          "board": [
+            "OP13-054",
+            "OP13-016"
+          ],
+          "trash": [
+            "ST23-001",
+            "OP13-054",
+            "OP13-057"
+          ],
+          "life": 3,
+          "deck": [
+            "OP08-043",
+            "OP08-044",
+            "OP08-047",
+            "OP08-050",
+            "OP09-118",
+            "PRB02-008",
+            "ST15-004"
+          ],
+          "life_cards": [
+            "OP13-043",
+            "OP13-054",
+            "ST22-002"
+          ],
+          "don_cost": [
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don"
+          ],
+          "rested_rz1": {
+            "don_cost": [
+              "Don",
+              "Don",
+              "Don"
+            ]
+          },
+          "rested": {
+            "OP13-054": 1,
+            "OP13-016": 1
+          }
+        },
+        "You": {
+          "hand": [
+            "OP16-119",
+            "OP16-108",
+            "OP09-091"
+          ],
+          "trash": [
+            "OP16-114",
+            "OP09-096",
+            "EB04-058",
+            "OP09-096",
+            "OP16-114",
+            "OP16-109"
+          ],
+          "board": [
+            "OP09-095",
+            "OP09-095",
+            "OP16-104"
+          ],
+          "life": 3,
+          "life_cards": [
+            "EB04-058",
+            "OP09-099",
+            "OP16-106"
+          ],
+          "don_cost": [
+            "Don",
+            "Don",
+            "Don",
+            "Don"
+          ],
+          "attached_don": [
+            "Don"
+          ],
+          "rested_rz1": {
+            "don_cost": [
+              "Don"
+            ]
+          },
+          "rested": {
+            "OP16-104": 1
+          }
+        }
+      }
+    },
+    {
+      "turn": 7,
+      "player": "You",
+      "card_drawn": null,
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "play",
+          "card": "OP16-108",
+          "card_name": "Shiryu",
+          "effects": []
+        },
+        {
+          "type": "attack",
+          "attacker": "Catarina Devon",
+          "attacker_code": "OP16-104",
+          "target": "Portgas D. Ace [\"OP13-002\">OP13-002]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "activate",
+          "card": "OP16-104",
+          "card_name": "Catarina Devon",
+          "effects": [
+            "Buff Self 3000"
+          ]
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP09-081",
+          "to_name": "Marshall D. Teach",
+          "total": 1
+        },
+        {
+          "type": "attack",
+          "attacker": "Marshall D. Teach",
+          "attacker_code": "OP09-081",
+          "target": "Portgas D. Ace [\"OP13-002\">OP13-002]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "activate",
+          "card": "OP09-081",
+          "card_name": "Marshall D. Teach",
+          "effects": [
+            "Trash Vasco Shot [\"OP09-091\">OP09-091]",
+            "Opponent can't activate On Play abilities next turn!"
+          ]
+        }
+      ],
+      "snapshot": {
+        "You": {
+          "hand": [
+            "OP16-119",
+            "OP09-093"
+          ],
+          "board": [
+            "OP09-095",
+            "OP09-095",
+            "OP16-104",
+            "OP16-108"
+          ],
+          "trash": [
+            "OP16-114",
+            "OP09-096",
+            "EB04-058",
+            "OP09-096",
+            "OP16-114",
+            "OP16-109",
+            "OP09-091"
+          ],
+          "life": 3,
+          "life_cards": [
+            "EB04-058",
+            "OP09-099",
+            "OP16-106"
+          ],
+          "don_cost": [
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don"
+          ],
+          "attached_don": [
+            "Don"
+          ],
+          "rested_rz1": {
+            "don_cost": [
+              "Don"
+            ]
+          },
+          "rested": {
+            "OP16-104": 1,
+            "OP16-108": 1
+          }
+        },
+        "Opponent": {
+          "hand": [
+            "OP13-042",
+            "ST22-015",
+            "OP13-043",
+            "ST22-002"
+          ],
+          "trash": [
+            "ST23-001",
+            "OP13-054",
+            "OP13-057",
+            "EB04-007"
+          ],
+          "board": [
+            "OP13-054",
+            "OP13-016"
+          ],
+          "life": 1,
+          "deck": [
+            "OP08-043",
+            "OP08-044",
+            "OP08-047",
+            "OP08-050",
+            "OP09-118",
+            "PRB02-008",
+            "ST15-004"
+          ],
+          "life_cards": [
+            "OP13-054"
+          ],
+          "don_cost": [
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don"
+          ],
+          "rested_rz1": {
+            "don_cost": [
+              "Don",
+              "Don",
+              "Don"
+            ]
+          },
+          "rested": {
+            "OP13-054": 1,
+            "OP13-016": 1
+          }
+        }
+      }
+    },
+    {
+      "turn": 8,
+      "player": "Opponent",
+      "card_drawn": null,
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "attack",
+          "attacker": "Portgas D. Ace",
+          "attacker_code": "OP13-002",
+          "target": "Marshall D. Teach [\"OP09-081\">OP09-081]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "attack",
+          "attacker": "Yamato",
+          "attacker_code": "OP13-054",
+          "target": "Marshall D. Teach [\"OP09-081\">OP09-081]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "activate",
+          "card": "ST22-015",
+          "card_name": "I Am Whitebeard!",
+          "effects": [
+            "Rest 8 Don",
+            "Deploy Edward Newgate [\"OP13-042\">OP13-042]",
+            "Takes Bottom Life",
+            "Grant Portgas D. Ace [\"OP13-002\">OP13-002] 2000 until opponent's next turn end"
+          ]
+        }
+      ],
+      "snapshot": {
+        "Opponent": {
+          "hand": [
+            "OP13-043",
+            "ST22-002",
+            "OP13-043",
+            "OP13-054"
+          ],
+          "board": [
+            "OP13-054",
+            "OP13-016",
+            "OP13-042"
+          ],
+          "trash": [
+            "ST23-001",
+            "OP13-054",
+            "OP13-057",
+            "EB04-007",
+            "ST22-015"
+          ],
+          "life": 0,
+          "deck": [
+            "OP08-043",
+            "OP08-044",
+            "OP08-047",
+            "OP08-050",
+            "OP09-118",
+            "PRB02-008",
+            "ST15-004"
+          ],
+          "don_cost": [
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don"
+          ],
+          "rested_rz1": {
+            "don_cost": [
+              "Don",
+              "Don",
+              "Don"
+            ]
+          },
+          "rested": {
+            "OP13-054": 1
+          }
+        },
+        "You": {
+          "hand": [
+            "OP16-119",
+            "OP09-093",
+            "OP09-099",
+            "EB04-058"
+          ],
+          "trash": [
+            "OP16-114",
+            "OP09-096",
+            "EB04-058",
+            "OP09-096",
+            "OP16-114",
+            "OP16-109",
+            "OP09-091"
+          ],
+          "board": [
+            "OP09-095",
+            "OP09-095",
+            "OP16-104",
+            "OP16-108"
+          ],
+          "life": 1,
+          "life_cards": [
+            "OP16-106"
+          ],
+          "don_cost": [
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don"
+          ],
+          "attached_don": [
+            "Don"
+          ],
+          "rested_rz1": {
+            "don_cost": [
+              "Don"
+            ]
+          },
+          "rested": {
+            "OP16-104": 1,
+            "OP16-108": 1
+          }
+        }
+      }
+    },
+    {
+      "turn": 9,
+      "player": "You",
+      "card_drawn": null,
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "play",
+          "card": "OP16-119",
+          "card_name": "Marshall D. Teach",
+          "effects": []
+        },
+        {
+          "type": "play",
+          "card": "OP09-099",
+          "card_name": "Fullalead",
+          "effects": [
+            "Rest Fullalead [\"OP09-099\">OP09-099]",
+            "Trash Borsalino [\"EB04-058\">EB04-058]",
+            "<b>Reveal and Draw Marshall D. Teach [\"OP09-093\">OP09-093]</b>"
+          ]
+        },
+        {
+          "type": "activate",
+          "card": "OP09-081",
+          "card_name": "Marshall D. Teach",
+          "effects": [
+            "Trash Marshall D. Teach [\"OP16-119\">OP16-119]",
+            "Opponent can't activate On Play abilities next turn!"
+          ]
+        },
+        {
+          "type": "attack",
+          "attacker": "Shiryu",
+          "attacker_code": "OP16-108",
+          "target": "Portgas D. Ace [\"OP13-002\">OP13-002]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": [
+            "OP13-043"
+          ]
+        },
+        {
+          "type": "attack",
+          "attacker": "Catarina Devon",
+          "attacker_code": "OP16-104",
+          "target": "Yamato [\"OP13-054\">OP13-054]",
+          "result": "hit",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "activate",
+          "card": "OP16-104",
+          "card_name": "Catarina Devon",
+          "effects": [
+            "Buff Self 9000"
+          ]
+        }
+      ],
+      "snapshot": {
+        "You": {
+          "hand": [
+            "OP09-093",
+            "OP09-093"
+          ],
+          "board": [
+            "OP09-095",
+            "OP09-095",
+            "OP16-104",
+            "OP16-108",
+            "OP16-119"
+          ],
+          "trash": [
+            "OP16-114",
+            "OP09-096",
+            "EB04-058",
+            "OP09-096",
+            "OP16-114",
+            "OP16-109",
+            "OP09-091",
+            "EB04-058",
+            "OP16-119"
+          ],
+          "life": 1,
+          "deck": [
+            "OP09-093",
+            "OP09-099"
+          ],
+          "life_cards": [
+            "OP16-106"
+          ],
+          "don_cost": [
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don"
+          ],
+          "stage": [
+            "OP09-099"
+          ],
+          "rested_rz1": {
+            "don_cost": [
+              "Don",
+              "Don"
+            ]
+          },
+          "rested": {
+            "OP16-104": 1,
+            "OP16-108": 1
+          }
+        },
+        "Opponent": {
+          "hand": [
+            "OP13-043",
+            "OP13-054"
+          ],
+          "trash": [
+            "ST23-001",
+            "OP13-054",
+            "OP13-057",
+            "EB04-007",
+            "ST22-015",
+            "ST22-002",
+            "OP13-043",
+            "OP13-054"
+          ],
+          "board": [
+            "OP13-016",
+            "OP13-042"
+          ],
+          "life": 0,
+          "deck": [
+            "OP08-043",
+            "OP08-044",
+            "OP08-047",
+            "OP08-050",
+            "OP09-118",
+            "PRB02-008",
+            "ST15-004"
+          ],
+          "don_cost": [
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don"
+          ],
+          "rested_rz1": {
+            "don_cost": [
+              "Don",
+              "Don",
+              "Don"
+            ]
+          }
+        }
+      }
+    },
+    {
+      "turn": 10,
+      "player": "Opponent",
+      "card_drawn": null,
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "attack",
+          "attacker": "Portgas D. Ace",
+          "attacker_code": "OP13-002",
+          "target": "Marshall D. Teach [\"OP09-081\">OP09-081]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "attack",
+          "attacker": "Edward Newgate",
+          "attacker_code": "OP13-042",
+          "target": "Marshall D. Teach [\"OP09-081\">OP09-081]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        }
+      ],
+      "snapshot": {}
+    }
+  ]
+}

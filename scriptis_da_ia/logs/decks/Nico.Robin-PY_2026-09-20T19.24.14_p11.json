@@ -1,0 +1,61 @@
+{
+  "cards": [
+    {
+      "code": "OP08-076",
+      "name": "OP08-076",
+      "count": 3
+    },
+    {
+      "code": "OP17-102",
+      "name": "OP17-102",
+      "count": 2
+    },
+    {
+      "code": "OP17-109",
+      "name": "Charlotte Pudding",
+      "count": 2
+    },
+    {
+      "code": "OP09-078",
+      "name": "OP09-078",
+      "count": 2
+    },
+    {
+      "code": "OP17-114",
+      "name": "The 3 Sweet Commanders",
+      "count": 2
+    },
+    {
+      "code": "OP11-070",
+      "name": "Charlotte Pudding",
+      "count": 1
+    },
+    {
+      "code": "OP17-106",
+      "name": "OP17-106",
+      "count": 1
+    },
+    {
+      "code": "OP17-112",
+      "name": "Charlotte Linlin",
+      "count": 1
+    },
+    {
+      "code": "OP17-113",
+      "name": "Streusen",
+      "count": 1
+    },
+    {
+      "code": "OP17-074",
+      "name": "OP17-074",
+      "count": 1
+    },
+    {
+      "code": "OP17-107",
+      "name": "OP17-107",
+      "count": 1
+    }
+  ],
+  "total_seen": 17,
+  "leader": "OP09-062"
+}

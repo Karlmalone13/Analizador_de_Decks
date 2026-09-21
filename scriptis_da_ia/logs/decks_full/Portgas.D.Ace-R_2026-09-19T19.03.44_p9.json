@@ -1,0 +1,65 @@
+{
+  "leader": "OP16-001",
+  "source_deck": "Ace R",
+  "source_dir": "E:\\Games\\OnePieceSimulador\\Builds_Windows\\Decks",
+  "captured_at_ingest": true,
+  "cards": [
+    {
+      "code": "EB01-002",
+      "count": 2
+    },
+    {
+      "code": "OP10-005",
+      "count": 3
+    },
+    {
+      "code": "OP13-016",
+      "count": 4
+    },
+    {
+      "code": "OP14-018",
+      "count": 2
+    },
+    {
+      "code": "OP16-003",
+      "count": 4
+    },
+    {
+      "code": "OP16-004",
+      "count": 4
+    },
+    {
+      "code": "OP16-005",
+      "count": 4
+    },
+    {
+      "code": "OP16-010",
+      "count": 4
+    },
+    {
+      "code": "OP16-011",
+      "count": 4
+    },
+    {
+      "code": "OP16-014",
+      "count": 4
+    },
+    {
+      "code": "OP16-015",
+      "count": 4
+    },
+    {
+      "code": "OP16-017",
+      "count": 4
+    },
+    {
+      "code": "OP16-021",
+      "count": 4
+    },
+    {
+      "code": "OP16-118",
+      "count": 3
+    }
+  ],
+  "total": 50
+}

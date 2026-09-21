@@ -1,0 +1,56 @@
+{
+  "cards": [
+    {
+      "code": "ST01-005",
+      "name": "Jinbe",
+      "count": 3
+    },
+    {
+      "code": "ST01-009",
+      "name": "ST01-009",
+      "count": 2
+    },
+    {
+      "code": "ST01-011",
+      "name": "Brook",
+      "count": 1
+    },
+    {
+      "code": "ST01-006",
+      "name": "Tony Tony Chopper",
+      "count": 1
+    },
+    {
+      "code": "ST01-013",
+      "name": "ST01-013",
+      "count": 1
+    },
+    {
+      "code": "ST01-008",
+      "name": "ST01-008",
+      "count": 1
+    },
+    {
+      "code": "ST01-004",
+      "name": "ST01-004",
+      "count": 1
+    },
+    {
+      "code": "ST01-007",
+      "name": "ST01-007",
+      "count": 1
+    },
+    {
+      "code": "ST01-015",
+      "name": "ST01-015",
+      "count": 1
+    },
+    {
+      "code": "ST01-002",
+      "name": "ST01-002",
+      "count": 1
+    }
+  ],
+  "total_seen": 13,
+  "leader": "ST01-001"
+}
