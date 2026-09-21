@@ -777,3 +777,37 @@ aberto -- NAO e mistura de rotulo.
 'todos') pra re-testar quando 'busca' tiver mais volume, sem precisar reescrever
 o filtro. Campo `modo` por linha (bloco 877) ja permite a comparacao a
 qualquer momento.
+
+### Retreinar value_net_aluno.joblib como rede (MLP) em vez de arvores (21/09/2026)
+
+**Medido: AUC fora da amostra CAIU de 0,8080 pra 0,7642 (-4,4pp), e o gap
+treino-validacao SUBIU pra +0,1777 (mais overfit)** -- o oposto do que
+aconteceu com o Q (`treinar_q.py`, bloco 800: rede errou 18% MENOS que
+arvores).
+
+Contexto: perfil de self-play (bloco 882) achou `value_net_aluno.joblib`
+(arvores, `HistGradientBoostingRegressor`) como ~27% do tempo de uma
+partida via `_ordena_pelo_modelo` -- maior custo isolado medido, e um
+candidato natural pra ganhar o mesmo `_forward_rapido` (3,1x) que ja
+acelerou o Q. Adicionado `--modelo rede` em `treinar_value.py` (mesma
+arquitetura Pipeline(StandardScaler, MLPRegressor) de 64/32 neuronios) e
+retreinado com os MESMOS parametros do arquivo em producao (`--dataset
+metrics/corpus_professor.jsonl --features aluno --alvo professor --folds
+5`, 73.821 estados, 16 lideres).
+
+**Causa provavel da diferenca**: o corpus deste modelo (73.821 linhas) e
+~11x MENOR que o do Q (818.763) -- a mesma rede leve que generalizou bem
+com muito mais dado pode nao ter dado suficiente aqui, e/ou a tarefa
+(estado -> win_prob continuo) e mais sensivel a hiperparametro do que
+(estado+acao) -> valor. Nao investigado a fundo (fora do escopo do teste).
+
+**Decisao**: NAO trocar `value_net_aluno.joblib` pra rede. O custo de tempo
+(~27%) fica como esta -- aceitar velocidade mais baixa em troca de
+qualidade de ordenacao e a escolha certa aqui, dado que o proprio projeto
+ja pagou caro por trocar sem medir (blocos 680-683: AUC alto e MESMO ASSIM
+piorou ligado no motor -- aqui o AUC nem foi alto, foi pior nos dois eixos).
+
+**O que fica**: `--modelo rede` em `treinar_value.py` como capacidade
+GENERICA (default continua 'arvores', nada muda pra quem ja chama o
+script) -- reaproveitavel se o corpus deste modelo crescer o bastante pra
+re-testar, ou pra outro dataset/feature-set futuro.

@@ -1,5 +1,49 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-09-21 (883) - Testado retreinar value_net_aluno.joblib como rede -- PIOROU, revertido
+
+Sessao Claude (Sonnet 5), continuacao imediata do bloco 882. Usuario pediu
+"veja se tem mais coisa que possamos melhorar" antes de rodar o ciclo. Achei
+via profile aquecido (cProfile, 4 partidas apos warmup) que
+`value_net_aluno.joblib` (arvores, usado por `_ordena_pelo_modelo` pra
+montar o shortlist antes da decisao final do Q) e **~27% do tempo de uma
+partida** -- maior custo isolado medido, maior que qualquer coisa que o
+bloco 882 tocou (nenhum dos 5 itens mexia nesse arquivo). Usuario confirmou
+("sim") pra tentar o mesmo fix do Q: trocar de arvores pra rede.
+
+**Testado, e PIOROU**: `--modelo rede` novo em `treinar_value.py` (mesma
+arquitetura Pipeline(StandardScaler, MLPRegressor) 64/32 do `treinar_q.py`),
+retreinado com os parametros exatos do arquivo em producao (73.821 estados,
+16 lideres, `--features aluno --alvo professor --folds 5`). AUC fora da
+amostra **caiu de 0,8080 pra 0,7642** (-4,4pp) e o gap treino-validacao
+**subiu** pra +0,1777 (mais overfit) -- o oposto do que a rede fez no Q
+(errou 18% MENOS que arvores, bloco 800). Causa provavel: este corpus
+(73.821 linhas) e ~11x menor que o do Q (818.763) -- capacidade nao e de
+graca sem dado suficiente pra sustentar.
+
+**Decisao**: NAO trocar. Registrado em `REPROVADOS.md`. O custo de ~27% do
+tempo fica como esta -- a alternativa (piorar a ordenacao pra ganhar
+velocidade) e exatamente o erro que os blocos 680-683 ja pagaram caro
+(AUC alto e MESMO ASSIM piorou o motor; aqui nem AUC alto foi, piorou nos
+dois eixos).
+
+**O que fica, permanente**: `--modelo rede` em `treinar_value.py` como
+capacidade generica (default 'arvores', nada muda pra quem ja chama o
+script sem a flag) -- reaproveitavel se o corpus deste modelo especifico
+crescer bastante, ou pra outro dataset/feature-set no futuro.
+
+### Estado
+
+`smoke_fast.py` OK. Commitado: `treinar_value.py` (`--modelo rede` +
+`familia` no bundle) + `REPROVADOS.md`. `metrics/value_net_aluno.joblib`
+em producao **intacto** (nunca foi sobrescrito -- o teste rodou pra um
+arquivo `/tmp`, apagado depois).
+
+**PROXIMO PASSO**: nenhum lever de velocidade adicional identificado sem
+custo de qualidade. Rodar `ciclo.py --partidas 200 --ciclos 1` (as 5
+melhorias do bloco 882 juntas) e comparar contra o historico do bloco 881
+-- ainda nao rodado.
+
 ## 2026-09-21 (882) - 5 melhorias de ML pedidas pelo usuario ("ML fraco e demorado"), com pesquisa externa
 
 Sessao Claude (Sonnet 5), continuacao imediata do bloco 881. Usuario pediu

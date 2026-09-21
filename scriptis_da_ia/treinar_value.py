@@ -100,6 +100,17 @@ def main() -> None:
                          'DON anexado, rush/double/unblockable/banish, quantos '
                          'personagens TEM efeito). Default basicas pra nao mudar '
                          'comportamento sem medicao (bloco 764)')
+    ap.add_argument('--modelo', choices=('arvores', 'rede'), default='arvores',
+                    help='arvores = HistGradientBoosting* (default -- comportamento '
+                         'antigo, nao muda quem ja chama este script sem passar a '
+                         'flag). rede = Pipeline(StandardScaler, MLPRegressor/'
+                         'Classifier), a mesma arquitetura NNUE-style ja usada em '
+                         'treinar_q.py. Achado 21/09/2026: value_net_aluno.joblib '
+                         '(arvores) era ~27%% do tempo de uma partida de self-play '
+                         '(predictor.py:predict do sklearn) -- rede e acelerada por '
+                         '`_forward_rapido` (value_net.py, 3,1x medido) e ja errou '
+                         '18%% menos que arvores num corpus comparavel '
+                         '(treinar_q.py, bloco 800).')
     args = ap.parse_args()
 
     import numpy as np
@@ -157,6 +168,19 @@ def main() -> None:
         print(f'  aviso: folds reduzido pra {folds} (so ha {n_lideres} lideres)')
 
     def novo_modelo():
+        if args.modelo == 'rede':
+            # REDE LEVE (NNUE-style), mesma arquitetura de `treinar_q.py`
+            # (bloco 800) -- so entra com `--modelo rede` explicito, nunca
+            # muda quem ja chama este script sem passar a flag.
+            from sklearn.neural_network import MLPClassifier, MLPRegressor
+            from sklearn.pipeline import make_pipeline
+            from sklearn.preprocessing import StandardScaler
+            Cls = (MLPRegressor if args.alvo == 'professor' else MLPClassifier)
+            return make_pipeline(
+                StandardScaler(),
+                Cls(hidden_layer_sizes=(64, 32), activation='relu',
+                    solver='adam', learning_rate_init=3e-3, max_iter=60,
+                    early_stopping=True, n_iter_no_change=5, random_state=0))
         # Hiperparametros BUSCADOS (bloco 771), nao mais fixos no chute.
         # Medido em lideres nunca vistos: AUC fora da amostra 0,7761 ->
         # 0,7985, e o vao treino-teste caiu de 0,201 pra 0,087 -- o modelo
@@ -245,6 +269,7 @@ def main() -> None:
 
     bundle = {
         'modelo': modelo,
+        'familia': args.modelo,
         'modelo_q10': q_baixo,
         'modelo_q90': q_alto,
         'feature_names': list(nomes),

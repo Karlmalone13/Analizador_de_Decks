@@ -1,6 +1,16 @@
 # TODO — Analisador de Decks OPTCG
 
-**Última atualização:** 21 de setembro de 2026 (bloco 882)
+**Última atualização:** 21 de setembro de 2026 (bloco 883)
+
+> **TESTADO E REJEITADO (bloco 883): trocar `value_net_aluno.joblib` de
+> arvores pra rede.** Era o maior custo de tempo isolado achado (~27% de
+> uma partida), mas retreinado como rede a AUC fora da amostra CAIU
+> (0,8080 -> 0,7642) e o overfit SUBIU -- ao contrario do Q, que melhorou
+> com rede. Corpus deste modelo (73.821 linhas) e ~11x menor que o do Q.
+> NAO trocado -- ver `REPROVADOS.md`. `--modelo rede` ficou como capacidade
+> generica em `treinar_value.py` (default continua arvores) pra re-testar
+> se o corpus crescer. **Nenhum lever de velocidade adicional sem custo de
+> qualidade identificado ainda.**
 
 > **5 MELHORIAS DE ML implementadas (bloco 882)**, a pedido do usuario apos
 > pesquisa externa (AlphaZero, NNUE, Prioritized Experience Replay, pool de
