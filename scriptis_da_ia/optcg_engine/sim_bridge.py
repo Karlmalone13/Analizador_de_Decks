@@ -2742,6 +2742,16 @@ def order_target_candidates(gs: GameState, opp_gs: GameState,
         'trash_any_from_hand': {'own_hand'},
         'reveal_from_hand': {'own_hand'},
         'place_from_trash_bottom_deck': {'own_trash'},
+        # Achado 20/09 (partida real, lider Luffy OP13-001, "rest ANY NUMBER
+        # of your DON!!"): faltavam os custos de restar DON -- so `own_don`
+        # (ativo) e alvo legal, DON ja restado (`own_don_rested`) nao pode
+        # ser restado de novo. Sem esta entrada, purpose='cost' (agora que o
+        # plugin reconhece a janela de quantidade livre, ver TargetPurpose em
+        # BotExecutor.cs) nao filtrava nada (actor_zonas_de_custo vazio),
+        # entao os candidatos de PERSONAGEM do alvo do buff continuavam
+        # competindo com o DON pelas 2 tentativas do loop de clique.
+        'rest_don': {'own_don'},
+        'rest_any_don': {'own_don'},
     }
     # Zonas que o ALVO do efeito declara (bloco 862). Uniao entre os steps:
     # uma carta com dois alvos diferentes aceita as zonas dos dois.

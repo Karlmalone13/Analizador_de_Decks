@@ -566,7 +566,7 @@ namespace OPTCGBotPlugin
                     }
                 }
 
-                HandlePendingAction(gls);
+                HandlePendingAction(gls, duringAttack);
                 return;
             }
 
@@ -899,10 +899,53 @@ namespace OPTCGBotPlugin
         // ja teria ela.
         private bool _pendingRefreshTried;
 
+        // Achado 20/09 (partida real, lider Monkey D. Luffy OP13-001, "[On
+        // Your Opponent's Attack] you may rest ANY NUMBER of your DON!!":
+        // +2000 de poder por DON restado). O jogo pula direto pra tela de
+        // SELECAO (TargetCount=99, "quantidade livre" -- ver V3CountIsFree)
+        // SEM passar por nenhuma tela de botao Cancel/UseOnPlay, entao
+        // `IsOptionalCostWindow` (o gate dos blocos 565/744/745/746, feito
+        // pra tela de BOTAO) nunca reconhecia isso como custo opcional -- o
+        // loop de clique mecanico (`_pendingSemConsumo >= MaxRecusas...`)
+        // simplesmente tentava candidatos e, quando nao consumia nenhum,
+        // confirmava com ZERO -- sem NUNCA perguntar pro motor se valia a
+        // pena. ZERO decisoes de `reaction` no decision log em 11 turnos,
+        // mesmo a habilidade sendo oferecida (confirmado via heartbeat:
+        // aca=True actor=OP13-001 mine=True, repetidas vezes).
+        //
+        // Fix generico (nao amarrado ao Luffy -- vale pra QUALQUER carta
+        // futura com "rest ANY NUMBER of your DON!!" reativo em combate):
+        // na 1a vez que este pending aparece, SE for quantidade livre E
+        // durante uma janela de combate (duringAttack), pergunta pro motor
+        // UMA vez via `ShouldUseOptionalCost` (o MESMO caminho ja usado
+        // pelas telas de botao -- nao e um 2o motor, e o motor unico
+        // respondendo a mesma pergunta por uma porta que faltava). Se ele
+        // recusar, confirma com ZERO IMEDIATAMENTE (sem gastar o loop de
+        // clique mecanico); se aceitar, o loop de clique existente segue
+        // normal (ja maximiza o consumo de DON!! ativo, que e a mesma
+        // aproximacao "resta tudo" que o motor ja usa internamente pra
+        // pagar o custo rest_any_don).
+        private bool _pendingReactionAsked;
+        private bool _pendingReactionDeclined;
+        // Achado 20/09 (2a rodada de teste ao vivo, ja com o fix acima): o
+        // jogo DECREMENTA `remaining` a cada clique aceito nesta tela
+        // especifica (99 -> 98 -> ...), ao contrario da suposicao original
+        // de `V3CountIsFree` (bloco de 29/08, que dizia "o jogo devolve
+        // remaining=99 e ele NUNCA chega a 0" -- verdade pra tela de alvo de
+        // efeito comum, falsa pra esta). Sem isto, a 2a chamada de
+        // `V3CountIsFree(gls)` (apos o 1o DON ja restado, remaining=98) dava
+        // falso, `TargetPurpose` deixava de devolver "cost", o filtro de
+        // zona (`_CUSTO_ZONAS['rest_any_don']`) parava de agir, e o loop
+        // voltava a competir com candidatos de PERSONAGEM -- so 1 DON de 2+
+        // disponiveis era restado. Fixa "e quantidade livre?" UMA vez, no
+        // 1o fetch do pending, e reusa pelo resto do MESMO pending -- nao
+        // pela leitura ao vivo (que muda depois do 1o clique).
+        private bool _pendingCountWasFree;
+
         // Efeito pendente (acaActive) pedindo selecao de alvo. O engine ordena
         // os candidatos; clicamos um por tick — o jogo ignora cliques invalidos,
         // entao um "nao avancou" vira tentativa do proximo da lista.
-        private void HandlePendingAction(GameplayLogicScript gls)
+        private void HandlePendingAction(GameplayLogicScript gls, bool duringAttack)
         {
             var botPs = gls.Lps_Players[BotPlayerIndex];
             var oppPs = gls.Lps_Players[1 - BotPlayerIndex];
@@ -929,7 +972,38 @@ namespace OPTCGBotPlugin
                 _pendingRefreshTried = false;
                 _pendingConsumidos = 0;
                 _pendingSemConsumo = 0;
-                FetchPendingCandidates(gls, botPs, oppPs);
+                _pendingReactionAsked = false;
+                _pendingReactionDeclined = false;
+                _pendingCountWasFree = BotExecutor.V3CountIsFree(gls);
+                FetchPendingCandidates(gls, botPs, oppPs, duringAttack, _pendingCountWasFree);
+            }
+
+            // Custo reativo de QUANTIDADE LIVRE ("rest any number of your
+            // DON!!") durante janela de combate -- pergunta pro motor UMA
+            // vez, ANTES do loop de clique mecanico abaixo (ver comentario
+            // no campo `_pendingReactionAsked`, achado 20/09, Luffy OP13-001).
+            if (duringAttack && !_pendingReactionAsked
+                && BotExecutor.PendingActionIsMine(gls, botPs)
+                && _pendingCountWasFree)
+            {
+                _pendingReactionAsked = true;
+                _pendingReactionDeclined = !ShouldUseOptionalCost(gls, duringAttack);
+                Plugin.Log.LogInfo(
+                    $"[Bot] custo reativo de quantidade livre (actor="
+                    + $"{BotExecutor.ActorCode(gls) ?? "-"}): "
+                    + (_pendingReactionDeclined ? "recusar (confirma com 0)" : "usar"));
+            }
+            if (_pendingReactionDeclined)
+            {
+                if (!string.IsNullOrEmpty(_pendingTargetDecisionId))
+                {
+                    TrackAuxDecision(_pendingTargetDecisionId,
+                        GameStateBuilder.Build(botPs, oppPs, gls));
+                    _pendingTargetDecisionId = "";
+                }
+                BotExecutor.ConfirmPendingSelection(gls);
+                _cooldown = 1f;
+                return;
             }
 
             // V3 sem alvos faltando (ex: "Choose 0 Targets") → confirma direto
@@ -1025,7 +1099,7 @@ namespace OPTCGBotPlugin
             {
                 _pendingRefreshTried = true;
                 _pendingAttempt = 0;
-                FetchPendingCandidates(gls, botPs, oppPs);
+                FetchPendingCandidates(gls, botPs, oppPs, duringAttack, _pendingCountWasFree);
                 if (_pendingOrder != null && _pendingOrder.Count > 0)
                 {
                     _cooldown = 0.5f;
@@ -1099,7 +1173,7 @@ namespace OPTCGBotPlugin
         // _pendingOrder/_pendingTargetDecisionId. Extraido de HandlePendingAction
         // pra ser reusado tanto no snapshot inicial quanto no refresh de
         // retentativa (ver _pendingRefreshTried).
-        private void FetchPendingCandidates(GameplayLogicScript gls, PlayerState botPs, PlayerState oppPs)
+        private void FetchPendingCandidates(GameplayLogicScript gls, PlayerState botPs, PlayerState oppPs, bool duringAttack, bool countWasFree)
         {
             _pendingOrder = null;
             if (!EngineClient.IsAlive())
@@ -1127,7 +1201,7 @@ namespace OPTCGBotPlugin
                 dto, candidates, BotExecutor.ActorCode(gls), atkPower, defenderId,
                 id => _pendingTargetDecisionId = id,
                 BotExecutor.StepIndex(gls), BotExecutor.ActionIndex(gls),
-                BotExecutor.TargetIndex(gls), BotExecutor.TargetPurpose(gls));
+                BotExecutor.TargetIndex(gls), BotExecutor.TargetPurpose(gls, botPs, duringAttack, countWasFree));
         }
 
         // Defesa quando o HUMANO ataca o bot. Durante o blocker/counter step o

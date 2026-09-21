@@ -561,10 +561,33 @@ namespace OPTCGBotPlugin
         /// os dois casos e o motor nunca recebia. Foi exatamente o bug do
         /// Mihawk (bloco 844): o jogo pedia o alvo do CUSTO e o motor mandava
         /// o alvo do EFEITO.
-        public static string TargetPurpose(GameplayLogicScript gls)
+        public static string TargetPurpose(GameplayLogicScript gls, PlayerState botPs, bool duringAttack, bool countWasFree)
         {
             if (gls == null || gls.acaActive == null) return "unknown";
             if (!gls.acaActive.UsesV3()) return "unknown";
+
+            // Achado 20/09 (partida real, lider Luffy OP13-001, "rest ANY
+            // NUMBER of your DON!!"): esta janela e QUANTIDADE LIVRE
+            // (V3CountIsFree) sem nenhuma das 5 flags que `IsOptionalCostWindow`
+            // reconhece -- entao ela nunca virava "cost", o motor recebia
+            // "unknown" (uniao das zonas) e o `_CUSTO_ZONAS`/`_ALVO_ZONAS` do
+            // sim_bridge nao tinha como priorizar a zona `own_don` sobre os
+            // candidatos de PERSONAGEM do alvo do buff (leader_or_character) --
+            // o loop de clique gastava as 2 tentativas permitidas em
+            // candidatos de personagem e desistia com so 1 DON restado de 2
+            // disponiveis. Mesmo padrao do Mihawk (bloco 844): o jogo pede o
+            // CUSTO (quantos DON restar) e sem o sinal certo o motor mistura
+            // com o alvo do EFEITO (quem recebe o buff).
+            //
+            // `countWasFree` (nao um `V3CountIsFree(gls)` ao vivo aqui, achado
+            // na 2a rodada de teste no MESMO dia): o jogo DECREMENTA
+            // `remaining` a cada clique aceito nesta tela (99 -> 98 -> ...),
+            // entao reler ao vivo depois do 1o DON restado dava falso e
+            // perdia o "cost" bem no meio da selecao -- exatamente quando
+            // ainda faltava restar mais DON. Quem chama fixa isso UMA vez por
+            // pending action (`_pendingCountWasFree`) e repassa.
+            if (duringAttack && countWasFree && PendingActionIsMine(gls, botPs))
+                return "cost";
 
             // NUNCA devolve "effect" -- so "cost" ou "unknown" (bloco 858).
             //
