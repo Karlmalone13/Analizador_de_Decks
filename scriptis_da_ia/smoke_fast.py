@@ -10692,6 +10692,8 @@ def main() -> int:
     test_decisao_e_busca_determinista_sem_monte_carlo_bloco_785()
     test_coleta_busca_roda_mesmo_com_q_decidindo_19_09()
     test_win_prob_lote_da_o_mesmo_que_uma_por_vez_bloco_787()
+    test_delta_gastar_da_mao_lote_bate_com_uma_por_vez_21_09()
+    test_delta_remover_lote_bate_com_uma_por_vez_21_09()
     test_forward_rapido_bate_com_predict_do_sklearn_21_09()
     test_clone_preserva_once_per_turn_bloco_788()
     test_modelo_decide_o_bloqueio_bloco_792()
@@ -15906,6 +15908,111 @@ def test_win_prob_lote_da_o_mesmo_que_uma_por_vez_bloco_787() -> None:
           _vn.win_prob_lote([], bundle=bundle) == [])
     check("sem modelo compativel, lote devolve None por posicao",
           _vn.win_prob_lote(pares, bundle={}) == [None] * len(pares))
+
+
+def test_delta_gastar_da_mao_lote_bate_com_uma_por_vez_21_09() -> None:
+    """`delta_gastar_da_mao_lote` tem que dar o MESMO valor que chamar
+    `delta_gastar_da_mao` carta por carta -- e `p.hand` tem que voltar
+    EXATAMENTE como estava depois.
+
+    Achado no profile de self-play (bloco 883): o loop de precificar
+    counter em `pick_counters`/`should_use_counter`
+    (`decision_engine.py`) chamava o modelo uma carta de cada vez, ~27% do
+    tempo de uma partida. Se o lote divergir do um-a-um, o counter passa a
+    escolher OUTRA carta pra gastar -- mudanca silenciosa de comportamento,
+    o mesmo risco que a suite de `win_prob_lote` (bloco 787) ja cobre.
+    """
+    from optcg_engine import value_net as _vn
+
+    bundle = _vn.load_value_net('metrics/value_net_aluno.joblib')
+    if not bundle:
+        check("modelo do aluno disponivel pro teste de delta em lote", False)
+        return
+
+    deck_a = (real_card("OP11-062"), [real_card("ST34-004") for _ in range(20)])
+    deck_b = (real_card("OP04-019"), [real_card("OP17-050") for _ in range(20)])
+    m = OPTCGMatch(deck_a, deck_b)
+    m.setup()
+    p, opp = m.state_a, m.state_b
+    mao_original = list(p.hand)
+    cartas = mao_original[:min(4, len(mao_original))]
+    if len(cartas) < 2:
+        check("mao tem cartas suficientes pro teste de delta em lote", False)
+        return
+
+    _vn.limpar_cache_win_prob()
+    um_a_um = [_vn.delta_gastar_da_mao(c, p, opp, bundle=bundle) for c in cartas]
+    check("mao volta INTACTA (mesmos objetos, mesma ordem) apos o um-a-um",
+          list(p.hand) == mao_original)
+
+    _vn.limpar_cache_win_prob()
+    em_lote = _vn.delta_gastar_da_mao_lote(cartas, p, opp, bundle=bundle)
+
+    check("lote devolve um valor por carta, na MESMA ordem",
+          len(em_lote) == len(cartas))
+    check("lote da EXATAMENTE o mesmo delta que uma consulta por vez",
+          all(a is not None and b is not None and abs(a - b) < 1e-9
+              for a, b in zip(um_a_um, em_lote)))
+    check("mao volta INTACTA apos o lote tambem",
+          list(p.hand) == mao_original)
+
+    check("lote vazio devolve lista vazia (nao quebra)",
+          _vn.delta_gastar_da_mao_lote([], p, opp, bundle=bundle) == [])
+    check("sem modelo compativel, lote devolve None por posicao",
+          _vn.delta_gastar_da_mao_lote(cartas, p, opp, bundle={}) == [None] * len(cartas))
+
+
+def test_delta_remover_lote_bate_com_uma_por_vez_21_09() -> None:
+    """`delta_remover_lote` tem que dar o MESMO valor que `delta_remover`
+    carta por carta, pros dois lados (proprio campo E campo do oponente),
+    e devolver os campos INTACTOS depois.
+
+    Achado no mesmo profile do bloco 883: `should_use_blocker` (roda a
+    CADA ataque sofrido) e a escolha de alvo/sacrificio chamavam o modelo
+    uma carta de cada vez. Se o lote divergir, o bot escolhe outro
+    bloqueador/alvo -- mudanca silenciosa de comportamento.
+    """
+    from optcg_engine import value_net as _vn
+
+    bundle = _vn.load_value_net('metrics/value_net_aluno.joblib')
+    if not bundle:
+        check("modelo do aluno disponivel pro teste de delta_remover em lote", False)
+        return
+
+    deck_a = (real_card("OP11-062"), [real_card("ST34-004") for _ in range(20)])
+    deck_b = (real_card("OP04-019"), [real_card("OP17-050") for _ in range(20)])
+    m = OPTCGMatch(deck_a, deck_b)
+    m.setup()
+    p, opp = m.state_a, m.state_b
+    # popula os dois campos com cartas reais pra ter candidatos dos DOIS lados
+    for lado, cod in ((p, "OP11-062"), (opp, "OP04-019")):
+        for _ in range(3):
+            c = real_card(cod)
+            lado.field_chars.append(c)
+    campo_p_original = list(p.field_chars)
+    campo_opp_original = list(opp.field_chars)
+    candidatos = campo_p_original[:2] + campo_opp_original[:2]
+
+    _vn.limpar_cache_win_prob()
+    um_a_um = [_vn.delta_remover(c, p, opp, bundle=bundle) for c in candidatos]
+    check("campos voltam INTACTOS apos o um-a-um",
+          p.field_chars == campo_p_original and opp.field_chars == campo_opp_original)
+
+    _vn.limpar_cache_win_prob()
+    em_lote = _vn.delta_remover_lote(candidatos, p, opp, bundle=bundle)
+
+    check("lote devolve um valor por carta, na MESMA ordem",
+          len(em_lote) == len(candidatos))
+    check("lote da EXATAMENTE o mesmo delta que uma consulta por vez (proprio E oponente)",
+          all(a is not None and b is not None and abs(a - b) < 1e-9
+              for a, b in zip(um_a_um, em_lote)))
+    check("campos voltam INTACTOS apos o lote tambem",
+          p.field_chars == campo_p_original and opp.field_chars == campo_opp_original)
+
+    check("carta que nao esta em nenhum campo devolve None sem quebrar o lote",
+          _vn.delta_remover_lote([real_card("OP11-062")], p, opp, bundle=bundle) == [None])
+    check("lote vazio devolve lista vazia (nao quebra)",
+          _vn.delta_remover_lote([], p, opp, bundle=bundle) == [])
 
 
 def test_forward_rapido_bate_com_predict_do_sklearn_21_09() -> None:

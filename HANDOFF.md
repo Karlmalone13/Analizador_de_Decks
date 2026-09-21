@@ -1,5 +1,100 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-09-21 (884) - ACHADO REAL: 3 loops chamavam o modelo carta-por-carta (nao _ordena_pelo_modelo) -- batch deu -47,7% no AS-IS
+
+Sessao Claude (Sonnet 5), continuacao imediata do bloco 883. Apos o teste do
+`value_net_aluno.joblib`-como-rede piorar (bloco 883), usuario pediu pra
+continuar investigando velocidade e reducao do corpus. Reperfilei self-play
+com cProfile AQUECIDO (paga import/joblib.load fora da medicao, ao contrario
+do AS-IS de 1 partida so) pra achar de onde vinha o custo real.
+
+### O achado errado primeiro, corrigido pelo proprio codigo
+
+Suspeita inicial: `_ordena_pelo_modelo` (chamada em `main_phase` pra ordenar
+o shortlist antes da busca). **Falsa** -- o proprio codigo ja tem o gate
+`_ordenar_pelo_modelo = MODELO_ORDENA and ... and not _q_no_comando`
+(comentado como fix ja aplicado: "30% do tempo gasto escolhendo o que o Q
+ja escolhe sozinho"). Confirmado com `pstats.print_callers`: ZERO chamadas
+a `_ordena_pelo_modelo` no profile. Essa parte ja estava resolvida.
+
+### O achado certo: 3 loops carta-por-carta em `decision_engine.py`
+
+`pstats.print_callers` ate a raiz mostrou que as ~200 chamadas a
+`predictor.py:predict` (HistGradientBoosting, arvores) vinham de
+`value_net.py:877(win_prob)`, chamada em LOOP PYTHON (nao em lote) por
+3 pontos de decisao:
+
+1. **`pick_counters`** (precificar QUAL carta gastar de counter) --
+   `delta_gastar_da_mao` uma carta por vez, pra TODA a pool de counters
+   disponiveis.
+2. **`should_use_blocker`** (roda a CADA ataque sofrido -- decisao mais
+   frequente das tres) -- `delta_remover` uma carta por vez, pra cada
+   bloqueador candidato que nao sobrevive de graca.
+3. **Escolha de ALVO** (`_com_delta`, custo de remover cada candidato) --
+   mesma coisa, so que hoje desligada por default (`ALVO_PRECO_ML=False`).
+   Corrigida do mesmo jeito, fica pronta se for ligada.
+
+Mesma causa de sempre (bloco 787): custo FIXO por chamada do sklearn
+(validacao/despacho), pago uma vez por CARTA em vez de uma vez pro LOTE
+inteiro.
+
+### Fix: 2 funcoes novas em `value_net.py`, GENERICAS (nao amarradas a 1 carta)
+
+`delta_gastar_da_mao_lote(cards, p, opp, bundle)` e
+`delta_remover_lote(cards, p, opp, bundle)` -- mesmo padrao de
+`win_prob_lote` (memo, `_forward_rapido` quando aplicavel, fallback
+seguro). Ponto sutil: `p`/`opp` sao objetos MUTADOS NO LUGAR (carta sai e
+volta da mao/campo a cada iteracao) -- nao da pra reusar `win_prob_lote`
+direto (ela materializa o vetor no momento em que ITERA a lista, e aqui a
+mutacao e no MESMO objeto reusado). O vetor de features e congelado na
+hora certa, carta por carta; so a CHAMADA AO MODELO vai em lote.
+
+Os 3 call sites trocados **preservando a semantica exata** do loop antigo
+(inclusive o "qualquer `None` descarta o lote inteiro" de `pick_counters`,
+e o "so avalia quem NAO sobrevive de graca" de `should_use_blocker`).
+
+**Validado por igualdade numerica** (`smoke_fast.py`,
+`test_delta_gastar_da_mao_lote_bate_com_uma_por_vez_21_09` e
+`test_delta_remover_lote_bate_com_uma_por_vez_21_09`): lote bate com
+um-a-um em < 1e-9, campos/mao voltam intactos, cobre os dois lados
+(proprio E oponente) pro `delta_remover`.
+
+### Medido com `as_is.py` (a ferramenta do projeto, nao script avulso)
+
+```
+segundos por partida : 0,65 -> 0,34   (-47,7%)
+modelo (rede de valor): 55,2% -> 49,2% (-6,0pp)
+```
+
+Quase metade do tempo por partida, numa unica sessao, sem tocar em
+arquitetura de modelo nenhuma -- so parar de chamar o modelo um de cada vez
+onde ja existia jeito de chamar em lote.
+
+### Corpus (pedido do usuario: "reduzir as 800 mil linhas sem perder dado")
+
+Medido em `q_alvos.jsonl` (818.763 linhas): **11,0% sao duplicata EXATA**
+(mesmo vetor de features + mesmo alvo, 89.671 linhas) de outra ja presente.
+753.670 vetores de features UNICOS no total (818.763 - 65.093 = a diferenca
+entre duplicata exata e "mesmo estado, alvo diferente" -- 12.043 vetores tem
+mais de um alvo distinto, ENTAO NAO sao duplicata pura, sao ruido/contexto
+real de rotulo). **Reducao maxima "sem perder informacao" (so tirando
+duplicata exata): ~11%** -- modesto, nao investigado se vale o esforco de
+implementar (dedupe muda o peso implicito de estados frequentes no treino,
+nao e 100% neutro pra qualidade, so pra CONTEUDO). Nao implementado --
+fica pra decisao do usuario.
+
+### Estado
+
+`smoke_fast.py` OK. Commitado: `optcg_engine/value_net.py` (2 funcoes
+`_lote` novas), `optcg_engine/decision_engine.py` (3 call sites),
+`smoke_fast.py` (2 testes novos), `metrics/as_is/as_is_2026-09-21T09.43.44_
+delta-lote-blocker-counter-alvo.json`.
+
+**PROXIMO PASSO**: nenhum outro lever de velocidade identificado sem custo
+de qualidade. `ciclo.py --partidas 200` (bloco 882) ainda nao rodado com
+tudo junto -- self-play deve estar ainda mais rapido agora (-47,7% medido
+so nesta rodada, empilha com os 3,1x do `_forward_rapido` do bloco 882).
+
 ## 2026-09-21 (883) - Testado retreinar value_net_aluno.joblib como rede -- PIOROU, revertido
 
 Sessao Claude (Sonnet 5), continuacao imediata do bloco 882. Usuario pediu

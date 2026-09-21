@@ -594,6 +594,95 @@ def delta_gastar_da_mao(card, p, opp, bundle=None) -> float | None:
     return None
 
 
+def delta_gastar_da_mao_lote(cards, p, opp, bundle=None) -> list:
+    """`delta_gastar_da_mao` pra VARIAS cartas, numa UNICA chamada ao modelo.
+
+    Achado 21/09/2026 (profile aquecido de self-play, pedido do usuario
+    "veja se tem mais coisa que possamos melhorar"): o loop de precificar
+    counter (`decision_engine.py`, `pick_counters`) chamava
+    `delta_gastar_da_mao` uma carta de cada vez -- 164 chamadas de
+    `win_prob` numa amostra de 3 partidas, ~27% do tempo. Mesma causa que
+    `win_prob_lote` (bloco 787) ja resolveu noutro lugar: custo FIXO por
+    chamada do sklearn, pago uma vez por carta em vez de uma vez pro lote.
+
+    `base` (a mao INTEIRA, antes de tirar qualquer carta) e a MESMA pra
+    todas as cartas -- calculada uma vez so (e ja cairia no memo de
+    `win_prob` nas chamadas seguintes de qualquer jeito). So a parte "sem a
+    carta X" muda por carta, entao so ela precisa ir em lote.
+
+    `p`/`opp` sao MUTADOS NO LUGAR e restaurados a cada iteracao (mesmo
+    padrao de `delta_gastar_da_mao`) -- por isso nao da pra reusar
+    `win_prob_lote` direto (ela materializa o vetor de features no momento
+    em que itera a lista, e aqui `p.hand` já teria voltado ao normal pra
+    TODAS as entradas antes disso acontecer). O vetor de features e
+    congelado na hora certa, uma carta de cada vez; so a CHAMADA AO MODELO
+    vai em lote.
+
+    Devolve uma lista na MESMA ordem de `cards`, com `None` na posicao que
+    nao puder ser avaliada -- igual `win_prob`/`win_prob_lote`.
+    """
+    n = len(cards)
+    if n == 0:
+        return []
+    bundle = bundle if bundle is not None else load_value_net()
+    if not bundle:
+        return [None] * n
+    modelo = bundle.get('modelo') if isinstance(bundle, dict) else None
+    if modelo is None:
+        return [None] * n
+    nomes = bundle.get('feature_names') if isinstance(bundle, dict) else None
+    mao = getattr(p, 'hand', None)
+    if not mao:
+        return [None] * n
+
+    base = win_prob(p, opp, bundle=bundle)     # cai no memo -- praticamente gratis
+    if base is None:
+        return [None] * n
+
+    saidas: list = [None] * n
+    pendentes_idx: list = []
+    pendentes_feats: list = []
+    for idx, card in enumerate(cards):
+        pos = next((i for i, c in enumerate(mao) if c is card), None)
+        if pos is None:
+            continue
+        p.hand = mao[:pos] + mao[pos + 1:]
+        try:
+            feats = state_features(p, opp, nomes=nomes)
+        except Exception:
+            p.hand = mao
+            continue
+        p.hand = mao
+        if not check_dims(bundle, len(feats)):
+            return [None] * n
+        chave = (id(modelo), tuple(feats))
+        hit = _WP_CACHE.get(chave)
+        if hit is not None:
+            _WP_STATS['hit'] += 1
+            saidas[idx] = hit - base
+        else:
+            pendentes_idx.append((idx, chave))
+            pendentes_feats.append(feats)
+
+    if pendentes_feats:
+        try:
+            if hasattr(modelo, 'predict_proba'):
+                vs = [float(v[1]) for v in modelo.predict_proba(pendentes_feats)]
+            else:
+                _rapido = _forward_rapido(modelo, pendentes_feats)
+                vs = ([float(v) for v in _rapido] if _rapido is not None
+                      else [float(v) for v in modelo.predict(pendentes_feats)])
+        except Exception:
+            return saidas       # o que ja foi resolvido (memo) continua valido
+        if len(vs) == len(pendentes_idx):
+            for (idx, chave), v in zip(pendentes_idx, vs):
+                v = 0.0 if v < 0.0 else (1.0 if v > 1.0 else v)
+                _WP_STATS['miss'] += 1
+                _WP_CACHE[chave] = v
+                saidas[idx] = v - base
+    return saidas
+
+
 def delta_remover(card, p, opp, bundle=None) -> float | None:
     """Quanto a POSICAO melhora pra `p` se esta carta sumir do campo.
 
@@ -640,6 +729,98 @@ def delta_remover(card, p, opp, bundle=None) -> float | None:
                     campo.insert(i, removida)
                 return None if sem is None else (sem - base)
     return None
+
+
+def delta_remover_lote(cards, p, opp, bundle=None) -> list:
+    """`delta_remover` pra VARIAS cartas, numa UNICA chamada ao modelo.
+
+    Achado 21/09/2026 (mesmo profile aquecido do `delta_gastar_da_mao_lote`
+    acima): a escolha de ALVO (`_com_delta` em `decision_engine.py`, linha
+    ~4564), de BLOQUEADOR (`should_use_blocker`) e de carta pra SACRIFICAR
+    (`_modelo_escolhe_carta`) chamavam `delta_remover` uma carta de cada
+    vez -- mesma causa, mesmo remedio de `delta_gastar_da_mao_lote` e
+    `win_prob_lote` (bloco 787): custo FIXO por chamada do sklearn.
+
+    `base` (a posicao ATUAL, com a carta ainda em campo) e a MESMA pra
+    todas -- calculada uma vez so. So "sem a carta X" muda por carta.
+
+    `p`/`opp` sao mutados no lugar (a carta e tirada do campo de QUEM a tem
+    -- `p` ou `opp`, igual `delta_remover` original -- e devolvida depois)
+    e restaurados a cada iteracao, pelo mesmo motivo de
+    `delta_gastar_da_mao_lote`: nao da pra reusar `win_prob_lote` direto
+    porque ela materializa o vetor no momento em que itera a lista, e a
+    mutacao aqui e no MESMO objeto reusado.
+
+    Devolve lista na MESMA ordem de `cards`, `None` onde a carta nao
+    estiver no campo de nenhum dos dois ou nao puder ser avaliada.
+    """
+    n = len(cards)
+    if n == 0:
+        return []
+    bundle = bundle if bundle is not None else load_value_net()
+    if not bundle:
+        return [None] * n
+    modelo = bundle.get('modelo') if isinstance(bundle, dict) else None
+    if modelo is None:
+        return [None] * n
+    nomes = bundle.get('feature_names') if isinstance(bundle, dict) else None
+
+    base = win_prob(p, opp, bundle=bundle)     # cai no memo -- praticamente gratis
+    if base is None:
+        return [None] * n
+
+    saidas: list = [None] * n
+    pendentes_idx: list = []
+    pendentes_feats: list = []
+    for idx, card in enumerate(cards):
+        achou = False
+        for dono in (p, opp):
+            campo = getattr(dono, 'field_chars', None)
+            if not campo:
+                continue
+            for i, c in enumerate(campo):
+                if c is card:
+                    removida = campo.pop(i)
+                    try:
+                        feats = state_features(p, opp, nomes=nomes)
+                    except Exception:
+                        campo.insert(i, removida)
+                        break
+                    campo.insert(i, removida)
+                    achou = True
+                    break
+            if achou:
+                break
+        if not achou:
+            continue
+        if not check_dims(bundle, len(feats)):
+            return [None] * n
+        chave = (id(modelo), tuple(feats))
+        hit = _WP_CACHE.get(chave)
+        if hit is not None:
+            _WP_STATS['hit'] += 1
+            saidas[idx] = hit - base
+        else:
+            pendentes_idx.append((idx, chave))
+            pendentes_feats.append(feats)
+
+    if pendentes_feats:
+        try:
+            if hasattr(modelo, 'predict_proba'):
+                vs = [float(v[1]) for v in modelo.predict_proba(pendentes_feats)]
+            else:
+                _rapido = _forward_rapido(modelo, pendentes_feats)
+                vs = ([float(v) for v in _rapido] if _rapido is not None
+                      else [float(v) for v in modelo.predict(pendentes_feats)])
+        except Exception:
+            return saidas
+        if len(vs) == len(pendentes_idx):
+            for (idx, chave), v in zip(pendentes_idx, vs):
+                v = 0.0 if v < 0.0 else (1.0 if v > 1.0 else v)
+                _WP_STATS['miss'] += 1
+                _WP_CACHE[chave] = v
+                saidas[idx] = v - base
+    return saidas
 
 
 def incerteza(p, opp, bundle=None) -> float | None:

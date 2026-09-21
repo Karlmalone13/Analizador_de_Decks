@@ -4561,8 +4561,11 @@ class EffectExecutor:
         if ALVO_PRECO_ML if _preco is None else _preco:
             from optcg_engine import value_net as _vnr
             _b = _vnr.load_value_net(getattr(self.me, 'value_net_path', None))
-            _com_delta = [(c, _vnr.delta_remover(c, self.me, self.opp, bundle=_b))
-                          for c in candidatos]
+            # LOTE (21/09/2026): mesma causa/remedio do delta_gastar_da_mao_
+            # lote em pick_counters -- custo fixo por chamada do sklearn,
+            # pago uma vez pro lote em vez de uma vez por candidato.
+            _deltas_alvo = _vnr.delta_remover_lote(candidatos, self.me, self.opp, bundle=_b)
+            _com_delta = list(zip(candidatos, _deltas_alvo))
             _validos = [(c, d) for c, d in _com_delta if d is not None]
             if _validos:
                 return max(_validos, key=lambda cd: cd[1])[0]
@@ -15918,13 +15921,11 @@ class DecisionEngine:
                 getattr(self.me, 'modelo_ordena_path', None) or MODELO_ORDENA_PATH)
             if not bundle:
                 return None
-            fora = {}
-            for c in cartas:
-                d = _vn.delta_remover(c, self.me, self.opp, bundle)
-                if d is None:
-                    return None
-                fora[id(c)] = -float(d)
-            return fora
+            # LOTE (21/09/2026): mesmo motivo do `_com_delta` de alvo acima.
+            deltas = _vn.delta_remover_lote(cartas, self.me, self.opp, bundle)
+            if any(d is None for d in deltas):
+                return None
+            return {id(c): -float(d) for c, d in zip(cartas, deltas)}
         except Exception:
             return None
 
@@ -16018,12 +16019,22 @@ class DecisionEngine:
                                         self._pior_ataque_restante_este_turno())
                         except Exception:
                             _pior = attacker_power
+                        # LOTE (21/09/2026, achado por profile aquecido de
+                        # self-play): blocker era o `delta_remover` que MAIS
+                        # rodava (toda vez que o oponente ataca) -- so os que
+                        # NAO sobrevivem (custo real, nao 0.0 de graca) vao
+                        # pro modelo, e vao TODOS numa chamada so.
                         _pares = []
+                        _avaliar = [_c for _c in blockers
+                                   if (_c.power + _c.power_buff) <= _pior]
+                        _deltas_bloq = (_vn.delta_remover_lote(_avaliar, self.me, self.opp, _b)
+                                       if _avaliar else [])
+                        _delta_por_id = {id(c): d for c, d in zip(_avaliar, _deltas_bloq)}
                         for _c in blockers:
                             if (_c.power + _c.power_buff) > _pior:
                                 _pares.append((0.0, _c))   # sobrevive: de graca
                                 continue
-                            _d = _vn.delta_remover(_c, self.me, self.opp, _b)
+                            _d = _delta_por_id.get(id(_c))
                             if _d is not None:
                                 _pares.append((_d, _c))
                         if _pares:
@@ -16208,15 +16219,19 @@ class DecisionEngine:
                 _b = _vnm.load_value_net(
                     getattr(self.me, 'modelo_ordena_path', None) or MODELO_ORDENA_PATH)
                 if _b:
-                    _novo = {}
-                    for c in _cartas:
-                        d = _vnm.delta_gastar_da_mao(c, self.me, self.opp, _b)
-                        if d is None:
-                            _novo = None
-                            break
-                        _novo[id(c)] = -float(d)
-                    if _novo:
-                        custo = _novo
+                    # LOTE (21/09/2026, achado por profile aquecido): era um
+                    # `delta_gastar_da_mao` por carta, um de cada vez -- 27%
+                    # do tempo de uma partida numa amostra medida. Mesma
+                    # causa e mesmo remedio de `win_prob_lote` (bloco 787):
+                    # custo fixo por chamada do sklearn, pago uma vez pro
+                    # lote inteiro em vez de uma vez por carta. Semantica
+                    # IDENTICA ao loop antigo: qualquer `None` descarta o
+                    # lote inteiro (fallback pro `custo` de pitch).
+                    _deltas = _vnm.delta_gastar_da_mao_lote(
+                        _cartas, self.me, self.opp, _b)
+                    if all(d is not None for d in _deltas):
+                        custo = {id(c): -float(d)
+                                 for c, d in zip(_cartas, _deltas)}
             except Exception:
                 pass
         # pitch menor primeiro; empate = counter maior (cobre mais rapido)
@@ -16431,14 +16446,13 @@ class DecisionEngine:
                 if _b:
                     _cartas, _g2, _tot = self.pick_counters(needed)
                     if _cartas and _tot >= needed:
-                        _custo = 0.0
-                        _ok = True
-                        for _c in _cartas:
-                            _d = _vn.delta_gastar_da_mao(_c, self.me, self.opp, _b)
-                            if _d is None:
-                                _ok = False
-                                break
-                            _custo += _d
+                        # LOTE (21/09/2026) -- mesmo motivo do outro call
+                        # site desta func (`pitch_cost_as_counter` acima),
+                        # semantica identica ao loop antigo.
+                        _deltas = _vn.delta_gastar_da_mao_lote(
+                            _cartas, self.me, self.opp, _b)
+                        _ok = all(d is not None for d in _deltas)
+                        _custo = sum(_deltas) if _ok else 0.0
                         if _ok:
                             _perda = (_vn.delta_remover(alvo, self.me, self.opp, _b)
                                       if alvo is not None

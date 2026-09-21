@@ -1,6 +1,23 @@
 # TODO — Analisador de Decks OPTCG
 
-**Última atualização:** 21 de setembro de 2026 (bloco 883)
+**Última atualização:** 21 de setembro de 2026 (bloco 884)
+
+> **MEDIDO (bloco 884): -47,7% no tempo de self-play (0,65s -> 0,34s/partida,
+> `as_is.py`)**, achado que a suspeita inicial (`_ordena_pelo_modelo`) estava
+> ERRADA -- ja tinha gate desligando ela quando o Q decide. O custo real
+> vinha de 3 loops em `decision_engine.py` (`pick_counters`,
+> `should_use_blocker`, escolha de alvo) chamando o modelo carta-por-carta
+> em vez de em lote. Corrigido com 2 funcoes novas GENERICAS em
+> `value_net.py` (`delta_gastar_da_mao_lote`/`delta_remover_lote`),
+> validadas por igualdade numerica < 1e-9 no `smoke_fast.py`.
+>
+> **Corpus (pedido "reduzir sem perder dado")**: medido 11,0% de duplicata
+> EXATA em `q_alvos.jsonl` (818.763 linhas) -- reducao modesta, nao
+> implementada (muda peso implicito de estados frequentes, nao e neutro pra
+> qualidade). Fica pra decisao do usuario se vale o esforco.
+>
+> **PROXIMO PASSO**: rodar `ciclo.py --partidas 200` (bloco 882) com tudo
+> junto -- ainda nao rodado.
 
 > **TESTADO E REJEITADO (bloco 883): trocar `value_net_aluno.joblib` de
 > arvores pra rede.** Era o maior custo de tempo isolado achado (~27% de
