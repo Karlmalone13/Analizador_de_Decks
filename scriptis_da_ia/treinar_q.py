@@ -69,6 +69,26 @@ ja obrigado a mostrar isso). Um lider especifico podia estar generalizando
 mal e sumir na media do fold. Corrigido: cada lider so aparece no fold em
 que foi held-out, entao da pra tabular por lider sem custo extra de treino.
 
+## Filtro por CRITERIO DE ROTULO (`--modo`, 20/09/2026) -- HIPOTESE TESTADA E DERRUBADA
+
+O corpus mistura dois criterios de rotulo: 'bootstrap' (o proprio modelo
+avaliando o estado que a candidata produz -- linhas antigas nao tem o campo
+`modo`, mas o bloco 877 ja mediu que 100% delas sao bootstrap) e 'busca'
+(professor independente, simula de verdade). A hipotese inicial era que
+misturar os dois contamina o alvo -- erro fora da amostra SUBIU 6 ciclos
+seguidos (0,0498 -> 0,0581) enquanto a fracao 'busca' crescia.
+
+**MEDIDO E DERRUBADO no mesmo dia**: um Q treinado SO com 'busca' (95k linhas,
+alguns lideres com so 35-104 decisoes de validacao) perdeu **0x9** (11
+empates) contra o Q treinado com o corpus INTEIRO misturado, em duelo real
+(espelho pareado, `treino_continuo.duelar_sprt`) -- nao so pior em metrica
+estatica, pior JOGANDO. O corpus 'busca' ainda nao tem volume suficiente pra
+treinar sozinho; misturar com 'bootstrap' hoje ajuda mais do que atrapalha,
+mesmo que o criterio nao seja o mesmo. **Default volta a ser 'todos'** -- o
+flag fica pra quando o volume de 'busca' crescer o bastante pra re-testar
+(o campo `modo` grava certo desde o bloco 877, entao a comparacao pode ser
+refeita a qualquer momento sem precisar gerar dado novo).
+
 Uso:
     python treinar_q.py --dataset metrics/q_alvos.jsonl --out metrics/q_net.joblib
 """
@@ -104,6 +124,13 @@ def main() -> int:
                          'alvos, ela erra 18%% MENOS que as 300 arvores (0,0554 '
                          'x 0,0676) e a previsao custa 0,100 ms contra 8,47 -- '
                          '85x. Nao ha troca entre qualidade e velocidade aqui.')
+    ap.add_argument('--modo', choices=('busca', 'bootstrap', 'todos'),
+                    default='todos',
+                    help='qual CRITERIO DE ROTULO usar pra treinar (ver '
+                         'docstring do modulo). Linha sem o campo `modo` conta '
+                         'como \'bootstrap\'. Default \'todos\' -- \'busca\' '
+                         'sozinho foi testado em duelo real e PERDEU 0x9 '
+                         '(20/09/2026), corpus ainda pequeno demais.')
     args = ap.parse_args()
 
     import numpy as np
@@ -116,12 +143,18 @@ def main() -> int:
     caminho = RAIZ / args.dataset
     X, y, grupos = [], [], []
     decisoes, escolhidas, familias = [], [], []
+    n_lidas = n_filtradas_modo = 0
     with caminho.open(encoding='utf-8') as fh:
         for linha in fh:
             linha = linha.strip()
             if not linha:
                 continue
             d = json.loads(linha)
+            n_lidas += 1
+            modo = d.get('modo') or 'bootstrap'
+            if args.modo != 'todos' and modo != args.modo:
+                n_filtradas_modo += 1
+                continue
             feats, alvo = d.get('feats'), d.get('alvo')
             if not feats or alvo is None:
                 continue
@@ -135,9 +168,14 @@ def main() -> int:
             escolhidas.append(bool(d.get('escolhida')))
             familias.append(d.get('acao') or '?')
 
+    print()
+    print('  corpus: %d linhas lidas | %d descartadas pelo filtro --modo=%s '
+          '(%d restantes)' % (n_lidas, n_filtradas_modo, args.modo, len(X)))
+
     if len(X) < 500:
-        raise SystemExit('corpus pequeno demais (%d alvos) -- gere mais antes'
-                         % len(X))
+        raise SystemExit('corpus pequeno demais (%d alvos) -- gere mais antes, '
+                         'ou use --modo todos/bootstrap se \'busca\' ainda nao '
+                         'acumulou volume' % len(X))
     X = np.asarray(X, dtype=float)
     y = np.asarray(y, dtype=float)
     grupos = np.asarray(grupos)

@@ -1,6 +1,24 @@
 # TODO — Analisador de Decks OPTCG
 
-**Última atualização:** 19 de setembro de 2026 (bloco 880)
+**Última atualização:** 21 de setembro de 2026 (bloco 881)
+
+> **DIAGNOSTICO DO TREINO OFFLINE (bloco 881): 9 ciclos, ZERO promocoes,
+> sempre.** `ciclo_estado.json` mostra 8/9 "INCONCLUSIVO (teto de pares)" --
+> `ciclo.py` capa o portao em 60 pares e ~75% saem divididos (matchup decide,
+> nao o modelo), sobrando pouco pro SPRT decidir. Erro Q fora da amostra SOBE
+> 6 ciclos seguidos (0,0498->0,0581). **Hipotese "corpus mistura 2 criterios
+> de rotulo" foi TESTADA E DERRUBADA**: treinar so com o rotulo 'busca' (mais
+> confiavel, mas so 95k linhas) PERDEU 0x9 em duelo real contra o corpus
+> inteiro misturado -- ver entrada nova em `REPROVADOS.md`. **Achado grave**:
+> o guarda-corpo de semelhanca com humano nunca rodou desde que o Q virou
+> decisor unico (13/09), porque so dispara apos promocao e nunca houve uma.
+> Medido direto agora: `play` caiu de 43,5% (era heuristica) pra 33,0%,
+> `attach_don` de 23,5% pra 9,9-18,0% -- queda ampla, ainda sem veredito
+> fechado (regra do projeto: precisa de mais evidencia de deriva), mas real.
+> **PROXIMO PASSO**: abrir decisoes especificas erradas em `play`/`attach_don`
+> via `decision_summary.py` contra o que o professor 'busca' escolheria, pra
+> achar se e bug de execucao, feature faltando, ou capacidade do modelo (rede
+> 64/32 neuronios) -- nao testado ainda, so hipotese.
 
 > **CICLO 5 rodado com o fix do bloco 879: gerou dado de verdade (721.008 ->
 > 740.861, +19.853 via busca), ciclo caiu pra 9,7min (era 30,9min no ciclo 3).

@@ -745,3 +745,35 @@ ordem de 0,06 sem nenhuma nocao de erro. O que caiu foi o METODO. GPR passa a
 ter fundamento **medido** aqui, nao escolha por catalogo -- com a ressalva ja
 conhecida de que ele e O(n^3) e o corpus tem 73.821 estados (subconjunto, GP
 esparso ou bootstrap sao os caminhos).
+
+### Treinar o Q so com o rotulo 'busca', descartando 'bootstrap' (20/09/2026)
+
+**Medido: perdeu 0x9 (11 empates) em duelo real contra o Q treinado no corpus
+inteiro misturado.**
+
+Hipotese: o corpus (818.763 linhas, `metrics/q_alvos.jsonl`) mistura dois
+criterios de rotulo sem separar -- 'bootstrap' (o proprio modelo avaliando o
+proprio lance, 88,4% do corpus) e 'busca' (professor independente por
+simulacao, 11,6%, existe desde o bloco 877). O erro Q fora da amostra subiu 6
+ciclos seguidos (0,0498->0,0581) enquanto a fracao 'busca' crescia -- parecia
+contaminacao de alvo.
+
+**Testado**: `treinar_q.py --modo busca` (95.282 linhas, 16 lideres) contra
+`--modo todos` (818.763 linhas). Metrica estatica ja desconfiava: concordancia
+com o professor caiu de 52,0% (+18,5pp acima do acaso) pra 23,0% (+4,9pp) --
+mas a regra do projeto e nao confiar em metrica estatica sozinha ("concordancia
+alta com forca nao comprovada nao e contradicao", bloco 817). Duelo real
+(`treino_continuo.duelar_sprt`, espelho pareado, 20 pares) confirmou: **0
+vitorias, 9 derrotas, 11 empates**, LLR cruzou o limite inferior na primeira
+rodada.
+
+**Causa real, nao a que a hipotese original apontava**: o corpus 'busca' ainda
+e pequeno demais pra treinar sozinho (alguns lideres com so 35-104 decisoes de
+validacao) -- misturar com 'bootstrap' hoje ajuda mais do que atrapalha, apesar
+de nao ser o mesmo criterio. O que explica o erro Q subindo continua em
+aberto -- NAO e mistura de rotulo.
+
+**O que fica**: `treinar_q.py --modo {busca,bootstrap,todos}` (default
+'todos') pra re-testar quando 'busca' tiver mais volume, sem precisar reescrever
+o filtro. Campo `modo` por linha (bloco 877) ja permite a comparacao a
+qualquer momento.

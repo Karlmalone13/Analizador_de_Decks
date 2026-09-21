@@ -1,5 +1,113 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-09-20/21 (881) - Bugs reais ao vivo (Bonney/Luffy/Hody Jones) + hipotese de corpus testada e derrubada + guarda-corpo medido pela 1a vez desde o Q sozinho
+
+Sessao Claude (Sonnet 5). Duas frentes, nesta ordem.
+
+### Frente 1: 3 bugs reais achados investigando Luffy RG x Bonney CPU x CPU (pedido do usuario)
+
+1. **Parser+engine, `rest_opp_character`/`or_rest_opp_don`** (commit 15dc604):
+   "Rest up to a total of N of your opponent's Characters or DON!! cards"
+   (Hody Jones OP12-037 e 2 outras cartas, auditoria global) so gastava o
+   orcamento em Characters -- se esgotava os candidatos antes de N, o resto
+   do orcamento nunca virava DON restado. Fix generico: `decision_engine.py`
+   gasta o SOBRANTE (`count - usados`) em DON do oponente, nao so o
+   fallback de zero-characters antigo.
+2. **Plugin (BotDriver.cs/BotExecutor.cs) + sim_bridge.py** (commit
+   899247a): a habilidade reativa do lider com custo de DON "quantidade
+   livre" (`TargetCount=99`, sem botao Cancel/UseV3OnPlay) nunca era
+   oferecida pro motor decidir -- o loop mecanico do plugin sempre recusava
+   sem perguntar pro `ShouldUseOptionalCost`. Bonney (OP07-019) e Luffy RG
+   (OP13-001) foram de ZERO decisoes de reacao em partidas inteiras pra
+   13-20 por partida. Corrigido tambem um sub-bug achado no mesmo teste ao
+   vivo: `TargetPurpose` nao marcava esse caminho como custo, entao
+   personagens competiam com DON pelos slots de tentativa e o lider so
+   restava 1 DON de N disponiveis (`_CUSTO_ZONAS` ganhou `rest_don`/
+   `rest_any_don`; `_pendingCountWasFree` fica STICKY porque `remaining`
+   decrementa por clique nessa tela especifica, ao contrario do que o
+   achado de 29/08 assumia).
+3. **`auditoria_efeitos.py`** (commit 2c28a8b): a propria ferramenta de
+   auditoria classificava QUALQUER gatilho reativo (`on_opp_attack`,
+   `counter`, `on_ko`, etc) como "NUNCA OFERECIDO" incondicionalmente,
+   mesmo quando disparava certo -- o censo "nunca ofertado" so lia
+   decisoes `decision_kind=='main'`, e a lista `reativos` (que ja contava
+   certo) nunca era cruzada com o veredito final. Corrigido cruzando os
+   dois; validado que casos genuinamente sem disparo continuam
+   corretamente flagrados.
+
+Todos os 3 confirmados AO VIVO (nao so leitura de codigo) via kill+restart do
+server/OPTCGSim e leitura de decision log + LogOutput.log.
+
+### Frente 2: usuario pediu diagnostico do treino offline ("nao esta melhorando nem descobrindo nada")
+
+**Achado 1 -- 9 ciclos, 0 promocoes, sempre.** `metrics/ciclo_estado.json`
+(historico completo): 8/9 ciclos "INCONCLUSIVO (teto de pares)", 1
+"DESCARTA". Causa estrutural: `ciclo.py` capa o portao em `--max-pares 60`
+e ~70-80% dos pares saem DIVIDIDOS (matchup decide, nao o modelo) -- sobram
+so ~14-17 pares decisivos por ciclo, poucos pro SPRT decidir (p0=0,50,
+p1=0,65) quase nunca.
+
+**Achado 2 -- erro Q SUBINDO 6 ciclos seguidos, mesma metodologia**: 0,0498
+-> 0,0534 -> 0,0576 -> 0,0599 -> 0,0568 -> 0,0581 (ciclos 4-9). Hipotese
+inicial: o corpus (818.763 linhas em `q_alvos.jsonl`) mistura 2 criterios de
+rotulo sem separar -- 88,4% 'bootstrap' (o proprio modelo avaliando o proprio
+lance) e 11,6% 'busca' (professor independente, simula de verdade, desde o
+bloco 877) -- e treinar nos dois misturados contaminaria o alvo.
+
+**Achado 3 -- a hipotese foi TESTADA E DERRUBADA** (entrada nova em
+`REPROVADOS.md`): `treinar_q.py --modo busca` (95.282 linhas, 16 lideres) vs
+`--modo todos` (818.763 linhas) -- metrica estatica ja desconfiava
+(concordancia com o professor 23,0% vs 52,0%), e duelo real (`treino_
+continuo.duelar_sprt`, espelho pareado, 20 pares) confirmou: **Q treinado so
+com 'busca' perdeu 0x9 (11 empates)** contra o Q com corpus misturado. O
+corpus 'busca' ainda e pequeno demais pra treinar sozinho (alguns lideres com
+so 35-104 decisoes de validacao). Fix REVERTIDO -- `treinar_q.py` ganhou o
+flag `--modo {busca,bootstrap,todos}` (default 'todos', preservado) pra
+re-testar quando 'busca' tiver mais volume, sem mudar nada em producao. A
+causa real do erro Q subindo continua EM ABERTO.
+
+**Achado 4 -- o guarda-corpo (semelhanca com humano) nunca rodou desde que o
+Q virou decisor unico (13/09), porque so roda dentro de `ciclo.py` quando ha
+PROMOCAO, e nunca houve uma.** Rodei `decision_quality_full.py --all` direto
+(405 partidas, 345 usadas) pela 1a vez fora desse gatilho. Comparado ao
+ultimo numero documentado da era heuristica (28/08): `play` (metrica
+oficial) 43,5% -> **33,0%**; `attach_don` 23,5% -> **9,9%/18,0%**;
+sequenciamento 36,4% -> 33,5% (similaridade) / **5,5%** (identico
+inicio-fim). Queda ampla em quase toda categoria. Por regra do projeto, isso
+NAO e veredito automatico (precisa de queda grande + outra evidencia de
+deriva) -- mas combinado com os achados 1-3 (zero promocao, erro subindo,
+hipotese de corpus derrubada), forma um padrao real de estagnacao que
+NINGUEM tinha visto porque o instrumento que mediria estava preso atras de
+um gatilho que nunca disparava.
+
+### Estado ao fechar
+
+Commitado: os 3 fixes da Frente 1 (ja tinham commit proprio antes desta
+sessao ser retomada), mais `treinar_q.py` (flag `--modo`), `REPROVADOS.md`
+(entrada nova), `metrics/ciclo_estado.json` e `metrics/decision_quality_
+full/ultimo_resultado.json` (artefatos versionados por design, refletem
+medicao real desta sessao).
+
+**NAO commitado de proposito nesta sessao** (ficam pendentes, nao sao desta
+frente de trabalho): ~130 arquivos novos em `logs/{raw,parsed,decks,
+decisions}` (partidas CPU x CPU acumuladas de sessoes anteriores, banco
+obrigatorio mas fora do escopo desta rodada -- `logs/index.json` ja
+referencia varios deles, entao commitar o index SEM os arquivos criaria
+ponteiro quebrado, por isso o index tambem ficou de fora) e uma pilha de
+`.jsonl`/`.joblib` soltos em `metrics/` (`selfplay_*.jsonl`,
+`q_alvos.jsonl.bak_*`, `corpus_professor*.jsonl`, `value_net_meio_turno.
+joblib`) que parecem artefatos de experimento/backup sem dono claro --
+nenhum bate com um padrao ja versionado no `.gitignore`, entao ficam pra
+quem souber a origem decidir se e lixo ou dado real.
+
+**PROXIMO PASSO SUGERIDO** (nao a causa raiz ainda -- so a proxima pergunta
+certa, ainda nao testada): abrir decisoes especificas erradas nas categorias
+que mais cairam (`play`, `attach_don`) via `decision_summary.py`, comparando
+contra o que o professor 'busca' teria escolhido ali, pra descobrir se e bug
+de execucao, feature faltando, ou capacidade do modelo (rede 64/32 neuronios
+pode ser pequena demais) -- em vez de continuar testando hipotese de corpus
+as cegas.
+
 ## 2026-09-19 (880) - CICLO 5, com o fix do bloco 879: gerou dado de verdade, mas o portao continua sem promover
 
 Sessao Claude (Sonnet 5), fechamento da sessao (usuario vai dar `/clear`).
