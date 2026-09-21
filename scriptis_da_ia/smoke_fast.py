@@ -10692,6 +10692,7 @@ def main() -> int:
     test_decisao_e_busca_determinista_sem_monte_carlo_bloco_785()
     test_coleta_busca_roda_mesmo_com_q_decidindo_19_09()
     test_win_prob_lote_da_o_mesmo_que_uma_por_vez_bloco_787()
+    test_forward_rapido_bate_com_predict_do_sklearn_21_09()
     test_clone_preserva_once_per_turn_bloco_788()
     test_modelo_decide_o_bloqueio_bloco_792()
     test_dialeto_de_transcricao_das_promos_bloco_871()
@@ -15905,6 +15906,50 @@ def test_win_prob_lote_da_o_mesmo_que_uma_por_vez_bloco_787() -> None:
           _vn.win_prob_lote([], bundle=bundle) == [])
     check("sem modelo compativel, lote devolve None por posicao",
           _vn.win_prob_lote(pares, bundle={}) == [None] * len(pares))
+
+
+def test_forward_rapido_bate_com_predict_do_sklearn_21_09() -> None:
+    """O atalho numpy de `_forward_rapido` tem que dar o MESMO numero que
+    `Pipeline.predict()` -- ate a 6a casa decimal, nao "parecido".
+
+    Pesquisa externa (21/09/2026, pedido do usuario "ML fraco e demorado")
+    apontou que o custo de `.predict()` do sklearn e sobretudo overhead FIXO
+    de validacao por chamada, nao o calculo em si (rede de 64/32 neuronios).
+    `_forward_rapido` refaz a conta a mao (StandardScaler + MLP relu) em
+    numpy puro. Se ela divergir do sklearn, TODA decisao do Q (unico decisor
+    desde o bloco 811) passa a rankear diferente sem ninguem perceber -- o
+    mesmo risco que a suite de `win_prob_lote` (bloco 787) ja cobre pro
+    agrupamento em lote.
+
+    Cobre tambem o degrade: modelo de formato inesperado (ex: arvores, ou
+    bundle vazio) tem que devolver `None` e nunca um numero errado.
+    """
+    import numpy as _np
+    from optcg_engine import value_net as _vn
+
+    bundle = _vn.load_value_net('metrics/q_net.joblib')
+    if not bundle or (bundle.get('modelo') if isinstance(bundle, dict) else None) is None:
+        check("q_net.joblib disponivel pro teste de forward rapido", False)
+        return
+    modelo = bundle['modelo']
+    n_feats = getattr(modelo, 'n_features_in_', None) or 101
+    rng = _np.random.RandomState(0)
+    linhas = rng.normal(size=(9, n_feats)).tolist()
+
+    oficial = [float(v) for v in modelo.predict(linhas)]
+    rapido = _vn._forward_rapido(modelo, linhas)
+
+    check("_forward_rapido reconhece a Pipeline(StandardScaler, MLPRegressor) de producao",
+          rapido is not None)
+    if rapido is not None:
+        check("_forward_rapido bate com Pipeline.predict() (erro < 1e-6 em todas as linhas)",
+              all(abs(a - b) < 1e-6 for a, b in zip(oficial, rapido)))
+
+    # DEGRADE: bundle sem 'modelo'/formato inesperado nunca inventa numero.
+    check("modelo sem atributo 'steps' (ex: HistGradientBoostingRegressor) devolve None",
+          _vn._forward_rapido(object(), linhas) is None)
+    check("lista vazia de linhas nao quebra (devolve array vazio, nao excecao)",
+          len(_vn._forward_rapido(modelo, []) if _vn._forward_rapido(modelo, []) is not None else []) == 0)
 
 
 def test_clone_preserva_once_per_turn_bloco_788() -> None:

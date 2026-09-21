@@ -1,5 +1,102 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-09-21 (882) - 5 melhorias de ML pedidas pelo usuario ("ML fraco e demorado"), com pesquisa externa
+
+Sessao Claude (Sonnet 5), continuacao imediata do bloco 881. Usuario pediu
+pesquisa externa (sites/artigos/livros) sobre como melhorar o ML, e depois
+"pode fazer esses 5 itens" -- implementados nesta ordem, cada um medido antes
+de virar default.
+
+### 1. Inferencia rapida (`optcg_engine/value_net.py`)
+
+`_forward_rapido(modelo, X)`: refaz a conta de `Pipeline(StandardScaler,
+MLPRegressor)` a mao em numpy puro, pulando a validacao/despacho por chamada
+que o sklearn paga em CADA `.predict()`. Validado por IGUALDADE NUMERICA
+contra `Pipeline.predict()` (erro < 1e-6) no `smoke_fast.py`
+(`test_forward_rapido_bate_com_predict_do_sklearn_21_09`) antes de entrar em
+`win_prob`/`win_prob_lote`/`q_valores`. Degradacao segura: modelo de formato
+inesperado (arvores, bundle vazio) devolve `None` e o chamador cai no
+`.predict()` de sempre.
+
+**Medido**: 3,1x mais rapido (0,546ms -> 0,174ms por chamada em lote de 8).
+
+**RESSALVA HONESTA, achada no mesmo AS-IS que devia comprovar o ganho**: o
+AS-IS de uma partida de self-play continua com 55% do tempo em "modelo"
+(`gradient_boosting.py`/`predictor.py`, NAO os arquivos que
+`_forward_rapido` acelera). Causa: `_ordena_pelo_modelo` (o que decide a
+ORDEM do shortlist antes da decisao final do Q) usa `MODELO_ORDENA_PATH` =
+`metrics/value_net_aluno.joblib`, que e um `HistGradientBoostingRegressor`
+(arvores, 300 arvores por chamada) -- NAO um `Pipeline` de rede, entao
+`_forward_rapido` cai no fallback e nao acelera nada ali. **Achado novo, fora
+do escopo dos 5 itens pedidos, nao corrigido nesta sessao**: retreinar
+`value_net_aluno.joblib` como rede (precisa de `--modelo rede` novo em
+`treinar_value.py`, que hoje so tem HistGradientBoosting*) teria o mesmo
+ganho de 3,1x+ no que hoje e o MAIOR consumidor de tempo real. Fica pra
+decisao do usuario -- nao decidido nem implementado aqui.
+
+### 2. Pool de adversarios (`gerar_selfplay_dataset.py` + `ciclo.py`)
+
+Self-play sempre jogava campeao-atual-contra-campeao-atual -- risco
+documentado na literatura (self-play sem pool de oponentes historicos arrisca
+ciclo fechado/nao-transitividade). `ciclo.py::_atualiza_pool_adversarios()`
+copia o campeao pro pool (`metrics/q_net_pool/`, gitignored, rotaciona os 10
+mais recentes) ANTES de cada geracao; `gerar_selfplay_dataset.py --pool-dir
+--pool-frac` sorteia, com probabilidade `pool_frac`, UM lado da partida pra
+usar um snapshot do pool via `estado.q_net_path` (atributo ja existente,
+lido em `decision_engine.py:19728`) em vez do campeao atual. Config por ENV
+(`OPTCG_POOL_DIR`/`OPTCG_POOL_FRAC`), mesmo padrao ja usado por
+`OPTCG_ORIGEM` -- nao mexe no contrato de tamanho da tupla de tarefa que
+outro trecho ja usa pra discriminar chamadas. `ciclo.py` liga com
+`--pool-frac 0.25` assim que o pool tiver pelo menos 1 snapshot (1o ciclo
+fica sem pool, sem quebrar). Testado isolado (6 partidas, pool-frac=1.0,
+sem crash).
+
+### 3. Busca do professor mais profunda (`ciclo.py::gera()`)
+
+`OPTCG_BUSCA_LARGURA`/`FEIXE`/`PROFUNDIDADE` (env, so nesta geracao offline):
+6/3/3 -> 8/4/4. Motivo: o professor 'busca' avaliava a folha com a MESMA
+rede ainda imatura, com pouco lookahead -- diferente do NNUE (a propria
+inspiracao do projeto), que destila de busca alfa-beta PROFUNDA de um motor
+ja forte. **Medido** (8 partidas, 4 workers): 64s -> 126s (~2x) -- aceitavel
+dado que self-play e barato em termos absolutos.
+
+### 4. Replay priorizado (`treinar_q.py`)
+
+`--priorizar` (default ligado): MLPRegressor do sklearn NAO aceita
+`sample_weight`, entao a forma compativel de priorizar e REAMOSTRAR com
+reposicao, peso proporcional a `|erro do campeao atual|^alpha` (alpha=0,6,
+o mesmo do paper original de Prioritized Experience Replay). Erro medido em
+LOTE contra o campeao ja salvo -- SEM fit extra, barato gracas ao item 1.
+Sem campeao compativel (1o ciclo, dimensao mudou), degrada pra amostra
+uniforme (comportamento antigo), nunca trava o treino. **Testado**: rodou
+sobre os 818.763 alvos reais, reamostrou 467.883 linhas unicas de 818.763
+(peso concentrado nas de maior erro), sem erro.
+
+### 5. Volume de self-play (`ciclo.py`)
+
+`--partidas`: 40 -> 200 (default). Motivo, com numero: AlphaGo Zero usou 25
+mil partidas/iteracao (5 milhoes no total); ate implementacoes de "pequena
+escala" recomendam minimo ~3 mil partidas. Os 9 ciclos do bloco 881 somaram
+360 partidas 'busca' no TOTAL -- ordens de grandeza abaixo de qualquer
+referencia, e self-play e barato (~0,5-1s/partida). 200 e passo pratico, nao
+teto -- uma geracao de verdade pede rodada explicita com `--partidas` bem
+maior (o proprio comentario no `ciclo.py` documenta isso).
+
+### Estado ao fechar
+
+`smoke_fast.py` OK (novo teste do item 1 incluido). Nenhum ciclo completo
+rodado ainda com as 5 mudancas juntas -- os testes foram unitarios/isolados
+por item (medicao de custo, igualdade numerica, "nao quebra"), NAO um duelo
+provando que o conjunto joga melhor. Commitado: os 5 arquivos de codigo +
+`smoke_fast.py` + `.gitignore` (pool novo) + 3 `metrics/as_is/*.json`
+pendentes (incl. o desta sessao).
+
+**PROXIMO PASSO SUGERIDO**: rodar `ciclo.py --partidas 200 --ciclos 1` com
+tudo junto e comparar contra o historico do bloco 881 (erro Q, portao,
+tempo). Separadamente, considerar o achado do item 1 (retreinar
+`value_net_aluno.joblib` como rede) -- e o maior gargalo de tempo hoje e
+nao foi atacado.
+
 ## 2026-09-20/21 (881) - Bugs reais ao vivo (Bonney/Luffy/Hody Jones) + hipotese de corpus testada e derrubada + guarda-corpo medido pela 1a vez desde o Q sozinho
 
 Sessao Claude (Sonnet 5). Duas frentes, nesta ordem.

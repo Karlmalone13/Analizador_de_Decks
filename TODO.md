@@ -1,6 +1,30 @@
 # TODO — Analisador de Decks OPTCG
 
-**Última atualização:** 21 de setembro de 2026 (bloco 881)
+**Última atualização:** 21 de setembro de 2026 (bloco 882)
+
+> **5 MELHORIAS DE ML implementadas (bloco 882)**, a pedido do usuario apos
+> pesquisa externa (AlphaZero, NNUE, Prioritized Experience Replay, pool de
+> adversarios): (1) `_forward_rapido` -- inferencia numpy 3,1x mais rapida
+> que `Pipeline.predict()`, validada por igualdade numerica; (2) pool de
+> adversarios historicos no self-play (`--pool-dir`/`--pool-frac`, 25%);
+> (3) busca do professor mais profunda (6/3/3 -> 8/4/4, ~2x mais cara,
+> aceitavel); (4) replay priorizado por erro no treino do Q (`--priorizar`,
+> default ligado); (5) volume de self-play por ciclo 40 -> 200 partidas
+> (ainda ordens de grandeza abaixo do minimo AlphaZero-scale, mas passo
+> pratico). **NENHUM ciclo completo rodado com os 5 juntos ainda** -- cada
+> item foi validado ISOLADO (custo medido, numero bate, nao quebra), nao
+> houve duelo provando que o CONJUNTO joga melhor. **PROXIMO PASSO**: rodar
+> `ciclo.py --partidas 200` e comparar contra o historico do bloco 881.
+>
+> **ACHADO NOVO, FORA DO ESCOPO DOS 5 ITENS, NAO CORRIGIDO**: o AS-IS pos-
+> mudanca mostrou que o maior custo de tempo (55% de uma partida) NAO vem do
+> Q (`q_net.joblib`, ja acelerado pelo item 1) -- vem de
+> `metrics/value_net_aluno.joblib`, o modelo que ORDENA o shortlist antes da
+> decisao final (`_ordena_pelo_modelo`), que ainda e `HistGradientBoosting-
+> Regressor` (arvores, lento) em vez de rede. Retreinar esse arquivo como
+> rede exigiria adicionar `--modelo rede` em `treinar_value.py` (hoje so tem
+> HistGradientBoosting*) -- nao decidido nem feito, fica pra quando o
+> usuario quiser.
 
 > **DIAGNOSTICO DO TREINO OFFLINE (bloco 881): 9 ciclos, ZERO promocoes,
 > sempre.** `ciclo_estado.json` mostra 8/9 "INCONCLUSIVO (teto de pares)" --

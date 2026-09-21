@@ -131,6 +131,24 @@ def main() -> int:
                          'como \'bootstrap\'. Default \'todos\' -- \'busca\' '
                          'sozinho foi testado em duelo real e PERDEU 0x9 '
                          '(20/09/2026), corpus ainda pequeno demais.')
+    ap.add_argument('--priorizar', dest='priorizar', action='store_true',
+                    default=True,
+                    help='replay PRIORIZADO (21/09/2026, pesquisa externa: '
+                         'Prioritized Experience Replay) -- reamostra o '
+                         'corpus com peso no ERRO do campeao atual, treinando '
+                         'mais nas linhas onde ele mais erra em vez de tratar '
+                         'todas com o mesmo peso. Default ligado; sem campeao '
+                         'compativel cai pra amostra uniforme (comportamento '
+                         'antigo), sem quebrar.')
+    ap.add_argument('--sem-priorizar', dest='priorizar', action='store_false',
+                    help='desliga o replay priorizado (comportamento antigo, '
+                         'amostra uniforme).')
+    ap.add_argument('--priorizar-alpha', type=float, default=0.6,
+                    help='quanto o erro pesa na reamostragem (0=uniforme, '
+                         '1=proporcional puro ao erro). Default 0,6, o mesmo '
+                         'usado no paper original de Prioritized Experience '
+                         'Replay (Schaul et al 2016) pra nao deixar a '
+                         'distribuicao extrema demais.')
     args = ap.parse_args()
 
     import numpy as np
@@ -350,7 +368,47 @@ def main() -> int:
             print('    %-14s %10d %12s %14s %10d'
                   % (lid, d['n_alvos'], erro_txt, conc_txt, d['decisoes']))
 
-    modelo = novo().fit(X, y)
+    # ── REPLAY PRIORIZADO (21/09/2026) ──────────────────────────────────────
+    # MLPRegressor do sklearn nao aceita `sample_weight` -- a forma
+    # compativel de priorizar e REAMOSTRAR com reposicao, peso proporcional
+    # ao erro (aproximacao padrao de PER quando o treinador nao suporta peso
+    # de amostra direto). O erro vem do CAMPEAO ja salvo (`Q_CAMPEAO`), nao
+    # de um fit extra -- FORA DA AMOSTRA de treino dele (o campeao foi salvo
+    # ANTES desta chamada), e barato pra medir agora gracas ao
+    # `_forward_rapido` (ganho de 3,1x medido no mesmo dia). Sem campeao
+    # compativel (1o ciclo, cold start, ou dimensao de feature mudou),
+    # degrada pra amostra UNIFORME -- nunca trava o treino por falta dele.
+    X_treino, y_treino = X, y
+    if args.priorizar:
+        pesos = None
+        try:
+            import joblib as _jl
+            _camp_path = RAIZ / 'metrics' / 'q_net.joblib'
+            if _camp_path.exists():
+                _camp = _jl.load(_camp_path)
+                _cmodelo = _camp.get('modelo') if isinstance(_camp, dict) else None
+                if (_cmodelo is not None
+                        and getattr(_cmodelo, 'n_features_in_', None) == X.shape[1]):
+                    _pred_campeao = _cmodelo.predict(X)
+                    erro = np.abs(_pred_campeao - y)
+                    prio = (erro + 1e-3) ** args.priorizar_alpha
+                    pesos = prio / prio.sum()
+        except Exception:
+            pesos = None
+        if pesos is not None:
+            idx_prio = np.random.RandomState(1).choice(
+                len(X), size=len(X), replace=True, p=pesos)
+            X_treino, y_treino = X[idx_prio], y[idx_prio]
+            print()
+            print('  replay priorizado: reamostrado com peso no erro do '
+                  'campeao atual (alpha=%.2f, %d linhas unicas de %d)'
+                  % (args.priorizar_alpha, len(set(idx_prio.tolist())), len(X)))
+        else:
+            print()
+            print('  replay priorizado pedido mas sem campeao compativel -- '
+                  'treinando com amostra uniforme (comportamento antigo)')
+
+    modelo = novo().fit(X_treino, y_treino)
     bundle = {
         'modelo': modelo,
         'tipo': 'q',
@@ -371,6 +429,7 @@ def main() -> int:
         'ganho_pct': ganho,
         'dataset': args.dataset,
         'lideres': sorted(set(grupos.tolist())),
+        'replay_priorizado': bool(args.priorizar and X_treino is not X),
     }
     import joblib
     saida = RAIZ / args.out

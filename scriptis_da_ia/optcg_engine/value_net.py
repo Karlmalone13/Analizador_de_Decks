@@ -441,7 +441,8 @@ def q_valores(p, opp, acoes, bundle=None) -> list:
         esperado = getattr(modelo, 'n_features_in_', None)
         if esperado is not None and len(linhas[0]) != esperado:
             return [None] * n
-        vs = modelo.predict(linhas)
+        _rapido = _forward_rapido(modelo, linhas)
+        vs = _rapido if _rapido is not None else modelo.predict(linhas)
     except Exception:
         return [None] * n
     if len(vs) != n:
@@ -753,6 +754,53 @@ def limpar_cache_win_prob() -> None:
     _WP_CACHE.clear()
 
 
+def _forward_rapido(modelo, X):
+    """Forward manual em numpy pra Pipeline(StandardScaler, MLPRegressor).
+
+    Achado 21/09/2026 (pedido do usuario: "ML fraco e demorado" -- pesquisa
+    externa mostrou que o custo de `Pipeline.predict()` do sklearn nao e o
+    calculo (a rede e minuscula, 64/32 neuronios -- microssegundos de
+    FLOPs), e sim a VALIDACAO/despacho por chamada que o sklearn faz em cada
+    `.predict()` (checagem de tipo, forma, atributo, por ESTAGIO do
+    pipeline). `q_valores`/`win_prob_lote` ja batcham as LINHAS numa unica
+    chamada (bloco 787/811) -- o que falta e pular esse overhead FIXO por
+    chamada, que multiplica pelas ~51 mil chamadas medidas por partida.
+
+    Refaz a mesma conta que `Pipeline.predict()` faria (StandardScaler ->
+    MLPRegressor.relu em cada camada oculta -> saida linear), em numpy puro.
+    Validado por igualdade numerica contra `modelo.predict()` no
+    `smoke_fast.py` antes de entrar em qualquer caminho de producao.
+
+    Devolve `None` se `modelo` nao tiver o formato esperado -- o CHAMADOR
+    cai pro `.predict()` de sempre, nunca arrisca resposta errada.
+    """
+    try:
+        import numpy as np
+        steps = getattr(modelo, 'steps', None)
+        if not steps or len(steps) != 2:
+            return None
+        scaler, mlp = steps[0][1], steps[1][1]
+        mean_ = getattr(scaler, 'mean_', None)
+        scale_ = getattr(scaler, 'scale_', None)
+        coefs_ = getattr(mlp, 'coefs_', None)
+        intercepts_ = getattr(mlp, 'intercepts_', None)
+        if mean_ is None or scale_ is None or not coefs_ or not intercepts_:
+            return None
+        if getattr(mlp, 'activation', None) != 'relu':
+            return None       # so cobre o caso usado em producao (bloco 800)
+        if getattr(mlp, 'out_activation_', 'identity') != 'identity':
+            return None       # regressor de 1 saida continua so
+        Z = (np.asarray(X, dtype=float) - mean_) / scale_
+        n_camadas = len(coefs_)
+        for i, (w, b) in enumerate(zip(coefs_, intercepts_)):
+            Z = Z @ w + b
+            if i < n_camadas - 1:
+                np.maximum(Z, 0.0, out=Z)      # ReLU in-place
+        return Z.reshape(-1)
+    except Exception:
+        return None
+
+
 def win_prob_lote(pares, bundle=None) -> list:
     """`win_prob` para VARIOS estados numa UNICA chamada ao modelo.
 
@@ -811,7 +859,9 @@ def win_prob_lote(pares, bundle=None) -> list:
             if hasattr(modelo, 'predict_proba'):
                 vs = [float(v[1]) for v in modelo.predict_proba(pendentes_feats)]
             else:
-                vs = [float(v) for v in modelo.predict(pendentes_feats)]
+                _rapido = _forward_rapido(modelo, pendentes_feats)
+                vs = ([float(v) for v in _rapido] if _rapido is not None
+                      else [float(v) for v in modelo.predict(pendentes_feats)])
         except Exception:
             return saidas       # o que veio do memo continua valido
         if len(vs) != len(pendentes_idx):
@@ -867,7 +917,9 @@ def win_prob(p, opp, bundle=None) -> float | None:
         if hasattr(modelo, 'predict_proba'):
             v = float(modelo.predict_proba([feats])[0][1])
         else:
-            v = float(modelo.predict([feats])[0])
+            _rapido = _forward_rapido(modelo, [feats])
+            v = float(_rapido[0]) if _rapido is not None \
+                else float(modelo.predict([feats])[0])
             v = 0.0 if v < 0.0 else (1.0 if v > 1.0 else v)
     except Exception:
         return None

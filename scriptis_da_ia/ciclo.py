@@ -88,6 +88,13 @@ Q_CAMPEAO = RAIZ / 'metrics' / 'q_net.joblib'
 Q_DESAFIANTE = RAIZ / 'metrics' / 'q_net_desafiante.joblib'
 Q_CORPUS = RAIZ / 'metrics' / 'q_alvos.jsonl'
 CORPUS = RAIZ / 'metrics' / 'selfplay_v2.jsonl'
+# POOL DE ADVERSARIOS (21/09/2026) -- snapshots do campeao POR CICLO, pra
+# `gerar_selfplay_dataset.py --pool-dir` sortear self-play contra uma versao
+# PASSADA em vez de so a atual. Gitignored (mesma familia do q_net_desafiante
+# antes de promover -- derivado, nunca fonte de verdade; quem viaja pelo git
+# continua sendo so `q_net.joblib`).
+POOL_DIR = RAIZ / 'metrics' / 'q_net_pool'
+POOL_MAX = 10   # tamanho do pool -- historico recente basta pra diversidade
 
 
 class Cronometro:
@@ -185,6 +192,28 @@ def guarda_corpo(workers) -> dict:
     return achados
 
 
+def _atualiza_pool_adversarios() -> None:
+    """Copia o campeao ATUAL pro pool antes da geracao, rotacionando os mais
+    antigos. Roda mesmo sem `Q_CAMPEAO` (1o ciclo) -- so nao ha o que copiar."""
+    if not Q_CAMPEAO.exists():
+        return
+    import shutil
+    POOL_DIR.mkdir(parents=True, exist_ok=True)
+    destino = POOL_DIR / ('q_net_%s.joblib'
+                          % datetime.now().strftime('%Y%m%dT%H%M%S'))
+    try:
+        shutil.copyfile(Q_CAMPEAO, destino)
+    except Exception:
+        return
+    antigos = sorted(POOL_DIR.glob('q_net_*.joblib'),
+                     key=lambda f: f.stat().st_mtime)
+    for f in antigos[:-POOL_MAX]:
+        try:
+            f.unlink()
+        except Exception:
+            pass
+
+
 def gera(n, seed, workers, n_ciclo=0) -> bool:
     """
     `n_ciclo` grava em CADA linha (campo `gen` do corpus) -- achado 19/09
@@ -218,11 +247,37 @@ def gera(n, seed, workers, n_ciclo=0) -> bool:
     """
     env = dict(os.environ)
     env['OPTCG_Q_ALVO'] = 'busca'
-    return _rodar(['gerar_selfplay_dataset.py', '--n', str(n), '--workers', str(workers),
-                   '--decks', '24', '--seed', str(seed), '--append',
-                   '--gen', str(n_ciclo),
-                   '--out', str(CORPUS), '--q-out', str(Q_CORPUS)],
-                  'geracao de partidas', env=env)
+    # BUSCA MAIS PROFUNDA (21/09/2026, pedido do usuario: "ML fraco e
+    # demorado" + pesquisa externa). O professor 'busca' avaliava a folha
+    # com a MESMA rede ainda imatura que esta sendo treinada, com pouco
+    # lookahead (largura 6, feixe 3, profundidade 3) -- diferente do NNUE
+    # (a propria inspiracao do nosso `treinar_q.py`), que destila de uma
+    # busca alfa-beta PROFUNDA de um motor ja forte. Medido (8 partidas,
+    # 4 workers): largura 8/feixe 4/profundidade 4 custa 126s contra 64s do
+    # default (6/3/3) -- ~2x, absorvido em parte pelo ganho de 3,1x do
+    # `_forward_rapido` (achado do mesmo dia). Self-play continua barato em
+    # termos absolutos, entao pagar mais busca por decisao e o troca que a
+    # literatura recomenda (professor mais forte > professor mais rapido).
+    # So afeta esta geracao OFFLINE -- nao muda o padrao do modulo
+    # (`BUSCA_LARGURA`/`BUSCA_FEIXE`/`BUSCA_PROFUNDIDADE` em
+    # decision_engine.py), que outros caminhos podem usar sem essa troca.
+    env.setdefault('OPTCG_BUSCA_LARGURA', '8')
+    env.setdefault('OPTCG_BUSCA_FEIXE', '4')
+    env.setdefault('OPTCG_BUSCA_PROFUNDIDADE', '4')
+    # POOL DE ADVERSARIOS (21/09/2026): guarda a versao ATUAL do campeao
+    # antes de gerar, e 25% das partidas sorteiam um adversario de uma
+    # geracao PASSADA em vez de sempre campeao-contra-campeao. 0,25 nao
+    # medido ainda -- ponto de partida documentado (literatura usa pools
+    # maiores em jogos bem mais longos; aqui o corpus ainda e pequeno,
+    # entao comecar moderado evita diluir demais o dado da versao atual).
+    _atualiza_pool_adversarios()
+    cmd = ['gerar_selfplay_dataset.py', '--n', str(n), '--workers', str(workers),
+           '--decks', '24', '--seed', str(seed), '--append',
+           '--gen', str(n_ciclo),
+           '--out', str(CORPUS), '--q-out', str(Q_CORPUS)]
+    if POOL_DIR.exists() and any(POOL_DIR.glob('q_net_*.joblib')):
+        cmd += ['--pool-dir', str(POOL_DIR), '--pool-frac', '0.25']
+    return _rodar(cmd, 'geracao de partidas', env=env)
 
 
 def treina() -> dict | None:
@@ -355,7 +410,17 @@ def limpar_checkpoint(estado) -> int:
 
 def main() -> int:
     ap = argparse.ArgumentParser()
-    ap.add_argument('--partidas', type=int, default=40)
+    ap.add_argument('--partidas', type=int, default=200,
+                    help='partidas de self-play por ciclo. Default subiu de '
+                         '40 pra 200 em 21/09/2026 (pesquisa externa: '
+                         'AlphaGo Zero usou 25 mil partidas/iteracao; ate '
+                         'implementacoes de "pequena escala" recomendam no '
+                         'minimo ~3 mil partidas -- 9 ciclos de 40 (360 no '
+                         'total) estava ordens de grandeza abaixo de '
+                         'qualquer referencia. Self-play e barato (~0,5s/'
+                         'partida bootstrap); 200 e um passo pratico, nao o '
+                         'teto -- uma geracao de verdade pede uma rodada '
+                         'explicita com --partidas bem maior.')
     ap.add_argument('--ciclos', type=int, default=1)
     ap.add_argument('--seed', type=int, default=9000)
     ap.add_argument('--max-pares', dest='max_pares', type=int, default=60)

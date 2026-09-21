@@ -144,6 +144,11 @@ scriptis_da_ia/metrics/selfplay_v2.jsonl
 # O DESAFIANTE e regenerado a cada ciclo e so vira campeao se o portao
 # promover -- ai quem viaja pelo git e `q_net.joblib` (219 KB, versionado).
 scriptis_da_ia/metrics/q_net_desafiante.joblib
+# Pool de adversarios PASSADOS pro self-play (bloco 21/09/2026) -- snapshots
+# derivados do campeao a cada ciclo, mesma familia do desafiante acima:
+# regenera sozinho, nunca e fonte de verdade, nao precisa de merge entre
+# maquinas.
+scriptis_da_ia/metrics/q_net_pool/
 
 # ── Ambiente e atalho gerados por BOT\instalar.ps1 (por MAQUINA) ─────────────
 # Achado 14/09/2026 (bloco 826), mesma classe do corpus logo acima: o

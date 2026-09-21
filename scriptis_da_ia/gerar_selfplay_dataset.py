@@ -156,6 +156,34 @@ def _run_one_match(task) -> list:
             estado.value_net_weight = peso
             estado.value_net_path = modelo_path
 
+    # POOL DE ADVERSARIOS (21/09/2026, pesquisa externa: self-play so contra
+    # a versao ATUAL do campeao arrisca ciclo fechado -- o modelo aprende
+    # truques que so funcionam contra si mesmo, sem ninguem perceber porque o
+    # auto-jogo e cego a esse vicio por construcao (mesmo achado ja registrado
+    # no projeto sobre o guarda-corpo). Literatura recomenda sortear entre
+    # versoes PASSADAS do modelo, nao so a atual.
+    #
+    # Config por ENV (nao pela tupla posicional da task) -- mesmo padrao ja
+    # usado por `_origem_padrao()`/`OPTCG_ORIGEM`: workers sao processos
+    # filhos e herdam `os.environ`, entao chega igual sem mexer no contrato
+    # de tamanho da tupla (`len(task) == 9`) que outro trecho ja usa pra
+    # discriminar chamadas antigas.
+    _pool_dir = os.environ.get('OPTCG_POOL_DIR', '').strip()
+    _pool_frac = float(os.environ.get('OPTCG_POOL_FRAC', '0') or 0)
+    if _pool_dir and _pool_frac > 0:
+        _pool_rng = random.Random('pool-%s' % match_seed)
+        if _pool_rng.random() < _pool_frac:
+            try:
+                _candidatos = [f for f in os.listdir(_pool_dir)
+                               if f.endswith('.joblib')]
+            except Exception:
+                _candidatos = []
+            if _candidatos:
+                _escolhido = os.path.join(
+                    _pool_dir, _pool_rng.choice(_candidatos))
+                _lado_pool = _pool_rng.choice([match.state_a, match.state_b])
+                _lado_pool.q_net_path = _escolhido
+
     # EXPLORACAO (bloco 767, pedido do usuario: "ele tem que ser capaz de
     # aprender e descobrir e nao so regular"). Sem isto o auto-jogo e um LACO
     # FECHADO: joga sempre a linha que ja considera melhor, entao o dataset so
@@ -361,7 +389,20 @@ def main() -> None:
     ap.add_argument('--append', action='store_true',
                     help='ACRESCENTA ao arquivo em vez de sobrescrever -- '
                          'o corpus cresce a cada rodada')
+    ap.add_argument('--pool-dir', dest='pool_dir', default=None,
+                    help='pasta com snapshots .joblib de versoes PASSADAS do '
+                         'Q (21/09/2026) -- com --pool-frac>0, uma fracao das '
+                         'partidas poe um adversario sorteado dessa pasta em '
+                         'vez do campeao atual dos dois lados. Evita self-play '
+                         'ficar sempre modelo-atual-contra-modelo-atual.')
+    ap.add_argument('--pool-frac', dest='pool_frac', type=float, default=0.0,
+                    help='fracao das partidas (0.0-1.0) que sorteiam um lado '
+                         'do --pool-dir. Default 0.0 (desligado).')
     args = ap.parse_args()
+
+    if args.pool_dir and args.pool_frac > 0:
+        os.environ['OPTCG_POOL_DIR'] = args.pool_dir
+        os.environ['OPTCG_POOL_FRAC'] = str(args.pool_frac)
 
     tasks = [(i, args.seed * 1_000_003 + i, args.weight, args.model, args.gen,
               args.explorar, args.pos_acao, args.ml_avaliador, args.modelo_decide)
