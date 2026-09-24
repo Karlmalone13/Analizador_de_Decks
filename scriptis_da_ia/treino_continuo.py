@@ -64,6 +64,7 @@ import shutil
 import subprocess
 import sys
 from concurrent.futures import ProcessPoolExecutor
+from concurrent.futures.process import BrokenProcessPool
 from datetime import datetime
 from pathlib import Path
 
@@ -301,9 +302,9 @@ def limite_inferior_wilson(vitorias: int, n: int, z: float = 1.96) -> float:
 
 
 def duelar_sprt(workers: int, seed: int, peso_camp: float, peso_desaf: float,
-                p0: float = 0.50, p1: float = 0.65,
+                p0: float = 0.50, p1: float = 0.58,
                 alpha: float = 0.05, beta: float = 0.05,
-                pares_por_lote: int = 20, max_pares: int = 200,
+                pares_por_lote: int = 20, max_pares: int = 1400,
                 progresso=None, extras: dict = None) -> dict:
     """Portao por PARADA SEQUENCIAL (SPRT de Wald) -- default desde o bloco 762.
 
@@ -327,6 +328,31 @@ def duelar_sprt(workers: int, seed: int, peso_camp: float, peso_desaf: float,
 
     Bonus medido: para CEDO nos casos claros. Na rodada que pegou o falso
     positivo, cruzou o limite em 140 pares em vez dos 200 do teto.
+
+    p1: 0.65 -> 0.58 e max_pares: 200 -> 1200 (24/09, bloco 888, decisao do
+    usuario com os numeros na mao). O portao perguntava "o desafiante e 65%
+    melhor?" -- e uma geracao genuinamente melhor em 55% ou 57% **nunca**
+    concluia, por mais pares que rodasse: o llr esperado por par fica <= 0 e
+    o teste passeia em torno de zero pra sempre. Nao e falta de amostra, e a
+    hipotese alternativa alta demais pra melhora incremental, que e
+    exatamente a forma que geracao-a-geracao tem.
+
+    Medido no desafiante real desta data: 45x42 (51,7%) num corte e 78x58
+    (57,4%) noutro -- as duas faixas invisiveis ao p1 antigo.
+
+    Pares necessarios pra PROMOVER, com p1=0.58 e 27,4% de pares decididos
+    (taxa medida):
+
+        ganho real 65% ->   303 pares  (~2,4 min)
+        ganho real 60% ->   556 pares  (~4,5 min)
+        ganho real 57% -> 1.116 pares  (~8,9 min)
+        ganho real 55% -> 3.387 pares  (~27 min, acima do teto de proposito)
+
+    O teto de 1400 cobre ate ~57% -- 1200 raspava (57% pede ~1.223 pares na
+    taxa medida, e a seed 31337 consumiu o teto quase inteiro pra fechar em
+    57,1%). Quem pegou foi o teste do smoke, nao a rodada. Nao custa 1200 no caso tipico: o SPRT para
+    cedo. alpha continua 0.05 -- o que muda e o TAMANHO de ganho que conta
+    como melhora, nao a tolerancia a falso positivo.
     """
     import math
     lim_sup = math.log((1 - beta) / alpha)
@@ -379,9 +405,39 @@ def duelar_sprt(workers: int, seed: int, peso_camp: float, peso_desaf: float,
 
 
 def _rodar_tasks(tasks: list, workers: int) -> list:
-    if workers > 1:
+    """Roda o lote em paralelo, mas NAO deixa o portao inteiro morrer com um
+    worker.
+
+    Achado 24/09 (bloco 888): rodando o controle A/A ate o teto, um lote
+    matava o processo com `BrokenProcessPool` de forma reproduzivel -- e os
+    MESMOS 40 jogos rodados sequencialmente passavam limpos, sem erro e sem
+    lentidao. Nao e bug de partida: e o worker morrendo por pressao de
+    memoria (4 workers, cada um com motor + 2.839 cartas + modelos; a maquina
+    tinha 4,8 GB livres de 15,4).
+
+    Isso deixou de ser detalhe quando o teto subiu pra 1200 pares: um portao
+    de 6-12 minutos era perdido INTEIRO por um worker morto, e o ciclo
+    abortava no meio. Aqui a queda vira degradacao -- tenta de novo com
+    metade dos workers e, se ainda cair, sequencial. Mais lento e com
+    resultado IDENTICO (o duelo e determinista pela seed), que e o que
+    importa: o veredito nao pode depender de quantos processos sobreviveram.
+    """
+    if workers <= 1:
+        return [_duelo(t) for t in tasks]
+    try:
         with ProcessPoolExecutor(max_workers=workers) as ex:
             return list(ex.map(_duelo, tasks))
+    except BrokenProcessPool:
+        meio = max(1, workers // 2)
+        print('  [aviso] worker morreu (memoria?) -- refazendo o lote com %d '
+              'worker(s)' % meio, flush=True)
+    if meio > 1:
+        try:
+            with ProcessPoolExecutor(max_workers=meio) as ex:
+                return list(ex.map(_duelo, tasks))
+        except BrokenProcessPool:
+            print('  [aviso] caiu de novo -- refazendo o lote SEQUENCIAL',
+                  flush=True)
     return [_duelo(t) for t in tasks]
 
 

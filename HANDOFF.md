@@ -1,5 +1,112 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-09-24 (888) - O portao nao conseguia PROMOVER: 9 ciclos "inconclusivos" eram DOIS defeitos do teste, nao do modelo
+
+Pedido do usuario: treino que nao demore, que jogue com a mesma qualidade do
+CPU x CPU, e com certeza de que aprende. Investigando o terceiro, os outros
+dois mudaram de forma.
+
+### O que o historico dizia (ciclos 4-9, MESMA regua)
+
+```
+corpus      721.008 -> 817.087   (+13,3%)
+erro_q       0,0498 -> 0,0581    (+16,8%, menor e melhor)
+promovidos                 0 de 6
+pares decididos   17,17,17,16,12,14  de 60
+```
+
+Parecia "o modelo nao aprende". **Era o teste que nao conseguia responder**, e
+sao dois defeitos empilhados.
+
+### Defeito 1 -- teto de 60 pares
+
+Um par so conta quando o MESMO modelo vence dos DOIS lados; se cada um vence
+um, quem decidiu foi o matchup. Isso e o desenho certo (o controle A/A prova),
+mas **so ~27% dos pares decidem**.
+
+Com os parametros do proprio SPRT (p0=0,50 p1=0,65): promover exige
+`llr >= +2,944`, par vencido vale `+0,2624`, perdido `-0,3567`. Sao ~64 pares
+DECIDIDOS, logo ~240 pares. **Havia 60** -- o `llr` mal saia de +-1. O default
+do `duelar_sprt` era 200; o `ciclo.py` baixou pra 60.
+
+### Defeito 2 -- `p1=0,65`, e este e o que importa
+
+Mesmo com pares infinitos, um desafiante 55% ou 57% melhor **nunca** conclui:
+o llr esperado por par fica <= 0 e o teste passeia em torno de zero pra
+sempre. **Melhora incremental -- a forma que geracao-a-geracao tem -- era
+invisivel por construcao.**
+
+Decisao do usuario com os numeros na mao: `p1` 0,65 -> **0,58**. `alpha`
+continua 0,05, entao a tolerancia a falso positivo nao muda; muda o TAMANHO de
+ganho que conta como melhora.
+
+### O resultado: o desafiante JA ERA melhor
+
+Mesmo campeao e mesmo desafiante parados desde 14/09, atravessando 9 ciclos
+inconclusivos. Com a barra nova, **tres seeds independentes**:
+
+| seed | decididos | placar | vitoria | llr | veredito | tempo |
+|---|---|---|---|---|---|---|
+| 4242 | 201 | 119x82 | 59,2% | +3,365 | PROMOVE | 6,2 min |
+| 777 | 225 | 131x94 | 58,2% | +3,054 | PROMOVE | 7,1 min |
+| 31337 | 301 | 172x129 | 57,1% | +3,037 | PROMOVE | 10,0 min |
+
+**57,1%-59,2% -- exatamente a faixa que `p1=0,65` nunca detectaria.**
+
+### CONTROLE QUE PODE FALHAR
+
+Campeao contra ELE MESMO, barra nova, teto cheio: **1.198 pares, 0 DECIDIDOS,
+llr 0,000, INCONCLUSIVO**. A barra mais baixa nao fabrica promocao. E o pior
+caso de tempo medido: 9,1 min (so quando nunca conclui, que ja e informacao).
+
+### Tres medicoes que DERRUBARAM "otimizacoes obvias"
+
+1. **Mais worker e mais LENTO**: 4 -> 44s, 8 -> 52s, 13 -> 83s, trabalho e
+   resultado identicos (30 decididos, 17x13 nos tres). `_rodar_tasks` cria um
+   pool NOVO a cada lote e cada processo re-importa motor + 2.839 cartas.
+   Numa maquina de 16 nucleos a tentacao e subir; a medicao diz nao. Ficou
+   documentado no `--workers`.
+2. **Lote maior nao acelera** (150s vs 152s) e atrasa a parada do SPRT.
+   Mantido em 20.
+3. **Teto 1200 raspava**: 57% pede ~1.223 pares e a seed 31337 consumiu quase
+   tudo. **Quem pegou foi o teste do smoke, nao a rodada** -- teto 1400.
+
+### Robustez: um worker morto derrubava o portao inteiro
+
+`BrokenProcessPool` reproduzivel num lote -- e os MESMOS 40 jogos rodados
+SEQUENCIALMENTE passam limpos, sem erro e sem lentidao. Nao e bug de partida:
+e memoria (4,8 GB livres de 15,4, 4 workers com motor + cartas + modelos).
+Virou critico com o teto maior: 6-12 min de portao perdidos. `_rodar_tasks`
+agora degrada (metade dos workers -> sequencial) em vez de abortar; o duelo e
+determinista pela seed, entao o resultado e IDENTICO. O lote que matava o
+processo passa.
+
+### O ponto 2 do usuario (jogar igual ao CPU x CPU) -- levantado, NAO resolvido
+
+Auditado, e **uma preocupacao minha estava errada**: as features do Q ja sao
+limpas (`FEATURE_NAMES_ALUNO`, 77 + acao = 101, **sem** `counter_hand_opp`).
+O modelo nao enxerga a mao real do oponente.
+
+**Mas o PROFESSOR enxerga.** `self_play_info_hidden` so e ligada em
+`audit_real_losses.py` e `mede_espiada.py` -- **nunca na geracao de treino**.
+O proprio `opp_counter_potential` documenta: ao vivo a mao e mascarada no
+`server.py` antes do `GameState` existir; no self-play "NUNCA passou por essa
+mascara". O alvo sai de uma busca que espia -- a armadilha da Fase 1 do plano,
+literalmente. NAO testado ainda.
+
+### Aberto
+
+- **PROMOVER o desafiante**: o portao disse PROMOVE em 3 seeds. Nao promovi --
+  `q_net.joblib` e binario versionado sem merge (`REGRA_DUAS_MAQUINAS`), entao
+  e decisao do usuario, nao de sessao.
+- **Professor que espia**: premissa barata de testar (ligar a flag na geracao,
+  comparar erro_q e top-1). Nao rodado.
+- **78,8% do corpus nao tem id de decisao** (550.865 de 698.909). Sao
+  corretamente EXCLUIDAS da concordancia top-1 (ha filtro), entao a metrica nao
+  esta corrompida -- mas o sinal de ARGMAX, que e o que decide, vem de so 21%
+  do corpus.
+- Nada disto mexeu no motor de jogo; e tudo ferramenta de medicao e treino.
+
 ## 2026-09-24 (887) - As 3 pendencias do bloco 886 fechadas: custo lido como efeito, colisao de codigo no EB04-044, e o guarda contra banco desatualizado
 
 ### 1. O auto-bounce era CUSTO e o parser lia como EFEITO (ou nao lia)

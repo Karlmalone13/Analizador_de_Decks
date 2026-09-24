@@ -1,6 +1,48 @@
 # TODO — Analisador de Decks OPTCG
 
-**Última atualização:** 24 de setembro de 2026 (bloco 887)
+**Última atualização:** 24 de setembro de 2026 (bloco 888)
+
+> **O PORTAO NAO CONSEGUIA PROMOVER -- os 9 ciclos "inconclusivos" eram o
+> TESTE, nao o modelo (24/09/2026, bloco 888)**
+>
+> **FECHOU -- dois defeitos empilhados.** (1) teto de 60 pares: promover exige
+> ~64 pares DECIDIDOS e so ~27% decidem, logo ~240 pares -- o `llr` mal saia de
+> +-1 (o default do `duelar_sprt` era 200; o `ciclo.py` baixou pra 60).
+> (2) `p1=0.65`: mesmo com pares infinitos, ganho de 55-57% **nunca** conclui,
+> porque o llr esperado por par fica <= 0. **Melhora incremental era invisivel
+> por construcao.** Barra -> `p1=0.58` (decisao do usuario), teto -> 1400.
+>
+> **O DESAFIANTE JA ERA MELHOR** -- parado desde 14/09 atravessando 9 ciclos.
+> Tres seeds: 119x82 (59,2%), 131x94 (58,2%), 172x129 (57,1%), **PROMOVE nas
+> tres**, 6-10 min. Exatamente a faixa que a barra antiga nao via.
+>
+> **CONTROLE**: campeao contra ele mesmo, barra nova, teto cheio -> 1.198
+> pares, **0 decididos**, llr 0,000, INCONCLUSIVO. Nao fabrica promocao.
+>
+> **TRES "otimizacoes obvias" DERRUBADAS pela medicao**: mais worker e mais
+> LENTO (4->44s, 8->52s, 13->83s -- pool novo por lote, cada processo
+> re-importa 2.839 cartas); lote maior nao acelera e atrasa a parada; teto 1200
+> raspava em 57% (quem pegou foi o TESTE, nao a rodada).
+>
+> **ROBUSTEZ**: `BrokenProcessPool` reproduzivel derrubava o portao inteiro --
+> os mesmos 40 jogos passam limpos SEQUENCIALMENTE, entao e memoria, nao bug de
+> partida. Com teto maior custava 6-12 min perdidos. `_rodar_tasks` degrada
+> (metade dos workers -> sequencial) em vez de abortar.
+>
+> **ABERTO -- PROMOVER o desafiante**: o portao disse PROMOVE 3x e eu NAO
+> promovi. `q_net.joblib` e binario versionado sem merge
+> (`REGRA_DUAS_MAQUINAS`) -- decisao do usuario.
+>
+> **ABERTO -- o PROFESSOR espia, o aluno nao.** As features do Q ja sao limpas
+> (`FEATURE_NAMES_ALUNO`, sem `counter_hand_opp`), mas
+> `self_play_info_hidden` **nunca e ligada na geracao de treino** -- so em
+> `audit_real_losses.py` e `mede_espiada.py`. O alvo sai de busca que le a mao
+> real; ao vivo ela chega mascarada no `server.py`. E a armadilha da Fase 1 do
+> plano, literal. Premissa barata de testar, NAO testada.
+>
+> **ABERTO -- 78,8% do corpus sem id de decisao** (550.865 de 698.909). Sao
+> corretamente excluidas da concordancia top-1 (ha filtro), entao a metrica nao
+> mente -- mas o sinal de ARGMAX, que e o que decide, vem de 21% do corpus.
 
 > **AS 3 PENDENCIAS DO BLOCO 886, FECHADAS (24/09/2026, bloco 887)**
 >

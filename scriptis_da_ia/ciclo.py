@@ -423,11 +423,42 @@ def main() -> int:
                          'explicita com --partidas bem maior.')
     ap.add_argument('--ciclos', type=int, default=1)
     ap.add_argument('--seed', type=int, default=9000)
-    ap.add_argument('--max-pares', dest='max_pares', type=int, default=60)
+    # TETO DE PARES: 60 -> 600 (medido em 24/09, bloco 888).
+    #
+    # Com 60 o portao NAO PODIA concluir -- 9 ciclos seguidos
+    # "INCONCLUSIVO (teto de pares)", zero promocoes, e isso nao era o modelo:
+    # era o teste sem tamanho pra responder.
+    #
+    # A conta, com os parametros do proprio SPRT (p0=0.50, p1=0.65,
+    # alpha=beta=0.05): promover exige llr >= +2.944, cada par vencido vale
+    # +0.2624 e cada perdido -0.3567. Sao ~64 pares DECIDIDOS -- e so 27% dos
+    # pares decidem (o resto divide, e o matchup que resolveu, nao o modelo).
+    # Logo ~240 pares. Com 60 o llr mal saia de +-1.
+    #
+    # NAO custa o teto: o SPRT para cedo. Medido campeao x desafiante reais,
+    # 4 workers: parou sozinho em 318 pares, 87 decididos, 45x42,
+    # llr -3.174 -> DESCARTA, em 2.5 min.
+    #
+    # CONTROLE QUE PODE FALHAR, rodado antes de mudar: campeao contra ELE
+    # MESMO com teto 600 deu 599 pares, **0 decididos**, llr 0.000,
+    # INCONCLUSIVO. O teto alto nao fabrica veredito.
+    #
+    # 600 -> 1200 junto com p1 0.65 -> 0.58 (ver duelar_sprt): a barra mais
+    # baixa detecta ganho de 57%, mas isso pede ~1.116 pares. Deixar o teto em
+    # 600 com o p1 novo seria pagar a mudanca e nao colher.
+    ap.add_argument('--max-pares', dest='max_pares', type=int, default=1400)
     ap.add_argument('--ancora', type=int, default=150,
                     help='posicoes humanas reais na ancora da etapa 5')
+    # MEDIDO em 24/09 (bloco 888), mesma carga e mesmo resultado (30 pares
+    # decididos, 17x13 nos tres): 4 workers 44s | 8 workers 52s | 13 workers
+    # 83s. Mais worker e MAIS LENTO -- `_rodar_tasks` cria um
+    # ProcessPoolExecutor NOVO a cada lote e cada processo re-importa o motor
+    # e as 2.839 cartas, entao subir o paralelismo multiplica spawn sem
+    # aumentar o trabalho por worker. Numa maquina de 16 nucleos a tentacao e
+    # subir isto; a medicao diz para nao.
     ap.add_argument('--workers', type=int, default=4,
-                    help='partidas em paralelo (regra do projeto: escolher SEMPRE)')
+                    help='partidas em paralelo (regra do projeto: escolher '
+                         'SEMPRE; medido: 4 e mais rapido que 8 e que 13)')
     ap.add_argument('--auditar', type=int, default=5,
                     help='quantas derrotas reais auditar por ciclo (0 desliga)')
     ap.add_argument('--limpar-checkpoint', dest='limpar_checkpoint',

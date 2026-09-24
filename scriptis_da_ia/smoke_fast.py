@@ -10715,6 +10715,7 @@ def main() -> int:
     test_modelo_decide_o_bloqueio_bloco_792()
     test_impressao_mais_completa_decide_o_effects_24_09()
     test_auto_bounce_e_custo_nao_efeito_24_09()
+    test_portao_enxerga_melhora_incremental_24_09()
     test_dialeto_de_transcricao_das_promos_bloco_871()
     test_quatro_formas_de_gatilho_ausente_bloco_871()
     test_coleta_escolhe_a_partida_NOVA_da_sessao_bloco_871()
@@ -16344,6 +16345,62 @@ def test_auto_bounce_e_custo_nao_efeito_24_09() -> None:
     ee2 = EffectExecutor(me2, opp)
     check('CONTROLE: carta fora do campo -> custo recusado, nao ignorado',
           ee2._pay_costs([{'type': 'return_self_to_hand'}], fonte) is False)
+
+
+def test_portao_enxerga_melhora_incremental_24_09() -> None:
+    """O portao tem que conseguir promover o tamanho de ganho que ACONTECE.
+
+    Achado 24/09 (bloco 888): com `p1=0.65` um desafiante genuinamente melhor
+    em 55-59% **nunca** era promovido -- o llr esperado por par decidido fica
+    <= 0 e o SPRT passeia em torno de zero pra sempre. Nao era falta de
+    amostra. O desafiante real desta data mediu 57,1% / 58,2% / 59,2% em tres
+    seeds, e foi PROMOVIDO nas tres com `p1=0.58`, depois de 9 ciclos
+    seguidos de "INCONCLUSIVO" com a barra antiga.
+
+    O teste e da MATEMATICA do portao (nao roda partida): trava as constantes
+    que definem o que conta como melhora.
+    """
+    import math
+    import inspect
+    import treino_continuo as tc
+
+    par = inspect.signature(tc.duelar_sprt).parameters
+    p0 = par['p0'].default
+    p1 = par['p1'].default
+    teto = par['max_pares'].default
+    check('p0 do portao segue 0.50 (hipotese nula: equivalentes)', p0 == 0.50)
+    check('p1 do portao e 0.58 -- barra que enxerga ganho incremental',
+          abs(p1 - 0.58) < 1e-9)
+    check('teto de pares acompanha a barra (>= 1200)', teto >= 1200)
+
+    lim = math.log((1 - 0.05) / 0.05)
+    gv, gd = math.log(p1 / p0), math.log((1 - p1) / (1 - p0))
+
+    def pares_para_promover(taxa_vit):
+        """Pares DECIDIDOS ate cruzar o limite, no valor esperado."""
+        esp = taxa_vit * gv + (1 - taxa_vit) * gd
+        return None if esp <= 0 else lim / esp
+
+    # A faixa REAL medida (57-59%) tem que ser alcancavel dentro do teto,
+    # com a taxa de pares decididos medida (~25%).
+    for taxa in (0.57, 0.58, 0.59):
+        dec = pares_para_promover(taxa)
+        check(f'ganho de {taxa:.0%} e detectavel (llr esperado > 0)', dec is not None)
+        check(f'ganho de {taxa:.0%} cabe no teto de {teto} pares '
+              f'(precisa ~{dec / 0.25:.0f})', dec / 0.25 <= teto)
+
+    # CONTROLE QUE PODE FALHAR: com a barra ANTIGA essas mesmas faixas eram
+    # indetectaveis. Se este controle passar a "detectar", alguem subiu p1 de
+    # volta e o portao voltou a ser cego pro ganho que o projeto produz.
+    gv65, gd65 = math.log(0.65 / 0.50), math.log(0.35 / 0.50)
+    for taxa in (0.55, 0.57):
+        esp = taxa * gv65 + (1 - taxa) * gd65
+        check(f'CONTROLE: com p1=0.65 um ganho de {taxa:.0%} NUNCA concluiria '
+              f'(esperado {esp:+.4f} <= 0)', esp <= 0)
+
+    # CONTROLE: ruido puro (50%) nao pode ser promovido em barra nenhuma.
+    check('CONTROLE: 50% (ruido) tem llr esperado NEGATIVO -- nao promove',
+          pares_para_promover(0.50) is None)
 
 
 if __name__ == "__main__":
