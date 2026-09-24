@@ -18659,11 +18659,6 @@
   "attribute": "Slash",
   "effects": [
    {
-    "action": "bounce",
-    "trigger": "activate_main",
-    "target": "self"
-   },
-   {
     "action": "play_card",
     "trigger": "activate_main"
    }
@@ -18677,10 +18672,10 @@
   "has_counter_value": true,
   "has_counter_event": false,
   "is_blocker": false,
-  "is_removal": true,
+  "is_removal": false,
   "kos": false,
   "rests_opponent": false,
-  "bounces": true,
+  "bounces": false,
   "gives_don": false,
   "power_buff": false,
   "heals": false,
@@ -47297,11 +47292,6 @@
   "attribute": "Slash",
   "effects": [
    {
-    "action": "bounce",
-    "trigger": "activate_main",
-    "target": "self"
-   },
-   {
     "action": "opp_place_hand_bottom_deck",
     "trigger": "activate_main"
    }
@@ -47315,10 +47305,10 @@
   "has_counter_value": true,
   "has_counter_event": false,
   "is_blocker": false,
-  "is_removal": true,
+  "is_removal": false,
   "kos": false,
   "rests_opponent": false,
-  "bounces": true,
+  "bounces": false,
   "gives_don": false,
   "power_buff": false,
   "heals": false,
@@ -52724,11 +52714,6 @@
   "attribute": "Slash",
   "effects": [
    {
-    "action": "bounce",
-    "trigger": "activate_main",
-    "target": "self"
-   },
-   {
     "action": "place_opp_character_bottom_deck",
     "trigger": "activate_main",
     "cost_lte": 1
@@ -52748,7 +52733,7 @@
   "is_removal": true,
   "kos": false,
   "rests_opponent": false,
-  "bounces": true,
+  "bounces": false,
   "gives_don": false,
   "power_buff": false,
   "heals": false,
@@ -110258,11 +110243,12 @@
   "effects": [
    {
     "action": "play_card",
-    "trigger": "activate_main",
-    "cost_lte": 99
+    "trigger": "activate_main"
    }
   ],
-  "referenced_types": [],
+  "referenced_types": [
+   "cross guild"
+  ],
   "synergy_states": {},
   "text": "[Activate: Main] You may return this character to your hand: If you have 3 or more {Cross Guild} type characters in play, you may play up to one cost 5 {Cross Guild} type character from your hand.",
   "is_searcher": false,

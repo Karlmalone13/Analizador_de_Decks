@@ -20,6 +20,25 @@ import re
 # os itens com re.findall(r'[\["{]([^\]"}]+)[\]"}]', grupo).
 LISTA_DE_TIPOS = (r'((?:[\["{][^\]"}]+[\]"}]\s*(?:or|/)\s*)*[\["{][^\]"}]+[\]"}])')
 
+# Auto-bounce "return this Character to <posse> hand" -- a MESMA frase aparece
+# dos dois lados dos dois-pontos, e o lado decide o que ela e (regra universal
+# do projeto: antes do ':' e CUSTO, depois e EFEITO). As duas metades vivem
+# aqui, juntas, pra nao divergirem: quem mexer numa ve a outra.
+#
+# As tres grafias do possessivo entram nas duas porque e a mesma FORMA. Censo
+# de 24/09: 5 cartas usam como custo (OP02-035 OP07-047 OP08-041 P-074 P-081),
+# 3 como efeito (OP04-009 OP10-049 ST12-012).
+_AUTO_BOUNCE_FRASE = (
+    r"return this (?:character|card) to "
+    r"(?:the owner.?s|its owner.?s|your) hand"
+)
+# EFEITO: a frase NAO seguida de ':'
+_AUTO_BOUNCE_EFEITO_RE = _AUTO_BOUNCE_FRASE + r"(?!\s*:)"
+# CUSTO: a frase seguida de ':' (o "you may" e redundante -- custo antes do
+# ':' ja e sempre opcional pela regra dos dois-pontos, entao e opcional aqui)
+_AUTO_BOUNCE_CUSTO_RE = r"(?:you may\s+)?" + _AUTO_BOUNCE_FRASE + r"\s*:"
+
+
 # Pool "seu Lider OU seus Characters" com QUALIFICADOR arbitrario entre os
 # dois lados (tipo/atributo/custo), ex: 'up to 1 of your Leader with a type
 # including "Rocks Pirates" or up to 1 of your Characters with a type
@@ -1274,6 +1293,22 @@ def parse_costs(text):
         elif m_return_own.group(5):
             cost['exclude'] = m_return_own.group(5).strip()
         costs.append(cost)
+
+    # Auto-bounce como CUSTO: "You may return this Character to the owner's
+    # hand: <efeito>" (achado 24/09, bloco 887). Irmao do
+    # return_own_character_to_hand acima, mas o alvo e a PROPRIA carta --
+    # nao ha escolha, entao nao tem count nem filtro, e segue a convencao de
+    # nome dos outros custos auto-dirigidos (trash_self, rest_self,
+    # place_self_bottom_deck).
+    #
+    # Antes disto, o bounce nao existia como custo em NENHUMA das 5 cartas: em
+    # 3 (OP02-035, OP07-047, OP08-041) virava step -- custo opcional executado
+    # como efeito obrigatorio -- e em 2 (P-074, P-081) sumia por completo,
+    # porque o ramo de step so dispara com `steps` ainda vazio e outra clausula
+    # tinha chegado antes. Nessas duas o motor recebia o efeito DE GRACA, que e
+    # o erro pior: e a favor do bot, e ninguem reclama dele.
+    if re.search(_AUTO_BOUNCE_CUSTO_RE, t):
+        costs.append({'type': 'return_self_to_hand'})
 
     # Contagem generalizada pra N>1 -- "you may turn 2 cards from the top
     # of your Life cards face-up:" (achado 19/07, OP08-058, unica carta
@@ -2816,7 +2851,21 @@ def parse_bounce(text):
     # SI MESMO pra mao, nao mira o oponente. Geralmente vem como efeito apos
     # um custo opcional (ex: "you may give your leader -5000 power: return
     # this Character to the owner's hand").
-    if re.search(r"return this character to the owner.?s hand", t):
+    #
+    # SO conta como EFEITO quando NAO e seguido de ':' (achado 24/09, bloco
+    # 887). A mesma frase aparece nos dois lados dos dois-pontos, e a regra
+    # do projeto e universal: antes do ':' e CUSTO, depois e EFEITO. Sem o
+    # gate, a clausula de custo virava step -- o bounce, que a carta deixa
+    # OPCIONAL, era executado como parte obrigatoria do efeito. Censo: 5
+    # cartas usam a frase como custo (OP02-035, OP07-047, OP08-041, P-074,
+    # P-081) e 3 como efeito (OP04-009, OP10-049, ST12-012). O custo e
+    # emitido por parse_costs como `return_self_to_hand`.
+    #
+    # As tres grafias do possessivo entram juntas ("the owner's", "its
+    # owner's", "your") porque e a mesma FORMA -- hoje so a primeira ocorre
+    # do lado do efeito, mas amarrar o regex ao fraseado das cartas de hoje
+    # e o que faz a proxima carta quebrar de novo.
+    if re.search(_AUTO_BOUNCE_EFEITO_RE, t):
         steps.append({'action': 'bounce', 'count': 1, 'target': 'self'})
 
     # "return up to N of your [Tipo A] or [Tipo B] type Characters to the
@@ -9135,6 +9184,20 @@ def parse_card_effect(card_text, card_type):
     t = re.sub(r'\bcost\s+(\d+)\s+or\s+(less|lower|greater|more)\s+(characters?)\b',
                lambda m: f'{m.group(3)} with a cost of {m.group(1)} or {m.group(2)}',
                t, flags=re.IGNORECASE)
+    # 5c. mesma inversao da 5, sem COMPARADOR (custo EXATO) e tolerando uma
+    #     TAG DE TIPO entre a grandeza e o substantivo: "cost 5 {Cross Guild}
+    #     type character" -> "{Cross Guild} type Character with a cost of 5".
+    #     Dois eixos de uma vez porque a carta que revelou (P-081) variava nos
+    #     dois, e cobrir so um deixaria a proxima quebrar igual.
+    #     O `(?!or\b)` e o que separa esta regra da 5: sem ele, "cost 5 or
+    #     less characters" cairia aqui e perderia o comparador.
+    #     Censo: 1 carta hoje no eixo sem-comparador, 0 no eixo tag+comparador
+    #     -- generico assim mesmo, e a tag e PRESERVADA (sem ela o efeito
+    #     ficava `cost_lte: 99` e sem filter_type, ou seja o bot podia jogar
+    #     QUALQUER carta da mao de graca).
+    t = re.sub(r'\bcost\s+(\d+)\s+(?!or\b)((?:[\[{"][^\]}"]+[\]}"]\s+type\s+)?)(characters?)\b',
+               lambda m: f'{m.group(2)}{m.group(3)} with a cost of {m.group(1)}',
+               t, flags=re.IGNORECASE)
     # 5b. mesma inversao da 5, com POWER: "power 2000 or lower characters"
     #     (1 carta). Fica ao lado da irma porque e a MESMA forma -- grandeza
     #     antes do substantivo -- e a proxima variante deve cair nas duas.
@@ -10723,6 +10786,9 @@ def _promove_alvo_nomeado_pro_lider(result: dict, texto: str) -> None:
 # Gerador principal
 # ===========================================================================
 
+_DIVERGENCIA_SEM_DOMINANCIA = []
+
+
 def _efeito_da_impressao_mais_completa(grupo):
     """Entre as impressoes do MESMO codigo, devolve o `effects` da transcricao
     mais completa.
@@ -10764,6 +10830,19 @@ def _efeito_da_impressao_mais_completa(grupo):
         if set(ef.keys()) == uniao:
             return ef
 
+    # Sem linha dominante: as impressoes discordam de um jeito que a regra de
+    # escolha nao resolve, e mais dado nao resolve tampouco. Mantem a primeira
+    # (comportamento antigo) mas AVISA -- ficar em silencio aqui e escolher
+    # uma das duas versoes da carta por ordem de linha no CSV, sem que ninguem
+    # saiba que houve escolha.
+    #
+    # Caso real (EB04-044 Koby, 24/09): as 3 impressoes do MESMO codigo, set,
+    # custo e poder trazem DOIS efeitos completamente diferentes -- nao e
+    # transcricao divergente, e colisao de codigo, como a P-086/P-088 ja
+    # registrada. Precisa da carta oficial pra decidir, nao de heuristica.
+    _DIVERGENCIA_SEM_DOMINANCIA.append(
+        (str(grupo.iloc[0].get('card_name') or ''),
+         sorted(sorted(ef.keys()) for ef in efeitos)))
     return efeitos[0]
 
 

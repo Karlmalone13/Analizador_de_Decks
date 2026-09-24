@@ -1,0 +1,37 @@
+{
+  "trigger_card": "P-081",
+  "problem": "As 3 pendencias abertas pelo bloco 886. (1) AUTO-BOUNCE COMO CUSTO: a frase 'return this Character to the owner's hand' aparece dos DOIS lados dos dois-pontos e o parser nao olhava a posicao, violando a regra universal do projeto (antes do ':' e CUSTO, depois e EFEITO). Dois erros opostos saiam disso: em OP02-035/OP07-047/OP08-041 o bounce virava STEP -- custo que a carta deixa OPCIONAL executado como parte obrigatoria -- e em P-074/P-081 ele SUMIA por completo, porque o ramo do step so dispara com `steps` ainda vazio e outra clausula chegava antes; nessas duas o motor recebia o efeito DE GRACA, que e o erro pior porque e a favor do bot. (2) P-081 tinha um terceiro defeito no mesmo bloco: o dialeto 'cost 5 {Cross Guild} type character' (grandeza antes do substantivo, SEM comparador, com tag de tipo no meio) nao era normalizado e o play_card saia como cost_lte=99 SEM filter_type -- o bot podia jogar QUALQUER carta da mao. (3) EB04-044 Koby: as 2 artes alternativas carregavam o texto do EB04-043 (Kaku), o codigo VIZINHO.",
+  "grammar_family": "(1) Posicao relativa ao ':' como discriminador -- nao e regex nova de conteudo, e o mesmo fraseado classificado pelo lado em que aparece. As tres grafias do possessivo ('the owner's', 'its owner's', 'your') entram JUNTAS nas duas metades porque sao a mesma FORMA, ainda que hoje so a primeira ocorra do lado do efeito. (2) Extensao da regra 5 de normalizacao de dialeto (inversao grandeza/substantivo) em DOIS eixos simultaneos: comparador ausente (custo exato) e tag de tipo intercalada. (3) Nenhuma -- e dado, nao gramatica.",
+  "queries": [
+    "(1) censo da frase de auto-bounce em qualquer grafia do possessivo: 8 cartas no banco -- 5 seguidas de ':' (CUSTO: OP02-035 OP07-047 OP08-041 P-074 P-081) e 3 nao seguidas (EFEITO: OP04-009 OP10-049 ST12-012). O teste do ':' separa as duas populacoes sem ambiguidade",
+    "(1) as 5 de custo conferidas uma a uma: ZERO registravam o bounce em `costs` antes do fix. OP02-035 parecia ter costs, mas era o rest_don do '(1)' -- falso positivo do primeiro censo, conferido",
+    "(2) eixo 'sem comparador': 1 carta no banco (P-081). Eixo 'comparador + tag de tipo': 0 cartas. Regra escrita generica nos dois mesmo assim",
+    "(3) o texto errado do EB04-044 foi buscado no banco inteiro e aparece em 4 linhas: 2 do EB04-043 (Kaku, a dona legitima, MESMO set) e as 2 artes alternativas do EB04-044 -- deslocamento de linha no scrape, nao transcricao divergente"
+  ],
+  "cards_found": [
+    "OP02-035",
+    "OP07-047",
+    "OP08-041",
+    "P-074",
+    "P-081",
+    "OP04-009",
+    "OP10-049",
+    "ST12-012",
+    "EB04-044",
+    "EB04-043"
+  ],
+  "resolution_scope": "global",
+  "decision": "(1) gerar_effects_db.py: a frase vira DUAS constantes de modulo irmas (_AUTO_BOUNCE_EFEITO_RE com lookahead negativo de ':', _AUTO_BOUNCE_CUSTO_RE exigindo ':'), declaradas lado a lado de proposito para nao divergirem. parse_costs emite `return_self_to_hand`, nome que segue a convencao dos outros custos auto-dirigidos (trash_self, rest_self, place_self_bottom_deck). decision_engine.py ganha o pagamento (tira a carta do campo pra mao, e RETORNA FALSE se ela nao estiver mais em campo, em vez de seguir de graca), a entrada em _SACRIFICE_COST_TYPES e um branch em _worth_paying_optional_costs -- sem o branch o custo voltaria a ser julgado 'de graca' pelo `not any(... SACRIFICE ...)` do topo, que era metade do bug. Nao entrou em sim_bridge._CUSTO_ZONAS de proposito: custo auto-dirigido nao tem alvo a escolher, mesmo tratamento de trash_self e place_self_bottom_deck. (2) regra 5c de normalizacao, irma das 5 e 5b, com `(?!or\b)` para nao roubar a forma com comparador da regra 5; a tag de tipo e PRESERVADA na reescrita. (3) correcao de DADO no cards_rows.csv, o mesmo tratamento dado a colisao P-086/P-088 do bloco 749: as 3 impressoes da MESMA carta passam a ter o MESMO texto de regras. Edicao cirurgica em 2 linhas -- a primeira tentativa usou pandas.to_csv e reescreveu 146 linhas de aspas/quebras, foi revertida.",
+  "validated_by": [
+    "diff_parser.py apos (1) e (2): GANHOU=0, PERDEU=0, MUDOU=5 -- exatamente as 5 cartas de custo, nenhuma colateral, cada uma lida contra o texto oficial",
+    "diff_parser.py apos (3): 0/0/0 -- a correcao de dado nao mexeu em mais nada, e o EB04-043 Kaku foi conferido intacto",
+    "snapshot regerado ao fim; diff seguinte 0/0/0",
+    "smoke_fast.py :: test_auto_bounce_e_custo_nao_efeito_24_09 -- 21 checagens. CONTROLE nas 2 cartas que usam a frase como EFEITO (tem que MANTER o step e NAO ganhar custo) e CONTROLE de carta fora do campo (custo tem que ser RECUSADO, nao ignorado)",
+    "CONTROLE QUE PODE FALHAR (regra de metodo do bloco 780): com o pagamento sabotado para nao mover a carta, 'a carta esta na MAO' e 'carta fora do campo -> custo recusado' FALHAM as duas. Nao e controle cego",
+    "smoke_fast.py :: test_impressao_mais_completa_decide_o_effects_24_09 ganhou 2 checagens para o EB04-044, sendo uma CONTROLE (o EB04-043 Kaku manteve o texto dele)",
+    "execucao real no teste, nao so parse: _pay_costs tira a carta do campo e poe na mao",
+    "smoke_fast.py completo: 0 falhas. smoke_test.py completo: TODOS OS TESTES PASSARAM",
+    "gerar_dbs.py: 2839 cartas sincronizadas, e o aviso de divergencia sem dominancia (introduzido nesta sessao) passou a NAO listar mais nada"
+  ],
+  "notes": "GUARDA NOVO, e ele nasce de um achado do bloco 886: `scripts/verify_banco_em_dia.py`, ligado ao pre-commit. Regera o banco EM MEMORIA e compara com o JSON versionado. Existe porque o commit 15dc604 alterou o parser e o card_effects_db.json nunca foi regerado para OP06-035 e OP12-037 -- fix pela metade, no repo, sem sinal nenhum. `diff_parser.py` NAO pega esta classe: ele compara o parser contra o SNAPSHOT, os dois derivados do mesmo codigo, nunca contra o banco que o motor le. Testado com o drift REAL reinjetado a mao: acusa e bloqueia (exit 1). SEGUNDO GUARDA: `_efeito_da_impressao_mais_completa` deixou de escolher em SILENCIO quando nenhuma impressao domina -- agora acumula em _DIVERGENCIA_SEM_DOMINANCIA e `gerar_dbs.py` imprime. Foi esse aviso que expos o EB04-044; sem ele, a colisao de codigo continuaria decidida por ordem de linha no CSV sem ninguem saber que houve escolha. PENDENCIA DE PARIDADE: o cards_rows.csv local foi corrigido e o Supabase.cards NAO -- o bloco 749 registra que os dois tem que ficar em paridade, e este upsert nao foi feito nesta sessao. NAO VALIDADO AO VIVO: nenhuma das 8 cartas rodou em partida real e nao houve portao SPRT. O efeito no resultado de partida e desconhecido; o que esta provado e que o custo passou a EXISTIR (5 cartas), que 2 delas pararam de entregar o efeito de graca, e que o P-081 parou de poder jogar qualquer carta da mao."
+}

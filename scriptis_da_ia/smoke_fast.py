@@ -10714,6 +10714,7 @@ def main() -> int:
     test_clone_preserva_once_per_turn_bloco_788()
     test_modelo_decide_o_bloqueio_bloco_792()
     test_impressao_mais_completa_decide_o_effects_24_09()
+    test_auto_bounce_e_custo_nao_efeito_24_09()
     test_dialeto_de_transcricao_das_promos_bloco_871()
     test_quatro_formas_de_gatilho_ausente_bloco_871()
     test_coleta_escolhe_a_partida_NOVA_da_sessao_bloco_871()
@@ -16244,11 +16245,105 @@ def test_impressao_mais_completa_decide_o_effects_24_09() -> None:
         assert gatilho in db[code]['effects'], (code, sorted(db[code]['effects']))
     print('[OK] as 8 cartas tem o [Trigger] no banco (P-088 saiu de effects vazio)')
 
+    # 8. EB04-044 Koby: NAO era transcricao divergente, era o texto do VIZINHO.
+    #    As 2 artes alternativas receberam o texto do EB04-043 (Kaku) por
+    #    deslocamento de linha no scrape -- confirmado porque o mesmo texto
+    #    aparece nas 2 linhas do EB04-043, que e a dona legitima. O texto
+    #    correto foi confirmado pelo usuario contra a carta. Corrigido no
+    #    cards_rows.csv (dado), nao no parser: as 3 impressoes da MESMA carta
+    #    tem que ter o MESMO texto de regras.
+    koby = db['EB04-044']['effects']
+    assert 'your_turn' in koby and 'passive' in koby, sorted(koby)
+    assert koby['passive'].get('conditions', {}).get('leader_type') == 'navy', koby
+    assert 'on_play' not in koby, 'on_play e do EB04-043 Kaku, nao do Koby'
+    print('[OK] EB04-044 tem o efeito Navy dele, sem o [On Play] do vizinho')
+
+    kaku = db['EB04-043']['effects']
+    assert 'on_play' in kaku, sorted(kaku)
+    print('[OK] CONTROLE: EB04-043 Kaku MANTEVE o texto que e dele')
+
     # 7. CONTROLE do efeito colateral: o nome NAO pode vir da reimpressao
     for code in ('P-063', 'P-081', 'P-088'):
         nome = db[code]['name']
         assert '(' not in nome and ' - ' not in nome, (code, nome)
     print('[OK] CONTROLE: nome segue vindo da 1a linha, sem sufixo de arte')
+
+
+def test_auto_bounce_e_custo_nao_efeito_24_09() -> None:
+    """A frase "return this Character to the owner's hand" dos DOIS lados do
+    ':' -- e o lado decide o que ela e.
+
+    Regra universal do projeto (dois-pontos): antes e CUSTO, depois e EFEITO.
+    O parser nao olhava a posicao, e o resultado eram dois erros opostos:
+
+      - OP02-035/OP07-047/OP08-041: o bounce virava STEP. Custo que a carta
+        deixa OPCIONAL era executado como parte obrigatoria do efeito.
+      - P-074/P-081: o bounce SUMIA. O ramo de step so dispara com `steps`
+        ainda vazio, e outra clausula tinha chegado antes -- o motor recebia
+        o efeito DE GRACA. Este e o erro pior: e a favor do bot.
+
+    Metade das checagens sao CONTROLE: as 3 cartas que usam a frase como
+    EFEITO nao podem perder o step.
+    """
+    CUSTO = ('OP02-035', 'OP07-047', 'OP08-041', 'P-074', 'P-081')
+    EFEITO = ('OP04-009', 'ST12-012')   # OP10-049 usa a via de substituicao
+
+    for code in CUSTO:
+        ef = get_card_effects(code)
+        blocos = [b for b in ef.values() if isinstance(b, dict)]
+        custos = [c.get('type') for b in blocos for c in (b.get('costs') or [])]
+        passos = [s.get('action') for b in blocos for s in (b.get('steps') or [])]
+        check(f'{code}: auto-bounce gravado como CUSTO (return_self_to_hand)',
+              'return_self_to_hand' in custos)
+        check(f'{code}: o bounce NAO aparece tambem como step (seria pago 2x)',
+              'bounce' not in passos)
+        check(f'{code}: o efeito em si sobreviveu (a carta ainda faz algo)',
+              len(passos) > 0)
+
+    for code in EFEITO:
+        ef = get_card_effects(code)
+        passos = [s for b in ef.values() if isinstance(b, dict)
+                  for s in (b.get('steps') or [])]
+        custos = [c.get('type') for b in ef.values() if isinstance(b, dict)
+                  for c in (b.get('costs') or [])]
+        check(f'CONTROLE {code}: frase DEPOIS do ":" segue sendo EFEITO (step)',
+              any(s.get('action') == 'bounce' and s.get('target') == 'self'
+                  for s in passos))
+        check(f'CONTROLE {code}: e NAO virou custo',
+              'return_self_to_hand' not in custos)
+
+    # P-081 tinha um terceiro defeito no mesmo bloco: o dialeto "cost 5
+    # {Cross Guild} type character" (grandeza antes do substantivo, sem
+    # comparador, com tag no meio) nao era normalizado, e o play_card saia
+    # como cost_lte=99 SEM filter_type -- ou seja, qualquer carta da mao.
+    p081 = get_card_effects('P-081')['activate_main']['steps'][0]
+    check('P-081: play_card com custo EXATO 5 (era cost_lte=99, qualquer carta)',
+          p081.get('cost_eq') == 5 and 'cost_lte' not in p081)
+    check('P-081: play_card preserva o filtro de tipo Cross Guild',
+          p081.get('filter_type') == 'cross guild')
+
+    # Execucao real: o custo tem que TIRAR a carta do campo e por na mao.
+    leader = mk('LD1', 'Lider', card_type='LEADER', power=5000)
+    me = GameState(leader=leader, turn=5)
+    fonte = real_card('OP07-047')
+    me.field_chars = [fonte]
+    me.hand = []
+    opp = GameState(leader=mk('LD2', 'OppLeader', card_type='LEADER', power=5000))
+    ee = EffectExecutor(me, opp)
+    ok = ee._pay_costs([{'type': 'return_self_to_hand'}], fonte)
+    check('execucao: custo pago com a carta em campo', ok is not False)
+    check('execucao: a carta SAIU do campo', not any(
+        c is fonte for c in me.field_chars))
+    check('execucao: a carta esta na MAO', any(c is fonte for c in me.hand))
+
+    # CONTROLE que pode falhar: sem a carta em campo o custo NAO pode ser
+    # pago -- seguir em frente aqui seria de novo o efeito de graca.
+    me2 = GameState(leader=leader, turn=5)
+    me2.field_chars = []
+    me2.hand = []
+    ee2 = EffectExecutor(me2, opp)
+    check('CONTROLE: carta fora do campo -> custo recusado, nao ignorado',
+          ee2._pay_costs([{'type': 'return_self_to_hand'}], fonte) is False)
 
 
 if __name__ == "__main__":

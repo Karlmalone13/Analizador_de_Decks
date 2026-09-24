@@ -180,4 +180,11 @@ fi
 # correcao isolada, mas deixa explicito que ela veio DEPOIS do censo global.
 python "$REPO_ROOT/scripts/verify_parser_global_audit.py" || exit 1
 
+# Gate mecanico: o banco de efeitos que o MOTOR le tem que refletir o parser.
+# Achado 24/09 (bloco 887): o commit 15dc604 alterou o parser e o JSON nunca
+# foi regerado -- o conserto ficou no repo pela metade, sem nenhum sinal.
+# diff_parser.py nao pega isso: ele compara parser contra snapshot, os dois
+# derivados do mesmo codigo, nunca contra o banco de verdade.
+python "$REPO_ROOT/scripts/verify_banco_em_dia.py" || exit 1
+
 exit 0

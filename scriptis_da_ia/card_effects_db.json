@@ -12235,17 +12235,15 @@
       "activate_main": {
         "steps": [
           {
-            "action": "bounce",
-            "count": 1,
-            "target": "self"
-          },
-          {
             "action": "play_card",
             "count": 1,
             "cost_eq": 3
           }
         ],
         "costs": [
+          {
+            "type": "return_self_to_hand"
+          },
           {
             "type": "rest_don",
             "count": 1
@@ -30430,18 +30428,18 @@
       "activate_main": {
         "steps": [
           {
-            "action": "bounce",
-            "count": 1,
-            "target": "self"
-          },
-          {
             "action": "opp_place_hand_bottom_deck",
             "count": 1
           }
         ],
         "conditions": {
           "opp_hand_gte": 6
-        }
+        },
+        "costs": [
+          {
+            "type": "return_self_to_hand"
+          }
+        ]
       }
     }
   },
@@ -33897,11 +33895,6 @@
       "activate_main": {
         "steps": [
           {
-            "action": "bounce",
-            "count": 1,
-            "target": "self"
-          },
-          {
             "action": "place_opp_character_bottom_deck",
             "count": 1,
             "cost_lte": 1
@@ -33909,7 +33902,12 @@
         ],
         "conditions": {
           "leader_type": "kuja pirates"
-        }
+        },
+        "costs": [
+          {
+            "type": "return_self_to_hand"
+          }
+        ]
       }
     }
   },
@@ -71585,6 +71583,11 @@
             "action": "look_top_deck",
             "count": 5
           }
+        ],
+        "costs": [
+          {
+            "type": "return_self_to_hand"
+          }
         ]
       }
     }
@@ -71767,13 +71770,19 @@
           {
             "action": "play_card",
             "count": 1,
-            "cost_lte": 99
+            "cost_eq": 5,
+            "filter_type": "cross guild"
           }
         ],
         "conditions": {
           "chars_gte": 3,
           "chars_gte_type_filter": "cross guild"
-        }
+        },
+        "costs": [
+          {
+            "type": "return_self_to_hand"
+          }
+        ]
       }
     }
   },

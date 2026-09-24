@@ -7762,16 +7762,14 @@
   "activate_main": {
    "costs": [
     {
+     "type": "return_self_to_hand"
+    },
+    {
      "count": 1,
      "type": "rest_don"
     }
    ],
    "steps": [
-    {
-     "action": "bounce",
-     "count": 1,
-     "target": "self"
-    },
     {
      "action": "play_card",
      "cost_eq": 3,
@@ -19241,12 +19239,12 @@
    "conditions": {
     "opp_hand_gte": 6
    },
-   "steps": [
+   "costs": [
     {
-     "action": "bounce",
-     "count": 1,
-     "target": "self"
-    },
+     "type": "return_self_to_hand"
+    }
+   ],
+   "steps": [
     {
      "action": "opp_place_hand_bottom_deck",
      "count": 1
@@ -21465,12 +21463,12 @@
    "conditions": {
     "leader_type": "kuja pirates"
    },
-   "steps": [
+   "costs": [
     {
-     "action": "bounce",
-     "count": 1,
-     "target": "self"
-    },
+     "type": "return_self_to_hand"
+    }
+   ],
+   "steps": [
     {
      "action": "place_opp_character_bottom_deck",
      "cost_lte": 1,
@@ -45709,6 +45707,11 @@
  },
  "P-074": {
   "activate_main": {
+   "costs": [
+    {
+     "type": "return_self_to_hand"
+    }
+   ],
    "steps": [
     {
      "action": "look_top_deck",
@@ -45819,11 +45822,17 @@
     "chars_gte": 3,
     "chars_gte_type_filter": "cross guild"
    },
+   "costs": [
+    {
+     "type": "return_self_to_hand"
+    }
+   ],
    "steps": [
     {
      "action": "play_card",
-     "cost_lte": 99,
-     "count": 1
+     "cost_eq": 5,
+     "count": 1,
+     "filter_type": "cross guild"
     }
    ]
   }

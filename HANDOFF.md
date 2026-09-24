@@ -1,5 +1,94 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-09-24 (887) - As 3 pendencias do bloco 886 fechadas: custo lido como efeito, colisao de codigo no EB04-044, e o guarda contra banco desatualizado
+
+### 1. O auto-bounce era CUSTO e o parser lia como EFEITO (ou nao lia)
+
+A frase `return this Character to the owner's hand` aparece dos **dois lados**
+dos dois-pontos, e o parser nao olhava a posicao -- violando a regra universal
+do projeto (antes do `:` e CUSTO, depois e EFEITO). Dois erros OPOSTOS saiam
+disso:
+
+| cartas | o que acontecia |
+|---|---|
+| `OP02-035` `OP07-047` `OP08-041` | o bounce virava **step**: custo que a carta deixa OPCIONAL, executado como parte obrigatoria |
+| `P-074` `P-081` | o bounce **sumia**: o ramo do step so dispara com `steps` vazio, e outra clausula chegava antes -- o motor recebia o efeito **DE GRACA** |
+
+O segundo e o erro pior, e o proprio bloco 881 ja tinha registrado o porque:
+**efeito errado a favor do bot ninguem reclama.**
+
+Censo: **8 cartas** usam a frase -- 5 seguidas de `:` (custo) e 3 nao seguidas
+(efeito: `OP04-009` `OP10-049` `ST12-012`). O teste do `:` separa as duas
+populacoes sem ambiguidade. **Nenhuma das 5 registrava o bounce em `costs`.**
+
+Fix: duas constantes de modulo IRMAS (`_AUTO_BOUNCE_EFEITO_RE` com lookahead
+negativo, `_AUTO_BOUNCE_CUSTO_RE` exigindo o `:`), declaradas lado a lado pra
+nao divergirem, e o custo novo `return_self_to_hand` -- nome seguindo a
+convencao dos outros auto-dirigidos (`trash_self`, `rest_self`,
+`place_self_bottom_deck`).
+
+No motor: pagamento (tira do campo, poe na mao, e **retorna False** se a carta
+nao esta mais em campo em vez de seguir de graca), entrada em
+`_SACRIFICE_COST_TYPES` e branch em `_worth_paying_optional_costs`. **Sem esse
+branch o custo voltaria a ser julgado "de graca"** pelo `not any(... SACRIFICE
+...)` do topo -- era metade do bug. Fora de `sim_bridge._CUSTO_ZONAS` de
+proposito: custo auto-dirigido nao tem alvo a escolher.
+
+### 2. `P-081` tinha um TERCEIRO defeito no mesmo bloco
+
+`play_card` saia como **`cost_lte: 99` sem `filter_type`** -- o bot podia jogar
+**qualquer** carta da mao. Causa: o dialeto `cost 5 {Cross Guild} type
+character` (grandeza antes do substantivo, SEM comparador, com tag no meio) nao
+era normalizado. Regra `5c`, irma das 5/5b, generica nos dois eixos (censo: 1
+carta no eixo sem-comparador, 0 no eixo tag+comparador). Agora sai `cost_eq: 5`
+com o filtro preservado.
+
+### 3. `EB04-044` nao era transcricao divergente -- era o texto do VIZINHO
+
+As 3 impressoes tem mesmo set, nome, custo 6, poder 7000, cor e raridade, e
+**dois efeitos completamente diferentes**. Buscar o texto suspeito no banco
+inteiro resolveu: ele aparece em **4 linhas -- 2 do `EB04-043` (Kaku), a dona
+legitima, do MESMO set**. Deslocamento de linha no scrape.
+
+O usuario confirmou o texto correto contra a carta (a versao "Navy"). Corrigido
+no **dado** (`cards_rows.csv`), mesmo tratamento da colisao `P-086/P-088` do
+bloco 749: as 3 impressoes da MESMA carta passam a ter o MESMO texto de regras.
+
+> Tentativa revertida: a primeira edicao usou `pandas.to_csv` e reescreveu
+> **146 linhas** de aspas/quebras. Edicao cirurgica no lugar -- 2 linhas.
+
+### Dois guardas novos, os dois nascidos de achados do bloco 886
+
+**`scripts/verify_banco_em_dia.py`** (ligado ao `pre-commit`): regera o banco em
+memoria e compara com o JSON versionado. Existe porque o commit `15dc604`
+alterou o parser e o banco **nunca foi regerado** -- fix pela metade, no repo,
+sem sinal. `diff_parser.py` **nao pega esta classe**: compara o parser contra o
+SNAPSHOT, os dois derivados do mesmo codigo, nunca contra o banco que o motor
+le. Testado com o drift REAL reinjetado a mao: bloqueia.
+
+**Aviso de divergencia sem dominancia**: `_efeito_da_impressao_mais_completa`
+deixou de escolher em silencio quando nenhuma impressao domina --
+`gerar_dbs.py` agora imprime. **Foi esse aviso que expos o EB04-044**; sem ele
+a colisao seguiria decidida por ordem de linha sem ninguem saber que houve
+escolha. Depois da correcao, o aviso nao lista mais nada.
+
+### Validacao
+
+`diff_parser` PERDEU=0 nas duas etapas (MUDOU=5, exatamente as cartas de custo,
+lidas uma a uma; depois 0/0/0). `smoke_fast` e `smoke_test` completos passam.
+21 checagens novas, com CONTROLE nas 2 cartas que usam a frase como efeito, na
+carta fora do campo, e no `EB04-043` intacto -- e **o controle FALHA com o
+motor sabotado**. Execucao real testada, nao so parse.
+
+### Aberto
+
+- **PARIDADE COM O SUPABASE**: o `cards_rows.csv` local foi corrigido e o
+  `Supabase.cards` **nao**. O bloco 749 registra que os dois tem que ficar em
+  paridade -- o upsert nao foi feito nesta sessao.
+- **NAO VALIDADO AO VIVO**, sem portao SPRT. Provado que o custo passou a
+  existir em 5 cartas, que 2 pararam de entregar efeito de graca e que o P-081
+  parou de poder jogar qualquer carta da mao -- **nao** que o bot joga melhor.
+
 ## 2026-09-24 (886) - A IMPRESSAO do CSV decidia o `effects`: 8 cartas perdiam o [Trigger] porque o banco herdava a transcricao mais pobre
 
 **Mesma CLASSE do lote de 12 (blocos 870/881), CAUSA RAIZ diferente -- e o

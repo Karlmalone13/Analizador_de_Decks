@@ -122,6 +122,18 @@ def main():
     else:
         print(f'OK: {len(ka)} cartas sincronizadas nos dois bancos.')
 
+    # Impressoes do mesmo codigo que discordam sem que nenhuma contenha as
+    # outras. A regra de escolha mantem a primeira, mas isso e uma ESCOLHA por
+    # ordem de linha no CSV -- avisar e o minimo, senao a divergencia some.
+    from gerar_effects_db import _DIVERGENCIA_SEM_DOMINANCIA as _div
+    if _div:
+        print('')
+        print(f'ATENCAO: {len(_div)} codigo(s) com impressoes que DISCORDAM')
+        print('  sem linha dominante -- ficou a primeira, por ordem no CSV.')
+        for nome, conjuntos in _div:
+            print(f'  {nome}: {conjuntos}')
+        print('  Conferir contra a carta oficial: pode ser colisao de codigo.')
+
     # 4. Sanidade de parsing — checa os DOIS bancos (pega dessincronia)
     print()
     print('--- Sanidade de parsing (cartas-chave, effects + analysis) ---')

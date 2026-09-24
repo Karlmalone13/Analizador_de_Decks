@@ -1,6 +1,46 @@
 # TODO — Analisador de Decks OPTCG
 
-**Última atualização:** 24 de setembro de 2026 (bloco 886)
+**Última atualização:** 24 de setembro de 2026 (bloco 887)
+
+> **AS 3 PENDENCIAS DO BLOCO 886, FECHADAS (24/09/2026, bloco 887)**
+>
+> **FECHOU -- custo lido como efeito**: `return this Character to the owner's
+> hand` aparece dos DOIS lados do `:` e o parser nao olhava a posicao. Em
+> `OP02-035` `OP07-047` `OP08-041` o bounce virava **step** (custo OPCIONAL
+> executado como obrigatorio); em `P-074` `P-081` **sumia** e o motor levava o
+> efeito **de graca** -- o erro pior, porque e a favor do bot. Censo: 8 cartas,
+> 5 custo / 3 efeito, separadas pelo teste do `:`. Custo novo
+> `return_self_to_hand` (parser + pagamento + `_SACRIFICE_COST_TYPES` +
+> `_worth_paying_optional_costs`; sem o ultimo voltaria a ser julgado "de
+> graca").
+>
+> **FECHOU -- `P-081` tinha um 3o defeito**: `play_card` saia `cost_lte: 99`
+> **sem `filter_type`**, ou seja o bot podia jogar QUALQUER carta da mao. Regra
+> `5c` de normalizacao, generica em dois eixos. Agora `cost_eq: 5` com filtro.
+>
+> **FECHOU -- `EB04-044` era colisao, nao divergencia**: as 2 artes alternativas
+> tinham o texto do `EB04-043` (Kaku), do mesmo set -- o texto suspeito aparece
+> em 4 linhas, 2 delas do dono legitimo. Texto correto confirmado pelo usuario
+> contra a carta; corrigido no DADO (`cards_rows.csv`), mesmo tratamento da
+> colisao `P-086/P-088` do bloco 749.
+>
+> **GUARDA NOVO -- `scripts/verify_banco_em_dia.py`** no `pre-commit`: regera o
+> banco em memoria e compara com o JSON versionado. Nasceu do achado do bloco
+> 886 (o `15dc604` mudou o parser e o banco nunca foi regerado -- fix pela
+> metade por dias). **`diff_parser.py` nao pega essa classe**: compara parser
+> contra snapshot, os dois do mesmo codigo, nunca contra o banco que o motor le.
+> Testado com o drift real reinjetado: bloqueia.
+>
+> **GUARDA NOVO -- divergencia sem dominancia deixou de ser silenciosa**:
+> `gerar_dbs.py` avisa. Foi esse aviso que expos o `EB04-044`.
+>
+> **ABERTO -- PARIDADE COM O SUPABASE**: o `cards_rows.csv` local foi corrigido
+> e o `Supabase.cards` **nao**. O bloco 749 exige paridade; o upsert nao foi
+> feito nesta sessao.
+>
+> **ABERTO -- nada rodou ao vivo**, sem portao SPRT. Provado que o custo passou
+> a existir e que 2 cartas pararam de entregar efeito de graca -- nao que o bot
+> joga melhor.
 
 > **A IMPRESSAO DO CSV DECIDIA O `effects` -- 8 cartas perdiam o [Trigger]
 > (24/09/2026, bloco 886)**. Mesma CLASSE do lote de 12 (blocos 870/881), causa

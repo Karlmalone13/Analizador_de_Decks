@@ -6937,6 +6937,22 @@ class EffectExecutor:
                 if contains_identity(self.me.field_chars, card):
                     remove_character_from_field(self.me, card, 'trash')
                     self._cost_logs.append(f'custo: trashou {card.name[:18]} (ele mesmo)')
+            elif ctype == 'return_self_to_hand':
+                # Auto-bounce como CUSTO (bloco 887): a PROPRIA carta volta
+                # do campo pra mao ANTES do efeito -- e o que o texto diz, e
+                # difere do que o motor fazia antes (o bounce vinha como step,
+                # ou seja DEPOIS, e em 2 das 5 cartas nem vinha). Mesmo
+                # formato auto-dirigido do trash_self logo acima: sem count e
+                # sem filtro, porque nao ha o que escolher.
+                #
+                # Se a carta nao esta mais em campo, o custo NAO pode ser
+                # pago: retorna False em vez de seguir de graca (mesma
+                # postura do place_self_bottom_deck).
+                if not contains_identity(self.me.field_chars, card):
+                    return False
+                remove_character_from_field(self.me, card, 'hand')
+                self._cost_logs.append(
+                    f'custo: {card.name[:18]} voltou para a mao (ele mesmo)')
             elif ctype == 'place_self_bottom_deck':
                 # Custo composto: move a PROPRIA carta (card, do campo) pro
                 # fundo do PROPRIO deck, opcionalmente junto com N carta(s)
@@ -11574,7 +11590,8 @@ class EffectExecutor:
     _SACRIFICE_COST_TYPES = {'trash_from_hand', 'trash_hand', 'trash_char_or_hand',
                              'trash_typed_hand_or_named_hand_field',
                              'ko_own_character', 'trash_self', 'trash_own_life',
-                             'trash_own_character', 'return_own_character_to_hand'}
+                             'trash_own_character', 'return_own_character_to_hand',
+                             'return_self_to_hand'}
 
     # Peso relativo de cada acao de efeito. FONTE UNICA -- usada por
     # `_resolve_choice` (qual opcao do "Choose one" vale mais) e por
@@ -11848,6 +11865,23 @@ class EffectExecutor:
                 exclude_card=card if c.get('exclude_self') else None,
             )
             return bool(chars) and min(ch.board_value() * 10 for ch in chars) <= 60
+
+        # return_self_to_hand: auto-bounce como custo (bloco 887). Mesma
+        # familia do return_own_character_to_hand logo acima e mesmo limiar
+        # (board_value*10 <= 60), com UMA diferenca que importa: ali ha
+        # varios candidatos e o motor escolhe o mais barato; aqui o alvo e a
+        # PROPRIA carta, entao nao ha escolha -- o julgamento e sobre ela.
+        #
+        # Sem este branch o custo caia no `not any(... SACRIFICE ...)` do topo
+        # e era considerado de graca, que e exatamente o bug que o bloco 887
+        # foi consertar: o bot pagaria o bounce de um corpo caro para ativar
+        # qualquer efeito, por menor que fosse.
+        for c in costs:
+            if c.get('type') != 'return_self_to_hand':
+                continue
+            if not contains_identity(self.me.field_chars, card):
+                return False
+            return card.board_value() * 10 <= 60
 
         for c in costs:
             if c.get('type') != 'trash_typed_hand_or_named_hand_field':
