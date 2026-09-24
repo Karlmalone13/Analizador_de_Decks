@@ -1,6 +1,35 @@
 # TODO — Analisador de Decks OPTCG
 
-**Última atualização:** 24 de setembro de 2026 (bloco 889)
+**Última atualização:** 24 de setembro de 2026 (bloco 890)
+
+> **CPU x CPU ACHOU: `gain_unblockable` nao servia a NENHUMA carta do banco
+> (24/09/2026, bloco 890)**
+>
+> **Telemetria da partida LIMPA**: `q_fallback 0`, 147 decisoes, 100% de
+> execucao, `state_after_coverage` **100%** (o gate historico ficava <95%), 15
+> efeitos 100% concluidos, e **zero** nas duas secoes que acharam o Loki e as
+> 12 cartas -- os blocos 886/887 rodaram ao vivo sem quebrar nada.
+>
+> **FECHOU**: as 3 cartas com `gain_unblockable` sao EVENTS, e a acao concede a
+> PROPRIA carta -- num Event vai pro trash e nunca ataca, efeito **NULO**.
+> Passam a usar `select_grant_unblockable_turn` (ja existia; nenhuma acao nova
+> no motor).
+>
+> **O ponto decisivo era o GATE, nao a funcao**: ele exigia o substantivo
+> literal `characters`, entao para essas tres a funcao **nunca era chamada**. E
+> o MESMO erro documentado ao lado dele em 19/07. **Regra que sai daqui: ao
+> mexer em `parse_*`, conferir se o GATE que a chama e tao largo quanto ela.**
+>
+> **CORRECAO DO USUARIO que mudou o fix**: eu ia emitir `leader_only` nas tres.
+> `OP17-055` diz `[Rocks.D.Xebec]`, que e NOME -- e ha `OP17-039` (Leader) e
+> `OP17-118` (Character). `leader_only` perderia o Character em campo. Ficou
+> `filter_name` + `include_leader`; so as outras duas sao leader_only.
+>
+> `PERDEU=0`, MUDOU=3, snapshot 0/0/0, as duas suites passam, teste permanente
+> com 6 controles e execucao real (o controle falha com o motor sabotado).
+>
+> **ABERTO**: nao rodou ao vivo, sem portao SPRT. Checkpoint humano segue
+> pendente. Professor que espia segue sem teste.
 
 > **PROMOVIDO -- o Q de 697.479 alvos e o campeao (24/09/2026, bloco 889)**
 >

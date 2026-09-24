@@ -43246,8 +43246,10 @@
    ],
    "steps": [
     {
-     "action": "gain_unblockable",
-     "duration": "this_turn"
+     "action": "select_grant_unblockable_turn",
+     "count": 1,
+     "filter_name": "rocks.d.xebec",
+     "include_leader": true
     }
    ]
   }
@@ -44702,8 +44704,9 @@
   "main": {
    "steps": [
     {
-     "action": "gain_unblockable",
-     "duration": "this_turn"
+     "action": "select_grant_unblockable_turn",
+     "filter_name": "charlotte linlin",
+     "target": "leader_only"
     }
    ]
   }
@@ -53415,8 +53418,9 @@
   "main": {
    "steps": [
     {
-     "action": "gain_unblockable",
-     "duration": "this_turn"
+     "action": "select_grant_unblockable_turn",
+     "filter_name": "monkey.d.luffy",
+     "target": "leader_only"
     }
    ]
   }

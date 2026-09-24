@@ -10716,6 +10716,7 @@ def main() -> int:
     test_impressao_mais_completa_decide_o_effects_24_09()
     test_auto_bounce_e_custo_nao_efeito_24_09()
     test_portao_enxerga_melhora_incremental_24_09()
+    test_event_concede_unblockable_a_carta_nomeada_24_09()
     test_dialeto_de_transcricao_das_promos_bloco_871()
     test_quatro_formas_de_gatilho_ausente_bloco_871()
     test_coleta_escolhe_a_partida_NOVA_da_sessao_bloco_871()
@@ -16401,6 +16402,79 @@ def test_portao_enxerga_melhora_incremental_24_09() -> None:
     # CONTROLE: ruido puro (50%) nao pode ser promovido em barra nenhuma.
     check('CONTROLE: 50% (ruido) tem llr esperado NEGATIVO -- nao promove',
           pares_para_promover(0.50) is None)
+
+
+def test_event_concede_unblockable_a_carta_nomeada_24_09() -> None:
+    """Event que da [Unblockable] a uma carta NOMEADA -- e o alvo nao e so o Leader.
+
+    Achado na 1a CPU x CPU depois da promocao (bloco 890). As 3 cartas do
+    banco com `gain_unblockable` sao EVENTS, e aquela acao concede a `card`,
+    a PROPRIA carta do efeito: num Event isso e efeito NULO -- ele vai pro
+    trash e nunca ataca. A semantica auto-dirigida nao servia corretamente a
+    NENHUMA carta do banco.
+
+    Caiam la porque o GATE que chama `parse_select_unblockable_turn` exigia o
+    substantivo literal "Characters", e nenhuma das tres o tem. E o MESMO erro
+    ja registrado em 19/07 no comentario ao lado do gate.
+
+    Sao DUAS formas, e a distincao (apontada pelo usuario) muda o alvo:
+      (A) "Your [Nome] Leader gains"       -> so o LIDER
+      (B) "Up to N of your [Nome] gains"   -> LIDER **ou** CHARACTER com o nome
+    """
+    # -- (B) OP17-055: existem OP17-039 (Leader) e OP17-118 (Character) --
+    ef = get_card_effects("OP17-055")["main"]
+    passo = ef["steps"][0]
+    check("OP17-055 usa select_grant_unblockable_turn (nao gain_unblockable)",
+          passo["action"] == "select_grant_unblockable_turn")
+    check("OP17-055 filtra por NOME e inclui o Leader (nao e leader_only)",
+          passo.get("filter_name") == "rocks.d.xebec"
+          and passo.get("include_leader") is True
+          and passo.get("target") != "leader_only")
+
+    # Execucao real: o CHARACTER homonimo em campo tem que poder receber.
+    xebec_char = real_card("OP17-118")          # Rocks.D.Xebec, Character
+    outro = mk("OUT", "Outro Qualquer", cost=3, power=3000)
+    me = GameState(leader=real_card("OP17-039"), turn=6)   # Rocks.D.Xebec, Leader
+    me.field_chars = [xebec_char, outro]
+    me.don_available = 5
+    opp = GameState(leader=mk("OPP", "Opp", card_type="LEADER", power=5000))
+    EffectExecutor(me, opp).execute(real_card("OP17-055"), "main")
+    check("Execucao real: alguem com o nome Rocks.D.Xebec ganhou Unblockable",
+          xebec_char.unblockable_this_turn or me.leader.unblockable_this_turn)
+    check("CONTROLE: a carta de nome DIFERENTE nao ganhou",
+          not outro.unblockable_this_turn)
+
+    # -- (A) OP17-115 / ST29-016: leader_only, com o nome conferido --
+    for code, nome in (("OP17-115", "charlotte linlin"), ("ST29-016", "monkey.d.luffy")):
+        p = get_card_effects(code)["main"]["steps"][0]
+        check(f"{code} e leader_only com o nome gravado",
+              p["action"] == "select_grant_unblockable_turn"
+              and p.get("target") == "leader_only"
+              and p.get("filter_name") == nome)
+
+    # CONTROLE QUE PODE FALHAR: lider com nome ERRADO nao pode receber.
+    me_errado = GameState(leader=mk("XX", "Lider Qualquer", card_type="LEADER", power=5000), turn=5)
+    opp_e = GameState(leader=mk("OPP2", "Opp", card_type="LEADER", power=5000))
+    EffectExecutor(me_errado, opp_e).execute(real_card("OP17-115"), "main")
+    check("CONTROLE: lider de nome errado NAO ganha Unblockable "
+          "(o Event pode estar num deck de outro lider)",
+          not me_errado.leader.unblockable_this_turn)
+
+    # CONTROLE: as 4 cartas que JA funcionavam nao podem ter mudado.
+    esperado = {
+        "EB04-024": {"filter_type": "alabasta"},
+        "OP15-047": {},
+        "OP16-095": {"color": "black", "filter_type": "land of wano"},
+        "OP17-084": {},
+    }
+    for code, campos in esperado.items():
+        passos = [s for blk in get_card_effects(code).values() if isinstance(blk, dict)
+                  for s in (blk.get("steps") or [])
+                  if s.get("action") == "select_grant_unblockable_turn"]
+        check(f"CONTROLE {code}: segue select_grant_unblockable_turn intacto",
+              len(passos) == 1
+              and all(passos[0].get(k) == v for k, v in campos.items())
+              and "filter_name" not in passos[0])
 
 
 if __name__ == "__main__":

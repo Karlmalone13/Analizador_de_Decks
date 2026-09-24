@@ -1,5 +1,111 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-09-24 (890) - 1a CPU x CPU depois da promocao: telemetria limpa, e ela achou um bug que 3 Events entregavam NADA
+
+Partida `Rocks.D.Xebec-B_x_Marshall.D.Teach-BY_2026-09-24T17.38.54`, bancada
+com deck dos dois lados. Antes dela: DLL do plugin **recompilada** (estava de
+18/09 e a fonte mudou em 20/09, commit 899247a -- era o cenario de DLL velha
+que o projeto ja pagou uma vez), server da 8765 reiniciado, `smoke_fast` OK.
+
+### A telemetria, nos tres passos obrigatorios
+
+```
+q_fallback           : 0        (erro_ao_medir: null)  -> o modelo decidiu TUDO
+decisoes             : 147      144 confirmadas, 0 falhas, 3 pendentes
+execution_success    : 100,0%
+state_after_coverage : 100,0%   <- o gate historico vinha ficando abaixo de 95%
+legal_actions_cov    :  94,6%
+
+efeitos: 15 disparos  on_play 6/6 | when_attacking 5/5 | activate_main 4/4
+  nao concluidos                      : 0
+  texto tem gatilho que o banco nao tem: 0
+  concluiu e nao valia nada           : 0
+```
+
+As duas secoes que acharam o Loki e as 12 cartas vieram ZERADAS: as correcoes
+dos blocos 886/887 rodaram ao vivo sem quebrar nada.
+
+Falso alarme conferido: a auditoria diz "2 partidas na sessao", mas a P1 tem
+**4 decisoes** e nao gerou combat log -- comeco abortado, nao partida. Um
+combat log existe, e foi bancado. Nada se perdeu.
+
+### O ACHADO: `gain_unblockable` nao servia a NENHUMA carta do banco
+
+A auditoria listou `OP17-055` como NUNCA OFERECIDO. Dos 7 daquela lista, 6 tem
+explicacao legitima (4 exigem a carta em CAMPO e ela ficou na mao; `EB04-059`
+custa 6 numa partida de 5 turnos; `OP17-056` pede restar 5 DON). O setimo nao.
+
+```
+TEXTO : "Up to 1 of your [Rocks.D.Xebec] gains [Unblockable] during this turn."
+PARSE : {"action": "gain_unblockable", "duration": "this_turn"}     <- sem alvo
+```
+
+`gain_unblockable` concede a `card`, a PROPRIA carta do efeito (o comentario do
+executor diz isso). Num EVENT e efeito NULO: vai pro trash e nunca ataca.
+
+Censo de TODAS as acoes de unblockable:
+
+```
+select_grant_unblockable_turn   10   CHARACTER 5, EVENT 5   <- selecao COM filtro
+keyword_unblockable              3   CHARACTER 3            <- nativo
+gain_unblockable                 3   EVENT 3                <- as quebradas
+grant_unblockable_aura_named     1   CHARACTER 1
+```
+
+**Os 3 usuarios de `gain_unblockable` sao Events.** A semantica auto-dirigida
+da acao nao servia corretamente a nenhuma carta.
+
+### CORRECAO DO USUARIO, e ela mudou o fix
+
+Eu tinha concluido "sao 3 Events que concedem ao LIDER nomeado" e ia emitir
+`leader_only` nas tres. Ele apontou: **"OP17-055 pode ser personagem tb"**.
+
+Procede. `[Rocks.D.Xebec]` e NOME DE CARTA, nao o lider -- e o banco tem as
+duas: `OP17-039` (Leader) e `OP17-118` (Character, custo 10, 12000). Com
+`leader_only`, o Character homonimo em campo **nunca seria alvo**. Sao duas
+formas, nao uma:
+
+| carta | texto | alvo |
+|---|---|---|
+| `OP17-055` | "Up to 1 of your **[Rocks.D.Xebec]**" | nome: LIDER **ou** CHARACTER |
+| `OP17-115` | "Your [Charlotte Linlin] **Leader**" | so o lider |
+| `ST29-016` | "Your [Monkey.D.Luffy] **Leader**" | so o lider |
+
+### O que consertou, e o erro de gate que se REPETIU
+
+Reusa `select_grant_unblockable_turn` -- ja existe, ja faz selecao com filtro,
+nenhuma acao nova no motor.
+
+**O ponto decisivo nao era a funcao, era o GATE que a chama.** Ele exigia
+`'type character'` ou o literal `characters`; como nenhuma das tres tem
+substantivo, a funcao **nunca era invocada** e o fallback vencia por omissao.
+E o MESMO erro que o comentario ao lado do gate ja registrava de 19/07
+(*"a gate exigia 'type character' literal, entao a forma sem filtro nunca
+chegava nem a chamar esta funcao"*): o gate foi alargado uma vez e continuou
+estreito para quem nao tem substantivo nenhum.
+
+> **Regra pratica que sai daqui**: ao mexer em qualquer `parse_*`, conferir se
+> o GATE que a chama e tao largo quanto a funcao. Ramo novo dentro de funcao
+> que nao e chamada nao faz nada -- e o teste de parse passa se voce testar a
+> funcao direto, como eu quase fiz.
+
+No motor: `filter_name` no ramo generico (via `name_or_code`), `include_leader`
+casando o lider por NOME, e o ramo `leader_only` passa a CONFERIR o nome --
+sem isso o Event concederia ao lider errado num deck que nao e o dele.
+
+### Validacao
+
+`diff_parser` GANHOU=0 **PERDEU=0** MUDOU=3 (as 3, lidas uma a uma), snapshot
+regerado (0/0/0 depois), `smoke_fast` e `smoke_test` completos passam. Teste
+permanente com 11 checagens, 6 delas CONTROLE, **com execucao real** (lider
+OP17-039 + OP17-118 em campo) -- e o controle FALHA com o motor sabotado.
+
+### Aberto
+
+- **NAO VALIDADO AO VIVO**: a correcao nao rodou em partida. Sem portao SPRT.
+- **CHECKPOINT HUMANO** continua pendente (bloco 889).
+- **Professor que espia** (bloco 888) continua sem teste.
+
 ## 2026-09-24 (889) - PROMOVIDO: o Q de 697.479 alvos vira campeao -- e o guarda-corpo SUBIU (a queda era a regua)
 
 A pedido do usuario, depois do portao corrigido (bloco 888) concluir PROMOVE

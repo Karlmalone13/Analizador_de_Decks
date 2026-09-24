@@ -1,0 +1,33 @@
+{
+  "trigger_card": "OP17-055",
+  "problem": "Achado AO VIVO, na 1a CPU x CPU depois da promocao do Q (partida Rocks.D.Xebec-B x Marshall.D.Teach-BY, 24/09). A auditoria de efeitos listou OP17-055 como 'NUNCA OFERECIDO' -- a acao nao foi nem gerada. Investigando: as 3 cartas do banco inteiro que usam a acao `gain_unblockable` sao EVENTS, e essa acao concede a keyword a `card`, a PROPRIA carta do efeito (o proprio comentario do executor diz: 'la o alvo e sempre card'). Num EVENT isso e efeito NULO -- ele vai pro trash e nunca ataca. Ou seja: a semantica auto-dirigida de `gain_unblockable` nao servia corretamente a NENHUMA carta do banco, e as 3 cartas entregavam nada.",
+  "grammar_family": "Duas formas, as duas identificadas SO pelo nome entre delimitadores, sem o substantivo que o gate exigia: (A) 'Your [Nome] Leader gains [Unblockable]' -- alvo e o LIDER; (B) 'Up to N of your [Nome] gains [Unblockable]' -- alvo e QUALQUER carta sua com aquele nome, LIDER **ou** CHARACTER. A distincao entre A e B foi apontada pelo USUARIO e nao e cosmetica: eu ia tratar as tres como leader_only, e em (B) isso perderia o Character homonimo em campo -- para OP17-055 ('[Rocks.D.Xebec]') existem AS DUAS no banco, OP17-039 (Leader) e OP17-118 (Character custo 10, 12000 power).",
+  "queries": [
+    "censo de TODAS as acoes de unblockable no banco: select_grant_unblockable_turn 10 (CHARACTER 5 + EVENT 5), keyword_unblockable 3 (CHARACTER, nativo), gain_unblockable 3 (EVENT 3 -- as quebradas), grant_unblockable_aura_named 1",
+    "forma (A) 'your [Nome] Leader gains [Unblockable]': 2 cartas (OP17-115, ST29-016), as duas caindo em gain_unblockable",
+    "forma (B) 'up to N of your [Nome] gains [Unblockable]' sem substantivo: 1 carta (OP17-055), tambem em gain_unblockable",
+    "CONTROLE -- a forma que JA funcionava ('up to N of your [...] Characters gains [Unblockable]'): 4 cartas (EB04-024, OP15-047, OP16-095, OP17-084), todas em select_grant_unblockable_turn e que NAO podem mudar",
+    "cartas de nome Rocks.D.Xebec no banco: OP17-039 (LEADER) e OP17-118 (CHARACTER) -- e o que prova que (B) nao e leader_only"
+  ],
+  "cards_found": [
+    "OP17-055",
+    "OP17-115",
+    "ST29-016",
+    "EB04-024",
+    "OP15-047",
+    "OP16-095",
+    "OP17-084"
+  ],
+  "resolution_scope": "global",
+  "decision": "Reusa `select_grant_unblockable_turn`, que JA existe e JA faz selecao com filtro -- nenhuma acao nova no motor (REGRA_SEM_DUPLICACAO). gerar_effects_db.py: duas ramificacoes novas em `parse_select_unblockable_turn` -- (A) emite target='leader_only' + filter_name; (B) emite filter_name + include_leader=True, SEM leader_only. E, decisivo, o GATE que decide se a funcao e CHAMADA foi alargado: ele exigia 'type character' ou o literal 'characters', entao para estas tres a funcao nunca era invocada e o fallback `gain_unblockable` vencia por omissao. decision_engine.py: o ramo generico de `select_grant_unblockable_turn` passa a aceitar `filter_name` (via `name_or_code` de eligible_cards, mesma semantica de substring em nome OU codigo), e `include_leader` passa a casar o lider por NOME quando ha filter_name; o ramo `leader_only` passa a CONFERIR o nome -- sem isso o Event concederia ao lider errado num deck que nao e o dele.",
+  "validated_by": [
+    "diff_parser.py: GANHOU=0, PERDEU=0, MUDOU=3 -- exatamente as 3 cartas, nenhuma colateral, cada uma lida contra o texto oficial",
+    "snapshot regerado depois da validacao; diff seguinte 0/0/0",
+    "smoke_fast.py :: test_event_concede_unblockable_a_carta_nomeada_24_09 -- 11 checagens, das quais 6 sao CONTROLE (as 4 cartas que ja funcionavam, a carta de nome diferente que NAO pode receber, e o lider de nome errado)",
+    "EXECUCAO REAL, nao so parse: com OP17-039 de lider e OP17-118 em campo, o efeito de OP17-055 concede Unblockable a uma carta de nome Rocks.D.Xebec e NAO concede a carta de nome diferente",
+    "CONTROLE QUE PODE FALHAR (regra de metodo do bloco 780): removendo a conferencia de nome do ramo leader_only, a checagem 'lider de nome errado NAO ganha Unblockable' FALHA. Nao e controle cego",
+    "smoke_fast.py completo: 0 falhas. smoke_test.py completo: TODOS OS TESTES PASSARAM",
+    "gerar_dbs.py: 2839 cartas sincronizadas nos dois bancos"
+  ],
+  "notes": "ERRO DE DIAGNOSTICO MEU, corrigido pelo usuario e registrado porque mudou o fix: eu tinha concluido que as 3 cartas eram 'Events que concedem ao LIDER nomeado' e ia emitir leader_only nas tres. O usuario apontou que 'OP17-055 pode ser personagem tb' -- e procede: '[Rocks.D.Xebec]' e NOME DE CARTA, nao o lider, e o banco tem OP17-118 Character com esse nome. Com leader_only, o Character homonimo em campo nunca seria alvo. As outras duas dizem 'Leader' com todas as letras e essas sim sao leader_only. REPETICAO DE UM ERRO JA DOCUMENTADO: o gate que impedia a chamada e o MESMO tipo de bug que o comentario ao lado dele ja registrava de 19/07 ('a gate exigia \"type character\" literal, entao a forma sem filtro nunca chegava nem a chamar esta funcao'). O gate foi alargado uma vez e continuou estreito para quem nao tem substantivo nenhum -- vale conferir, ao mexer em qualquer parse_*, se o GATE que o chama e tao largo quanto a funcao. POR QUE NENHUMA FERRAMENTA PEGAVA: nao e 'efeito nao concluiu' (ele nem era oferecido), nao e 'texto tem gatilho que o banco nao tem' (o gatilho main ESTA la) -- e o ALVO errado, que e exatamente a pendencia ja registrada no TODO ('a auditoria diz se o efeito CONCLUIU e QUAL alvo, mas nao se foi o MELHOR'). NAO VALIDADO AO VIVO: a correcao nao rodou em partida real ainda; o que existe e parse, execucao em teste, PERDEU=0 e as duas suites. Sem portao SPRT, o efeito no resultado de partida e desconhecido."
+}

@@ -103749,7 +103749,7 @@
     "target": "leader_or_character"
    },
    {
-    "action": "gain_unblockable",
+    "action": "select_grant_unblockable_turn",
     "trigger": "main"
    }
   ],
@@ -103774,7 +103774,7 @@
   "trashes_own_life": false,
   "has_rush": false,
   "has_double_attack": false,
-  "has_unblockable": true,
+  "has_unblockable": false,
   "has_banish": false,
   "has_trigger": false
  },
@@ -106638,8 +106638,9 @@
     "target": "self"
    },
    {
-    "action": "gain_unblockable",
-    "trigger": "main"
+    "action": "select_grant_unblockable_turn",
+    "trigger": "main",
+    "target": "leader_only"
    }
   ],
   "referenced_types": [],
@@ -106663,7 +106664,7 @@
   "trashes_own_life": false,
   "has_rush": false,
   "has_double_attack": false,
-  "has_unblockable": true,
+  "has_unblockable": false,
   "has_banish": false,
   "has_trigger": false
  },
@@ -129769,8 +129770,9 @@
     "target": "leader"
    },
    {
-    "action": "gain_unblockable",
-    "trigger": "main"
+    "action": "select_grant_unblockable_turn",
+    "trigger": "main",
+    "target": "leader_only"
    }
   ],
   "referenced_types": [],
@@ -129794,7 +129796,7 @@
   "trashes_own_life": false,
   "has_rush": false,
   "has_double_attack": false,
-  "has_unblockable": true,
+  "has_unblockable": false,
   "has_banish": false,
   "has_trigger": false
  },

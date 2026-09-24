@@ -3372,6 +3372,49 @@ def parse_select_unblockable_turn(text):
         steps.append({'action': 'select_grant_unblockable_turn', 'target': 'leader_only'})
         return steps
 
+    # ── EVENT que concede [Unblockable] a uma carta NOMEADA (achado ao vivo
+    # 24/09/2026, bloco 890, na 1a CPU x CPU depois da promocao) ────────────
+    #
+    # As 3 cartas do banco com `gain_unblockable` sao EVENTS -- e aquela acao
+    # concede a `card`, a PROPRIA carta do efeito. Num Event isso e efeito
+    # NULO: ele vai pro trash e nunca ataca. A semantica auto-dirigida de
+    # `gain_unblockable` nao servia corretamente a NENHUMA carta do banco.
+    #
+    # Caiam aqui porque o ramo `m_kw_direct` abaixo exige o substantivo
+    # literal "Characters", e nenhuma das tres o tem: duas dizem "Leader" e
+    # a terceira traz so o nome entre colchetes.
+    #
+    # Sao DUAS formas, nao uma -- distincao apontada pelo usuario e que muda
+    # o alvo:
+    #
+    #   (A) "Your [Nome] Leader gains [Unblockable]"  -> so o LIDER.
+    #       OP17-115 (Charlotte Linlin), ST29-016 (Monkey.D.Luffy).
+    #
+    #   (B) "Up to N of your [Nome] gains [Unblockable]" -> QUALQUER carta
+    #       sua com esse nome, LIDER **ou** CHARACTER. OP17-055 diz
+    #       "[Rocks.D.Xebec]" e existem as duas no banco: OP17-039 (Leader)
+    #       e OP17-118 (Character custo 10). Tratar como `leader_only`
+    #       perderia o Character em campo -- era o erro que eu ia cometer.
+    #
+    # Reusa `select_grant_unblockable_turn`, que ja existe e ja faz selecao
+    # com filtro (REGRA_SEM_DUPLICACAO -- nenhuma acao nova no motor).
+    m_lider_nomeado = re.search(
+        r'your\s+[\[{"]([a-z][a-z0-9 .-]+?)[\]}"]\s*leader\s+gains?\s+\[unblockable\]', t)
+    if m_lider_nomeado:
+        steps.append({'action': 'select_grant_unblockable_turn',
+                      'target': 'leader_only',
+                      'filter_name': m_lider_nomeado.group(1).strip()})
+        return steps
+
+    m_nome_sem_substantivo = re.search(
+        r'up to\s+(\d+)\s+of your\s+[\[{"]([a-z][a-z0-9 .-]+?)[\]}"]\s+gains?\s+\[unblockable\]', t)
+    if m_nome_sem_substantivo:
+        steps.append({'action': 'select_grant_unblockable_turn',
+                      'count': int(m_nome_sem_substantivo.group(1)),
+                      'filter_name': m_nome_sem_substantivo.group(2).strip(),
+                      'include_leader': True})
+        return steps
+
     # OP12-016 (Rayleigh): "your opponent cannot activate [Blocker] when
     # the card given these DON!! cards attacks during this turn" -- alvo
     # e QUEM RECEBEU o DON!! do custo (nao um step de selecao proprio).
@@ -7910,7 +7953,18 @@ def parse_block(block_text, trigger_name):
         # nao num step de efeito). Achado 17/07.
         steps.extend(parse_select_unblockable_turn(t))
     elif ('[unblockable]' in t and 'gain' in t
-            and ('type character' in t or re.search(r'up to \d+ of your characters? gains?', t))):
+            and ('type character' in t
+                 or re.search(r'up to \d+ of your characters? gains?', t)
+                 # ALARGADO 24/09 (bloco 890) -- e o MESMO erro que o
+                 # comentario abaixo ja registra de 19/07: o gate exigia um
+                 # substantivo literal, entao a forma que nao o tem nunca
+                 # chegava nem a CHAMAR a funcao, e caia no fallback
+                 # `gain_unblockable` (alvo = a propria carta = efeito nulo
+                 # num Event). Duas formas, as duas so com o NOME:
+                 #   "Your [Nome] Leader gains [Unblockable]"        (2 cartas)
+                 #   "Up to N of your [Nome] gains [Unblockable]"    (1 carta)
+                 or re.search(r'your\s+[\[{"]([a-z][a-z0-9 .-]+?)[\]}"]\s*leader\s+gains?\s+\[unblockable\]', t)
+                 or re.search(r'up to\s+(\d+)\s+of your\s+[\[{"]([a-z][a-z0-9 .-]+?)[\]}"]\s+gains?\s+\[unblockable\]', t))):
         # EB04-024: forma DIRETA da keyword ("gains [Unblockable]"), sem
         # a prose "opponent cannot activate Blocker" -- mesma semantica
         # (regra 10-1-7-1), so redacao diferente. Achado 17/07. Alargado

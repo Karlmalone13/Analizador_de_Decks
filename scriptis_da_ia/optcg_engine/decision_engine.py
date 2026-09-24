@@ -11346,7 +11346,22 @@ class EffectExecutor:
                 eligible_cards,
             )
 
+            def _bate_nome(c, nome):
+                # Mesma semantica de `name_or_code` em eligible_cards:
+                # substring, minusculas, nome OU codigo.
+                nome = (nome or '').lower()
+                if not nome:
+                    return True
+                return (nome in str(getattr(c, 'name', '')).lower()
+                        or nome in str(getattr(c, 'code', '')).lower())
+
             if step.get('target') == 'leader_only':
+                # `filter_name` (bloco 890): "Your [Charlotte Linlin] Leader
+                # gains [Unblockable]" so vale se o lider for MESMO aquele. O
+                # Event pode estar num deck cujo lider e outro -- sem esta
+                # conferencia o efeito seria concedido ao lider errado.
+                if not _bate_nome(me.leader, step.get('filter_name')):
+                    return ''
                 me.leader.unblockable_this_turn = True
                 return f'{me.leader.name[:18]} ganhou Unblockable este turno'
             if step.get('target') == 'selected':
@@ -11375,17 +11390,27 @@ class EffectExecutor:
                 alvo.unblockable_this_turn = True
                 return f'{alvo.name[:18]} (recebeu o DON!!) ganhou Unblockable este turno'
             filter_type = step.get('filter_type', '')
+            # `filter_name` (bloco 890): "Up to 1 of your [Rocks.D.Xebec]
+            # gains [Unblockable]" -- o alvo e o NOME, nao o tipo, e abrange
+            # LIDER **e** CHARACTER (existem OP17-039 Leader e OP17-118
+            # Character com esse nome). Tratar como leader_only perderia o
+            # Character em campo.
+            filter_name = step.get('filter_name', '')
             candidatos = eligible_cards(
                 me.field_chars,
                 filter_text=filter_type,
+                name_or_code=filter_name,
                 power_gte=step.get('power_gte'),
                 # color: "up to N of your black {Tipo} type Characters
                 # gains [Unblockable]" (achado 19/07, OP16-095, confirmado
                 # por foto do usuario).
                 color=step.get('color', ''),
             )
-            if step.get('include_leader') and card_matches_filter(me.leader, filter_type):
-                candidatos.append(me.leader)
+            if step.get('include_leader'):
+                _ok = (_bate_nome(me.leader, filter_name) if filter_name
+                       else card_matches_filter(me.leader, filter_type))
+                if _ok:
+                    candidatos.append(me.leader)
             if not candidatos:
                 return ''
             alvo = self._pick_effect_target(candidatos)
