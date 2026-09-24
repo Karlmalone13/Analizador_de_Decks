@@ -1027,5 +1027,16 @@
       }
     }
   ],
-  "checkpoint_humano_pendente": false
+  "checkpoint_humano_pendente": true,
+  "checkpoint_desde": "2026-09-24T14:05:33",
+  "promocoes_avulsas": [
+    {
+      "quando": "2026-09-24T14:05:33",
+      "bloco": 888,
+      "de": "68ea2c639b3a",
+      "para": "27516094c242",
+      "portao": "SPRT p1=0.58, 3 seeds: 119x82 / 131x94 / 172x129 (59,2% / 58,2% / 57,1%), llr +3.365 / +3.054 / +3.037",
+      "nota": "promovido fora do ciclo, a pedido do usuario, depois que o portao corrigido concluiu PROMOVE nas 3 seeds"
+    }
+  ]
 }

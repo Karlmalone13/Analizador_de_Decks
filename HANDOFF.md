@@ -1,5 +1,73 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-09-24 (889) - PROMOVIDO: o Q de 697.479 alvos vira campeao -- e o guarda-corpo SUBIU (a queda era a regua)
+
+A pedido do usuario, depois do portao corrigido (bloco 888) concluir PROMOVE
+nas tres seeds. Promocao feita com o MESMO mecanismo do `ciclo.py` (nao ha
+caminho novo): `_atualiza_pool_adversarios` -> copia -> checkpoint humano.
+
+```
+campeao ANTES : 68ea2c639b3a  (539.570 alvos)
+campeao DEPOIS: 27516094c242  (697.479 alvos, familia rede, 101 features)
+```
+
+O campeao antigo ficou preservado em `metrics/pool_adversarios/` (gitignored),
+entao segue disponivel como adversario de geracao passada.
+
+`checkpoint_humano_pendente = True` -- **o projeto pede partida contra o
+usuario agora.** E a unica defesa contra deriva de auto-jogo, e foi ele quem
+pediu ("de vez em quando a gente testa o bot contra mim").
+
+### O guarda-corpo, e a armadilha de medicao que quase virou achado falso
+
+Rodado o `decision_quality_full.py` no campeao novo: agregado **36,5%**. Contra
+a linha de base historica do `CLAUDE.md` (49,3%) isso parece **-12,8pp** -- uma
+queda grande, que a regra manda escalar.
+
+**Nao e.** Os 49,3% foram medidos noutra configuracao (antes do Q decidir
+sozinho, antes do shortlist do bloco 868). Regua diferente. Medi entao o
+guarda-corpo do campeao ANTIGO com o codigo de HOJE -- comparacao legitima,
+trocando o campeao e restaurando no `finally` com conferencia de hash (mesmo
+padrao do `confirma_gen4.py`):
+
+| metrica | antigo | NOVO | delta |
+|---|---|---|---|
+| play | 27,6 | 28,1 | +0,5 |
+| attack_quem | 43,5 | 47,6 | +4,1 |
+| **activate** | 24,0 | **10,7** | **-13,3** |
+| attach_don | 9,9 | 9,4 | -0,5 |
+| blocker | 88,2 | 88,2 | 0 |
+| blocker_carta | 81,5 | 81,5 | 0 |
+| counter | 65,8 | 65,8 | 0 |
+| counter_cartas | 48,7 | 48,7 | 0 |
+| counter_ordem | 15,9 | 15,9 | 0 |
+| **acerto_por_jogada** | **32,9** | **36,5** | **+3,6** |
+
+**A promocao SUBIU a semelhanca (+3,6pp), nao baixou.** E os dois modelos ficam
+bem abaixo de 49,3% com o codigo de hoje -- entao aquele numero **nao e
+comparavel e nao deve mais ser citado como referencia do guarda-corpo**. A
+linha de base nova, mesma regua, e 32,9%.
+
+**Checagem de sanidade que da confianca na medicao**: as cinco categorias que o
+Q **nao** decide (blocker, blocker_carta, counter, counter_cartas,
+counter_ordem) sairam **identicas** nos dois. Se tivessem mudado, a medicao
+estaria pegando ruido em vez do efeito da troca.
+
+### ALARME registrado, sem veredito: `activate` 24,0 -> 10,7
+
+E a unica queda grande, e vai contra o agregado que subiu. A regra do projeto e
+explicita: reportar sem veredito automatico, e so escalar se vier junto de
+outra evidencia de deriva. **Nao ha outra evidencia hoje** -- o portao deu
+PROMOVE em 3 seeds e o agregado subiu. Fica anotado como o primeiro lugar a
+olhar se a partida contra o humano correr mal.
+
+### Aberto
+
+- **CHECKPOINT HUMANO PENDENTE** -- e o proximo passo que o projeto pede.
+- **Professor que espia** (bloco 888) continua sem teste.
+- **AS-IS pos-promocao** nao rodado: a promocao nao muda tempo de partida, mas
+  se a proxima sessao for mexer em desempenho, tem que medir antes.
+
 ## 2026-09-24 (888) - O portao nao conseguia PROMOVER: 9 ciclos "inconclusivos" eram DOIS defeitos do teste, nao do modelo
 
 Pedido do usuario: treino que nao demore, que jogue com a mesma qualidade do

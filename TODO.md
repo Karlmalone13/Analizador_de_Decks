@@ -1,6 +1,28 @@
 # TODO — Analisador de Decks OPTCG
 
-**Última atualização:** 24 de setembro de 2026 (bloco 888)
+**Última atualização:** 24 de setembro de 2026 (bloco 889)
+
+> **PROMOVIDO -- o Q de 697.479 alvos e o campeao (24/09/2026, bloco 889)**
+>
+> `68ea2c639b3a` -> `27516094c242`. Mesmo mecanismo do `ciclo.py`; campeao
+> antigo preservado em `metrics/pool_adversarios/` (gitignored).
+>
+> **CHECKPOINT HUMANO PENDENTE = True.** O projeto pede partida contra o
+> usuario agora -- e a unica defesa contra deriva de auto-jogo.
+>
+> **GUARDA-CORPO SUBIU: 32,9% -> 36,5% (+3,6pp).** E a leitura so ficou certa
+> porque a comparacao foi refeita na MESMA regua: contra os 49,3% historicos
+> do `CLAUDE.md` pareceria **-12,8pp**, mas aquele numero e de outra
+> configuracao (antes do Q decidir sozinho, antes do bloco 868). **Nao citar
+> mais 49,3% como referencia do guarda-corpo -- a linha de base nova e 32,9%.**
+>
+> Sanidade: as 5 categorias que o Q NAO decide (blocker, blocker_carta,
+> counter, counter_cartas, counter_ordem) sairam identicas nos dois modelos.
+>
+> **ALARME sem veredito -- `activate` 24,0 -> 10,7 (-13,3pp)**, unica queda
+> grande e contra o agregado que subiu. A regra manda so escalar com outra
+> evidencia de deriva, e nao ha: portao PROMOVE em 3 seeds, agregado subiu.
+> Primeiro lugar a olhar se a partida contra o humano correr mal.
 
 > **O PORTAO NAO CONSEGUIA PROMOVER -- os 9 ciclos "inconclusivos" eram o
 > TESTE, nao o modelo (24/09/2026, bloco 888)**
