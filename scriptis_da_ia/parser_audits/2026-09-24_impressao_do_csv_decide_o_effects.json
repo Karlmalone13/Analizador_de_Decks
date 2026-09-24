@@ -1,0 +1,38 @@
+{
+  "trigger_card": "P-088",
+  "problem": "Defeito de ENTRADA, nao de gramatica: o CSV tem varias linhas por codigo (foil, full art, reprint, promo) e `generate_effects_db` escolhia a primeira as cegas com `drop_duplicates(subset='code', keep='first')`. Quando a primeira transcricao NAO tem uma clausula inteira que outra impressao do MESMO codigo tem -- em 8 de 8 casos o bloco `[Trigger]` -- o gatilho nunca entrava no banco. Gatilho ausente e acao que nunca vira candidata: ela nao existe para o modelo, e nenhum corpus maior, modelo melhor ou exploracao a alcanca, porque exploracao tambem sorteia DENTRO da lista gerada. E a mesma CLASSE do lote de 12 do bloco 870/881, com CAUSA RAIZ diferente: la o texto da primeira linha estava num dialeto ruim e foi normalizado; aqui o texto da primeira linha esta CORRETO, so nao tem a clausula. Nenhuma normalizacao alcanca o que nao foi transcrito.",
+  "grammar_family": "Nenhuma -- o parser nao foi tocado. Nenhum `parse_*` mudou, nenhum regex mudou. O que mudou foi QUAL das linhas do CSV alimenta o parser. Por isso o defeito era invisivel a toda ferramenta do projeto: `diff_parser` compara parser contra snapshot (os dois liam a mesma linha pobre) e a auditoria de efeitos so ve o que dispara.",
+  "queries": [
+    "censo global: 924 codigos tem mais de uma linha no cards_rows.csv; 465 tem card_text divergente entre as linhas",
+    "dos 465, os gatilhos PARSEADOS divergem em 27 codigos -- os outros 438 divergem so em pontuacao, quebra de linha ou o rodape 'Disclaimer:'",
+    "controle sobre o rodape: 219 linhas tem 'Disclaimer:' (203 coladas sem espaco na frase anterior) e em 0 delas retirar o rodape muda o parse -- confirmado que nao e fonte de divergencia, e por isso NAO foi mexido",
+    "dos 27, a primeira linha ja era a melhor em 19; 8 perdiam gatilho; 1 (EB04-044) nao tem linha dominante",
+    "medido DEPOIS do pull do bloco 881: a normalizacao das promos resolveu 4 dos 12 originais por outra via, e estes 8 seguiam abertos -- causa raiz diferente, fix diferente"
+  ],
+  "cards_found": [
+    "EB04-028",
+    "OP01-029",
+    "OP03-110",
+    "OP06-056",
+    "P-014",
+    "P-057",
+    "P-058",
+    "P-088",
+    "EB04-044",
+    "OP06-035",
+    "OP12-037"
+  ],
+  "resolution_scope": "global",
+  "decision": "gerar_effects_db.py. `drop_duplicates(keep='first')` sai; `generate_effects_db` passa a agrupar por codigo e chamar `_efeito_da_impressao_mais_completa(grupo)`, que parseia TODAS as impressoes e devolve a que e SUPERCONJUNTO das outras em gatilhos. Regra CONSERVADORA de proposito: sem linha dominante mantem a primeira, o comportamento antigo -- divergencia de CONTEUDO entre transcricoes nao se resolve pegando a maior, e fundir as duas criaria um efeito que nenhuma impressao declara. Vale SO para `effects`: nome, custo, poder, cor e sub_types continuam vindo da primeira linha, porque a impressao com texto mais completo costuma ser a reimpressao, cujo card_name carrega sufixo de arte ('Jinbe - P-063 (Pirate Foil)') e regrediria o resto do banco. O motor NAO foi tocado: os 8 gatilhos usam acoes que ele ja executa.",
+  "validated_by": [
+    "diff_parser.py: GANHOU=1 (P-088, de effects vazio), PERDEU=0, MUDOU=9. As 9 lidas uma a uma contra o texto oficial da carta -- 8 sao o [Trigger] destravado e conferem exatamente com o texto; 2 (OP06-035, OP12-037) sao drift PRE-EXISTENTE, nao deste fix (ver notes)",
+    "contagem de codigos identica antes e depois (2837 dos dois lados, 2839 com os 2 aliases do simulador) -- a troca de drop_duplicates por groupby nao perdeu nem criou codigo",
+    "diff de CAMPO: so `effects` mudou. name/cost/power/color/sub_types identicos em 2837 codigos -- o efeito colateral de puxar metadado da reimpressao foi medido e eliminado, nao suposto",
+    "snapshot_parser.py regerado depois da validacao; diff seguinte 0/0/0",
+    "smoke_fast.py :: test_impressao_mais_completa_decide_o_effects_24_09 -- 7 checagens, das quais 4 sao CONTROLE (impressao unica, impressoes identicas, sem-dominancia nos dois sentidos, e nome sem sufixo de arte)",
+    "CONTROLE QUE PODE FALHAR, exigido pela regra de metodo do bloco 780: com a funcao sabotada para devolver sempre a primeira impressao, o teste FALHA. Nao e controle cego",
+    "smoke_fast.py completo: 0 falhas. smoke_test.py completo: TODOS OS TESTES PASSARAM",
+    "gerar_dbs.py: 2839 cartas sincronizadas nos dois bancos"
+  ],
+  "notes": "ERRO DE PROCESSO MEU, registrado porque custou trabalho: comecei a sessao rodando `corpus_git.py status`, que disse 'corpus em dia', e tratei isso como 'estou sincronizado'. Ele confere o CORPUS, nao o GIT -- a branch estava 31 commits atras, e o bloco 881 (outra maquina) ja tinha resolvido 11 dos 12 cartoes que eu estava atacando. A REGRA_DUAS_MAQUINAS manda `sincroniza.py chega`, que faz o pull; `corpus_git.py status` NAO substitui. Refiz a medicao sobre a base nova e o ganho caiu de 12 para 8 codigos -- os 8 sobrevivem porque sao causa raiz diferente. DRIFT PRE-EXISTENTE ACHADO DE PASSAGEM, e nao e deste fix: OP06-035 e OP12-037 mudam de conteudo so por REGERAR o banco. O commit 15dc604 ('rest_opp_character or_rest_opp_don gastava so parte do orcamento') alterou o parser e o card_effects_db.json commitado nunca foi regerado para essas 2 cartas -- o fix estava PELA METADE, o parser tinha e o motor nao via. Confirmado isolando: rodando a logica ANTIGA (keep='first') contra o JSON commitado, as mesmas 2 cartas divergem. ABERTO, NAO CORRIGIDO: (a) EB04-044, unico codigo sem linha dominante -- uma transcricao diz [Your Turn] passive e outra diz [On Play], divergencia real de conteudo que precisa da carta oficial para decidir, nao de regra de escolha; (b) 4 cartas (OP07-047, OP08-041, P-074, P-081) tem 'return this Character to the owner's hand' ANTES do ':' e nenhuma gera `costs` -- o bounce entra como step, entao o motor trata um CUSTO OPCIONAL como efeito obrigatorio, contra a regra dos dois-pontos; forma diferente, fix proprio, nao entrou aqui. NAO VALIDADO AO VIVO: nenhuma das 8 cartas rodou em partida real. Sem portao SPRT, o efeito no resultado de partida e desconhecido -- o que esta provado e que 8 acoes legais passaram a EXISTIR para o modelo, nao que ele joga melhor com elas."
+}

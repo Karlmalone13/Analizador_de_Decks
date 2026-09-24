@@ -1,6 +1,46 @@
 # TODO — Analisador de Decks OPTCG
 
-**Última atualização:** 21 de setembro de 2026 (bloco 885)
+**Última atualização:** 24 de setembro de 2026 (bloco 886)
+
+> **A IMPRESSAO DO CSV DECIDIA O `effects` -- 8 cartas perdiam o [Trigger]
+> (24/09/2026, bloco 886)**. Mesma CLASSE do lote de 12 (blocos 870/881), causa
+> raiz diferente: **o parser nao foi tocado**, mudou QUAL linha do CSV o
+> alimenta. `drop_duplicates(keep='first')` pegava a primeira impressao as
+> cegas; quando ela nao tem uma clausula que outra impressao do mesmo codigo
+> tem, o gatilho nunca entrava no banco -- e acao que nao vira candidata **nao
+> existe para o modelo**.
+>
+> Censo: 924 codigos com >1 linha, 465 com texto divergente, **27 em que os
+> gatilhos parseados divergem** -- 19 ja pegavam a melhor, **8 perdiam**, 1 sem
+> linha dominante.
+>
+> **FECHOU**: `EB04-028` `OP01-029` `OP03-110` `OP06-056` `P-014` `P-057`
+> `P-058` `P-088` (esta saiu de `effects` vazio). Regra conservadora (so troca
+> com superconjunto), so para `effects` -- metadado segue na 1a linha, medido
+> por campo. `diff_parser` PERDEU=0 com as 9 mudancas lidas uma a uma;
+> `smoke_fast` + `smoke_test` completos passam; teste permanente com 4
+> controles, e o controle **falha** com a funcao sabotada.
+>
+> **ABERTO -- custo lido como efeito, contra a regra dos dois-pontos**:
+> `OP07-047` `OP08-041` `P-074` `P-081` tem `return this Character to the
+> owner's hand` antes do `:` e **nenhuma gera `costs`**. O motor trata custo
+> OPCIONAL como efeito obrigatorio. Forma diferente, fix proprio.
+>
+> **ABERTO -- `EB04-044`**: unico sem linha dominante (uma transcricao diz
+> `[Your Turn]` passive, outra `[On Play]`). Precisa da carta oficial.
+>
+> **ACHADO DE PASSAGEM -- fix pela metade ja no repo**: `OP06-035` e `OP12-037`
+> mudam so por REGERAR o banco. O commit `15dc604` (`or_rest_opp_don`) alterou o
+> parser e o JSON commitado nunca foi regerado: o parser tinha, **o motor nao
+> via**. Corrigido de brinde aqui.
+>
+> **ABERTO -- NADA rodou ao vivo**, sem portao SPRT. Provado que 8 acoes legais
+> passaram a EXISTIR para o modelo, nao que o bot joga melhor com elas.
+>
+> **ERRO DE PROCESSO A NAO REPETIR**: `corpus_git.py status` confere o CORPUS,
+> **nao o GIT**. Confiei nele e trabalhei 31 commits atras, refazendo 11 dos 12
+> cartoes que o bloco 881 ja tinha fechado. Ao sentar na maquina:
+> `python sincroniza.py chega`.
 
 > **MEDIDO (bloco 885): mais -14,7% no tempo de self-play (0,34s -> 0,29s/
 > partida, `as_is.py`)**. 3 sugestoes genericas de velocidade em CPU

@@ -10723,19 +10723,62 @@ def _promove_alvo_nomeado_pro_lider(result: dict, texto: str) -> None:
 # Gerador principal
 # ===========================================================================
 
+def _efeito_da_impressao_mais_completa(grupo):
+    """Entre as impressoes do MESMO codigo, devolve o `effects` da transcricao
+    mais completa.
+
+    O CSV traz varias linhas por carta (foil, full art, reprint, promo). O
+    texto de REGRAS e o mesmo em todas -- o que muda e a transcricao, e ha
+    linhas a que falta uma clausula inteira que outra impressao tem (quase
+    sempre o `[Trigger]`). Pegar a primeira as cegas
+    (`drop_duplicates(keep='first')`) fazia o banco herdar a mais pobre, e a
+    acao simplesmente nao existia para o modelo.
+
+    Isto e classe diferente do dialeto ruim das promos (bloco 881, que
+    normalizou o TEXTO): aqui o texto da primeira linha esta correto, so nao
+    tem a clausula. Nenhuma normalizacao alcanca o que nao foi transcrito.
+
+    Regra CONSERVADORA: so troca quando uma linha e SUPERCONJUNTO de todas as
+    outras em gatilhos parseados. Sem linha dominante, mantem a primeira --
+    divergencia de CONTEUDO entre transcricoes nao se resolve pegando a maior.
+
+    Vale SO para `effects`. Nome, custo, poder, cor e sub_types continuam
+    vindo da primeira linha: a impressao com texto mais completo costuma ser
+    a reimpressao, cujo `card_name` carrega sufixo de arte ("Jinbe - P-063
+    (Pirate Foil)") e regrediria o resto do banco.
+    """
+    card_type = str(grupo.iloc[0].get('card_type') or '').upper()
+    efeitos = [
+        parse_card_effect(str(row.get('card_text') or ''), card_type)
+        for _, row in grupo.iterrows()
+    ]
+
+    if len(efeitos) == 1:
+        return efeitos[0]
+
+    uniao = set()
+    for ef in efeitos:
+        uniao |= set(ef.keys())
+
+    for ef in efeitos:
+        if set(ef.keys()) == uniao:
+            return ef
+
+    return efeitos[0]
+
+
 def generate_effects_db(csv_path):
     df = pd.read_csv(csv_path)
     df['code'] = df['card_set_id'].fillna('').astype(str).str.split('_').str[0]
-    df_unique = df.drop_duplicates(subset='code', keep='first')
 
     db = {}
 
-    for _, row in df_unique.iterrows():
-        code = str(row['code']).strip()
+    for code, grupo in df.groupby('code', sort=False):
+        code = str(code).strip()
         if not code or code == 'nan':
             continue
 
-        card_text = str(row.get('card_text') or '')
+        row = grupo.iloc[0]
         card_type = str(row.get('card_type') or '').upper()
 
         try:
@@ -10764,7 +10807,8 @@ def generate_effects_db(csv_path):
             'color':     str(row.get('card_color') or ''),
             'sub_types': str(row.get('sub_types') or ''),
             'attribute': attribute,
-            'effects':   _resolve_self_only(parse_card_effect(card_text, card_type), code),
+            'effects':   _resolve_self_only(
+                _efeito_da_impressao_mais_completa(grupo), code),
         }
 
     return db

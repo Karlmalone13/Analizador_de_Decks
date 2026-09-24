@@ -6845,6 +6845,16 @@
     "sub_types": "Navy",
     "attribute": "",
     "effects": {
+      "trigger": {
+        "steps": [
+          {
+            "action": "bounce",
+            "count": 1,
+            "target": "opp_character",
+            "cost_lte": 5
+          }
+        ]
+      },
       "main": {
         "steps": [
           {
@@ -8869,6 +8879,16 @@
     "sub_types": "Straw Hat Crew",
     "attribute": "",
     "effects": {
+      "trigger": {
+        "steps": [
+          {
+            "action": "buff_power",
+            "amount": 1000,
+            "target": "leader_or_character",
+            "duration": "this_turn"
+          }
+        ]
+      },
       "counter": {
         "steps": [
           {
@@ -17768,6 +17788,21 @@
             "source": "life_top_or_bottom"
           }
         ]
+      },
+      "trigger": {
+        "steps": [
+          {
+            "action": "play_card",
+            "count": 1,
+            "source": "self"
+          }
+        ],
+        "costs": [
+          {
+            "type": "trash_from_hand",
+            "count": 1
+          }
+        ]
       }
     }
   },
@@ -26485,7 +26520,8 @@
         "steps": [
           {
             "action": "rest_opp_character",
-            "count": 2
+            "count": 2,
+            "or_rest_opp_don": true
           },
           {
             "action": "life_to_hand",
@@ -27053,6 +27089,13 @@
     "sub_types": "Navy",
     "attribute": "",
     "effects": {
+      "trigger": {
+        "steps": [
+          {
+            "action": "activate_main_effect"
+          }
+        ]
+      },
       "main": {
         "steps": [
           {
@@ -48061,7 +48104,8 @@
         "steps": [
           {
             "action": "rest_opp_character",
-            "count": 2
+            "count": 2,
+            "or_rest_opp_don": true
           }
         ],
         "costs": [
@@ -70144,6 +70188,15 @@
     "sub_types": "FILM/Navy",
     "attribute": "Strike",
     "effects": {
+      "trigger": {
+        "steps": [
+          {
+            "action": "play_card",
+            "count": 1,
+            "source": "self"
+          }
+        ]
+      },
       "passive": {
         "steps": [
           {
@@ -71105,6 +71158,13 @@
     "sub_types": "Music/FILM",
     "attribute": "",
     "effects": {
+      "trigger": {
+        "steps": [
+          {
+            "action": "activate_main_effect"
+          }
+        ]
+      },
       "main": {
         "steps": [
           {
@@ -71130,6 +71190,16 @@
     "sub_types": "Music/FILM",
     "attribute": "",
     "effects": {
+      "trigger": {
+        "steps": [
+          {
+            "action": "set_active",
+            "count": 99,
+            "target": "own_character",
+            "filter_type": "film"
+          }
+        ]
+      },
       "main": {
         "steps": [
           {
@@ -71896,7 +71966,21 @@
     "color": "Yellow",
     "sub_types": "Supernovas/Heart Pirates",
     "attribute": "Slash",
-    "effects": {}
+    "effects": {
+      "trigger": {
+        "steps": [
+          {
+            "action": "play_card",
+            "count": 1,
+            "source": "self"
+          }
+        ],
+        "conditions": {
+          "total_life_lte": 5,
+          "leader_type": "supernovas"
+        }
+      }
+    }
   },
   "P-089": {
     "name": "Tony Tony.Chopper",

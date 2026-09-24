@@ -4469,6 +4469,16 @@
      "power_lte": 10000
     }
    ]
+  },
+  "trigger": {
+   "steps": [
+    {
+     "action": "bounce",
+     "cost_lte": 5,
+     "count": 1,
+     "target": "opp_character"
+    }
+   ]
   }
  },
  "EB04-029": {
@@ -5809,6 +5819,16 @@
      },
      "duration": "this_turn",
      "target": "selected"
+    }
+   ]
+  },
+  "trigger": {
+   "steps": [
+    {
+     "action": "buff_power",
+     "amount": 1000,
+     "duration": "this_turn",
+     "target": "leader_or_character"
     }
    ]
   }
@@ -11123,6 +11143,21 @@
   }
  },
  "OP03-110": {
+  "trigger": {
+   "costs": [
+    {
+     "count": 1,
+     "type": "trash_from_hand"
+    }
+   ],
+   "steps": [
+    {
+     "action": "play_card",
+     "count": 1,
+     "source": "self"
+    }
+   ]
+  },
   "when_attacking": {
    "costs": [
     {
@@ -16736,7 +16771,8 @@
    "steps": [
     {
      "action": "rest_opp_character",
-     "count": 2
+     "count": 2,
+     "or_rest_opp_don": true
     },
     {
      "action": "life_to_hand",
@@ -17079,6 +17115,13 @@
      "action": "place_opp_character_bottom_deck",
      "cost_lte": 2,
      "count": 1
+    }
+   ]
+  },
+  "trigger": {
+   "steps": [
+    {
+     "action": "activate_main_effect"
     }
    ]
   }
@@ -30479,7 +30522,8 @@
    "steps": [
     {
      "action": "rest_opp_character",
-     "count": 2
+     "count": 2,
+     "or_rest_opp_don": true
     }
    ]
   }
@@ -44939,6 +44983,15 @@
      "action": "keyword_blocker"
     }
    ]
+  },
+  "trigger": {
+   "steps": [
+    {
+     "action": "play_card",
+     "count": 1,
+     "source": "self"
+    }
+   ]
   }
  },
  "P-015": {},
@@ -45432,6 +45485,13 @@
      "count": 2
     }
    ]
+  },
+  "trigger": {
+   "steps": [
+    {
+     "action": "activate_main_effect"
+    }
+   ]
   }
  },
  "P-058": {
@@ -45446,6 +45506,16 @@
      "filter_type": "film",
      "target": "own_character",
      "timing": "end_of_turn"
+    }
+   ]
+  },
+  "trigger": {
+   "steps": [
+    {
+     "action": "set_active",
+     "count": 99,
+     "filter_type": "film",
+     "target": "own_character"
     }
    ]
   }
@@ -45871,7 +45941,21 @@
   }
  },
  "P-087": {},
- "P-088": {},
+ "P-088": {
+  "trigger": {
+   "conditions": {
+    "leader_type": "supernovas",
+    "total_life_lte": 5
+   },
+   "steps": [
+    {
+     "action": "play_card",
+     "count": 1,
+     "source": "self"
+    }
+   ]
+  }
+ },
  "P-089": {},
  "P-090": {
   "on_ko": {

@@ -10713,6 +10713,7 @@ def main() -> int:
     test_forward_rapido_bate_com_predict_do_sklearn_21_09()
     test_clone_preserva_once_per_turn_bloco_788()
     test_modelo_decide_o_bloqueio_bloco_792()
+    test_impressao_mais_completa_decide_o_effects_24_09()
     test_dialeto_de_transcricao_das_promos_bloco_871()
     test_quatro_formas_de_gatilho_ausente_bloco_871()
     test_coleta_escolhe_a_partida_NOVA_da_sessao_bloco_871()
@@ -16176,6 +16177,78 @@ def test_modelo_decide_o_bloqueio_bloco_792() -> None:
         check("sem modelo, decidir bloqueio nao quebra (degradacao segura)", False)
     finally:
         _de_mod.MODELO_ORDENA_PATH = _antes
+
+
+def test_impressao_mais_completa_decide_o_effects_24_09() -> None:
+    """A escolha da impressao no CSV: dominancia, e nada alem dela.
+
+    `drop_duplicates(keep='first')` pegava a primeira linha as cegas. Quando a
+    primeira transcricao nao tinha a clausula `[Trigger]` que outra impressao
+    do MESMO codigo tem, o gatilho nao existia no banco -- e uma acao que nunca
+    vira candidata nao existe para o modelo.
+
+    Metade das checagens sao CONTROLE: tem que provar que a regra NAO troca a
+    linha quando nao deve.
+    """
+    import pandas as pd
+    from gerar_effects_db import _efeito_da_impressao_mais_completa
+
+    def grupo(*textos):
+        return pd.DataFrame(
+            [{'card_text': t, 'card_type': 'CHARACTER'} for t in textos]
+        )
+
+    POBRE = '[Main] Draw 1 card.'
+    RICA = '[Main] Draw 1 card.' + chr(10) + '[Trigger] Draw 1 card.'
+
+    # 1. a linha pobre vem primeiro: tem que escolher a rica mesmo assim
+    ef = _efeito_da_impressao_mais_completa(grupo(POBRE, RICA))
+    assert set(ef) == {'main', 'trigger'}, ef
+    print('[OK] primeira linha sem [Trigger]: escolhe a impressao que tem')
+
+    # 2. ordem invertida: mesmo resultado (nao pode depender da posicao)
+    ef = _efeito_da_impressao_mais_completa(grupo(RICA, POBRE))
+    assert set(ef) == {'main', 'trigger'}, ef
+    print('[OK] ordem invertida da o MESMO conjunto -- nao depende da posicao')
+
+    # 3. CONTROLE: uma unica impressao nao muda nada
+    ef = _efeito_da_impressao_mais_completa(grupo(POBRE))
+    assert set(ef) == {'main'}, ef
+    print('[OK] CONTROLE: impressao unica preserva o parse -- nada inventado')
+
+    # 4. CONTROLE: linhas iguais nao podem virar outra coisa
+    ef = _efeito_da_impressao_mais_completa(grupo(POBRE, POBRE))
+    assert set(ef) == {'main'}, ef
+    print('[OK] CONTROLE: impressoes identicas nao ganham gatilho do nada')
+
+    # 5. CONTROLE do caso SEM dominancia: gatilhos que se cruzam sem que
+    #    nenhuma linha contenha as duas -> mantem a PRIMEIRA (comportamento
+    #    antigo). Divergencia de conteudo nao se resolve pegando a maior.
+    A = '[On Play] Draw 1 card.'
+    B = '[Trigger] Draw 1 card.'
+    ef = _efeito_da_impressao_mais_completa(grupo(A, B))
+    assert set(ef) == {'on_play'}, ef
+    ef = _efeito_da_impressao_mais_completa(grupo(B, A))
+    assert set(ef) == {'trigger'}, ef
+    print('[OK] CONTROLE: sem linha dominante mantem a primeira, nao funde')
+
+    # 6. o banco gerado: as 8 cartas que o fix destrava, e P-088 saindo de vazio
+    import json
+    db = json.load(open('card_effects_db.json', encoding='utf-8'))
+    esperado = {
+        'EB04-028': 'trigger', 'OP01-029': 'trigger', 'OP03-110': 'trigger',
+        'OP06-056': 'trigger', 'P-014': 'trigger', 'P-057': 'trigger',
+        'P-058': 'trigger', 'P-088': 'trigger',
+    }
+    for code, gatilho in esperado.items():
+        assert gatilho in db[code]['effects'], (code, sorted(db[code]['effects']))
+    print('[OK] as 8 cartas tem o [Trigger] no banco (P-088 saiu de effects vazio)')
+
+    # 7. CONTROLE do efeito colateral: o nome NAO pode vir da reimpressao
+    for code in ('P-063', 'P-081', 'P-088'):
+        nome = db[code]['name']
+        assert '(' not in nome and ' - ' not in nome, (code, nome)
+    print('[OK] CONTROLE: nome segue vindo da 1a linha, sem sufixo de arte')
 
 
 if __name__ == "__main__":

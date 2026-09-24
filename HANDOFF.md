@@ -1,5 +1,101 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-09-24 (886) - A IMPRESSAO do CSV decidia o `effects`: 8 cartas perdiam o [Trigger] porque o banco herdava a transcricao mais pobre
+
+**Mesma CLASSE do lote de 12 (blocos 870/881), CAUSA RAIZ diferente -- e o
+parser nao foi tocado.** Nenhum `parse_*`, nenhum regex. O que mudou foi QUAL
+linha do CSV alimenta o parser.
+
+`generate_effects_db` fazia `drop_duplicates(subset='code', keep='first')`: de
+todas as impressoes de um codigo (foil, full art, reprint, promo), pegava a
+primeira as cegas. Quando essa primeira transcricao NAO tem uma clausula
+inteira que outra impressao do mesmo codigo tem -- em 8 de 8 casos o bloco
+`[Trigger]` -- o gatilho nunca entrava no banco. **Gatilho ausente e acao que
+nunca vira candidata: nao existe para o modelo**, e nem corpus maior nem modelo
+melhor nem exploracao a alcancam, porque exploracao tambem sorteia DENTRO da
+lista gerada.
+
+A diferenca para o bloco 881: la o texto da primeira linha estava num dialeto
+ruim e foi NORMALIZADO. Aqui o texto da primeira linha esta **correto**, so nao
+tem a clausula. Normalizacao nao alcanca o que nao foi transcrito.
+
+**Por que nenhuma ferramenta via**: `diff_parser` compara parser contra
+snapshot, e os dois liam a mesma linha pobre. A auditoria de efeitos so ve o
+que dispara.
+
+### O censo
+
+```
+924 codigos com mais de uma linha no CSV
+465 com card_text divergente
+ 27 em que os GATILHOS PARSEADOS divergem
+ 19   a primeira linha ja era a melhor
+  8   perdiam gatilho   <- o fix
+  1   sem linha dominante (EB04-044, ABERTO)
+```
+
+Controle do rodape: 219 linhas tem `Disclaimer:` (203 coladas sem espaco) e em
+**0** delas retira-lo muda o parse. Medido antes de mexer -- por isso nao foi
+mexido.
+
+### O fix
+
+`_efeito_da_impressao_mais_completa(grupo)` parseia TODAS as impressoes e
+devolve a que e SUPERCONJUNTO das outras em gatilhos. **Conservadora de
+proposito**: sem linha dominante mantem a primeira (comportamento antigo) --
+divergencia de CONTEUDO nao se resolve pegando a maior, e fundir criaria efeito
+que nenhuma impressao declara.
+
+Vale **so para `effects`**. Metadado continua vindo da primeira linha: a
+impressao mais completa costuma ser a reimpressao, cujo `card_name` traz sufixo
+de arte (`Jinbe - P-063 (Pirate Foil)`) e regrediria o banco. Medido, nao
+suposto -- diff por CAMPO mostra name/cost/power/color/sub_types identicos nos
+2837 codigos.
+
+As 8: `EB04-028` `OP01-029` `OP03-110` `OP06-056` `P-014` `P-057` `P-058`
+`P-088` (esta saiu de `effects` vazio). Motor intocado -- todas usam acoes que
+ele ja executa.
+
+### Validacao
+
+`diff_parser` GANHOU=1 PERDEU=0 MUDOU=9, e as 9 lidas **uma a uma contra o
+texto oficial**. `smoke_fast` e `smoke_test` completos passam. Teste permanente
+com 7 checagens, 4 delas CONTROLE -- e **o controle pode falhar**: com a funcao
+sabotada para devolver sempre a primeira impressao, o teste quebra.
+
+### ERRO DE PROCESSO MEU, registrado porque custou trabalho
+
+Comecei rodando `corpus_git.py status`, que disse "corpus em dia", e tratei como
+"estou sincronizado". **Ele confere o CORPUS, nao o GIT.** A branch estava **31
+commits atras** e o bloco 881 ja tinha resolvido 11 dos 12 cartoes que eu
+atacava. A `REGRA_DUAS_MAQUINAS` manda `sincroniza.py chega`, que faz o pull --
+`corpus_git.py status` NAO substitui. Refiz a medicao sobre a base nova: o ganho
+caiu de 12 para 8 codigos, e os 8 sobrevivem por serem causa raiz diferente.
+
+### DRIFT PRE-EXISTENTE achado de passagem (nao e deste fix)
+
+`OP06-035` e `OP12-037` mudam de conteudo **so por regerar o banco**. O commit
+`15dc604` (`or_rest_opp_don`) alterou o parser e o `card_effects_db.json`
+commitado nunca foi regerado para essas 2 cartas: **o fix estava pela metade --
+o parser tinha, o motor nao via**. Isolado rodando a logica ANTIGA contra o JSON
+commitado, as mesmas 2 divergem. Regerar corrige de brinde.
+
+### ABERTO
+
+- **`EB04-044`** -- unico sem linha dominante: uma transcricao diz `[Your Turn]`
+  passive, outra diz `[On Play]`. Divergencia real de conteudo; precisa da carta
+  oficial, nao de regra de escolha.
+- **4 cartas com custo lido como efeito** -- `OP07-047` `OP08-041` `P-074`
+  `P-081` tem `return this Character to the owner's hand` ANTES do `:` e nenhuma
+  gera `costs`. O bounce entra como step, entao o motor trata **custo OPCIONAL
+  como efeito obrigatorio**, contra a regra dos dois-pontos. Forma diferente,
+  fix proprio.
+- **`P-097` e `P-100`** seguem fora, pelo motivo ja dado no bloco 881: texto
+  truncado na fonte e acao inexistente no motor. Nao e parser.
+- **NAO VALIDADO AO VIVO.** Nenhuma das 8 rodou em partida real, sem portao
+  SPRT. O que esta provado e que 8 acoes legais passaram a EXISTIR para o
+  modelo -- nao que o bot joga melhor com elas.
+
 ## 2026-09-21 (885) - 3 sugestoes genericas de velocidade testadas (2 reprovadas, 1 aplicada): value_net_aluno com 200 arvores, -14,7% por partida
 
 Sessao Claude (Sonnet 5), continuacao imediata do bloco 884. O usuario colou
