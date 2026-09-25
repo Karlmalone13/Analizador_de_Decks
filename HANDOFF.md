@@ -1,5 +1,71 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-09-24 (891) - Sincroniza trabalho local de 21/09 que nunca tinha sido commitado: `ciclo.py` em modo bootstrap + 3 ciclos INCONCLUSIVOS que fazem parte do achado do bloco 888
+
+Ao rodar `sincroniza.py chega` nesta maquina (que estava 6 commits atras do
+`origin/main`), `git status` acusou `scriptis_da_ia/ciclo.py` e
+`scriptis_da_ia/metrics/ciclo_estado.json` modificados **localmente e nunca
+commitados** -- sobras de uma sessao de 21/09/2026 que ficaram no working
+tree. Este bloco so formaliza esse trabalho: nenhuma decisao nova foi tomada
+aqui.
+
+### O que estava pendente
+
+`ciclo.py::gera()` trocou `OPTCG_Q_ALVO` de `'busca'` (arvore com lookahead
+largura 8/feixe 4/profundidade 4, introduzida no bloco 878) para
+`'bootstrap'` (`_coleta_bootstrap`, bloco 799: 1 nivel, zero recursao, zero
+cache de transposicao -- so aplica cada candidata uma vez e consulta o modelo
+em lote). Motivo, ja registrado no comentario do proprio codigo: 82s/partida
+offline em modo `'busca'` "nao da", e o usuario pediu prioridade em
+VELOCIDADE mesmo aceitando perda inicial de qualidade -- mais ciclos de
+treino no mesmo tempo, a qualidade se recupera com volume. Medido na epoca:
+18,6s/8 partidas (bootstrap) contra 126s/8 (busca profunda), -77%.
+
+**Risco que o proprio comentario ja registrava, nao mascarado**:
+bootstrap-only nunca foi testado isolado neste projeto: o unico dado
+proximo e o OPOSTO (treinar so com linhas `'busca'` perdeu 0x9 contra o
+corpus misto `'todos'`, ver `REPROVADOS.md`). O usuario aceitou o risco
+explicitamente; a validacao e o portao, depois de rodar -- nao antes.
+
+`ciclo_estado.json` tinha o resultado de RODAR com essa troca: 3 ciclos
+locais (10, 11, 12, todos de 21/09) que nunca chegaram a ser empurrados.
+
+```
+ciclo 10 : erro_q 0,0580  winrate 0,353  veredito INCONCLUSIVO (teto de pares)  gera 107,9s/200 partidas
+ciclo 11 : erro_q 0,0688  winrate 0,231  veredito INCONCLUSIVO (teto de pares)  gera 107,9s/200 partidas
+ciclo 12 : erro_q 0,0601  winrate 0,500  veredito INCONCLUSIVO (teto de pares)  gera 115,3s/200 partidas
+```
+
+**Ligacao com o bloco 888 (ja no `origin/main`, pushado por outra maquina
+hoje)**: esses 3 INCONCLUSIVOS sao parte da mesma serie de "9 ciclos
+inconclusivos" que aquele bloco diagnosticou como **defeito do TESTE** (teto
+de 60 pares + limiar de LLR errado), nao do modelo. Nao havia contradicao
+entre os dois achados -- a troca de professor (bootstrap) e o bug do portao
+(bloco 888) sao problemas independentes que aconteceram na mesma janela de
+tempo. Nenhuma reavaliacao foi feita aqui; so registrando que os numeros
+acima **nao devem ser lidos como "bootstrap nao aprende"** com o gate velho.
+
+Tambem vieram 3 arquivos de `metrics/real_loss_audits/` (Imu-B x
+Marshall.D.Teach-BY, partidas de 09/07) com `engine_hoje_narrativa`
+ligeiramente diferente de uma rerodada anterior do `audit_real_losses.py`
+-- ruido esperado da ferramenta (mao do oponente reamostrada a cada rodada,
+ver limitacoes documentadas no topo do proprio script), sem mudanca de
+veredito em nenhum caso. Comitados por serem output do mesmo `git status`
+pendente, sem significado adicional.
+
+### Validacao
+
+`smoke_fast.py` completo, **zero FAIL**, `SMOKE FAST OK` nas duas suites
+internas -- inclusive os testes que o pull de hoje trouxe (auto-bounce como
+custo, `[Trigger]` das 8 cartas, orcamento compartilhado Xebec/`OP17-118`).
+
+### Aberto
+
+- **Nao validado ao vivo em modo bootstrap** com o portao CORRIGIDO (bloco
+  888). Os 3 ciclos acima rodaram todos com o gate velho.
+- Mesmos itens abertos do bloco 890: checkpoint humano pendente, professor
+  que espia (888) sem teste.
+
 ## 2026-09-24 (890) - 1a CPU x CPU depois da promocao: telemetria limpa, e ela achou um bug que 3 Events entregavam NADA
 
 Partida `Rocks.D.Xebec-B_x_Marshall.D.Teach-BY_2026-09-24T17.38.54`, bancada

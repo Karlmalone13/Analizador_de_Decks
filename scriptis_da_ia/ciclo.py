@@ -246,24 +246,24 @@ def gera(n, seed, workers, n_ciclo=0) -> bool:
     numa partida de verdade.
     """
     env = dict(os.environ)
-    env['OPTCG_Q_ALVO'] = 'busca'
-    # BUSCA MAIS PROFUNDA (21/09/2026, pedido do usuario: "ML fraco e
-    # demorado" + pesquisa externa). O professor 'busca' avaliava a folha
-    # com a MESMA rede ainda imatura que esta sendo treinada, com pouco
-    # lookahead (largura 6, feixe 3, profundidade 3) -- diferente do NNUE
-    # (a propria inspiracao do nosso `treinar_q.py`), que destila de uma
-    # busca alfa-beta PROFUNDA de um motor ja forte. Medido (8 partidas,
-    # 4 workers): largura 8/feixe 4/profundidade 4 custa 126s contra 64s do
-    # default (6/3/3) -- ~2x, absorvido em parte pelo ganho de 3,1x do
-    # `_forward_rapido` (achado do mesmo dia). Self-play continua barato em
-    # termos absolutos, entao pagar mais busca por decisao e o troca que a
-    # literatura recomenda (professor mais forte > professor mais rapido).
-    # So afeta esta geracao OFFLINE -- nao muda o padrao do modulo
-    # (`BUSCA_LARGURA`/`BUSCA_FEIXE`/`BUSCA_PROFUNDIDADE` em
-    # decision_engine.py), que outros caminhos podem usar sem essa troca.
-    env.setdefault('OPTCG_BUSCA_LARGURA', '8')
-    env.setdefault('OPTCG_BUSCA_FEIXE', '4')
-    env.setdefault('OPTCG_BUSCA_PROFUNDIDADE', '4')
+    # BOOTSTRAP em vez de BUSCA (21/09/2026, pedido explicito do usuario:
+    # 82s/partida offline "nao da" -- prioridade e VELOCIDADE, aceitando
+    # perda inicial de qualidade porque mais velocidade = mais ciclos de
+    # treino = a qualidade se recupera com volume). Tentativa intermediaria
+    # (encolher a arvore pra largura 4/feixe 2/profundidade 2) ja tinha
+    # cortado pra 37,4s/8 partidas (-54%); o usuario pediu pra ir alem da
+    # forma da arvore, e `_coleta_bootstrap` (bloco 799, ja existia, era o
+    # modo ANTES do bloco 878 introduzir 'busca') faz exatamente isso: 1
+    # nivel, zero recursao, zero cache de transposicao -- so aplica cada
+    # candidata uma vez e pergunta ao modelo em UM lote. Medido: 18,6s/8
+    # partidas (-77% vs busca funda original, -50% vs a arvore encolhida).
+    # RISCO REGISTRADO, nao mascarado: bootstrap-only nao foi testado
+    # isoladamente neste projeto; o unico dado proximo e o oposto (treinar
+    # so com linhas 'busca' perdeu 0x9 contra o corpus misto 'todos' --
+    # ver REPROVADOS.md). O usuario aceitou o risco explicitamente ("mesmo
+    # se inicialmente perder a qualidade nao tem problema"); medir pelo
+    # portao depois de rodar, nao antes.
+    env['OPTCG_Q_ALVO'] = 'bootstrap'
     # POOL DE ADVERSARIOS (21/09/2026): guarda a versao ATUAL do campeao
     # antes de gerar, e 25% das partidas sorteiam um adversario de uma
     # geracao PASSADA em vez de sempre campeao-contra-campeao. 0,25 nao

@@ -1,6 +1,24 @@
 # TODO — Analisador de Decks OPTCG
 
-**Última atualização:** 24 de setembro de 2026 (bloco 890)
+**Última atualização:** 24 de setembro de 2026 (bloco 891)
+
+> **SINCRONIZADO: trabalho local de 21/09 nunca commitado -- `ciclo.py` em
+> modo `bootstrap` (24/09/2026, bloco 891)**
+>
+> `sincroniza.py chega` acusou `ciclo.py`/`ciclo_estado.json` modificados
+> localmente nesta maquina, sobras da sessao de 21/09 que nunca foram
+> commitadas. Formalizado, nao decidido agora: geracao (`ciclo.py::gera()`)
+> passa a usar `OPTCG_Q_ALVO=bootstrap` em vez de `'busca'` -- pedido
+> explicito do usuario, prioridade VELOCIDADE (18,6s/8 partidas contra
+> 126s/8), risco de qualidade aceito por ele, portao mede depois.
+>
+> 3 ciclos locais (10/11/12) rodaram com essa troca em 21/09, todos
+> INCONCLUSIVO (teto de pares) -- **sao parte do mesmo lote que o bloco 888
+> ja identificou como bug do TESTE (teto de 60 pares + LLR errado), nao do
+> modelo**. Nao rodou ainda com o portao CORRIGIDO. `smoke_fast` OK.
+>
+> **PENDENTE**: validar bootstrap ao vivo com o gate do bloco 888 corrigido
+> antes de tirar qualquer conclusao sobre se a troca de professor generalizou.
 
 > **CPU x CPU ACHOU: `gain_unblockable` nao servia a NENHUMA carta do banco
 > (24/09/2026, bloco 890)**
