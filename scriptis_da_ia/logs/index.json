@@ -7203,5 +7203,69 @@
       "Opponent": "decks_full/Marshall.D.Teach-BY_2026-09-24T17.38.54.json"
     },
     "decision_log_file": "decisions/decisions_2026-09-24T17.38.54.jsonl"
+  },
+  {
+    "id": "2026-09-15T00.29.35_p2",
+    "impressao": "ae43b6c4d28e69e288ade33d1ed649e4",
+    "friendly_name": "Dracule.Mihawk-G_x_Enel-P",
+    "date": "2026-09-15",
+    "p1": {
+      "name": "You",
+      "leader_code": "OP14-020",
+      "leader_name": "Dracule Mihawk",
+      "slug": "Dracule.Mihawk-G"
+    },
+    "p2": {
+      "name": "Opponent",
+      "leader_code": "OP15-058",
+      "leader_name": "Enel",
+      "slug": "Enel-P"
+    },
+    "turns": 9,
+    "winner": "p1",
+    "bot_side": null,
+    "tipo": "com_bot",
+    "log_file": "raw/Dracule.Mihawk-G_x_Enel-P_2026-09-15T00.29.35_p2.log",
+    "parsed_file": "parsed/Dracule.Mihawk-G_x_Enel-P_2026-09-15T00.29.35_p2.json",
+    "deck_files": {
+      "You": "decks/Dracule.Mihawk-G_2026-09-15T00.29.35_p2.json",
+      "Opponent": "decks/Enel-P_2026-09-15T00.29.35_p2.json"
+    },
+    "deck_full_files": {
+      "You": "decks_full/Dracule.Mihawk-G_2026-09-15T00.29.35_p2.json",
+      "Opponent": "decks_full/Enel-P_2026-09-15T00.29.35_p2.json"
+    }
+  },
+  {
+    "id": "2026-09-15T00.46.17_p3",
+    "impressao": "8e9e2b9e9611747280e57e0823357fdf",
+    "friendly_name": "Dracule.Mihawk-G_x_Enel-P",
+    "date": "2026-09-15",
+    "p1": {
+      "name": "You",
+      "leader_code": "OP14-020",
+      "leader_name": "Dracule Mihawk",
+      "slug": "Dracule.Mihawk-G"
+    },
+    "p2": {
+      "name": "Opponent",
+      "leader_code": "OP15-058",
+      "leader_name": "Enel",
+      "slug": "Enel-P"
+    },
+    "turns": 11,
+    "winner": "p1",
+    "bot_side": null,
+    "tipo": "com_bot",
+    "log_file": "raw/Dracule.Mihawk-G_x_Enel-P_2026-09-15T00.46.17_p3.log",
+    "parsed_file": "parsed/Dracule.Mihawk-G_x_Enel-P_2026-09-15T00.46.17_p3.json",
+    "deck_files": {
+      "You": "decks/Dracule.Mihawk-G_2026-09-15T00.46.17_p3.json",
+      "Opponent": "decks/Enel-P_2026-09-15T00.46.17_p3.json"
+    },
+    "deck_full_files": {
+      "You": "decks_full/Dracule.Mihawk-G_2026-09-15T00.46.17_p3.json",
+      "Opponent": "decks_full/Enel-P_2026-09-15T00.46.17_p3.json"
+    }
   }
 ]

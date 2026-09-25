@@ -1,6 +1,24 @@
 # TODO — Analisador de Decks OPTCG
 
-**Última atualização:** 24 de setembro de 2026 (bloco 891)
+**Última atualização:** 24 de setembro de 2026 (bloco 892)
+
+> **VARREDURA DE LOGS: 2 partidas de 15/09 banqueadas, sem telemetria
+> (24/09/2026, bloco 892)**
+>
+> Conferido `CombatLogs/` local (363 arquivos, 05/09-20/09) contra
+> `logs/index.json`. Achado principal: comparar por NOME falha (o banco
+> renomeia pelo timestamp de conclusao, nao de inicio) -- 6 de 8 candidatas
+> "novas" ja estavam banqueadas sob outro nome. Sobraram 2 de verdade:
+> `Dracule.Mihawk-G_x_Enel-P_2026-09-15T00.29.35_p2` e `..._00.46.17_p3`.
+>
+> `bot_side` gravado `null` (deteccao honesta, nao assumida). **Sem
+> telemetria em `metrics/live_runs/`** pra nenhuma das duas -- declarado, nao
+> reconstruido do log cru. Sem lado do bot conhecido, `audit_real_losses.py`
+> nao se aplica.
+>
+> **PENDENTE**: confirmar se essa janela (13-20/09, `You`=Dracule Mihawk
+> contra varios lideres em sequencia rapida) e autoteste do bot ou sessao
+> humana -- decide se `pos_log_novo.sh` deveria rodar.
 
 > **SINCRONIZADO: trabalho local de 21/09 nunca commitado -- `ciclo.py` em
 > modo `bootstrap` (24/09/2026, bloco 891)**

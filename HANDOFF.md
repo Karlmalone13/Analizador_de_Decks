@@ -1,5 +1,62 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-09-24 (892) - Varredura do `CombatLogs/` local achou 2 partidas de 15/09 nunca banqueadas (sem telemetria disponivel)
+
+Pedido do usuario: conferir se sobrou log pra registrar. `CombatLogs/` (pasta
+do jogo, nesta maquina) tem 363 arquivos brutos de 05/09 a 20/09; so 52 tem
+marcador `GameOver`/`AutoSaved` (parecem partida completa, o resto e
+fragmento/aborto de sessao de teste). Cruzando por CONTEUDO (nao por nome --
+achado abaixo) com `logs/index.json` (234 entradas antes deste bloco), **6
+das 8 "completas" candidatas ja estavam no banco sob outro nome de arquivo**
+(o banco renomeia pelo timestamp de CONCLUSAO, nao de inicio -- comparar por
+substring do nome original da pasta do jogo da falso-negativo). Sobraram 2
+genuinamente novas, as duas do mesmo par Dracule.Mihawk-G x Enel-P de
+15/09/2026 (`_p2` 9 turnos, `_p3` 11 turnos) -- fragmentos de uma sessao que
+concatenava partidas no mesmo arquivo (o `parse_combat_log.py` separou
+sozinho, "Detectadas N partidas concatenadas").
+
+### Banqueadas com `--bepinex-log` (deteccao automatica tentada)
+
+```
+Dracule.Mihawk-G_x_Enel-P_2026-09-15T00.29.35_p2   9 turnos   winner=p1
+Dracule.Mihawk-G_x_Enel-P_2026-09-15T00.46.17_p3  11 turnos   winner=p1
+```
+
+`bot_side` ficou `null` nas duas -- o `LogOutput.log` do BepInEx (unico, unico
+arquivo, acumula desde 04/09) nao tinha marcador `Shift+P` pro instante
+dessas partidas especificas. Gravado honesto como `null` (nao assume que
+"You" e o bot, regra do bloco 801), NAO como um lado adivinhado.
+
+### Telemetria: OBRIGATORIO ler, e a leitura confirma que NAO HA NADA pra ler
+
+Conferido `metrics/live_runs/` (local, gitignored) pelos tres timestamps
+exatos (`00.29.35`, `00.46.17`) -- **zero arquivos**. Os mais proximos sao
+`live_2026-09-15T00.04.01.json`, `00.04.27` e `00.21.43_manual`, todos
+ANTERIORES as duas partidas banqueadas. Declarado explicitamente em vez de
+reconstruir a decisao do bot pelo combat log cru: **nao ha telemetria de
+decisao capturada pra nenhuma das duas.**
+
+Com `bot_side` desconhecido, tambem nao da pra dizer se o bot PERDEU contra
+humano -- pre-condicao do `audit_real_losses.py` -- entao esse passo nao se
+aplica aqui (nao e pulo por preguica, e ausencia da informacao que o script
+exige).
+
+### O que NAO foi feito, e por que
+
+`pos_log_novo.sh` (regenera `human_patterns.json`/policy dataset/curva) e
+descrito no `CLAUDE.md` para **partidas humanas**; estas duas tem
+`tipo=com_bot` com lado desconhecido -- dado o padrao (`You` = Dracule Mihawk
+em quase toda a janela 13-20/09 contra varios lideres em sequencia rapida),
+parece autoteste do bot contra si mesmo, nao sessao humana registravel.
+Rodar `pos_log_novo.sh` mesmo assim ficaria pra sessao que confirmar a
+natureza dessas partidas.
+
+### Validacao
+
+Nenhuma mudanca de codigo -- so dados no banco. `git status` confirma:
+`logs/index.json` modificado + 12 arquivos novos (`raw`/`parsed`/`decks`/
+`decks_full`, 2 partidas x 6 arquivos).
+
 ## 2026-09-24 (891) - Sincroniza trabalho local de 21/09 que nunca tinha sido commitado: `ciclo.py` em modo bootstrap + 3 ciclos INCONCLUSIVOS que fazem parte do achado do bloco 888
 
 Ao rodar `sincroniza.py chega` nesta maquina (que estava 6 commits atras do
