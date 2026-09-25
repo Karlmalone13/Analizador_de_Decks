@@ -1,6 +1,31 @@
 # TODO — Analisador de Decks OPTCG
 
-**Última atualização:** 24 de setembro de 2026 (bloco 892)
+**Última atualização:** 25 de setembro de 2026 (bloco 893)
+
+> **ABERTO: `[Activate:Main]` do lider filtrado por heuristico ANTES do Q
+> ver a candidata (25/09/2026, bloco 893)**
+>
+> Partida real (`Dracule.Mihawk-G_x_Rocks.D.Xebec-B_2026-09-25T00.10.35_p2`,
+> 14 turnos): `audit_real_losses.py` + `triage_real_losses.py` -- 6/6 turnos
+> auditados DIVERGEM em `activate`. Com `OPTCG_DEBUG_AM=1`: a habilidade do
+> lider (`OP14-020`, custo `rest_own_card 1` + `set_don_active up_to:3`)
+> nunca chega a virar candidata pro Q -- `_should_activate_main`
+> (`decision_engine.py:17323`) e um heuristico de "vale a pena" que roda
+> ANTES da pontuacao, e recusou 10/10 vezes (4x condicao de board, 4x sem
+> DON restado, 2x sem carta ativa pra restar). Hipotese mais forte:
+> SEQUENCIAMENTO -- a viabilidade e checada com o estado da decisao ATUAL,
+> nunca vendo a janela pos-jogar-carta-cara (DON fica restado) ou
+> pre-atacar (carta ainda ativa) que tornaria a ativacao legal e valiosa.
+>
+> **NAO CONCLUIDO**: se isto explica o alarme agregado do bloco 889
+> (`activate` 24,0%->10,7% na promocao do Q) ou e fenomeno isolado desta
+> partida. Sem fix proposto -- exige decidir onde no fluxo de
+> `_generate_and_score_actions` reordenar/re-simular a checagem.
+>
+> Tangente NAO perseguida: `ST32-002` (Kouzuki Oden) aparece como
+> `"activate"` no log historico com o MESMO texto do `on_play` dele
+> (`card_effects_db.json` so tem `on_play`) -- suspeito de artefato do
+> parser do combat log, nao investigado.
 
 > **VARREDURA DE LOGS: 2 partidas de 15/09 banqueadas, sem telemetria
 > (24/09/2026, bloco 892)**

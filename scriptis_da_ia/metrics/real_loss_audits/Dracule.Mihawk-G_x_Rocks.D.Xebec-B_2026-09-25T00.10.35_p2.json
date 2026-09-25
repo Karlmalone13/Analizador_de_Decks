@@ -1,0 +1,301 @@
+{
+  "parsed_file": "Dracule.Mihawk-G_x_Rocks.D.Xebec-B_2026-09-25T00.10.35_p2.json",
+  "bot_side": "You",
+  "bot_leader": "Dracule Mihawk",
+  "opp_leader": "Rocks D. Xebec",
+  "turnos_auditados": 6,
+  "turnos": [
+    {
+      "turn": 3,
+      "don_available_estimado": 1,
+      "historical_actions": [
+        {
+          "type": "attack",
+          "attacker": "Dracule Mihawk",
+          "attacker_code": "OP14-020",
+          "target": "Rocks D. Xebec [\"OP17-039\">OP17-039]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "play",
+          "card": "OP06-033",
+          "card_name": "Vander Decken IX",
+          "effects": []
+        }
+      ],
+      "engine_hoje_narrativa": "  \u001b[90mComprou: Kouzuki Oden (ST32-002) (SP)\u001b[0m\n  \u001b[93mDON!! +2 rampados │ 3 ativos │ 0 restados\u001b[0m\n  -- Turno (Turn Planner: simula sequências) --\n  Banco de cartas: 2839 cartas carregadas\n    Dracule Mihawk - OP1 (6000pwr) ataca Streusen\n      💀 Streusen foi KO!\n  > gastou 2 DON -> Joga: Vander Decken IX (2000pwr) [CHARACTER]\n    \u001b[90mefeito: [On Play] You may trash 1 \"Fish-Man\" type card from your hand or 1 [The Ark Noah] from you...\u001b[0m\n  \u001b[90mpassa (busca preferiu nao agir)\u001b[0m\n"
+    },
+    {
+      "turn": 5,
+      "don_available_estimado": 2,
+      "historical_actions": [
+        {
+          "type": "attack",
+          "attacker": "Dracule Mihawk",
+          "attacker_code": "OP14-020",
+          "target": "Rocks D. Xebec [\"OP17-039\">OP17-039]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "play",
+          "card": "ST32-002",
+          "card_name": "Kouzuki Oden",
+          "effects": [
+            "Draw 1 Card",
+            "Wang Zhi [\"OP17-041\">OP17-041] can't be rested until next turn ends"
+          ]
+        },
+        {
+          "type": "activate",
+          "card": "OP14-020",
+          "card_name": "Dracule Mihawk",
+          "effects": [
+            "Rest Vander Decken IX [\"OP06-033\">OP06-033]",
+            "Can't play Cost 1 Or More Characters for the Turn!"
+          ]
+        }
+      ],
+      "engine_hoje_narrativa": "  \u001b[90mComprou: Vander Decken IX\u001b[0m\n  \u001b[93mDON!! +2 rampados │ 5 ativos │ 0 restados\u001b[0m\n  -- Turno (Turn Planner: simula sequências) --\n  > gastou 5 DON -> Joga: Kouzuki Oden (ST32-002) (SP) (6000pwr) [CHARACTER]\n    \u001b[90mefeito: [On Play] Draw 1 card and up to 1 of your opponent's Characters with a base cost of 6 or l...\u001b[0m\n    ↳ [Kouzuki Oden (ST32-0] comprou: Kin'emon\n    Dracule Mihawk - OP1 (6000pwr) ataca Wang Zhi\n      🛡 Counter! +1000 -> defesa 7000\n      ✗ Ataque bloqueado (6000 < 7000)\n  \u001b[90mpassa (busca preferiu nao agir)\u001b[0m\n"
+    },
+    {
+      "turn": 7,
+      "don_available_estimado": 4,
+      "historical_actions": [
+        {
+          "type": "play",
+          "card": "ST32-003",
+          "card_name": "Dracule Mihawk",
+          "effects": [
+            "Deploy Kouzuki Oden [\"ST32-002\">ST32-002]",
+            "Draw 1 Card",
+            "Trash Vander Decken IX [\"OP06-033\">OP06-033]"
+          ]
+        },
+        {
+          "type": "activate",
+          "card": "ST32-002",
+          "card_name": "Kouzuki Oden",
+          "effects": [
+            "Draw 1 Card",
+            "Wang Zhi [\"OP17-041\">OP17-041] can't be rested until next turn ends"
+          ]
+        },
+        {
+          "type": "activate",
+          "card": "OP14-020",
+          "card_name": "Dracule Mihawk",
+          "effects": [
+            "Rest Dracule Mihawk [\"ST32-003\">ST32-003]",
+            "Activate 1 Don",
+            "Activate 1 Don",
+            "Activate 1 Don",
+            "Can't play Cost 1 Or More Characters for the Turn!"
+          ]
+        },
+        {
+          "type": "attack",
+          "attacker": "Kouzuki Oden",
+          "attacker_code": "ST32-002",
+          "target": "Rocks D. Xebec [\"OP17-039\">OP17-039]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": [
+            "OP08-051"
+          ]
+        },
+        {
+          "type": "attack",
+          "attacker": "Dracule Mihawk",
+          "attacker_code": "OP14-020",
+          "target": "Rocks D. Xebec [\"OP17-039\">OP17-039]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "activate",
+          "card": "OP08-036",
+          "card_name": "Electrical Luna",
+          "effects": [
+            "Rest 3 Don",
+            "Streusen [\"OP17-050\">OP17-050] will not Activate during next Refresh"
+          ]
+        }
+      ],
+      "engine_hoje_narrativa": "  \u001b[90mComprou: Electrical Luna\u001b[0m\n  \u001b[93mDON!! +2 rampados │ 7 ativos │ 0 restados\u001b[0m\n  -- Turno (Turn Planner: simula sequências) --\n  > gastou 6 DON -> Joga: Dracule Mihawk (7000pwr) [CHARACTER]\n    \u001b[90mefeito: [Your Turn] When this Character becomes rested, draw 1 card and trash 1 card from your han...\u001b[0m\n    anexou 1 DON em Kouzuki Oden (ST32-0\n    Kouzuki Oden (ST32-0 (7000pwr) ataca Leader\n      ↳ [on opp attack: Charlotte Linli] custo: trashou da mão: Buckin\n      ↳ [on opp attack: Charlotte Linli] +1000 power em leader_or_character\n      💥 DANO! vida do oponente: 3\n    Dracule Mihawk - OP1 (6000pwr) ataca Leader\n      ↳ [on opp attack: Charlotte Linli] custo: trashou da mão: Charlotte Linli\n      ↳ [on opp attack: Charlotte Linli] +1000 power em leader_or_character\n      🛡 Counter There's No Authori: +2000 power -> defesa 7000\n      ✗ Ataque bloqueado (6000 < 7000)\n  \u001b[90mpassa (busca preferiu nao agir)\u001b[0m\n"
+    },
+    {
+      "turn": 9,
+      "don_available_estimado": 6,
+      "historical_actions": [
+        {
+          "type": "attack",
+          "attacker": "Dracule Mihawk",
+          "attacker_code": "OP14-020",
+          "target": "Rocks D. Xebec [\"OP17-039\">OP17-039]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "attack",
+          "attacker": "Dracule Mihawk",
+          "attacker_code": "ST32-003",
+          "target": "Rocks D. Xebec [\"OP17-039\">OP17-039]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "activate",
+          "card": "ST32-003",
+          "card_name": "Dracule Mihawk",
+          "effects": [
+            "Draw 1 Card",
+            "Trash You Can Be My Samurai!!! [\"OP01-055\">OP01-055]"
+          ]
+        },
+        {
+          "type": "play",
+          "card": "OP13-031",
+          "card_name": "Trafalgar Law",
+          "effects": [
+            "Return Trafalgar Law [\"OP13-031\">OP13-031] to Hand"
+          ]
+        },
+        {
+          "type": "activate",
+          "card": "OP14-020",
+          "card_name": "Dracule Mihawk",
+          "effects": [
+            "Rest Kouzuki Oden [\"ST32-002\">ST32-002]",
+            "Can't play Cost 1 Or More Characters for the Turn!"
+          ]
+        }
+      ],
+      "engine_hoje_narrativa": "  \u001b[90mComprou: Trafalgar Law (SP)\u001b[0m\n  \u001b[93mDON!! +2 rampados │ 9 ativos │ 0 restados\u001b[0m\n  -- Turno (Turn Planner: simula sequências) --\n  > gastou 6 DON -> Joga: Trafalgar Law (SP) (6000pwr) [CHARACTER]\n    \u001b[90mefeito: If you have 1 or less Life cards, this Character gains [Blocker].[On Play] You may return ...\u001b[0m\n    anexou 2 DON em Dracule Mihawk\n    Dracule Mihawk (9000pwr) ataca Leader\n      [quando restou] comprou: Trafalgar La (e trashou: You Can Be M)\n      ↳ [on opp attack: Charlotte Linli] custo: trashou da mão: Charlotte Linli\n      ↳ [on opp attack: Charlotte Linli] +1000 power em leader_or_character\n      🛡 Blocker! Wang Zhi intercepta\n      💀 Wang Zhi foi KO!\n    anexou 1 DON em Kouzuki Oden (ST32-0\n    Kouzuki Oden (ST32-0 (7000pwr) ataca Leader\n      ↳ [on opp attack: Charlotte Linli] custo: trashou da mão: Don Marlon\n      ↳ [on opp attack: Charlotte Linli] +1000 power em leader_or_character\n      💥 DANO! vida do oponente: 2\n    Dracule Mihawk - OP1 (6000pwr) ataca Leader\n      ↳ [on opp attack: Charlotte Linli] custo: trashou da mão: Shiki (048) (Al\n      ↳ [on opp attack: Charlotte Linli] +1000 power em leader_or_character\n      🛡 Counter There's No Authori: +2000 power -> defesa 7000\n      ✗ Ataque bloqueado (6000 < 7000)\n  \u001b[90mpassa (busca preferiu nao agir)\u001b[0m\n"
+    },
+    {
+      "turn": 11,
+      "don_available_estimado": 8,
+      "historical_actions": [
+        {
+          "type": "play",
+          "card": "OP17-022",
+          "card_name": "Shanks",
+          "effects": [
+            "Activate 1 Don",
+            "Activate 1 Don",
+            "Rest Stussy [\"OP17-054\">OP17-054]",
+            "Rest Rocks D. Xebec [\"OP17-118\">OP17-118]",
+            "Rest Gloriosa [\"OP17-046\">OP17-046]",
+            "Rest Stussy [\"OP17-054\">OP17-054]"
+          ]
+        },
+        {
+          "type": "attach_don",
+          "amount": 2,
+          "to": "OP17-022",
+          "to_name": "Shanks",
+          "total": 2
+        },
+        {
+          "type": "attack",
+          "attacker": "Dracule Mihawk",
+          "attacker_code": "OP14-020",
+          "target": "Rocks D. Xebec [\"OP17-039\">OP17-039]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "attack",
+          "attacker": "Shanks",
+          "attacker_code": "OP17-022",
+          "target": "Rocks D. Xebec [\"OP17-118\">OP17-118]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": [
+            "OP17-118"
+          ]
+        },
+        {
+          "type": "activate",
+          "card": "OP14-020",
+          "card_name": "Dracule Mihawk",
+          "effects": [
+            "Rest Dracule Mihawk [\"ST32-003\">ST32-003]",
+            "Can't play Cost 1 Or More Characters for the Turn!"
+          ]
+        },
+        {
+          "type": "activate",
+          "card": "ST32-003",
+          "card_name": "Dracule Mihawk",
+          "effects": [
+            "Draw 1 Card",
+            "Trash Kawamatsu [\"OP12-023\">OP12-023]"
+          ]
+        }
+      ],
+      "engine_hoje_narrativa": "  \u001b[90mComprou: You Can Be My Samurai!! (Repri\u001b[0m\n  \u001b[93mDON!! +1 rampados │ 10 ativos │ 0 restados\u001b[0m\n  -- Turno (Turn Planner: simula sequências) --\n  > gastou 10 DON -> Joga: Shanks (022) (Manga) (12000pwr) [CHARACTER]\n    \u001b[90mefeito: [Rush] (This card can attack on the turn in which it is played.)[On Play] Set up to 2 of y...\u001b[0m\n    ↳ [Shanks (022) (Manga)] restou: Miss Buckingham, Miss Buckingham, Gloriosa (Alter\n    ↳ [Shanks (022) (Manga)] reativou 2 DON\n    anexou 2 DON em Shanks (022) (Manga)\n    Shanks (022) (Manga) (14000pwr) ataca Leader\n      ↳ [on opp attack: Charlotte Linli] custo: trashou da mão: Charlotte Linli\n      ↳ [on opp attack: Charlotte Linli] +1000 power em leader_or_character\n      💥 DANO! vida do oponente: 2\n    Dracule Mihawk (7000pwr) ataca Leader\n      [quando restou] comprou: Perona (Alte (e trashou: Shanks (022))\n      ↳ [on opp attack: Charlotte Linli] custo: trashou da mão: Shiki (048) (Al\n      ↳ [on opp attack: Charlotte Linli] +1000 power em leader_or_character\n      💥 DANO! vida do oponente: 1\n    Dracule Mihawk - OP1 (6000pwr) ataca Leader\n      ↳ [on opp attack: Charlotte Linli] custo: trashou da mão: Rocks.D.Xebec (\n      ↳ [on opp attack: Charlotte Linli] +1000 power em leader_or_character\n      💥 DANO! vida do oponente: 0\n"
+    },
+    {
+      "turn": 13,
+      "don_available_estimado": 8,
+      "historical_actions": [
+        {
+          "type": "play",
+          "card": "OP17-022",
+          "card_name": "Shanks",
+          "effects": [
+            "Activate 1 Don",
+            "Activate 1 Don",
+            "Rest Gloriosa [\"OP17-046\">OP17-046]"
+          ]
+        },
+        {
+          "type": "attack",
+          "attacker": "Dracule Mihawk",
+          "attacker_code": "OP14-020",
+          "target": "Rocks D. Xebec [\"OP17-039\">OP17-039]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "attack",
+          "attacker": "Shanks",
+          "attacker_code": "OP17-022",
+          "target": "Shiki [\"OP17-048\">OP17-048]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "activate",
+          "card": "OP13-040",
+          "card_name": "I Know You're Strong... So I'll Go All Out",
+          "effects": [
+            "Rest 1 Don"
+          ]
+        }
+      ],
+      "engine_hoje_narrativa": "  \u001b[90mComprou: Yasopp (Alternate Art)\u001b[0m\n  \u001b[93mDON!! +0 rampados │ 10 ativos │ 0 restados\u001b[0m\n  -- Turno (Turn Planner: simula sequências) --\n  > gastou 10 DON -> Joga: Shanks (022) (Manga) (12000pwr) [CHARACTER]\n    \u001b[90mefeito: [Rush] (This card can attack on the turn in which it is played.)[On Play] Set up to 2 of y...\u001b[0m\n    ↳ [Shanks (022) (Manga)] restou: Gloriosa (Alter\n    ↳ [Shanks (022) (Manga)] reativou 2 DON\n    anexou 2 DON em Shanks (022) (Manga)\n    Shanks (022) (Manga) (14000pwr) ataca Leader\n      ↳ [on opp attack: Charlotte Linli] custo: trashou da mão: Charlotte Linli\n      ↳ [on opp attack: Charlotte Linli] +1000 power em leader_or_character\n      ↳ [on opp attack: Shiki (048) (Al] custo: trashou da mão: Edward.Newgate\n      ↳ [on opp attack: Shiki (048) (Al] -3000 power em: Shanks (022) (M\n      💥 DANO! vida do oponente: 1\n    Dracule Mihawk - OP1 (6000pwr) ataca Leader\n      ↳ [on opp attack: Charlotte Linli] custo: trashou da mão: Gloriosa (Alter\n      ↳ [on opp attack: Charlotte Linli] +1000 power em leader_or_character\n      ↳ [on opp attack: Shiki (048) (Al] custo: trashou da mão: Gloriosa (Alter\n      ↳ [on opp attack: Shiki (048) (Al] -3000 power em: Shanks (022) (M\n      💥 DANO! vida do oponente: 0\n"
+    }
+  ]
+}

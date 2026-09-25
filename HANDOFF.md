@@ -1,5 +1,88 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-09-25 (893) - 1a CPU x CPU pos-fix do servidor: `[Activate:Main]` do lider e barrado por um heuristico de "vale a pena" ANTES do Q ver a candidata
+
+Partida `Dracule.Mihawk-G_x_Rocks.D.Xebec-B_2026-09-25T00.10.35_p2` (14
+turnos, GameOver real), jogada apos `JOGAR.bat` (pull + rebuild da DLL +
+restart do server). O servidor subido pelo `.bat` (`Start-Process` aninhado)
+aqueceu QUEBRADO -- `RuntimeError: Nenhum .deck encontrado para inicializar
+o match`, HTTP 500 em toda decisao, bot so dava `end_turn`. Matei o processo
+e subi `python server.py` direto; aquecimento OK, `list_decks()` achou os 48
+decks normalmente. **Correcao do usuario**: o motivo real do bot so passar a
+vez era **o plugin ainda nao ter iniciado no cliente**, nao o server -- a
+partida quebrada (6 turnos, sem GameOver) foi APAGADA do banco a pedido dele
+(`index.json`, raw/parsed/decks/decks_full/decision_log/auditoria
+removidos; so a `_p2`, real, ficou).
+
+### O achado: heuristico de viabilidade, nao o modelo, filtra `activate`
+
+Rodei `audit_real_losses.py` + `triage_real_losses.py` na partida real (bot
+perdeu): **6 de 6 turnos auditados DIVERGEM**, todos no mesmo padrao -- ao
+vivo o lider Dracule Mihawk (`OP14-020`) ativa `[Activate:Main]` quase todo
+turno, o motor de hoje re-simulando o MESMO estado nunca ativa nenhuma vez.
+
+Bati isso contra o alarme ja registrado (bloco 889: guarda-corpo `activate`
+caiu 24,0% -> 10,7% na promocao do Q) achando que seria confirmacao --
+**nao e, ou nao so isso**. Rodei com `OPTCG_DEBUG_AM=1` (instrumentacao ja
+existente, nunca antes usada pra este angulo) e a causa real apareceu:
+
+```
+should_activate_main:condições do efeito não satisfeitas (board/estado)   x4
+should_activate_main:add_don/set_don_active: sem DON no deck/restado      x4
+should_activate_main:custo rest_own_card 1: nenhuma carta própria ativa   x2
+```
+
+`_should_activate_main` (`decision_engine.py:17323`, chamada em
+`decision_engine.py:20332` dentro de `_generate_and_score_actions`) e, na
+propria docstring, um heuristico de **"vale a pena ativar" (beneficio
+claro)** -- roda ANTES do Q pontuar qualquer coisa. Se ele disser nao, a
+acao **nunca vira candidata**, o Q nunca a ve.
+
+O efeito de `OP14-020` e `set_don_active count:3 up_to:true` (reativa ate 3
+DON restados) com custo `rest_own_card 1`. As 4 recusas "sem DON
+restado" e as 2 recusas "sem carta ativa pra restar" batem com um padrao de
+**SEQUENCIAMENTO**: se o motor checa viabilidade de `activate` com o estado
+ATUAL da decisao (antes de ja ter jogado a carta cara que gera DON restado,
+ou depois de ja ter atacado com lider+Kouzuki Oden, restando os dois), ele
+nunca ve a janela em que ativar DEPOIS de pagar um custo caro (ou ANTES de
+atacar) compensaria. Nao e o modelo preferindo nao ativar -- e a opcao nunca
+chegando a existir naquele ponto da sequencia.
+
+**NAO CONCLUIDO**: nao confirmei se isto explica o alarme do bloco 889
+(agregado, corpus inteiro) ou e um fenomeno so desta partida/lider. Nao
+propus fix -- exigiria decidir ONDE no fluxo de `_generate_and_score_actions`
+reordenar ou re-simular a checagem de viabilidade, e isso e trabalho de
+`decision_engine.py`, fora do escopo desta sessao de triagem.
+
+### Tangente NAO perseguida
+
+`ST32-002` (Kouzuki Oden) aparece como `"type": "activate"` no log historico
+do turno 7 com o MESMO texto do `on_play` dele (`card_effects_db.json` so
+tem `on_play`, sem `activate_main`) -- suspeito de artefato do parser do
+combat log (`parse_combat_log.py`), nao habilidade real perdida. Nao
+investigado.
+
+### Sessao deixada de pe pra acompanhamento remoto
+
+A pedido do usuario: `request_keep_awake` (ate 5 min de sessao ociosa) e
+Remote Control LIGADOS nesta sessao -- ele quer acompanhar/redirecionar pelo
+celular com a maquina de origem ligada. O `engine server` (porta 8765,
+`python server.py` direto, PID trocado de 4816 pra 10624) continua rodando.
+
+### Validacao
+
+`smoke_fast.py` completo, zero FAIL, `SMOKE FAST OK`.
+
+### Aberto
+
+- Causa raiz do gate de `activate` **nao fechada**: sequenciamento e a
+  hipotese mais forte, nao confirmada com um segundo caso.
+- Ligar isto (ou nao) ao alarme do bloco 889 fica pra quando houver mais
+  dado.
+- Tangente do parser do Kouzuki Oden nao investigada.
+- Mesmos itens abertos dos blocos 890-892: checkpoint humano pendente,
+  professor que espia (888) sem teste.
+
 ## 2026-09-24 (892) - Varredura do `CombatLogs/` local achou 2 partidas de 15/09 nunca banqueadas (sem telemetria disponivel)
 
 Pedido do usuario: conferir se sobrou log pra registrar. `CombatLogs/` (pasta
