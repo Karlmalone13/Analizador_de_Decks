@@ -16815,6 +16815,33 @@ class OPTCGMatch:
             return
         self._ataques_pendentes[code] = {"power": power or 0, "turn": turn}
 
+    def register_own_action_by_code(self, kind: Optional[str], code: Optional[str],
+                                    power: int, turn: int) -> None:
+        """Toda acao REAL escolhida no /decide passa por aqui. `attack` registra;
+        qualquer outra acao da MESMA carta encerra o ataque dela, porque as
+        perguntas de alvo seguintes desse codigo sao da acao nova. Sem isto o
+        [Activate: Main] do Mihawk OP14-020 depois do lider atacar chegava com
+        atk=6000, `_relevant_blocks` pegava o bloco de combate e o custo/alvo
+        de DON sumiam do filtro: 3 de 4 ativacoes ao vivo desviraram 0 DON."""
+        if not code:
+            return
+        if kind == 'attack':
+            self.register_own_attack_by_code(code, power, turn)
+        else:
+            self._ataques_pendentes.pop(code, None)
+
+    @staticmethod
+    def own_action_key(action) -> tuple:
+        """(kind, code, power) de uma acao do motor -- guardado pelo ponder
+        pra `register_own_action_by_code` rodar quando o hit confirmar."""
+        if action is None or len(action) <= 2:
+            return (None, None, 0)
+        card = action[2]
+        return (action[1], getattr(card, 'code', None), getattr(card, 'power', 0) or 0)
+
+    def register_own_action(self, action, turn: int) -> None:
+        self.register_own_action_by_code(*self.own_action_key(action), turn)
+
     def consume_attacker_power(self, actor_code: Optional[str], turn: int) -> int:
         """Devolve o poder do ataque REAL registrado pra esse CODIGO se o
         turno bater. NAO apaga o registro (achado ao vivo 19/09, mesma

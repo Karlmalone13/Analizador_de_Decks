@@ -10971,6 +10971,7 @@ def main() -> int:
     test_order_target_candidates_when_attacking_sem_attacker_power_19_09()
     test_optcgmatch_register_e_consume_attacker_power_19_09()
     test_optcgmatch_varios_ataques_pendentes_mesmo_turno_19_09()
+    test_ativar_depois_de_atacar_encerra_o_ataque_da_carta_25_09()
     test_explorar_longe_descobre_alem_do_topo_19_09()
     test_opp_turn_reactive_effects_krieg_leader_debuff_24_08()
     test_give_don_filtro_de_tipo_no_destinatario_24_08()
@@ -15504,6 +15505,53 @@ def test_optcgmatch_varios_ataques_pendentes_mesmo_turno_19_09() -> None:
           match.consume_attacker_power("OP16-011", 3) == vista.power)
     check("o 2o (Ace) tambem continua intacto depois de consumir o 1o",
           match.consume_attacker_power("OP16-001", 3) == ace.power)
+
+
+def test_ativar_depois_de_atacar_encerra_o_ataque_da_carta_25_09() -> None:
+    """
+    Achado ao vivo 25/09 (bloco 895, Mihawk OP14-020): o lider atacava e
+    DEPOIS ativava o [Activate: Main] no mesmo turno. O registro do ataque
+    seguia valendo pro codigo, o alvo da ativacao chegava com atk=6000,
+    `_relevant_blocks` pegava o bloco de combate e o filtro de custo/DON
+    sumia -- a mao vinha primeiro e 3 de 4 ativacoes desviraram 0 DON.
+    """
+    mihawk = real_card("OP14-020")
+    mihawk._deck_uid = 1
+    vista = real_card("OP16-011")
+    match = OPTCGMatch((mihawk, []), (real_card("OP17-039"), []))
+
+    match.register_own_action_by_code('attack', "OP14-020", 5000, 5)
+    match.register_own_action_by_code('attack', "OP16-011", vista.power, 5)
+    check("controle: com o ataque registrado, o poder chega na pergunta de alvo",
+          match.consume_attacker_power("OP14-020", 5) == 5000)
+    match.register_own_action_by_code('activate', "OP14-020", 5000, 5)
+    check("activate da MESMA carta encerra o ataque dela",
+          match.consume_attacker_power("OP14-020", 5) == 0)
+    check("o ataque pendente de OUTRA carta (Vista) nao e tocado",
+          match.consume_attacker_power("OP16-011", 5) == vista.power)
+
+    me = GameState(leader=mihawk, don_available=0)
+    me.don_rested = 5
+    corpo = real_card("ST32-003")
+    corpo._deck_uid = 20
+    me.field_chars = [corpo]
+    na_mao = real_card("OP01-055")
+    na_mao._deck_uid = 30
+    me.hand = [na_mao]
+    opp = GameState(leader=real_card("OP17-039"))
+    cands = [{"id": 30, "zone": "own_hand", "code": "OP01-055"},
+             {"id": 20, "zone": "own_board", "code": "ST32-003"},
+             {"id": -10001, "zone": "own_don_rested", "code": "Don"}]
+
+    def _ordem(atk):
+        return sim_bridge.order_target_candidates(
+            me, opp, [dict(c) for c in cands], attacker_power=atk,
+            actor_code="OP14-020")
+
+    check("controle que reprova a versao antiga: com atk=6000 a mao aparece "
+          "(o bloco de combate nao filtra nada)", 30 in _ordem(6000))
+    check("sem ataque registrado (atk=0): a mao sai, ficam campo e DON restado",
+          30 not in _ordem(0) and 20 in _ordem(0))
 
 
 def test_explorar_longe_descobre_alem_do_topo_19_09() -> None:

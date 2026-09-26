@@ -1,5 +1,167 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-09-25 (895) - CAUSA REAL do `activate` do Mihawk: bug de NAO EXECUCAO ao vivo, registro de ataque vazando pra ativacao -- CORRIGIDO
+
+**Corrige os blocos 893 E 894.** Os dois partiam da premissa "ao vivo o
+Mihawk ativa quase todo turno e o motor offline nao". Testada direto no log
+bruto, ela era falsa no ponto que importa:
+
+```
+turno 5  activate OP14-020: Rest Vander Decken          -> 0 DON desvirado
+turno 7  activate OP14-020: Rest ST32-003, Activate 1 Don x3  -> +3 DON
+turno 9  activate OP14-020: Rest Kouzuki Oden           -> 0 DON desvirado
+turno 11 activate OP14-020: Rest ST32-003               -> 0 DON desvirado
+```
+
+3 de 4 ativacoes ao vivo restaram um personagem, travaram o turno ("Can't
+play Cost 1 Or More Characters") e desviraram ZERO DON -- puro prejuizo.
+`efeitos_2026-09-25T00.10.41` confirma: as que falharam escolheram alvo em
+`own_hand` (OP01-055, OP13-031, OP12-023); a que funcionou escolheu
+`own_board`. A "divergencia" do bloco 893 era o bot AO VIVO errando, nao o
+motor offline -- e o "gap estreito" do bloco 894 (Q recusando por pouco) e o
+Q certo: ativar sem usar o DON logo depois vale o mesmo que passar.
+
+### Causa raiz (meta 2: nao execucao de efeito)
+
+`session_2026-09-24T23.48.51.log`: todas as perguntas de alvo das 3 falhas
+chegaram com `atk=0->6000(proprio ataque)`; a que funcionou, com `atk=0`. O
+lider atacou ANTES de ativar nos turnos 5/9/11 e DEPOIS no turno 7.
+
+`OPTCGMatch.consume_attacker_power` (bloco 875) mantem o ataque registrado
+pro codigo pelo RESTO do turno. A docstring dizia que vazar pra uma pergunta
+nao-combate "e o comportamento de antes, nao e regressao" -- falso: com
+`attacker_power>0`, `_relevant_blocks` (sim_bridge) pega o bloco de COMBATE,
+perde o `activate_main`, e com ele o filtro de custo (`rest_own_card` ->
+board/lider/stage) e o de DON (`set_don_active` -> `own_don_rested`). Sobra
+a ordem generica, com a mao na frente.
+
+### Fix (generico, pela forma)
+
+`OPTCGMatch.register_own_action_by_code(kind, code, power, turn)`
+(`decision_engine.py`, fonte unica): `attack` registra; qualquer OUTRA acao
+da MESMA carta encerra o ataque dela. Vale pra qualquer carta que ataque e
+depois ative no mesmo turno, nao so o Mihawk. Nao toca ataques pendentes de
+outras cartas (caso Vista/Ace de 19/09 preservado). `server.py` so chama,
+no `/decide` real e no ponder-hit (o cache agora guarda `acao_kind/code/
+power` em vez de so o atacante).
+
+Teste permanente `test_ativar_depois_de_atacar_encerra_o_ataque_da_carta_25_09`
+com controle que reprova a versao antiga (com atk=6000 a mao aparece na
+ordem; com atk=0 sai). `smoke_fast.py`: SMOKE FAST OK.
+
+**NAO VALIDADO AO VIVO**: exige rebuild/restart do server e uma partida com
+Mihawk atacando antes de ativar. Conferir no `efeitos_<ts>.txt` que o
+`activate_main` do OP14-020 sai `CONCLUIDO` com `active_don > 0`.
+
+### Erro de metodo que custou 2 blocos
+
+Os blocos 893 e 894 raciocinaram sobre o motor OFFLINE sem abrir o log bruto
+pra conferir o que a ativacao ao vivo FEZ. O bloco 894 ainda escreveu uma
+contagem "ativacoes humanas = 1" de um detector de texto torto e seguiu
+adiante. Registrado em `REPROVADOS.md`.
+
+### Achado lateral NAO corrigido
+
+`auditoria_efeitos` marcou a ativacao do turno 6 (jogo 11) como
+`ATIVADO E CONCLUIDO` com delta TODO zero (`active_don 0, rested_don 0`) --
+falso positivo do auditor; as duas outras identicas sairam
+`NAO SURTIU EFEITO`. No `TODO.md`.
+
+## 2026-09-25 (894) - CORRECAO do bloco 893: a heuristica NAO filtra `activate` do Mihawk na maior parte do turno -- o Q ve a candidata e perde por margem estreita
+
+Continuacao pedida pelo usuario (`sim`) do bloco 893. Objetivo: confirmar
+com um segundo caso a causa raiz do `activate` do Mihawk nunca disparar.
+**O resultado corrige a causa raiz do bloco 893, nao so confirma.**
+
+### O que o bloco 893 tinha certo, e o que tinha errado
+
+Certo: `_should_activate_main` de fato recusa a ativacao logo no INICIO de
+cada turno (don_rested=0 apos refresh -- trivial, correto) e no FIM de
+alguns turnos (`rest_own_card`: lider e todos os personagens ja restados
+por atacar -- tambem correto, nao ha custo pagavel). Essas sao as 10
+recusas que o `OPTCG_DEBUG_AM=1` da sessao anterior capturou.
+
+**Errado**: dai concluiu que a acao "nunca vira candidata pro Q" o turno
+inteiro. Instrumentando TAMBEM as chamadas que TEM SUCESSO (nao so as que
+falham -- `_am_debug` so loga quando `pode=False`, entao o bloco 893 media
+so metade do quadro), o `_should_activate_main` retorna `pode=True,
+'beneficio DON ramp'` REPETIDAMENTE no MEIO do turno, assim que o bot paga
+algum custo em DON (don_rested > 0) com o lider ou algum personagem ainda
+ativo pra restar como custo. Rastreio turno-a-turno (`sam_calls`, script ad
+hoc) da partida `..._2026-09-25T00.10.35_p2`:
+
+```
+turno 5: check don_rested=0 -> False (correto, inicio do turno)
+turno 5: check don_rested=6 -> True 'beneficio DON ramp'  (x5 decisoes seguidas)
+turno 6: idem, True x7 decisoes, so falha no ULTIMO check (tudo ja restado)
+```
+
+E com `capture_candidates=True` (`audit_real_losses.py`), a candidata
+`activate` de fato aparece na lista que o Q pontua, com `simulated_value`
+real -- so PERDE, por margem pequena, pra a acao escolhida:
+
+```
+turno 5 decisao 1: activate sim=0.39 vs attack(escolhido) sim=0.43
+turno 5 decisao 2: activate sim=0.41 vs pass(escolhido)   sim=0.42
+turno 7 decisao 3: activate sim=0.55 vs pass(escolhido)   sim=0.55  (empate)
+```
+
+### Confirmado nas OUTRAS 3 partidas Mihawk x Xebec ja no banco (segundo caso pedido no bloco 893)
+
+Agregado (`am_aggregate.py`, script ad hoc nao commitado, roda
+`audit_real_losses.py` com `capture_candidates=True` nas 4 partidas
+`Dracule.Mihawk-G_x_Rocks.D.Xebec-B_*` do banco):
+
+| partida | decisoes com `activate` candidato | `activate` ESCOLHIDO | gap medio (chosen.sim - activate.sim) |
+|---|---|---|---|
+| 2026-09-13T22.16.03 | 9 | 1 | 0,019 |
+| 2026-09-13T23.42.07 | 12 | 1 | 0,048 |
+| 2026-09-18T00.08.52 | 10 | 0 | 0,046 |
+| 2026-09-25T00.10.35_p2 | 14 | 0 | 0,059 |
+
+**Padrao identico nas 4**: `activate` vira candidata pontuada 9-14 vezes
+por partida (nao 0), e perde quase sempre por gap pequeno (varios `0.0`,
+i.e. EMPATE de `simulated_value` decidido por desempate, nao por o Q achar
+a acao ruim). Em nenhuma partida ha um gap grande e consistente que
+sugerisse "o Q acha isso péssimo" -- o padrao e "sempre perde por pouco".
+
+### O que isso muda
+
+A causa raiz NAO e geracao de candidata (o "buraco estrutural" do bloco
+868/`_generate_and_score_actions`) -- e **qualidade de decisao em margem
+estreita** dentro do que ja e candidata: ou (a) o Q genuinamente aprendeu
+(com pouco dado, sub-otimo) a subvalorizar levemente o retorno de DON, ou
+(b) o desempate/rollout tem um vies estrutural contra esta acao especifica
+(ex: horizonte curto demais pra capturar o valor futuro de ter mais DON
+ativo, que so se realiza 1+ decisao depois). Isso é diferente de "buraco
+estrutural" e diferente de "sequenciamento bloqueando a geracao" -- as
+duas hipoteses do bloco 893 nao se sustentam como causa PRINCIPAL (so
+explicam os checks do inicio/fim de turno, que sao comportamento correto).
+
+**NAO CONCLUIDO** (fica pra quem decidir a FORMA do proximo passo, ver
+nota abaixo): se (a) ou (b) explica o gap, e o que fazer a respeito --
+mais dado de treino, ajustar desempate, ou aceitar que o Q ainda nao
+aprendeu o valor composto do DON ramp (`REGRA_O_CRITERIO_EMERGE.md`: nao
+inventar um criterio novo por cima, deixar o modelo aprender). **Isto e
+diagnostico de causa nao-obvia + decisao de forma -- pela propria regra do
+projeto ("QUAL MODELO"), o proximo passo (decidir o que fazer com o gap)
+vale Opus, nao Sonnet.**
+
+Nenhum codigo foi alterado nesta sessao -- so instrumentacao ad hoc fora
+do repo (scratchpad) pra ler `AM_DEBUG_LOG`/`_should_activate_main`/
+`decisions` que ja existiam. `smoke_fast.py` nao precisa rodar de novo
+(nada em `decision_engine.py` mudou).
+
+### Aberto
+
+- Decidir a FORMA do proximo passo sobre o gap estreito de `activate`
+  (Opus, ver acima).
+- Ligar isto (ou nao) ao alarme agregado do bloco 889 (`activate`
+  24,0%->10,7% na promocao do Q) continua nao resolvido -- o mecanismo
+  agora e outro (margem estreita, nao geracao), entao a ligacao precisa
+  ser reavaliada do zero.
+- Tangente do parser do Kouzuki Oden (bloco 893) segue nao investigada.
+
 ## 2026-09-25 (893) - 1a CPU x CPU pos-fix do servidor: `[Activate:Main]` do lider e barrado por um heuristico de "vale a pena" ANTES do Q ver a candidata
 
 Partida `Dracule.Mihawk-G_x_Rocks.D.Xebec-B_2026-09-25T00.10.35_p2` (14

@@ -450,11 +450,7 @@ def _ponder_worker(bot_dto, opp_dto, trigger_turn: int, generation: int,
         # `_package_action` normal, entao o registro do ataque (pro
         # `when_attacking` do proprio atacante saber o attacker_power que
         # o plugin nao manda) tem que vir daqui tambem.
-        atacante_code = None
-        atacante_power = 0
-        if action is not None and len(action) > 2 and action[1] == 'attack':
-            atacante_code = getattr(action[2], 'code', None)
-            atacante_power = getattr(action[2], 'power', 0) or 0
+        acao_key = match.own_action_key(action)
         with _ponder_lock:
             if generation != _ponder_generation:
                 return  # invalidado por /mulligan ou gatilho mais novo enquanto calculava
@@ -464,8 +460,7 @@ def _ponder_worker(bot_dto, opp_dto, trigger_turn: int, generation: int,
                 "payload": payload,
                 "reason": reason,
                 "trace": trace,
-                "atacante_code": atacante_code,
-                "atacante_power": atacante_power,
+                "acao_key": acao_key,
             }
     except Exception as e:
         import traceback
@@ -1851,10 +1846,8 @@ def decide(state: GameStateDto):
             # O ataque confirmado pelo ponder-hit tambem precisa ser
             # registrado (bloco 875) -- esta e a jogada que vai acontecer
             # de verdade, so que decidida ANTES desta requisicao.
-            if cached.get("atacante_code"):
-                _get_match().register_own_attack_by_code(
-                    cached["atacante_code"], cached.get("atacante_power", 0),
-                    state.turnNumber)
+            _get_match().register_own_action_by_code(
+                *(cached.get("acao_key") or (None, None, 0)), state.turnNumber)
             return finish(cached["payload"], cached["reason"])
 
         gs     = _dto_to_gs(state.bot, state.turnNumber)
@@ -1928,8 +1921,7 @@ def decide(state: GameStateDto):
         # power, decision_engine.py) -- server.py so chama, nao decide nada
         # (achado ao vivo 19/09, bloco 875: when_attacking mirando a propria
         # mao porque o plugin nao manda attackerPower pro proprio atacante).
-        if action is not None and len(action) > 2 and action[1] == 'attack':
-            match.register_own_attack(action[2], state.turnNumber)
+        match.register_own_action(action, state.turnNumber)
 
         return finish(payload, reason)
 
