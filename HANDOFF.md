@@ -1,5 +1,32 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-09-26 (902) - 4a partida CPU x CPU com deck Mihawk+Luna de verdade (`Mihawk op17`): ainda sem confirmacao positiva
+
+A pedido do usuario, rodei 1 partida a mais (Mihawk op17 x ace op17, 5 turnos,
+`match_id 6dbb73e8...`, banco como `2026-09-26T15.24.37_p4`) especificamente
+pra exercitar os fixes do bloco 900. Resultado: **nenhum dos dois cenarios
+apareceu de um jeito que provasse o fix**, por falta de material na partida,
+nao por falha do fix:
+
+- **Stage**: o deck nunca puxou/jogou `OP14-039` (Coffin Boat) esta partida --
+  `field_stage` ficou vazio o jogo inteiro. Sequenciamento do Mihawk (turno 3,
+  unico turno com attack+activate do proprio lider) continuou
+  atacar-depois-ativar -- **mas sem Stage em campo isso e exatamente o
+  comportamento correto**: o fix so troca a ORDEM preferida quando ha Stage
+  pra pagar o custo sem sacrificar atacante; sem Stage, o trade-off
+  atacar-vs-ativar continua genuino e a escolha e do modelo.
+- **Luna**: `OP08-036` ficou na mao a partida inteira (aparece 1x como
+  candidata no turno 2, `chosen` de outra acao) -- nunca foi jogada, nem bem
+  nem mal. Sem episodio de "jogada sem alvo" pra desconfirmar, mas tambem sem
+  "jogada certa contra alvo restado" pra confirmar.
+
+**Conclusao honesta**: os testes unitarios (`smoke_fast.py`, bloco 900)
+continuam sendo a UNICA confirmacao direta dos dois fixes. Confirmacao ao
+vivo exige uma partida onde (a) o Mihawk puxe e jogue o Stage ANTES de querer
+ativar, ou (b) a Luna seja candidata com o oponente tendo board 100% ativo
+(pra ver se ela deixa de ser escolhida) -- nenhuma das 4 partidas de hoje
+gerou essas condicoes. Fica pendente pra quando sair numa run futura.
+
 ## 2026-09-26 (901) - Validacao ao vivo dos fixes 899/900: server+plugin reiniciados, 3 partidas CPU x CPU
 
 Fechando o dia: reiniciei o server (PID novo, depois dos commits 502047a/10ec28e),

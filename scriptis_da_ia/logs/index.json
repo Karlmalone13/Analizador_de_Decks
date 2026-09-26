@@ -7563,5 +7563,38 @@
    "Opponent": "decks_full/Portgas.D.Ace-R_2026-09-26T14.41.25_p3.json"
   },
   "decision_log_file": "decisions/decisions_2026-09-26T14.41.25_p3.jsonl"
+ },
+ {
+  "id": "2026-09-26T15.24.37_p4",
+  "impressao": "594507f0aae2f342336275e690992112",
+  "friendly_name": "Dracule.Mihawk-G_x_Portgas.D.Ace-R",
+  "date": "2026-09-26",
+  "p1": {
+   "name": "You",
+   "leader_code": "OP14-020",
+   "leader_name": "Dracule Mihawk",
+   "slug": "Dracule.Mihawk-G"
+  },
+  "p2": {
+   "name": "Opponent",
+   "leader_code": "OP16-001",
+   "leader_name": "Portgas D. Ace",
+   "slug": "Portgas.D.Ace-R"
+  },
+  "turns": 10,
+  "winner": "p2",
+  "bot_side": null,
+  "tipo": "cpu_vs_cpu",
+  "log_file": "raw/Dracule.Mihawk-G_x_Portgas.D.Ace-R_2026-09-26T15.24.37_p4.log",
+  "parsed_file": "parsed/Dracule.Mihawk-G_x_Portgas.D.Ace-R_2026-09-26T15.24.37_p4.json",
+  "deck_files": {
+   "You": "decks/Dracule.Mihawk-G_2026-09-26T15.24.37_p4.json",
+   "Opponent": "decks/Portgas.D.Ace-R_2026-09-26T15.24.37_p4.json"
+  },
+  "deck_full_files": {
+   "You": "decks_full/Dracule.Mihawk-G_2026-09-26T15.24.37_p4.json",
+   "Opponent": "decks_full/Portgas.D.Ace-R_2026-09-26T15.24.37_p4.json"
+  },
+  "decision_log_file": "decisions/decisions_2026-09-26T15.24.37_p4.jsonl"
  }
 ]
