@@ -1,5 +1,75 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-09-26 (897) - Validado o fix 895 AO VIVO + achado NOVO: trigger de vida ativava sem alvo valido, trashando a carta a toa (usuario)
+
+### Validacao do bloco 895: CONFIRMADA
+
+Partida nova (`Dracule.Mihawk-G_x_Portgas.D.Ace-R_2026-09-26T09.00.32`) contra
+o servidor CERTO (PID que ganhou a porta apos matar o 10624 por PID exato,
+ver bloco 896). Duas instancias reais do padrao "ataca, depois ativa no
+mesmo turno":
+
+```
+turno 5 (raw): Mihawk ataca Ace (acerta 1) -> activate: Rest Perona,
+               Activate 1 Don x3  -- CONCLUIDO, alvo own_board
+turno 7 (raw): Mihawk ataca (bloqueado) -> ... -> activate: Rest ST32-003,
+               Activate 1 Don x3  -- CONCLUIDO, alvo own_board
+```
+
+`efeitos_2026-09-26T09.00.37.txt` confirma os dois como `ATIVADO E
+CONCLUIDO` com alvo em `own_board`/`own_leader` (nao a mao). **O bug do
+bloco 895 esta corrigido e confirmado ao vivo.**
+
+### Achado NOVO (usuario apontou, correto): trigger de vida sem alvo valido nao deveria ter ativado
+
+No ultimo turno, 2 reveals de `The Billion-fold World Trichiliocosm`
+(OP06-038, `[Trigger] K.O. up to 1 opponent's Character cost<=3, restado`)
+ativaram contra um campo do oponente so com custo 4/6/8 -- **nenhum alvo
+legal existia**. O usuario perguntou por que "trigou" mesmo assim, dado que
+o bot tinha 2 DON ativos e o oponente ainda tinha ataque a fazer.
+
+**Verificado contra `rule_comprehensive.pdf` (10-1-5-2/10-1-5-3)**: ativar
+um `[Trigger]` e OPCIONAL -- o jogador pode RECUSAR e a carta vai pra mao
+intacta. Se ativar, a carta e TRASHADA ao fim ("unless otherwise
+specified"), MESMO que o efeito nao faca nada. Ou seja: sem alvo legal,
+ativar so joga a carta fora de graca -- recusar era estritamente melhor.
+O ponto do usuario procede.
+
+**Causa**: `resolve_trigger_choice` (`sim_bridge.py:1198`) despachava
+`ko`/`bounce`/`rest_opp_character`/`debuff_power`/etc como "sempre vale a
+pena" -- CATEGORICO, sem checar se o alvo (`cost_lte`/`rested_only`) tinha
+candidato de verdade no campo do oponente. Mesma FORMA de bug do bloco 895
+(decisao categorica que ignora viabilidade real), carta e mecanismo
+diferentes.
+
+**Fix**: os mesmos steps agora chamam `EffectExecutor._step_is_viable`
+antes de aceitar -- a MESMA regra de elegibilidade (`cost_lte`,
+`rested_only`, etc via `eligible_cards`) que `_should_activate_main` e o
+proprio executor ja usam em outro lugar (REGRA_SEM_DUPLICACAO, nao
+reimplementa). `give_don`/`rest_opp`/`play_from_trash` sem branch dedicado
+em `_step_is_viable` caem no default seguro (viavel), **comportamento
+identico ao anterior** pra esses -- so os que tinham branch de alvo real
+(`ko`, `bounce`, `rest_opp_character`, `debuff_power`, e `play_card` ganha
+checagem de mao de bonus) passam a ser filtrados de verdade.
+
+Teste permanente `test_trigger_com_alvo_categorico_confere_elegibilidade_26_09`
+com 3 casos (sem alvo custo<=3, com alvo custo<=3 restado, com alvo
+custo<=3 mas ATIVO -- rested_only nao deixa passar). `smoke_fast.py`:
+SMOKE FAST OK.
+
+### Aberto
+
+- Ainda nao validado ao vivo (exige outra partida com um trigger deste
+  tipo e SEM alvo legal no board do oponente).
+- `_step_is_viable` nao tem branch dedicado pra `give_don`/`rest_opp`/
+  `play_from_trash` dentro de `resolve_trigger_choice` -- se aparecer caso
+  real de trigger nesses tipos ativando sem valor, adicionar branch
+  especifico em vez de assumir que o default seguro basta.
+- O falso-negativo do `auditoria_efeitos.py` (linha ~685, `bool(ordered_
+  ids)` classifica "confirmado com 0 por falta de alvo" como "bot nao
+  escolheu nada") **continua aberto** -- achado nesta mesma investigacao,
+  nao corrigido ainda.
+
 ## 2026-09-25 (896) - Validacao ao vivo do fix 895: restart anterior tinha FALHADO em silencio
 
 Continuacao do bloco 895 (fix de `register_own_action_by_code`). Ao tentar

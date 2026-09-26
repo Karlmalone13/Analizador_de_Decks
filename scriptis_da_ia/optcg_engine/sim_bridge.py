@@ -1219,7 +1219,7 @@ def resolve_trigger_choice(gs: GameState, card_code: str | None,
     # ATENCAO: efeitos ficam aninhados sob 'effects' no card_effects_db —
     # get_card_effects resolve isso (leitura direta de _effects_db[code]['trigger']
     # sempre devolvia {} e o bot NUNCA usava trigger; bug corrigido 04/07/2026)
-    from optcg_engine.decision_engine import get_card_effects, on_ko_value
+    from optcg_engine.decision_engine import get_card_effects, on_ko_value, EffectExecutor
     trigger_steps = get_card_effects(card_code).get('trigger', {}).get('steps', [])
 
     if not trigger_steps:
@@ -1230,7 +1230,25 @@ def resolve_trigger_choice(gs: GameState, card_code: str | None,
         if action in ('ko', 'bounce', 'give_don', 'rest_opp',
                       'rest_opp_character', 'play_card', 'play_from_trash',
                       'debuff_power'):
-            return True
+            # Achado ao vivo 26/09 (usuario, log Dracule.Mihawk-G x
+            # Portgas.D.Ace-R): este dispatch era CATEGORICO -- "ko sempre
+            # usa" -- sem checar se o alvo (cost_lte/rested_only/etc)
+            # tinha CANDIDATO de verdade no campo do oponente. OP06-038
+            # ("[Trigger] K.O. up to 1 opponent's Character cost<=3,
+            # rested") ativou 2x contra um board so com custo 4/6/8 --
+            # revelar e ativar TRASHA a carta mesmo sem efeito (regra
+            # 10-1-5-3: "trash that card unless otherwise specified"),
+            # enquanto RECUSAR a mantém intacta na mão (10-1-5-2). Sem
+            # alvo, ativar so joga a carta fora por nada.
+            # `_step_is_viable` (EffectExecutor) e a MESMA regra de
+            # elegibilidade que `activate_main_effect` logo abaixo ja usa
+            # e que `_should_activate_main`/executor real usam em outro
+            # lugar (REGRA_SEM_DUPLICACAO) -- nao reimplementa
+            # cost_lte/rested_only, so reusa.
+            data_tg = _cards_db.get(card_code) or {}
+            card_tg = _make_card(card_code, data_tg)
+            opp_stub_tg = opp_gs if opp_gs is not None else GameState(leader=deepcopy(gs.leader))
+            return EffectExecutor(gs, opp_stub_tg)._step_is_viable(step, card_tg)
         if action == 'activate_main_effect':
             # Em EVENTO, este trigger significa "jogue o [Main] de graça"
             # (ex: Are At Your Service — search). A régua antiga (on_ko_value,

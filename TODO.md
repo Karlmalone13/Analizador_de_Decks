@@ -1,6 +1,27 @@
 # TODO — Analisador de Decks OPTCG
 
-**Última atualização:** 25 de setembro de 2026 (bloco 896)
+**Última atualização:** 26 de setembro de 2026 (bloco 897)
+
+> **RESOLVIDO: bloco 895 VALIDADO ao vivo (26/09/2026, bloco 897)** --
+> Mihawk atacou e ativou no mesmo turno 2x numa partida nova, os dois
+> `ATIVADO E CONCLUIDO` com alvo em `own_board`/`own_leader`. Fechado.
+
+> **CORRIGIDO, FALTA VALIDAR AO VIVO: trigger de vida ativava sem alvo
+> valido (26/09/2026, bloco 897, achado do usuario)**
+>
+> `[Trigger] K.O. up to 1 opponent's Character cost<=3, restado` (OP06-038)
+> ativou 2x contra board custo 4/6/8 -- SEM alvo legal. Regra do jogo
+> (10-1-5-2/10-1-5-3): ativar sem alvo so TRASHA a carta a toa; recusar
+> mantinha ela na mao. `resolve_trigger_choice` despachava
+> ko/bounce/rest_opp_character/debuff_power como "sempre vale" sem checar
+> candidato real. Fix: mesma checagem de elegibilidade do resto do motor
+> (`_step_is_viable`, sem duplicar regra). Teste com 3 casos no
+> `smoke_fast.py`. **Falta validar ao vivo** (proxima partida com trigger
+> deste tipo sem alvo legal).
+>
+> **Aberto**: falso-negativo do `auditoria_efeitos.py` (linha ~685) --
+> classifica "confirmado com 0 por falta de alvo" como falha ("bot nao
+> escolheu nada"). Achado na mesma investigacao, nao corrigido.
 
 > **PENDENTE: restart do server pra validar AO VIVO falhou em silencio na
 > 1a tentativa (25/09/2026, bloco 896)**

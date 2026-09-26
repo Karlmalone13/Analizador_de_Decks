@@ -10972,6 +10972,7 @@ def main() -> int:
     test_optcgmatch_register_e_consume_attacker_power_19_09()
     test_optcgmatch_varios_ataques_pendentes_mesmo_turno_19_09()
     test_ativar_depois_de_atacar_encerra_o_ataque_da_carta_25_09()
+    test_trigger_com_alvo_categorico_confere_elegibilidade_26_09()
     test_explorar_longe_descobre_alem_do_topo_19_09()
     test_opp_turn_reactive_effects_krieg_leader_debuff_24_08()
     test_give_don_filtro_de_tipo_no_destinatario_24_08()
@@ -15552,6 +15553,44 @@ def test_ativar_depois_de_atacar_encerra_o_ataque_da_carta_25_09() -> None:
           "(o bloco de combate nao filtra nada)", 30 in _ordem(6000))
     check("sem ataque registrado (atk=0): a mao sai, ficam campo e DON restado",
           30 not in _ordem(0) and 20 in _ordem(0))
+
+
+def test_trigger_com_alvo_categorico_confere_elegibilidade_26_09() -> None:
+    """
+    Achado ao vivo 26/09 (usuario, log Dracule.Mihawk-G x Portgas.D.Ace-R,
+    ultimo turno): `resolve_trigger_choice` despachava 'ko'/'bounce'/
+    'rest_opp_character'/'debuff_power' como SEMPRE vale a pena, sem checar
+    se o alvo (cost_lte/rested_only) tinha candidato real no campo do
+    oponente. OP06-038 ("[Trigger] K.O. up to 1 opponent's Character
+    cost<=3, rested") ativou 2x contra um board custo 4/6/8 -- revelar e
+    ativar TRASHA a carta mesmo sem efeito (regra 10-1-5-3), enquanto
+    RECUSAR mantem ela intacta na mao (regra 10-1-5-2, usuario confirmou a
+    leitura). Fix: reusa `_step_is_viable` (mesma regra de elegibilidade
+    do resto do motor, REGRA_SEM_DUPLICACAO) antes de aceitar.
+    """
+    opp_sem_alvo = GameState(leader=real_card("OP16-001"))
+    luffy = real_card("OP16-015"); luffy.rested = True     # custo 4
+    marco = real_card("OP16-014"); marco.rested = False    # custo 6
+    newgate = real_card("OP16-003"); newgate.rested = False  # custo 8
+    opp_sem_alvo.field_chars = [luffy, marco, newgate]
+    me = GameState(leader=real_card("OP14-020"))
+
+    check("sem NENHUM personagem custo<=3 no campo do oponente: recusa o "
+          "trigger (mantem a carta na mao, nao trasha por nada)",
+          sim_bridge.resolve_trigger_choice(me, "OP06-038", opp_sem_alvo) is False)
+
+    opp_com_alvo = GameState(leader=real_card("OP16-001"))
+    alvo = real_card("OP01-055"); alvo.rested = True       # custo 1, restado
+    opp_com_alvo.field_chars = [alvo]
+    check("com 1 personagem custo<=3 E restado: aceita o trigger normalmente",
+          sim_bridge.resolve_trigger_choice(me, "OP06-038", opp_com_alvo) is True)
+
+    opp_ativo = GameState(leader=real_card("OP16-001"))
+    alvo_ativo = real_card("OP01-055"); alvo_ativo.rested = False  # custo 1, mas ATIVO
+    opp_ativo.field_chars = [alvo_ativo]
+    check("personagem custo<=3 mas ATIVO (rested_only exige restado): "
+          "continua recusando",
+          sim_bridge.resolve_trigger_choice(me, "OP06-038", opp_ativo) is False)
 
 
 def test_explorar_longe_descobre_alem_do_topo_19_09() -> None:

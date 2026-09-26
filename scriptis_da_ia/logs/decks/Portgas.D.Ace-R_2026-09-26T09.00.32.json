@@ -1,0 +1,51 @@
+{
+  "cards": [
+    {
+      "code": "OP16-014",
+      "name": "Marco",
+      "count": 3
+    },
+    {
+      "code": "OP17-017",
+      "name": "OP17-017",
+      "count": 2
+    },
+    {
+      "code": "OP13-016",
+      "name": "Monkey D. Garp",
+      "count": 2
+    },
+    {
+      "code": "OP16-003",
+      "name": "Edward Newgate",
+      "count": 2
+    },
+    {
+      "code": "OP17-005",
+      "name": "OP17-005",
+      "count": 2
+    },
+    {
+      "code": "OP16-015",
+      "name": "Monkey D. Luffy",
+      "count": 1
+    },
+    {
+      "code": "ST23-001",
+      "name": "ST23-001",
+      "count": 1
+    },
+    {
+      "code": "ST30-016",
+      "name": "ST30-016",
+      "count": 1
+    },
+    {
+      "code": "OP16-118",
+      "name": "OP16-118",
+      "count": 1
+    }
+  ],
+  "total_seen": 15,
+  "leader": "OP16-001"
+}
