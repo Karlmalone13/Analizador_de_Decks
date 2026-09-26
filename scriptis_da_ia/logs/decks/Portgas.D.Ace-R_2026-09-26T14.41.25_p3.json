@@ -1,0 +1,41 @@
+{
+  "cards": [
+    {
+      "code": "OP10-015",
+      "name": "Mocha",
+      "count": 3
+    },
+    {
+      "code": "OP13-016",
+      "name": "Monkey D. Garp",
+      "count": 2
+    },
+    {
+      "code": "OP17-006",
+      "name": "OP17-006",
+      "count": 2
+    },
+    {
+      "code": "OP16-003",
+      "name": "Edward Newgate",
+      "count": 2
+    },
+    {
+      "code": "ST30-016",
+      "name": "ST30-016",
+      "count": 1
+    },
+    {
+      "code": "OP16-011",
+      "name": "Vista",
+      "count": 1
+    },
+    {
+      "code": "OP17-005",
+      "name": "OP17-005",
+      "count": 1
+    }
+  ],
+  "total_seen": 12,
+  "leader": "OP16-001"
+}

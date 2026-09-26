@@ -1,0 +1,1182 @@
+{
+  "meta": {
+    "players": {
+      "p1": {
+        "name": "You",
+        "leader": {
+          "name": "Edward Newgate",
+          "code": "OP02-001"
+        }
+      },
+      "p2": {
+        "name": "Opponent",
+        "leader": {
+          "name": "Portgas D. Ace",
+          "code": "OP16-001"
+        }
+      }
+    },
+    "goes_first": null
+  },
+  "total_turns": 10,
+  "turns": [
+    {
+      "turn": 1,
+      "player": "You",
+      "card_drawn": null,
+      "don_drawn": 1,
+      "actions": [
+        {
+          "type": "activate",
+          "card": "OP02-022",
+          "card_name": "Whitebeard Pirates",
+          "effects": [
+            "<b>Reveal and Draw Jozu [\"OP02-008\">OP02-008]</b>"
+          ]
+        }
+      ],
+      "snapshot": {
+        "You": {
+          "hand": [
+            "OP02-015",
+            "OP01-006",
+            "OP01-029",
+            "OP01-029",
+            "OP02-008",
+            "OP02-008"
+          ],
+          "board": [],
+          "trash": [
+            "OP02-022"
+          ],
+          "life": 5,
+          "deck": [
+            "OP02-004",
+            "OP02-015",
+            "OP02-024",
+            "OP03-013"
+          ],
+          "life_cards": [
+            "OP02-004",
+            "OP02-015",
+            "OP02-018",
+            "OP02-024",
+            "OP03-013"
+          ],
+          "don_cost": [
+            "Don"
+          ],
+          "rested_rz1": {
+            "don_cost": [
+              "Don"
+            ]
+          }
+        },
+        "Opponent": {
+          "hand": [
+            "OP17-006",
+            "OP16-118",
+            "OP16-118",
+            "OP16-014",
+            "OP17-017"
+          ],
+          "trash": [],
+          "board": [],
+          "life": 5,
+          "deck": [
+            "OP10-015",
+            "OP16-004",
+            "OP16-011",
+            "OP16-015",
+            "ST23-001",
+            "ST30-016"
+          ],
+          "life_cards": [
+            "OP13-016",
+            "OP16-003",
+            "OP16-021",
+            "OP17-005",
+            "OP17-006"
+          ]
+        }
+      }
+    },
+    {
+      "turn": 2,
+      "player": "Opponent",
+      "card_drawn": null,
+      "don_drawn": 2,
+      "actions": [],
+      "snapshot": {
+        "Opponent": {
+          "hand": [
+            "OP17-006",
+            "OP16-118",
+            "OP16-118",
+            "OP16-014",
+            "OP17-017",
+            "OP16-004"
+          ],
+          "board": [],
+          "trash": [],
+          "life": 5,
+          "deck": [
+            "OP10-015",
+            "OP16-011",
+            "OP16-015",
+            "ST23-001",
+            "ST30-016"
+          ],
+          "life_cards": [
+            "OP13-016",
+            "OP16-003",
+            "OP16-021",
+            "OP17-005",
+            "OP17-006"
+          ],
+          "don_cost": [
+            "Don",
+            "Don"
+          ]
+        },
+        "You": {
+          "hand": [
+            "OP02-015",
+            "OP01-006",
+            "OP01-029",
+            "OP01-029",
+            "OP02-008",
+            "OP02-008"
+          ],
+          "trash": [
+            "OP02-022"
+          ],
+          "board": [],
+          "life": 5,
+          "deck": [
+            "OP02-004",
+            "OP02-015",
+            "OP02-024",
+            "OP03-013"
+          ],
+          "life_cards": [
+            "OP02-004",
+            "OP02-015",
+            "OP02-018",
+            "OP02-024",
+            "OP03-013"
+          ],
+          "don_cost": [
+            "Don"
+          ],
+          "rested_rz1": {
+            "don_cost": [
+              "Don"
+            ]
+          }
+        }
+      }
+    },
+    {
+      "turn": 3,
+      "player": "You",
+      "card_drawn": null,
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "attack",
+          "attacker": "Edward Newgate",
+          "attacker_code": "OP02-001",
+          "target": "Portgas D. Ace [\"OP16-001\">OP16-001]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "play",
+          "card": "OP02-015",
+          "card_name": "Makino",
+          "effects": [
+            "Buff Makino [\"OP02-015\">OP02-015] 3000"
+          ]
+        },
+        {
+          "type": "play",
+          "card": "OP02-015",
+          "card_name": "Makino",
+          "effects": [
+            "Buff Makino [\"OP02-015\">OP02-015] 3000"
+          ]
+        }
+      ],
+      "snapshot": {
+        "You": {
+          "hand": [
+            "OP01-006",
+            "OP01-029",
+            "OP01-029",
+            "OP02-008",
+            "OP02-008",
+            "OP02-018"
+          ],
+          "board": [
+            "OP02-015",
+            "OP02-015"
+          ],
+          "trash": [
+            "OP02-022"
+          ],
+          "life": 4,
+          "deck": [
+            "OP02-004",
+            "OP02-024",
+            "OP03-013"
+          ],
+          "life_cards": [
+            "OP02-004",
+            "OP02-015",
+            "OP02-024",
+            "OP03-013"
+          ],
+          "don_cost": [
+            "Don",
+            "Don",
+            "Don"
+          ],
+          "rested_rz1": {
+            "don_cost": [
+              "Don"
+            ]
+          },
+          "rested": {
+            "OP02-015": 2
+          }
+        },
+        "Opponent": {
+          "hand": [
+            "OP17-006",
+            "OP16-118",
+            "OP16-118",
+            "OP16-014",
+            "OP17-017",
+            "OP16-004",
+            "OP17-006"
+          ],
+          "trash": [],
+          "board": [],
+          "life": 4,
+          "deck": [
+            "OP10-015",
+            "OP16-011",
+            "OP16-015",
+            "ST23-001",
+            "ST30-016"
+          ],
+          "life_cards": [
+            "OP13-016",
+            "OP16-003",
+            "OP16-021",
+            "OP17-005"
+          ],
+          "don_cost": [
+            "Don",
+            "Don"
+          ]
+        }
+      }
+    },
+    {
+      "turn": 4,
+      "player": "Opponent",
+      "card_drawn": null,
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "play",
+          "card": "OP10-015",
+          "card_name": "Mocha",
+          "effects": [
+            "Buff Makino [\"OP02-015\">OP02-015] -1000"
+          ]
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP16-001",
+          "to_name": "Portgas D. Ace",
+          "total": 1
+        },
+        {
+          "type": "attack",
+          "attacker": "Portgas D. Ace",
+          "attacker_code": "OP16-001",
+          "target": "Edward Newgate [\"OP02-001\">OP02-001]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        }
+      ],
+      "snapshot": {
+        "Opponent": {
+          "hand": [
+            "OP17-006",
+            "OP16-118",
+            "OP16-118",
+            "OP16-014",
+            "OP17-017",
+            "OP16-004",
+            "OP17-006"
+          ],
+          "board": [
+            "OP10-015"
+          ],
+          "trash": [],
+          "life": 4,
+          "deck": [
+            "OP16-011",
+            "OP16-015",
+            "ST23-001",
+            "ST30-016"
+          ],
+          "life_cards": [
+            "OP13-016",
+            "OP16-003",
+            "OP16-021",
+            "OP17-005"
+          ],
+          "don_cost": [
+            "Don",
+            "Don",
+            "Don"
+          ],
+          "attached_don": [
+            "Don"
+          ],
+          "rested": {
+            "OP10-015": 1
+          }
+        },
+        "You": {
+          "hand": [
+            "OP01-006",
+            "OP01-029",
+            "OP01-029",
+            "OP02-008",
+            "OP02-008",
+            "OP02-018",
+            "OP02-024"
+          ],
+          "trash": [
+            "OP02-022"
+          ],
+          "board": [
+            "OP02-015",
+            "OP02-015"
+          ],
+          "life": 3,
+          "deck": [
+            "OP02-004",
+            "OP02-024",
+            "OP03-013"
+          ],
+          "life_cards": [
+            "OP02-004",
+            "OP02-015",
+            "OP03-013"
+          ],
+          "don_cost": [
+            "Don",
+            "Don",
+            "Don"
+          ],
+          "rested_rz1": {
+            "don_cost": [
+              "Don"
+            ]
+          },
+          "rested": {
+            "OP02-015": 2
+          }
+        }
+      }
+    },
+    {
+      "turn": 5,
+      "player": "You",
+      "card_drawn": null,
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP02-001",
+          "to_name": "Edward Newgate",
+          "total": 1
+        },
+        {
+          "type": "attack",
+          "attacker": "Edward Newgate",
+          "attacker_code": "OP02-001",
+          "target": "Portgas D. Ace [\"OP16-001\">OP16-001]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": [
+            "OP17-006",
+            "OP16-004"
+          ]
+        },
+        {
+          "type": "play",
+          "card": "OP02-024",
+          "card_name": "Moby Dick",
+          "effects": []
+        },
+        {
+          "type": "play",
+          "card": "OP01-006",
+          "card_name": "Otama",
+          "effects": [
+            "Give Mocha [\"OP10-015\">OP10-015] -2000"
+          ]
+        },
+        {
+          "type": "activate",
+          "card": "OP02-015",
+          "card_name": "Makino",
+          "effects": [
+            "Buff Makino [\"OP02-015\">OP02-015] 3000",
+            "Buff Makino [\"OP02-015\">OP02-015] 3000"
+          ]
+        }
+      ],
+      "snapshot": {
+        "You": {
+          "hand": [
+            "OP01-029",
+            "OP01-029",
+            "OP02-008",
+            "OP02-008",
+            "OP02-018",
+            "OP02-004",
+            "OP03-013"
+          ],
+          "board": [
+            "OP02-015",
+            "OP02-015",
+            "OP01-006"
+          ],
+          "trash": [
+            "OP02-022"
+          ],
+          "life": 2,
+          "deck": [
+            "OP02-024",
+            "OP03-013"
+          ],
+          "life_cards": [
+            "OP02-004",
+            "OP02-015"
+          ],
+          "don_cost": [
+            "Don",
+            "Don",
+            "Don",
+            "Don"
+          ],
+          "attached_don": [
+            "Don"
+          ],
+          "stage": [
+            "OP02-024"
+          ],
+          "rested_rz1": {
+            "don_cost": [
+              "Don"
+            ]
+          },
+          "rested": {
+            "OP01-006": 1
+          }
+        },
+        "Opponent": {
+          "hand": [
+            "OP16-118",
+            "OP16-118",
+            "OP16-014",
+            "OP17-017",
+            "OP17-006"
+          ],
+          "trash": [
+            "OP17-006",
+            "OP16-004"
+          ],
+          "board": [
+            "OP10-015"
+          ],
+          "life": 4,
+          "deck": [
+            "OP16-011",
+            "OP16-015",
+            "ST23-001",
+            "ST30-016"
+          ],
+          "life_cards": [
+            "OP13-016",
+            "OP16-003",
+            "OP16-021",
+            "OP17-005"
+          ],
+          "don_cost": [
+            "Don",
+            "Don",
+            "Don"
+          ],
+          "attached_don": [
+            "Don"
+          ],
+          "rested": {
+            "OP10-015": 1
+          }
+        }
+      }
+    },
+    {
+      "turn": 6,
+      "player": "Opponent",
+      "card_drawn": null,
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "play",
+          "card": "OP16-118",
+          "card_name": "Portgas D. Ace",
+          "effects": [
+            "<b>Reveal and Draw Edward Newgate [\"OP16-003\">OP16-003]</b>"
+          ]
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP16-001",
+          "to_name": "Portgas D. Ace",
+          "total": 1
+        },
+        {
+          "type": "attack",
+          "attacker": "Portgas D. Ace",
+          "attacker_code": "OP16-001",
+          "target": "Edward Newgate [\"OP02-001\">OP02-001]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "attack",
+          "attacker": "Mocha",
+          "attacker_code": "OP10-015",
+          "target": "Makino [\"OP02-015\">OP02-015]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": [
+            "OP02-018",
+            "OP03-013",
+            "OP02-008"
+          ]
+        }
+      ],
+      "snapshot": {
+        "Opponent": {
+          "hand": [
+            "OP16-118",
+            "OP16-014",
+            "OP17-017",
+            "OP17-006",
+            "OP16-015",
+            "OP16-003"
+          ],
+          "board": [
+            "OP10-015",
+            "OP16-118"
+          ],
+          "trash": [
+            "OP17-006",
+            "OP16-004"
+          ],
+          "life": 4,
+          "deck": [
+            "OP10-015",
+            "OP16-011",
+            "OP16-015",
+            "ST23-001",
+            "ST30-016"
+          ],
+          "life_cards": [
+            "OP13-016",
+            "OP16-003",
+            "OP16-021",
+            "OP17-005"
+          ],
+          "don_cost": [
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don"
+          ],
+          "attached_don": [
+            "Don"
+          ],
+          "rested": {
+            "OP10-015": 1,
+            "OP16-118": 1
+          }
+        },
+        "You": {
+          "hand": [
+            "OP01-029",
+            "OP02-008",
+            "OP02-004"
+          ],
+          "trash": [
+            "OP02-022",
+            "OP01-029",
+            "OP02-018",
+            "OP03-013",
+            "OP02-008"
+          ],
+          "board": [
+            "OP02-015",
+            "OP02-015",
+            "OP01-006"
+          ],
+          "life": 2,
+          "deck": [
+            "OP02-024",
+            "OP03-013"
+          ],
+          "life_cards": [
+            "OP02-004",
+            "OP02-015"
+          ],
+          "don_cost": [
+            "Don",
+            "Don",
+            "Don",
+            "Don"
+          ],
+          "attached_don": [
+            "Don"
+          ],
+          "stage": [
+            "OP02-024"
+          ],
+          "rested_rz1": {
+            "don_cost": [
+              "Don"
+            ]
+          },
+          "rested": {
+            "OP01-006": 1
+          }
+        }
+      }
+    },
+    {
+      "turn": 7,
+      "player": "You",
+      "card_drawn": null,
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "attack",
+          "attacker": "Edward Newgate",
+          "attacker_code": "OP02-001",
+          "target": "Portgas D. Ace [\"OP16-001\">OP16-001]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "attach_don",
+          "amount": 5,
+          "to": "OP01-006",
+          "to_name": "Otama",
+          "total": 5
+        },
+        {
+          "type": "attack",
+          "attacker": "Otama",
+          "attacker_code": "OP01-006",
+          "target": "Portgas D. Ace [\"OP16-001\">OP16-001]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "activate",
+          "card": "OP02-015",
+          "card_name": "Makino",
+          "effects": [
+            "Buff Makino [\"OP02-015\">OP02-015] 3000",
+            "Buff Makino [\"OP02-015\">OP02-015] 3000"
+          ]
+        }
+      ],
+      "snapshot": {
+        "You": {
+          "hand": [
+            "OP01-029",
+            "OP02-008",
+            "OP02-004",
+            "OP02-003",
+            "OP02-015"
+          ],
+          "board": [
+            "OP02-015",
+            "OP02-015",
+            "OP01-006"
+          ],
+          "trash": [
+            "OP02-022",
+            "OP01-029",
+            "OP02-018",
+            "OP03-013",
+            "OP02-008"
+          ],
+          "life": 1,
+          "deck": [
+            "OP02-024",
+            "OP03-013"
+          ],
+          "life_cards": [
+            "OP02-004"
+          ],
+          "don_cost": [
+            "Don",
+            "Don"
+          ],
+          "attached_don": [
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don"
+          ],
+          "stage": [
+            "OP02-024"
+          ],
+          "rested": {
+            "OP01-006": 1
+          }
+        },
+        "Opponent": {
+          "hand": [
+            "OP16-118",
+            "OP16-014",
+            "OP17-017",
+            "OP17-006",
+            "OP16-015",
+            "OP16-003",
+            "OP13-016",
+            "OP16-021"
+          ],
+          "trash": [
+            "OP17-006",
+            "OP16-004"
+          ],
+          "board": [
+            "OP10-015",
+            "OP16-118"
+          ],
+          "life": 2,
+          "deck": [
+            "OP10-015",
+            "OP16-011",
+            "OP16-015",
+            "ST23-001",
+            "ST30-016"
+          ],
+          "life_cards": [
+            "OP16-003",
+            "OP17-005"
+          ],
+          "don_cost": [
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don"
+          ],
+          "attached_don": [
+            "Don"
+          ],
+          "rested": {
+            "OP10-015": 1,
+            "OP16-118": 1
+          }
+        }
+      }
+    },
+    {
+      "turn": 8,
+      "player": "Opponent",
+      "card_drawn": null,
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "play",
+          "card": "OP16-003",
+          "card_name": "Edward Newgate",
+          "effects": [
+            "Buff Makino [\"OP02-015\">OP02-015] -6000"
+          ]
+        },
+        {
+          "type": "attack",
+          "attacker": "Portgas D. Ace",
+          "attacker_code": "OP16-118",
+          "target": "Edward Newgate [\"OP02-001\">OP02-001]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": [
+            "OP02-008"
+          ]
+        },
+        {
+          "type": "attack",
+          "attacker": "Portgas D. Ace",
+          "attacker_code": "OP16-001",
+          "target": "Edward Newgate [\"OP02-001\">OP02-001]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": [
+            "OP02-003",
+            "OP02-015"
+          ]
+        },
+        {
+          "type": "attack",
+          "attacker": "Mocha",
+          "attacker_code": "OP10-015",
+          "target": "Makino [\"OP02-015\">OP02-015]",
+          "result": "hit",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "activate",
+          "card": "OP16-001",
+          "card_name": "Portgas D. Ace",
+          "effects": [
+            "Give Edward Newgate [\"OP16-003\">OP16-003] Rush"
+          ]
+        },
+        {
+          "type": "attack",
+          "attacker": "Edward Newgate",
+          "attacker_code": "OP16-003",
+          "target": "Edward Newgate [\"OP02-001\">OP02-001]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        }
+      ],
+      "snapshot": {
+        "Opponent": {
+          "hand": [
+            "OP16-118",
+            "OP16-014",
+            "OP17-017",
+            "OP17-006",
+            "OP16-015",
+            "OP13-016",
+            "OP16-021",
+            "OP16-015"
+          ],
+          "board": [
+            "OP10-015",
+            "OP16-118",
+            "OP16-003"
+          ],
+          "trash": [
+            "OP17-006",
+            "OP16-004"
+          ],
+          "life": 2,
+          "deck": [
+            "OP10-015",
+            "OP16-011",
+            "ST23-001",
+            "ST30-016"
+          ],
+          "life_cards": [
+            "OP16-003",
+            "OP17-005"
+          ],
+          "don_cost": [
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don"
+          ],
+          "rested_rz1": {
+            "don_cost": [
+              "Don"
+            ]
+          },
+          "rested": {
+            "OP10-015": 1,
+            "OP16-118": 1,
+            "OP16-003": 1
+          }
+        },
+        "You": {
+          "hand": [
+            "OP02-004",
+            "OP02-004"
+          ],
+          "trash": [
+            "OP02-022",
+            "OP01-029",
+            "OP02-018",
+            "OP03-013",
+            "OP02-008",
+            "OP01-029",
+            "OP02-008",
+            "OP02-003",
+            "OP02-015",
+            "OP02-015"
+          ],
+          "board": [
+            "OP02-015",
+            "OP01-006"
+          ],
+          "life": 0,
+          "deck": [
+            "OP02-024",
+            "OP03-013"
+          ],
+          "don_cost": [
+            "Don",
+            "Don"
+          ],
+          "attached_don": [
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don"
+          ],
+          "stage": [
+            "OP02-024"
+          ],
+          "rested_rz1": {
+            "don_cost": [
+              "Don"
+            ]
+          },
+          "rested": {
+            "OP01-006": 1
+          }
+        }
+      }
+    },
+    {
+      "turn": 9,
+      "player": "You",
+      "card_drawn": null,
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "play",
+          "card": "OP02-004",
+          "card_name": "Edward Newgate",
+          "effects": [
+            "Grant Edward Newgate [\"OP02-001\">OP02-001] 2000 until next turn",
+            "Can't draw from Life"
+          ]
+        },
+        {
+          "type": "attack",
+          "attacker": "Edward Newgate",
+          "attacker_code": "OP02-001",
+          "target": "Portgas D. Ace [\"OP16-001\">OP16-001]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "activate",
+          "card": "OP02-015",
+          "card_name": "Makino",
+          "effects": [
+            "Buff Makino [\"OP02-015\">OP02-015] 3000"
+          ]
+        }
+      ],
+      "snapshot": {
+        "You": {
+          "hand": [
+            "OP02-004",
+            "OP01-006"
+          ],
+          "board": [
+            "OP02-015",
+            "OP01-006",
+            "OP02-004"
+          ],
+          "trash": [
+            "OP02-022",
+            "OP01-029",
+            "OP02-018",
+            "OP03-013",
+            "OP02-008",
+            "OP01-029",
+            "OP02-008",
+            "OP02-003",
+            "OP02-015",
+            "OP02-015"
+          ],
+          "life": 0,
+          "deck": [
+            "OP02-024",
+            "OP03-013"
+          ],
+          "don_cost": [
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don"
+          ],
+          "stage": [
+            "OP02-024"
+          ],
+          "rested_rz1": {
+            "don_cost": [
+              "Don",
+              "Don",
+              "Don",
+              "Don",
+              "Don",
+              "Don"
+            ]
+          },
+          "rested": {
+            "OP02-004": 1
+          }
+        },
+        "Opponent": {
+          "hand": [
+            "OP16-118",
+            "OP16-014",
+            "OP17-017",
+            "OP17-006",
+            "OP16-015",
+            "OP13-016",
+            "OP16-021",
+            "OP16-015",
+            "OP17-005"
+          ],
+          "trash": [
+            "OP17-006",
+            "OP16-004"
+          ],
+          "board": [
+            "OP10-015",
+            "OP16-118",
+            "OP16-003"
+          ],
+          "life": 1,
+          "deck": [
+            "OP10-015",
+            "OP16-011",
+            "ST23-001",
+            "ST30-016"
+          ],
+          "life_cards": [
+            "OP16-003"
+          ],
+          "don_cost": [
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don"
+          ],
+          "rested_rz1": {
+            "don_cost": [
+              "Don"
+            ]
+          },
+          "rested": {
+            "OP10-015": 1,
+            "OP16-118": 1,
+            "OP16-003": 1
+          }
+        }
+      }
+    },
+    {
+      "turn": 10,
+      "player": "Opponent",
+      "card_drawn": null,
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP16-001",
+          "to_name": "Portgas D. Ace",
+          "total": 1
+        },
+        {
+          "type": "attack",
+          "attacker": "Portgas D. Ace",
+          "attacker_code": "OP16-001",
+          "target": "Edward Newgate [\"OP02-001\">OP02-001]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": [
+            "OP01-006"
+          ]
+        },
+        {
+          "type": "attack",
+          "attacker": "Edward Newgate",
+          "attacker_code": "OP16-003",
+          "target": "Edward Newgate [\"OP02-001\">OP02-001]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        }
+      ],
+      "snapshot": {}
+    }
+  ]
+}

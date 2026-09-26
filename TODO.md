@@ -1,7 +1,13 @@
 # TODO — Analisador de Decks OPTCG
 
-**Última atualização:** 26 de setembro de 2026 (bloco 900)
+**Última atualização:** 26 de setembro de 2026 (bloco 901)
 
+> **VALIDADO PARCIALMENTE AO VIVO (bloco 901): 3 partidas CPU x CPU pos-fix,
+> 0 q_fallback, sem excecao/timeout. Luna/Stage-Mihawk NAO exercitados (deck
+> sem os dois); counter evento+personagem misto tambem nao apareceu nas 5
+> decisoes de 2+ cartas. Proxima sessao com Mihawk/deck com Luna: conferir
+> os 3 juntos.**
+>
 > **CORRIGIDO, FALTA VER AO VIVO: Luna e Mihawk do bloco 898 (bloco 900)**
 >
 > Nao eram julgamento -- eram opcoes erradas/inexistentes pro modelo:

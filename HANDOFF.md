@@ -1,5 +1,44 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-09-26 (901) - Validacao ao vivo dos fixes 899/900: server+plugin reiniciados, 3 partidas CPU x CPU
+
+Fechando o dia: reiniciei o server (PID novo, depois dos commits 502047a/10ec28e),
+recompilei o plugin via `setup_bepinex.ps1` (precisa fechar o jogo -- DLL fica
+travada com ele aberto) e rodei 3 partidas CPU x CPU (Solo v Self + Shift+C),
+Whitebeard(Edward Newgate) x Ace, `Back to Main` entre cada uma (nunca Rematch).
+
+**Banco**: as 3 entraram no index (`14.30.01`, `14.34.09_p2`, `14.41.25_p3`).
+**Alarme falso conhecido bateu de novo** nas partidas 2 e 3 (`AUTO-COLLECT
+falhou: id=<base> nao registrado` -- o id BASE pertence a partida ANTERIOR, a
+real e o `_pN`) -- confirmado no index, nada perdido. Telemetria automatica
+(`live_runs`) so saiu pra partida 1 por causa desse alarme (ele aborta o
+`collect_latest` antes de gerar o relatorio); gerei manualmente pras 3 juntas
+via `bot_efficiency_report.py --decision-log <sessao>.jsonl` (302 decisoes).
+Isto ainda nao esta na lista de "corrigir" do TODO -- so documentando o
+sintoma de novo, com dado fresco.
+
+**Achados da telemetria (302 decisoes, 6 mulligans + 3 partidas reais)**:
+- `q_fallback` = 0 em toda a sessao -- 100% decidido pelo modelo, nenhuma
+  decisao caiu em fallback estatico.
+- `gate_status: fail` por 2 alertas: `pending_decisions` (decisoes sem
+  confirmed/failed -- fim de log, esperado) e `bot_confusion` 10x. Investiguei
+  as 10: **todas sao "fim de turno com DON ativo sobrando E mao sem nada
+  pagavel"** (ex: 2 DON livres, mao com evento [Counter]-only custo 1 -- que
+  corretamente NAO conta como jogavel no main -- e o resto custo 4/9). Nao e
+  regressao dos fixes de hoje: e o padrao ja documentado (bloco 694/785,
+  "10,3% dos turnos terminam com DON sobrando") em decks sem curva pra
+  aproveitar.
+- Nenhum `engine_exception`, `client_timeout` ou `stuck_execution`.
+
+**O que NAO foi confirmado ao vivo hoje**: os decks (Whitebeard/Ace) nao tem
+Mihawk nem Luna, entao os fixes especificos do bloco 900 (Stage como custo do
+lider, evento sem alvo) nao foram exercitados nestas 3 partidas -- so o fix
+do bloco 899 (ordem personagem-antes-de-evento no counter) teve chance, mas
+nas 5 decisoes de counter com 2+ cartas nenhuma misturou evento+personagem
+(ou foi so-evento ST30-016x2, ou so-personagem). Fix continua validado por
+unit test + revisao de codigo, ainda sem confirmacao end-to-end do caso misto
+ao vivo. Proxima sessao com Mihawk/deck com Luna deve conferir os 3 juntos.
+
 ## 2026-09-26 (900) - Luna e Mihawk do bloco 898: nao era julgamento, era OPCAO que nao existia (Opus)
 
 Usuario recusou hardcode (*"tenho certeza que nao e um caso isolado... o bot
