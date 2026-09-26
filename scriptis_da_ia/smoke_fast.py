@@ -10977,6 +10977,7 @@ def main() -> int:
     test_trigger_com_alvo_categorico_confere_elegibilidade_26_09()
     test_evento_sem_efeito_viavel_nao_vira_candidato_26_09()
     test_custo_restar_carta_usa_stage_igual_no_motor_e_ao_vivo_26_09()
+    test_audita_custo_stage_sequenciamento_identifica_zona_e_ordem_26_09()
     test_explorar_longe_descobre_alem_do_topo_19_09()
     test_opp_turn_reactive_effects_krieg_leader_debuff_24_08()
     test_give_don_filtro_de_tipo_no_destinatario_24_08()
@@ -15624,6 +15625,50 @@ def test_evento_sem_efeito_viavel_nao_vira_candidato_26_09() -> None:
     me, opp = estado(True)
     check("CONTROLE: com personagem RESTADO custo<=7 o evento volta a ser jogavel",
           DecisionEngine(me, opp)._can_play_card(me.hand[0]) is True)
+
+
+def test_audita_custo_stage_sequenciamento_identifica_zona_e_ordem_26_09() -> None:
+    """
+    Pedido do usuario (26/09/2026): "caso apareca em um log futuro o nosso
+    sistema tem que identificar" -- sem hardcode de decisao (bloco 900 nao
+    escolhe MAIS restar Stage, so deixa de excluir a opcao), o script
+    `audita_custo_stage_sequenciamento.py` MEDE, num decision_log qualquer,
+    qual zona pagou um custo `rest_own_card` (Stage/personagem/lider) e se a
+    ativacao veio antes/depois do 1o ataque do turno -- generico pela FORMA
+    do custo (`get_card_effects`), nao pelo codigo da carta.
+    Controle real: 26/09, rodando contra o log real da partida
+    Dracule.Mihawk-G x Portgas.D.Ace-R (sem Stage em campo) o script
+    reportou corretamente 'own_board'/'depois_do_ataque' nas 2 ativacoes --
+    aqui a mesma logica e testada isolada com um caso de STAGE sintetico.
+    """
+    import audita_custo_stage_sequenciamento as aud
+
+    def bot(board_rested, stage_rested=None, leader_rested=False):
+        estado = {"bot": {
+            "board": [{"deckUniqueId": 1, "rested": board_rested}],
+            "stage": ({"deckUniqueId": 2, "rested": stage_rested}
+                      if stage_rested is not None else None),
+            "leader": {"deckUniqueId": 0, "rested": leader_rested},
+        }}
+        return estado
+
+    antes = bot(board_rested=False, stage_rested=False, leader_rested=False)
+    depois_stage = bot(board_rested=False, stage_rested=True, leader_rested=False)
+    novos = aud._uids_rested(depois_stage, "bot") - aud._uids_rested(antes, "bot")
+    check("Stage recem-restado e o UNICO detectado como custo pago",
+          novos == {"stage"})
+    check("zona do custo identificada como own_stage (nao own_board)",
+          aud._zona_do_uid(antes, "bot", next(iter(novos))) == "own_stage")
+
+    depois_char = bot(board_rested=True, stage_rested=False, leader_rested=False)
+    novos_char = aud._uids_rested(depois_char, "bot") - aud._uids_rested(antes, "bot")
+    check("CONTROLE: personagem restado (Stage intacto) da own_board, nao own_stage",
+          aud._zona_do_uid(antes, "bot", next(iter(novos_char))) == "own_board")
+
+    check("custo generico: Mihawk (rest_own_card de verdade) e detectado pela FORMA",
+          aud._tem_custo_rest_own_card("OP14-020"))
+    check("CONTROLE: carta sem nenhum custo rest_own_card nao e falso-positivo",
+          not aud._tem_custo_rest_own_card("OP01-001"))
 
 
 def test_custo_restar_carta_usa_stage_igual_no_motor_e_ao_vivo_26_09() -> None:

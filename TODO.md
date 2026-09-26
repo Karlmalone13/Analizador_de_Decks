@@ -1,12 +1,19 @@
 # TODO — Analisador de Decks OPTCG
 
-**Última atualização:** 26 de setembro de 2026 (bloco 902)
+**Última atualização:** 26 de setembro de 2026 (bloco 903)
 
+> **AUTOMATIZADO (bloco 903): nao precisa mais repetir a analise manual do
+> bloco 902.** Rode `python audita_custo_stage_sequenciamento.py` (em
+> `scriptis_da_ia/`, sem argumento pega o log mais recente) em cima de
+> qualquer partida futura do Mihawk (ou outro lider com custo
+> `rest_own_card`) -- ele mesmo diz se o Stage foi usado como custo e se a
+> ativacao veio antes/depois do 1o ataque do turno. Continua **so
+> observando**, nao decide nada (REGRA_O_CRITERIO_EMERGE intacta).
+>
 > **AINDA SEM CONFIRMACAO AO VIVO (bloco 902): rodei `Mihawk op17` (tem Luna
 > no deck) especificamente pra isso -- a partida nao puxou Stage nem jogou
 > Luna, entao os dois cenarios do bloco 900 continuam validados so por
-> unit test. Proxima vez: repetir ate calhar de o Mihawk ter Stage em campo
-> e a Luna estar na mao com o oponente ativo/restado.**
+> unit test. Proxima vez: rodar o script acima direto, sem reanalisar na mao.**
 >
 > **VALIDADO PARCIALMENTE AO VIVO (bloco 901): 3 partidas CPU x CPU pos-fix,
 > 0 q_fallback, sem excecao/timeout. Luna/Stage-Mihawk NAO exercitados (deck

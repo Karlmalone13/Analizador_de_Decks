@@ -1,5 +1,47 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-09-26 (903) - Ferramenta NOVA: deteccao automatica do padrao do bloco 900 em QUALQUER log futuro
+
+Pedido do usuario: *"deixa registrado, e vamos partir para outra, caso
+apareca em um log futuro o nosso sistema tem que identificar"* -- em vez de
+depender de sessao futura repetir a analise manual que fiz no bloco 902
+(cruzar `state_before`/`state_after` na mao), escrevi
+[`scriptis_da_ia/audita_custo_stage_sequenciamento.py`](scriptis_da_ia/audita_custo_stage_sequenciamento.py):
+roda em cima de QUALQUER `decision_log`, acha toda ativacao cujo custo e
+`rest_own_card` **pela FORMA do efeito** (`get_card_effects`, nao pelo codigo
+da carta -- generaliza pra qualquer lider/carta futura com esse mesmo custo,
+regra do gate de auditoria global do parser), e reporta duas coisas
+puramente OBSERVADAS (nao decide nada, so mede -- `REGRA_SEM_DUPLICACAO` e
+`REGRA_O_CRITERIO_EMERGE` intactas):
+1. qual zona pagou o custo (`own_stage`/`own_board`/`own_leader`), comparando
+   quem ficou `rested=True` entre o `state_before` da decisao e o
+   `state_after` da sua ULTIMA `execution` (achado ao escrever: uma
+   ativacao com custo gera MAIS DE UM evento `execution` pro mesmo
+   `decision_id`, e o custo so aparece pago no ultimo -- pegar o primeiro
+   dava sempre "nao identificado");
+2. se a ativacao veio antes ou depois do primeiro `attack` do mesmo
+   `(match_id, turn)`.
+
+Rodei contra o decision_log da 4a partida (bloco 902): reproduziu
+corretamente as 2 ativacoes do Mihawk como `own_board` +
+`depois_do_ataque` -- bate com a leitura manual que eu tinha feito na mao.
+Teste permanente em `smoke_fast.py`
+(`test_audita_custo_stage_sequenciamento_identifica_zona_e_ordem_26_09`),
+com dado sintetico cobrindo o caso Stage (que ainda nao apareceu ao vivo) +
+controle de personagem/lider + controle de carta sem esse custo. `smoke_fast.py`
+OK.
+
+**Uso pra proxima sessao** (ou qualquer partida futura com Mihawk/outro
+lider com custo `rest_own_card`):
+```bash
+cd scriptis_da_ia
+python audita_custo_stage_sequenciamento.py --decision-log <caminho-do-jsonl>
+```
+Sem `--decision-log`, usa o JSONL mais recente de
+`BOT/engine_server/logs/decisions/`. Quando o `Stage usado como custo`
+finalmente aparecer >0/N numa partida real, isso e a confirmacao ao vivo
+que faltava do bloco 900 -- e o script ja diz sozinho.
+
 ## 2026-09-26 (902) - 4a partida CPU x CPU com deck Mihawk+Luna de verdade (`Mihawk op17`): ainda sem confirmacao positiva
 
 A pedido do usuario, rodei 1 partida a mais (Mihawk op17 x ace op17, 5 turnos,
