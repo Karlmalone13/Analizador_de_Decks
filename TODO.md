@@ -1,6 +1,16 @@
 # TODO — Analisador de Decks OPTCG
 
-**Última atualização:** 25 de setembro de 2026 (bloco 895)
+**Última atualização:** 25 de setembro de 2026 (bloco 896)
+
+> **PENDENTE: restart do server pra validar AO VIVO falhou em silencio na
+> 1a tentativa (25/09/2026, bloco 896)**
+>
+> Matar o processo antigo por `CommandLine -like '*server.py*'` nao pega --
+> a linha de comando real e so `python.exe server.py`. O servidor VELHO
+> (sem fix) continuou respondendo e a 1a partida de validacao nao provou
+> nada. Corrigido matando por PID exato + conferindo `netstat`. Servidor
+> CERTO no ar, usuario vai jogar de novo. **Registrar pra proxima sessao**:
+> nunca confiar so no filtro de CommandLine pra achar o processo do server.
 
 > **CORRIGIDO, FALTA VALIDAR AO VIVO: `activate` do Mihawk desvirava 0 DON
 > ao vivo (25/09/2026, bloco 895 -- substitui 893 e 894)**

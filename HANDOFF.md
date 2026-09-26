@@ -1,5 +1,32 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-09-25 (896) - Validacao ao vivo do fix 895: restart anterior tinha FALHADO em silencio
+
+Continuacao do bloco 895 (fix de `register_own_action_by_code`). Ao tentar
+validar ao vivo: reiniciei o server via PowerShell matando o processo pelo
+filtro `CommandLine -like '*engine_server*server.py*'` -- **nao bateu**,
+porque a `CommandLine` real e so `python.exe server.py` (sem o caminho da
+pasta, que so existe como CWD do processo, nao na linha de comando). O
+servidor ANTIGO (PID 10624, de pe desde 24/09 23:48, sem o fix) continuou
+respondendo na 8765, e a 1a partida jogada pelo usuario pra validar rodou
+contra o codigo velho -- **nao provou nada**. Achado so porque o arquivo
+`decisions_2026-09-24T23.48.51.jsonl` (nome do BOOT antigo) tinha mtime de
+HOJE. Corrigido matando por PID exato (`Stop-Process -Id 10624`) e
+conferindo `netstat` bate com o PID novo antes de liberar o usuario pra
+jogar de novo. **Registrar pra proxima sessao**: matar processo do server
+por CommandLine tem que casar so `server.py` (ou usar `netstat`/porta pra
+achar o PID de verdade), nunca assumir que o filtro do `.bat` cobre.
+
+Tambem sincronizado o corpus desta maquina (`corpus_git.py exporta`,
+`Arthur_PC_20260925T230516.jsonl.gz`, 56 linhas) -- pedido do usuario pra
+fechar a sessao com tudo sincronizado (acompanhamento remoto pelo celular).
+
+### Aberto
+
+- Validacao ao vivo do bloco 895 (Mihawk atacando antes de ativar) segue
+  pendente -- o usuario vai jogar de novo agora contra o servidor CERTO
+  (PID confirmado dono da porta 8765).
+
 ## 2026-09-25 (895) - CAUSA REAL do `activate` do Mihawk: bug de NAO EXECUCAO ao vivo, registro de ataque vazando pra ativacao -- CORRIGIDO
 
 **Corrige os blocos 893 E 894.** Os dois partiam da premissa "ao vivo o
