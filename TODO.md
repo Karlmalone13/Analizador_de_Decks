@@ -1,6 +1,21 @@
 # TODO — Analisador de Decks OPTCG
 
-**Última atualização:** 26 de setembro de 2026 (bloco 897)
+**Última atualização:** 26 de setembro de 2026 (bloco 898)
+
+> **ABERTO: counter DECIDIDO diverge do EXECUTADO (26/09/2026, bloco 898,
+> achado do usuario)**
+>
+> Decision_log registrou 3 cartas escolhidas pra cobrir um ataque de 9000
+> (total 5000, cobriria) -- combat log real mostra so 1 descartada, Mihawk
+> apanhou. As outras 2 foram usadas no ataque SEGUINTE em vez do que
+> deveriam cobrir. Causa nao-obvia (decisao parece certa, execucao ao vivo
+> diverge) -- **vale Opus**. Ver bloco 898 do HANDOFF pros ids exatos.
+>
+> **NAO fixar por hardcode**: 2 observacoes de qualidade de decisao no
+> mesmo bloco (sequenciar `[Activate:Main]` antes de atacar + preferir
+> restar Stage; Luna ativada sem alvo de valor) sao julgamento, nao regra
+> de jogo -- usuario pediu explicitamente que emirjam do treino
+> (`REGRA_O_CRITERIO_EMERGE.md`), registradas so como observacao.
 
 > **RESOLVIDO: bloco 895 VALIDADO ao vivo (26/09/2026, bloco 897)** --
 > Mihawk atacou e ativou no mesmo turno 2x numa partida nova, os dois

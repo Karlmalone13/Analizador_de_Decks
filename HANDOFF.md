@@ -1,5 +1,73 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-09-26 (898) - 3 partidas novas: achado tecnico (counter decidido x executado diverge) + 2 observacoes de qualidade de decisao (usuario pediu NAO hardcodar)
+
+Usuario jogou 3 partidas (`..._09.47.55_p2` e `..._10.08.36_p3` vs Marshall
+D. Teach, `..._10.24.10_p4` vs Enel) com o server no ar apos os fixes 895/897.
+`collect_latest_match.py` rodado manualmente pras 3 (auto-collect deu o
+mesmo alarme falso ja documentado, id base vs `_pN`). Nenhuma das 3 teve
+uma carta `[Trigger]` de vida sem alvo legal -- o fix 897 continua **sem
+confirmacao ao vivo** (so via unit test).
+
+### Achado tecnico: counter DECIDIDO diverge do counter EXECUTADO
+
+Partida 09:47:55, Jesus Burgess (9000) ataca Mihawk (base 5000, needed=4001).
+O decision_log (`decisions_2026-09-26T09.38.10.jsonl`, match `ae27bc93...`,
+decision `eeffc649f3d54d7dbe8ae1e72bcc9e67`) registra `counter_ids: [430,
+100, 180]` -- Billion-fold World Trichiliocosm (+2000) + Kin'emon (+1000) +
+Kawamatsu (+2000) = 5000, cobriria o ataque e Mihawk sobreviveria sem dano.
+
+O combat log REAL mostra so `Billion-fold` descartado -- Mihawk fica em
+7000, apanha de 9000, leva 1 de dano. Kin'emon e Kawamatsu so aparecem
+descartados no PROXIMO ataque (Shiryu, 8000), onde defendem com sucesso.
+
+**Nao investigado a fundo**: decisao registrada pareceu certa (cobrir o
+gap com 3 cartas), execucao ao vivo aplicou so 1. Requer tracar o
+click-a-click do plugin pra 2 ataques em sequencia rapida -- causa
+nao-obvia, fica pra sessao que tiver tempo/Opus (regra "QUAL MODELO").
+Achado do USUARIO ("ativou o counter pra nada... precisaria do evento
+MAIS 1 counter").
+
+### Duas observacoes de qualidade de decisao -- REGISTRADAS, NAO fixadas
+
+Pedido explicito do usuario: *"esse tipo de coisa que o bot tem que pensar
+e compreender, e ate mesmo descobrir durante nossos treinos sem eu ter que
+falar"* -- NAO hardcodar, so alimentar o treino (`REGRA_O_CRITERIO_EMERGE.md`).
+
+1. **Sequenciamento do `[Activate:Main]` do lider**: confirmado nas 3
+   partidas -- o Mihawk SEMPRE ativa DEPOIS de atacar, nunca antes, as
+   vezes terminando o turno com DON ativo sobrando (reativado tarde demais
+   pra gastar no mesmo turno). Usuario sugere ativar ANTES de atacar e
+   preferir restar o Stage (quando em campo) como custo, em vez de um
+   personagem. **Nao e regra de jogo violada** (diferente do achado 897,
+   que era alvo ilegal) -- e julgamento de valor sobre ORDEM, terreno do
+   Q/rollout aprender, nao pra hardcodar.
+2. **Electrical Luna (OP08-036) ativada sem alvo de valor**: `[Activate:
+   Main]` dela (`lock_opp_character_refresh cost_lte:7`) foi usado sem
+   nenhum personagem do oponente pra travar de fato (nao e alvo ILEGAL --
+   qualquer personagem custo<=7 e alvo legal, so nao vale a pena travar um
+   que nao vai atacar/restar tao cedo). Usuario: jogar o Stage teria
+   desenvolvido melhor o board + sinergia com o lider. Mesma categoria:
+   julgamento de valor, nao regra.
+
+### Achado lateral (parser, nao investigado)
+
+`OP08-036` (Electrical Luna) so tem `trigger`/`main` no `card_effects_db.json`
+-- o log real mostra `[You] Electrical Luna: Rest 3 Don` como efeito de
+ENTRADA (on_play), que o parser nao capturou. Nao investigado (auditoria
+global do parser fica pra quem for mexer em `gerar_effects_db.py`).
+
+### Aberto
+
+- Confirmar ao vivo o fix 897 (trigger sem alvo) -- ainda nao ocorreu de
+  novo em nenhuma das partidas jogadas depois do fix.
+- Investigar a fundo a divergencia counter decidido x executado (achado
+  tecnico acima) -- Opus, causa nao-obvia.
+- `OP08-036` sem `on_play` no banco de efeitos -- gap de parser.
+- As duas observacoes de qualidade de decisao ficam como DADO pro
+  treino/avaliacao, no rastreamento normal de decision-quality -- nao
+  criar heuristica nova em cima delas.
+
 ## 2026-09-26 (897) - Validado o fix 895 AO VIVO + achado NOVO: trigger de vida ativava sem alvo valido, trashando a carta a toa (usuario)
 
 ### Validacao do bloco 895: CONFIRMADA

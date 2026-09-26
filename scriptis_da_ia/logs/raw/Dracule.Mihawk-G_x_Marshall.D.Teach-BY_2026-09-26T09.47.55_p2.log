@@ -1,0 +1,809 @@
+Version is 1.43a.3
+[You] Leader is Dracule Mihawk ["OP14-020">OP14-020]
+[Opponent] Leader is Marshall D. Teach ["OP16-080">OP16-080]
+RZ1|8|2|OP09-086|0|4|0|0|0|0|0|0|0
+RZ1|CHK|8|2|50|0|0|0|10|0|0|0|1|0
+RZ1|9|2|OP09-095|0|4|0|1|0|0|0|0|0
+RZ1|CHK|9|2|50|0|0|0|10|0|0|0|1|0
+RZ1|10|2|OP16-119|0|36|0|2|0|0|0|0|0
+RZ1|CHK|10|2|50|0|0|0|10|0|0|0|1|0
+RZ1|11|2|OP16-110|0|20|0|3|0|0|0|0|0
+RZ1|CHK|11|2|50|0|0|0|10|0|0|0|1|0
+RZ1|12|2|EB04-058|0|27|0|4|0|0|0|0|0
+RZ1|CHK|12|2|50|0|0|0|10|0|0|0|1|0
+RZ1|13|2|OP09-099|0|47|0|5|0|0|0|0|0
+RZ1|CHK|13|2|50|0|0|0|10|0|0|0|1|0
+RZ1|14|2|OP12-112|0|24|0|6|0|0|0|0|0
+RZ1|CHK|14|2|50|0|0|0|10|0|0|0|1|0
+RZ1|15|2|OP16-119|0|38|0|7|0|0|0|0|0
+RZ1|CHK|15|2|50|0|0|0|10|0|0|0|1|0
+RZ1|16|2|OP16-108|0|33|0|8|0|0|0|0|0
+RZ1|CHK|16|2|50|0|0|0|10|0|0|0|1|0
+RZ1|17|2|OP09-095|0|11|0|9|0|0|0|0|0
+RZ1|CHK|17|2|50|0|0|0|10|0|0|0|1|0
+RZ1|18|2|OP16-115|0|45|0|10|0|0|0|0|0
+RZ1|CHK|18|2|50|0|0|0|10|0|0|0|1|0
+RZ1|19|2|OP16-119|0|38|0|11|0|0|0|0|0
+RZ1|CHK|19|2|50|0|0|0|10|0|0|0|1|0
+RZ1|20|2|OP16-109|0|23|0|12|0|0|0|0|0
+RZ1|CHK|20|2|50|0|0|0|10|0|0|0|1|0
+RZ1|21|2|OP16-110|0|27|0|13|0|0|0|0|0
+RZ1|CHK|21|2|50|0|0|0|10|0|0|0|1|0
+RZ1|22|2|OP16-108|0|37|0|14|0|0|0|0|0
+RZ1|CHK|22|2|50|0|0|0|10|0|0|0|1|0
+RZ1|23|2|OP09-093|0|23|0|15|0|0|0|0|0
+RZ1|CHK|23|2|50|0|0|0|10|0|0|0|1|0
+RZ1|24|2|OP09-086|0|18|0|17|0|0|0|0|0
+RZ1|CHK|24|2|50|0|0|0|10|0|0|0|1|0
+RZ1|25|2|EB04-058|0|34|0|19|0|0|0|0|0
+RZ1|CHK|25|2|50|0|0|0|10|0|0|0|1|0
+RZ1|26|2|OP16-110|0|29|0|20|0|0|0|0|0
+RZ1|CHK|26|2|50|0|0|0|10|0|0|0|1|0
+RZ1|27|2|OP09-099|0|49|0|21|0|0|0|0|0
+RZ1|CHK|27|2|50|0|0|0|10|0|0|0|1|0
+RZ1|28|2|OP16-116|0|48|0|22|0|0|0|0|0
+RZ1|CHK|28|2|50|0|0|0|10|0|0|0|1|0
+RZ1|29|2|OP12-112|0|32|0|23|0|0|0|0|0
+RZ1|CHK|29|2|50|0|0|0|10|0|0|0|1|0
+RZ1|30|2|OP09-093|0|28|0|24|0|0|0|0|0
+RZ1|CHK|30|2|50|0|0|0|10|0|0|0|1|0
+RZ1|31|2|OP09-096|0|42|0|25|0|0|0|0|0
+RZ1|CHK|31|2|50|0|0|0|10|0|0|0|1|0
+RZ1|32|2|OP09-096|0|44|0|26|0|0|0|0|0
+RZ1|CHK|32|2|50|0|0|0|10|0|0|0|1|0
+RZ1|33|2|OP16-116|0|48|0|27|0|0|0|0|0
+RZ1|CHK|33|2|50|0|0|0|10|0|0|0|1|0
+RZ1|34|2|OP16-109|0|32|0|28|0|0|0|0|0
+RZ1|CHK|34|2|50|0|0|0|10|0|0|0|1|0
+RZ1|35|2|OP09-093|0|32|0|29|0|0|0|0|0
+RZ1|CHK|35|2|50|0|0|0|10|0|0|0|1|0
+RZ1|36|2|OP16-104|0|36|0|30|0|0|0|0|0
+RZ1|CHK|36|2|50|0|0|0|10|0|0|0|1|0
+RZ1|37|2|OP06-115|0|47|0|31|0|0|0|0|0
+RZ1|CHK|37|2|50|0|0|0|10|0|0|0|1|0
+RZ1|38|2|OP16-104|0|39|0|32|0|0|0|0|0
+RZ1|CHK|38|2|50|0|0|0|10|0|0|0|1|0
+RZ1|39|2|EB04-058|0|42|0|34|0|0|0|0|0
+RZ1|CHK|39|2|50|0|0|0|10|0|0|0|1|0
+RZ1|40|2|OP16-104|0|40|0|35|0|0|0|0|0
+RZ1|CHK|40|2|50|0|0|0|10|0|0|0|1|0
+RZ1|41|2|OP16-110|0|40|0|36|0|0|0|0|0
+RZ1|CHK|41|2|50|0|0|0|10|0|0|0|1|0
+RZ1|42|2|OP16-104|0|41|0|38|0|0|0|0|0
+RZ1|CHK|42|2|50|0|0|0|10|0|0|0|1|0
+RZ1|43|2|EB04-058|0|42|0|39|0|0|0|0|0
+RZ1|CHK|43|2|50|0|0|0|10|0|0|0|1|0
+RZ1|44|2|OP16-115|0|48|0|41|0|0|0|0|0
+RZ1|CHK|44|2|50|0|0|0|10|0|0|0|1|0
+RZ1|45|2|OP09-096|0|48|0|42|0|0|0|0|0
+RZ1|CHK|45|2|50|0|0|0|10|0|0|0|1|0
+RZ1|46|2|OP16-109|0|44|0|43|0|0|0|0|0
+RZ1|CHK|46|2|50|0|0|0|10|0|0|0|1|0
+RZ1|47|2|OP16-108|0|46|0|45|0|0|0|0|0
+RZ1|CHK|47|2|50|0|0|0|10|0|0|0|1|0
+RZ1|48|2|OP16-119|0|47|0|46|0|0|0|0|0
+RZ1|CHK|48|2|50|0|0|0|10|0|0|0|1|0
+RZ1|49|2|OP09-099|0|49|0|48|0|0|0|0|0
+RZ1|CHK|49|2|50|0|0|0|10|0|0|0|1|0
+[] Drew card from deck: Perona ["OP12-034">OP12-034]
+RZ1|50|1|OP12-034|0|49|1|0|1|1|0|0|0
+RZ1|CHK|50|1|49|1|0|0|10|0|0|0|1|0
+[] Drew card from deck: Otama ["OP07-022">OP07-022]
+RZ1|51|1|OP07-022|0|48|1|1|1|1|0|0|0
+RZ1|CHK|51|1|48|2|0|0|10|0|0|0|1|0
+[] Drew card from deck: I Know You're Strong... So I'll Go All Out ["OP13-040">OP13-040]
+RZ1|52|1|OP13-040|0|47|1|2|1|1|0|0|0
+RZ1|CHK|52|1|47|3|0|0|10|0|0|0|1|0
+[] Drew card from deck: Kouzuki Oden ["ST32-002">ST32-002]
+RZ1|53|1|ST32-002|0|46|1|3|1|1|0|0|0
+RZ1|CHK|53|1|46|4|0|0|10|0|0|0|1|0
+[] Drew card from deck: Kawamatsu ["OP12-023">OP12-023]
+RZ1|54|1|OP12-023|0|45|1|4|1|1|0|0|0
+RZ1|CHK|54|1|45|5|0|0|10|0|0|0|1|0
+[] Drew card from deck: This is MY AGE!!!! ["OP09-096">OP09-096]
+RZ1|55|2|OP09-096|0|49|1|0|1|1|0|0|0
+RZ1|CHK|55|2|49|1|0|0|10|0|0|0|1|0
+[] Drew card from deck: Fullalead ["OP09-099">OP09-099]
+RZ1|56|2|OP09-099|0|48|1|1|1|1|0|0|0
+RZ1|CHK|56|2|48|2|0|0|10|0|0|0|1|0
+[] Drew card from deck: Shiryu ["OP16-108">OP16-108]
+RZ1|57|2|OP16-108|0|47|1|2|1|1|0|0|0
+RZ1|CHK|57|2|47|3|0|0|10|0|0|0|1|0
+[] Drew card from deck: Marshall D. Teach ["OP16-119">OP16-119]
+RZ1|58|2|OP16-119|0|46|1|3|1|1|0|0|0
+RZ1|CHK|58|2|46|4|0|0|10|0|0|0|1|0
+[] Drew card from deck: Shiryu ["OP16-108">OP16-108]
+RZ1|59|2|OP16-108|0|45|1|4|1|1|0|0|0
+RZ1|CHK|59|2|45|5|0|0|10|0|0|0|1|0
+RZ1|60|1|OP17-022|0|44|3|0|1|0|0|0|0
+RZ1|CHK|60|1|44|5|0|1|10|0|0|0|1|0
+RZ1|61|1|ST32-001|0|43|3|1|1|0|0|0|0
+RZ1|CHK|61|1|43|5|0|2|10|0|0|0|1|0
+RZ1|62|1|ST32-003|0|42|3|2|1|0|0|0|0
+RZ1|CHK|62|1|42|5|0|3|10|0|0|0|1|0
+RZ1|63|1|OP13-031|0|41|3|3|1|0|0|0|0
+RZ1|CHK|63|1|41|5|0|4|10|0|0|0|1|0
+RZ1|64|1|OP01-055|0|40|3|4|1|0|0|0|0
+RZ1|CHK|64|1|40|5|0|5|10|0|0|0|1|0
+RZ1|65|2|OP16-109|0|44|3|0|0|1|0|0|0
+RZ1|CHK|65|2|44|5|0|1|10|0|0|0|1|0
+RZ1|66|2|OP16-109|0|43|3|1|0|1|0|0|0
+RZ1|CHK|66|2|43|5|0|2|10|0|0|0|1|0
+RZ1|67|2|OP09-096|0|42|3|2|0|1|0|0|0
+RZ1|CHK|67|2|42|5|0|3|10|0|0|0|1|0
+RZ1|68|2|OP16-115|0|41|3|3|0|1|0|0|0
+RZ1|CHK|68|2|41|5|0|4|10|0|0|0|1|0
+[] Hand: [OP12-034,OP07-022,OP13-040,ST32-002,OP12-023]
+[] Board: []
+[] Trash: []
+[] Life: 5
+[] Hand: [OP09-096,OP09-099,OP16-108,OP16-119,OP16-108]
+[] Trash: []
+[] Board: []
+[] Life: 4
+RZ1|69|1|Don|4|9|5|0|1|1|0|0|0
+RZ1|CHK|69|1|40|5|0|5|9|1|0|0|1|0
+[You] Draw 1 Don
+[] Hand: [OP12-034,OP07-022,OP13-040,ST32-002,OP12-023]
+[] Board: []
+[] Trash: []
+[] Life: 5
+[] Hand: [OP09-096,OP09-099,OP16-108,OP16-119,OP16-108]
+[] Trash: []
+[] Board: []
+[] Life: 4
+[You] End Turn
+[] Hand: [OP09-096,OP09-099,OP16-108,OP16-119,OP16-108]
+[] Board: []
+[] Trash: []
+[] Life: 4
+[] Hand: [OP12-034,OP07-022,OP13-040,ST32-002,OP12-023]
+[] Trash: []
+[] Board: []
+[] Life: 5
+[Opponent] Draw 1 Card
+[] Drew card from deck: Marshall D. Teach ["OP09-093">OP09-093]
+RZ1|70|2|OP09-093|0|40|1|5|1|1|0|0|0
+RZ1|CHK|70|2|40|6|0|4|10|0|0|0|1|0
+RZ1|71|2|Don|4|9|5|0|1|1|0|0|0
+RZ1|CHK|71|2|40|6|0|4|9|1|0|0|1|0
+RZ1|72|2|Don|4|8|5|1|1|1|0|0|0
+RZ1|CHK|72|2|40|6|0|4|8|2|0|0|1|0
+[Opponent] Draw 2 Don
+RZ1|73|2|Don|5|0|5|0|1|1|1|0|0
+RZ1|CHK|73|2|40|6|0|4|8|2|0|0|1|0
+[Opponent] Deploy Fullalead ["OP09-099">OP09-099]
+RZ1|74|2|OP09-099|1|1|7|0|1|1|0|0|0
+RZ1|CHK|74|2|40|5|0|4|8|2|0|1|1|0
+[Opponent] Fullalead ["OP09-099">OP09-099]: Rest Fullalead ["OP09-099">OP09-099]
+RZ1|75|2|OP16-108|1|3|6|0|1|1|0|0|0
+RZ1|CHK|75|2|40|4|0|4|8|2|1|1|1|0
+[Opponent] Fullalead ["OP09-099">OP09-099]: Trash Shiryu ["OP16-108">OP16-108]
+RZ1|76|2|OP09-086|0|37|1|4|1|1|0|0|0
+RZ1|CHK|76|2|39|5|0|4|8|2|1|1|1|0
+[Opponent] Fullalead ["OP09-099">OP09-099]: <b>Reveal and Draw Jesus Burgess ["OP09-086">OP09-086]</b>
+[Opponent] Placing Cards on Bottom of Deck
+RZ1|77|2|EB04-058|0|38|0|0|0|0|0|0|0
+RZ1|CHK|77|2|39|5|0|4|8|2|1|1|1|0
+RZ1|78|2|OP16-104|0|38|0|0|0|0|0|0|0
+RZ1|CHK|78|2|39|5|0|4|8|2|1|1|1|0
+[Opponent] This is MY AGE!!!! ["OP09-096">OP09-096]: Rest 1 Don
+RZ1|79|2|Don|5|1|5|1|1|1|1|0|0
+RZ1|CHK|79|2|39|5|0|4|8|2|1|1|1|0
+RZ1|80|2|OP09-096|1|0|6|1|1|1|0|0|0
+RZ1|CHK|80|2|39|4|0|4|8|2|2|1|1|0
+RZ1|81|2|OP16-110|0|38|1|4|1|1|0|0|0
+RZ1|CHK|81|2|38|5|0|4|8|2|2|1|1|0
+[Opponent] This is MY AGE!!!! ["OP09-096">OP09-096]: <b>Reveal and Draw Vasco Shot ["OP16-110">OP16-110]</b>
+[Opponent] This is MY AGE!!!! ["OP09-096">OP09-096]: Trash 2 Remaining Cards
+RZ1|82|2|OP16-104|0|37|6|2|1|1|0|0|0
+RZ1|CHK|82|2|37|5|0|4|8|2|3|1|1|0
+RZ1|83|2|EB04-058|0|36|6|3|1|1|0|0|0
+RZ1|CHK|83|2|36|5|0|4|8|2|4|1|1|0
+[] Hand: [OP16-108,OP16-119,OP09-093,OP09-086,OP16-110]
+[] Board: []
+[] Trash: [OP16-108,OP09-096,OP16-104,EB04-058]
+[] Life: 4
+[] Hand: [OP12-034,OP07-022,OP13-040,ST32-002,OP12-023]
+[] Trash: []
+[] Board: []
+[] Life: 5
+[Opponent] End Turn
+[] Hand: [OP12-034,OP07-022,OP13-040,ST32-002,OP12-023]
+[] Board: []
+[] Trash: []
+[] Life: 5
+[] Hand: [OP16-108,OP16-119,OP09-093,OP09-086,OP16-110]
+[] Trash: [OP16-108,OP09-096,OP16-104,EB04-058]
+[] Board: []
+[] Life: 4
+[You] Draw 1 Card
+[] Drew card from deck: Kin'emon ["ST32-001">ST32-001]
+RZ1|84|1|ST32-001|0|39|1|5|1|1|0|0|0
+RZ1|CHK|84|1|39|6|0|5|9|1|0|0|1|0
+RZ1|85|1|Don|4|8|5|1|1|1|0|0|0
+RZ1|CHK|85|1|39|6|0|5|8|2|0|0|1|0
+RZ1|86|1|Don|4|7|5|2|1|1|0|0|0
+RZ1|CHK|86|1|39|6|0|5|7|3|0|0|1|0
+[You] Draw 2 Don
+[You] Dracule Mihawk ["OP14-020">OP14-020] attacking Marshall D. Teach ["OP16-080">OP16-080]
+Dracule Mihawk ["OP14-020">OP14-020][5000] vs Marshall D. Teach ["OP16-080">OP16-080][5000]
+Marshall D. Teach ["OP16-080">OP16-080] hit for 1 damage
+RZ1|87|2|OP16-115|3|3|1|5|1|1|0|0|0
+RZ1|CHK|87|2|36|6|0|3|8|2|4|1|1|0
+RZ1|88|1|Don|5|0|5|0|1|1|1|0|0
+RZ1|CHK|88|1|39|6|0|5|7|3|0|0|1|0
+[You] Deploy Kin'emon ["ST32-001">ST32-001]
+RZ1|89|1|ST32-001|1|5|2|0|1|1|0|0|0
+RZ1|CHK|89|1|39|5|1|5|7|3|0|0|1|0
+[You] Kin'emon ["ST32-001">ST32-001]: Rest Don ["Don">Don]
+RZ1|90|1|Don|5|1|5|1|1|1|1|0|0
+RZ1|CHK|90|1|39|5|1|5|7|3|0|0|1|0
+[] Drew card from deck: Electrical Luna ["OP08-036">OP08-036]
+RZ1|91|1|OP08-036|0|38|1|5|1|1|0|0|0
+RZ1|CHK|91|1|38|6|1|5|7|3|0|0|1|0
+[] Drew card from deck: Billion-fold World Trichiliocosm ["OP06-038">OP06-038]
+RZ1|92|1|OP06-038|0|37|1|6|1|1|0|0|0
+RZ1|CHK|92|1|37|7|1|5|7|3|0|0|1|0
+[You] Kin'emon ["ST32-001">ST32-001]: Draw 2 Card
+RZ1|93|1|OP12-023|1|4|6|0|1|1|0|0|0
+RZ1|CHK|93|1|37|6|1|5|7|3|1|0|1|0
+[You] Kin'emon ["ST32-001">ST32-001]: Trash Kawamatsu ["OP12-023">OP12-023]
+RZ1|94|1|Don|5|2|5|2|1|1|1|0|0
+RZ1|CHK|94|1|37|6|1|5|7|3|1|0|1|0
+[You] Deploy Perona ["OP12-034">OP12-034]
+RZ1|95|1|OP12-034|1|0|2|1|1|1|0|0|0
+RZ1|CHK|95|1|37|5|2|5|7|3|1|0|1|0
+RZ1|96|1|ST32-001|0|33|1|5|1|1|0|0|0
+RZ1|CHK|96|1|36|6|2|5|7|3|1|0|1|0
+[You] Perona ["OP12-034">OP12-034]: <b>Reveal and Draw Kin'emon ["ST32-001">ST32-001]</b>
+[You] Placing Cards on Bottom of Deck
+RZ1|97|1|OP06-033|0|35|0|0|0|0|0|0|0
+RZ1|CHK|97|1|36|6|2|5|7|3|1|0|1|0
+RZ1|98|1|OP14-039|0|35|0|0|0|0|0|0|0
+RZ1|CHK|98|1|36|6|2|5|7|3|1|0|1|0
+RZ1|99|1|OP12-023|0|35|0|0|0|0|0|0|0
+RZ1|CHK|99|1|36|6|2|5|7|3|1|0|1|0
+RZ1|100|1|OP06-038|0|35|0|0|0|0|0|0|0
+RZ1|CHK|100|1|36|6|2|5|7|3|1|0|1|0
+[] Hand: [OP07-022,OP13-040,ST32-002,OP08-036,OP06-038,ST32-001]
+[] Board: [ST32-001,OP12-034]
+[] Trash: [OP12-023]
+[] Life: 5
+[] Hand: [OP16-108,OP16-119,OP09-093,OP09-086,OP16-110,OP16-115]
+[] Trash: [OP16-108,OP09-096,OP16-104,EB04-058]
+[] Board: []
+[] Life: 3
+[You] End Turn
+[] Hand: [OP16-108,OP16-119,OP09-093,OP09-086,OP16-110,OP16-115]
+[] Board: []
+[] Trash: [OP16-108,OP09-096,OP16-104,EB04-058]
+[] Life: 3
+[] Hand: [OP07-022,OP13-040,ST32-002,OP08-036,OP06-038,ST32-001]
+[] Trash: [OP12-023]
+[] Board: [ST32-001,OP12-034]
+[] Life: 5
+[Opponent] Draw 1 Card
+[] Drew card from deck: Jesus Burgess ["OP09-086">OP09-086]
+RZ1|101|2|OP09-086|0|35|1|6|1|1|0|0|0
+RZ1|CHK|101|2|35|7|0|3|8|2|4|1|1|0
+RZ1|102|2|Don|4|7|5|2|1|1|0|0|0
+RZ1|CHK|102|2|35|7|0|3|7|3|4|1|1|0
+RZ1|103|2|Don|4|6|5|3|1|1|0|0|0
+RZ1|CHK|103|2|35|7|0|3|6|4|4|1|1|0
+[Opponent] Draw 2 Don
+RZ1|104|2|Don|5|0|5|0|1|1|1|0|0
+RZ1|CHK|104|2|35|7|0|3|6|4|4|1|1|0
+RZ1|105|2|Don|5|1|5|1|1|1|1|0|0
+RZ1|CHK|105|2|35|7|0|3|6|4|4|1|1|0
+RZ1|106|2|Don|5|2|5|2|1|1|1|0|0
+RZ1|CHK|106|2|35|7|0|3|6|4|4|1|1|0
+RZ1|107|2|Don|5|3|5|3|1|1|1|0|0
+RZ1|CHK|107|2|35|7|0|3|6|4|4|1|1|0
+[Opponent] Deploy Jesus Burgess ["OP09-086">OP09-086]
+RZ1|108|2|OP09-086|1|6|2|0|1|1|0|1000|0
+RZ1|CHK|108|2|35|6|1|3|6|4|4|1|1|0
+[Opponent] Marshall D. Teach ["OP16-080">OP16-080] attacking Dracule Mihawk ["OP14-020">OP14-020]
+Marshall D. Teach ["OP16-080">OP16-080][5000] vs Dracule Mihawk ["OP14-020">OP14-020][5000]
+Dracule Mihawk ["OP14-020">OP14-020] hit for 1 damage
+RZ1|109|1|OP01-055|3|4|1|6|1|1|0|0|0
+RZ1|CHK|109|1|36|7|2|4|7|3|1|0|1|0
+[] Hand: [OP16-108,OP16-119,OP09-093,OP09-086,OP16-110,OP16-115]
+[] Board: [OP09-086]
+[] Trash: [OP16-108,OP09-096,OP16-104,EB04-058]
+[] Life: 3
+[] Hand: [OP07-022,OP13-040,ST32-002,OP08-036,OP06-038,ST32-001,OP01-055]
+[] Trash: [OP12-023]
+[] Board: [ST32-001,OP12-034]
+[] Life: 4
+[Opponent] End Turn
+[] Hand: [OP07-022,OP13-040,ST32-002,OP08-036,OP06-038,ST32-001,OP01-055]
+[] Board: [ST32-001,OP12-034]
+[] Trash: [OP12-023]
+[] Life: 4
+[] Hand: [OP16-108,OP16-119,OP09-093,OP09-086,OP16-110,OP16-115]
+[] Trash: [OP16-108,OP09-096,OP16-104,EB04-058]
+[] Board: [OP09-086]
+[] Life: 3
+[You] Draw 1 Card
+[] Drew card from deck: You Can Be My Samurai!!! ["OP01-055">OP01-055]
+RZ1|110|1|OP01-055|0|35|1|7|1|1|0|0|0
+RZ1|CHK|110|1|35|8|2|4|7|3|1|0|1|0
+RZ1|111|1|Don|4|6|5|3|1|1|0|0|0
+RZ1|CHK|111|1|35|8|2|4|6|4|1|0|1|0
+RZ1|112|1|Don|4|5|5|4|1|1|0|0|0
+RZ1|CHK|112|1|35|8|2|4|5|5|1|0|1|0
+[You] Draw 2 Don
+[You] Dracule Mihawk ["OP14-020">OP14-020] attacking Marshall D. Teach ["OP16-080">OP16-080]
+[Opponent] Discard Jesus Burgess ["OP09-086">OP09-086] for Counter 1000
+RZ1|113|2|OP09-086|1|3|6|4|1|1|0|0|0
+RZ1|CHK|113|2|35|5|1|3|6|4|5|1|1|0
+Dracule Mihawk ["OP14-020">OP14-020][5000] vs Marshall D. Teach ["OP16-080">OP16-080][6000]
+Attack Fails
+RZ1|114|1|Don|5|0|5|0|1|1|1|0|0
+RZ1|CHK|114|1|35|8|2|4|5|5|1|0|1|0
+RZ1|115|1|Don|5|1|5|1|1|1|1|0|0
+RZ1|CHK|115|1|35|8|2|4|5|5|1|0|1|0
+RZ1|116|1|Don|5|2|5|2|1|1|1|0|0
+RZ1|CHK|116|1|35|8|2|4|5|5|1|0|1|0
+RZ1|117|1|Don|5|3|5|3|1|1|1|0|0
+RZ1|CHK|117|1|35|8|2|4|5|5|1|0|1|0
+RZ1|118|1|Don|5|4|5|4|1|1|1|0|0
+RZ1|CHK|118|1|35|8|2|4|5|5|1|0|1|0
+[You] Deploy Kouzuki Oden ["ST32-002">ST32-002]
+RZ1|119|1|ST32-002|1|2|2|2|1|1|0|0|0
+RZ1|CHK|119|1|35|7|3|4|5|5|1|0|1|0
+[] Drew card from deck: Vander Decken IX ["OP06-033">OP06-033]
+RZ1|120|1|OP06-033|0|34|1|7|1|1|0|0|0
+RZ1|CHK|120|1|34|8|3|4|5|5|1|0|1|0
+[You] Kouzuki Oden ["ST32-002">ST32-002]: Draw 1 Card
+[You] Kouzuki Oden ["ST32-002">ST32-002]: Jesus Burgess ["OP09-086">OP09-086] can't be rested until next turn ends
+[You] Dracule Mihawk ["OP14-020">OP14-020]: Rest Kin'emon ["ST32-001">ST32-001]
+[You] Dracule Mihawk ["OP14-020">OP14-020]: Activate 1 Don
+RZ1|121|1|Don|5|4|5|4|1|1|0|0|0
+RZ1|CHK|121|1|34|8|3|4|5|5|1|0|1|0
+[You] Dracule Mihawk ["OP14-020">OP14-020]: Activate 1 Don
+RZ1|122|1|Don|5|3|5|3|1|1|0|0|0
+RZ1|CHK|122|1|34|8|3|4|5|5|1|0|1|0
+[You] Dracule Mihawk ["OP14-020">OP14-020]: Activate 1 Don
+RZ1|123|1|Don|5|2|5|2|1|1|0|0|0
+RZ1|CHK|123|1|34|8|3|4|5|5|1|0|1|0
+[You] Dracule Mihawk ["OP14-020">OP14-020]: Can't play Cost 1 Or More Characters for the Turn!
+[You] Electrical Luna ["OP08-036">OP08-036]: Rest 3 Don
+RZ1|124|1|Don|5|2|5|2|1|1|1|0|0
+RZ1|CHK|124|1|34|8|3|4|5|5|1|0|1|0
+RZ1|125|1|Don|5|3|5|3|1|1|1|0|0
+RZ1|CHK|125|1|34|8|3|4|5|5|1|0|1|0
+RZ1|126|1|Don|5|4|5|4|1|1|1|0|0
+RZ1|CHK|126|1|34|8|3|4|5|5|1|0|1|0
+RZ1|127|1|OP08-036|1|2|6|1|1|1|0|0|0
+RZ1|CHK|127|1|34|7|3|4|5|5|2|0|1|0
+[] Hand: [OP07-022,OP13-040,OP06-038,ST32-001,OP01-055,OP01-055,OP06-033]
+[] Board: [ST32-001,OP12-034,ST32-002]
+[] Trash: [OP12-023,OP08-036]
+[] Life: 4
+[] Hand: [OP16-108,OP16-119,OP09-093,OP16-110,OP16-115]
+[] Trash: [OP16-108,OP09-096,OP16-104,EB04-058,OP09-086]
+[] Board: [OP09-086]
+[] Life: 3
+[You] End Turn
+[] Hand: [OP16-108,OP16-119,OP09-093,OP16-110,OP16-115]
+[] Board: [OP09-086]
+[] Trash: [OP16-108,OP09-096,OP16-104,EB04-058,OP09-086]
+[] Life: 3
+[] Hand: [OP07-022,OP13-040,OP06-038,ST32-001,OP01-055,OP01-055,OP06-033]
+[] Trash: [OP12-023,OP08-036]
+[] Board: [ST32-001,OP12-034,ST32-002]
+[] Life: 4
+[Opponent] Draw 1 Card
+[] Drew card from deck: Catarina Devon ["OP16-104">OP16-104]
+RZ1|128|2|OP16-104|0|34|1|5|1|1|0|0|0
+RZ1|CHK|128|2|34|6|1|3|6|4|5|1|1|0
+RZ1|129|2|Don|4|5|5|4|1|1|0|0|0
+RZ1|CHK|129|2|34|6|1|3|5|5|5|1|1|0
+RZ1|130|2|Don|4|4|5|5|1|1|0|0|0
+RZ1|CHK|130|2|34|6|1|3|4|6|5|1|1|0
+[Opponent] Draw 2 Don
+RZ1|131|2|Don|5|0|5|0|1|1|1|0|0
+RZ1|CHK|131|2|34|6|1|3|4|6|5|1|1|0
+RZ1|132|2|Don|5|1|5|1|1|1|1|0|0
+RZ1|CHK|132|2|34|6|1|3|4|6|5|1|1|0
+RZ1|133|2|Don|5|2|5|2|1|1|1|0|0
+RZ1|CHK|133|2|34|6|1|3|4|6|5|1|1|0
+RZ1|134|2|Don|5|3|5|3|1|1|1|0|0
+RZ1|CHK|134|2|34|6|1|3|4|6|5|1|1|0
+RZ1|135|2|Don|5|4|5|4|1|1|1|0|0
+RZ1|CHK|135|2|34|6|1|3|4|6|5|1|1|0
+RZ1|136|2|Don|5|5|5|5|1|1|1|0|0
+RZ1|CHK|136|2|34|6|1|3|4|6|5|1|1|0
+[Opponent] Deploy Shiryu ["OP16-108">OP16-108]
+RZ1|137|2|OP16-108|1|0|2|1|1|1|0|0|0
+RZ1|CHK|137|2|34|5|2|3|4|6|5|1|1|0
+RZ1|138|2|OP16-104|1|4|6|5|1|1|0|0|0
+RZ1|CHK|138|2|34|4|2|3|4|6|6|1|1|0
+[Opponent] Shiryu ["OP16-108">OP16-108]: Trash Catarina Devon ["OP16-104">OP16-104]
+[Opponent] Shiryu ["OP16-108">OP16-108]: Add Catarina Devon ["OP16-104">OP16-104] to top of Life
+RZ1|139|2|OP16-104|6|5|3|3|1|1|0|0|0
+RZ1|CHK|139|2|34|4|2|4|4|6|5|1|1|0
+[Opponent] Marshall D. Teach ["OP16-080">OP16-080] attacking Kin'emon ["ST32-001">ST32-001]
+[You] Discard Kin'emon ["ST32-001">ST32-001] for Counter 1000
+RZ1|140|1|ST32-001|1|3|6|2|1|1|0|0|0
+RZ1|CHK|140|1|34|6|3|4|5|5|3|0|1|0
+[You] Discard Vander Decken IX ["OP06-033">OP06-033] for Counter 1000
+RZ1|141|1|OP06-033|1|5|6|3|1|1|0|0|0
+RZ1|CHK|141|1|34|5|3|4|5|5|4|0|1|0
+[You] Discard Otama ["OP07-022">OP07-022] for Counter 2000
+RZ1|142|1|OP07-022|1|0|6|4|1|1|0|0|0
+RZ1|CHK|142|1|34|4|3|4|5|5|5|0|1|0
+Marshall D. Teach ["OP16-080">OP16-080][5000] vs Kin'emon ["ST32-001">ST32-001][6000]
+Attack Fails
+[] Hand: [OP16-119,OP09-093,OP16-110,OP16-115]
+[] Board: [OP09-086,OP16-108]
+[] Trash: [OP16-108,OP09-096,OP16-104,EB04-058,OP09-086]
+[] Life: 4
+[] Hand: [OP13-040,OP06-038,OP01-055,OP01-055]
+[] Trash: [OP12-023,OP08-036,ST32-001,OP06-033,OP07-022]
+[] Board: [ST32-001,OP12-034,ST32-002]
+[] Life: 4
+[Opponent] End Turn
+[] Hand: [OP13-040,OP06-038,OP01-055,OP01-055]
+[] Board: [ST32-001,OP12-034,ST32-002]
+[] Trash: [OP12-023,OP08-036,ST32-001,OP06-033,OP07-022]
+[] Life: 4
+[] Hand: [OP16-119,OP09-093,OP16-110,OP16-115]
+[] Trash: [OP16-108,OP09-096,OP16-104,EB04-058,OP09-086]
+[] Board: [OP09-086,OP16-108]
+[] Life: 4
+[You] Draw 1 Card
+[] Drew card from deck: Trafalgar Law ["OP13-031">OP13-031]
+RZ1|143|1|OP13-031|0|33|1|4|1|1|0|0|0
+RZ1|CHK|143|1|33|5|3|4|5|5|5|0|1|0
+RZ1|144|1|Don|4|4|5|5|1|1|0|0|0
+RZ1|CHK|144|1|33|5|3|4|4|6|5|0|1|0
+RZ1|145|1|Don|4|3|5|6|1|1|0|0|0
+RZ1|CHK|145|1|33|5|3|4|3|7|5|0|1|0
+[You] Draw 2 Don
+[You] Kouzuki Oden ["ST32-002">ST32-002] attacking Marshall D. Teach ["OP16-080">OP16-080]
+Kouzuki Oden ["ST32-002">ST32-002][6000] vs Marshall D. Teach ["OP16-080">OP16-080][5000]
+Marshall D. Teach ["OP16-080">OP16-080] hit for 1 damage
+RZ1|146|2|OP16-104|3|3|1|4|1|1|0|0|0
+RZ1|CHK|146|2|34|5|2|3|4|6|5|1|1|0
+[Opponent] Catarina Devon ["OP16-104">OP16-104]: Activate Trigger
+RZ1|147|2|OP16-104|1|4|6|5|1|1|0|0|0
+RZ1|CHK|147|2|34|4|2|3|4|6|6|1|1|0
+[] Drew card from deck: You're the one who should disappear! ["OP06-115">OP06-115]
+RZ1|148|2|OP06-115|0|33|1|4|1|1|0|0|0
+RZ1|CHK|148|2|33|5|2|3|4|6|6|1|1|0
+[Opponent] Catarina Devon ["OP16-104">OP16-104]: Draw 1 Card
+[You] Dracule Mihawk ["OP14-020">OP14-020] attacking Marshall D. Teach ["OP16-080">OP16-080]
+[Opponent] Discard Vasco Shot ["OP16-110">OP16-110] for Counter 1000
+RZ1|149|2|OP16-110|1|2|6|6|1|1|0|0|0
+RZ1|CHK|149|2|33|4|2|3|4|6|7|1|1|0
+Dracule Mihawk ["OP14-020">OP14-020][5000] vs Marshall D. Teach ["OP16-080">OP16-080][6000]
+Attack Fails
+RZ1|150|1|Don|5|0|9|100|1|1|0|0|0
+RZ1|CHK|150|1|33|5|3|4|3|6|5|0|1|1
+RZ1|151|1|Don|5|0|9|101|1|1|0|0|0
+RZ1|CHK|151|1|33|5|3|4|3|5|5|0|1|2
+RZ1|152|1|Don|5|0|9|102|1|1|0|0|0
+RZ1|CHK|152|1|33|5|3|4|3|4|5|0|1|3
+[You] Attach 3 Don to Perona ["OP12-034">OP12-034] (3 Total)
+[You] Perona ["OP12-034">OP12-034] attacking Marshall D. Teach ["OP16-080">OP16-080]
+Perona ["OP12-034">OP12-034][5000] vs Marshall D. Teach ["OP16-080">OP16-080][5000]
+Marshall D. Teach ["OP16-080">OP16-080] hit for 1 damage
+RZ1|153|2|OP09-096|3|2|1|4|1|1|0|0|0
+RZ1|CHK|153|2|33|5|2|2|4|6|7|1|1|0
+[Opponent] This is MY AGE!!!! ["OP09-096">OP09-096]: Activate Trigger
+RZ1|154|2|OP09-096|1|4|6|7|1|1|0|0|0
+RZ1|CHK|154|2|33|4|2|2|4|6|8|1|1|0
+RZ1|155|2|OP09-093|0|31|1|4|1|1|0|0|0
+RZ1|CHK|155|2|32|5|2|2|4|6|8|1|1|0
+[Opponent] This is MY AGE!!!! ["OP09-096">OP09-096]: <b>Reveal and Draw Marshall D. Teach ["OP09-093">OP09-093]</b>
+[Opponent] This is MY AGE!!!! ["OP09-096">OP09-096]: Trash 2 Remaining Cards
+RZ1|156|2|OP16-104|0|31|6|8|1|1|0|0|0
+RZ1|CHK|156|2|31|5|2|2|4|6|9|1|1|0
+RZ1|157|2|OP16-109|0|30|6|9|1|1|0|0|0
+RZ1|CHK|157|2|30|5|2|2|4|6|10|1|1|0
+RZ1|158|1|Don|5|0|9|0|1|1|0|0|0
+RZ1|CHK|158|1|33|5|3|4|3|3|5|0|1|4
+RZ1|159|1|Don|5|0|9|1|1|1|0|0|0
+RZ1|CHK|159|1|33|5|3|4|3|2|5|0|1|5
+RZ1|160|1|Don|5|0|9|2|1|1|0|0|0
+RZ1|CHK|160|1|33|5|3|4|3|1|5|0|1|6
+[You] Attach 3 Don to Kin'emon ["ST32-001">ST32-001] (3 Total)
+[You] Kin'emon ["ST32-001">ST32-001] attacking Marshall D. Teach ["OP16-080">OP16-080]
+RZ1|161|2|OP16-115|1|2|6|10|1|1|0|0|0
+RZ1|CHK|161|2|30|4|2|2|4|6|11|1|1|0
+[Opponent] Marshall D. Teach ["OP16-080">OP16-080]: Trash Black Vortex ["OP16-115">OP16-115]
+[Opponent] Marshall D. Teach ["OP16-080">OP16-080]: Target of Attack changed to Jesus Burgess ["OP09-086">OP09-086]
+Kin'emon ["ST32-001">ST32-001][5000] vs Jesus Burgess ["OP09-086">OP09-086][7000]
+Attack Fails
+[] Hand: [OP13-040,OP06-038,OP01-055,OP01-055,OP13-031]
+[] Board: [ST32-001,OP12-034,ST32-002]
+[] Trash: [OP12-023,OP08-036,ST32-001,OP06-033,OP07-022]
+[] Life: 4
+[] Hand: [OP16-119,OP09-093,OP06-115,OP09-093]
+[] Trash: [OP16-108,OP09-096,OP16-104,EB04-058,OP09-086,OP16-104,OP16-110,OP09-096,OP16-104,OP16-109,OP16-115]
+[] Board: [OP09-086,OP16-108]
+[] Life: 2
+[You] End Turn
+[] Hand: [OP16-119,OP09-093,OP06-115,OP09-093]
+[] Board: [OP09-086,OP16-108]
+[] Trash: [OP16-108,OP09-096,OP16-104,EB04-058,OP09-086,OP16-104,OP16-110,OP09-096,OP16-104,OP16-109,OP16-115]
+[] Life: 2
+[] Hand: [OP13-040,OP06-038,OP01-055,OP01-055,OP13-031]
+[] Trash: [OP12-023,OP08-036,ST32-001,OP06-033,OP07-022]
+[] Board: [ST32-001,OP12-034,ST32-002]
+[] Life: 4
+[Opponent] Draw 1 Card
+[] Drew card from deck: ZEHAHAHAHA ["OP16-116">OP16-116]
+RZ1|162|2|OP16-116|0|29|1|4|1|1|0|0|0
+RZ1|CHK|162|2|29|5|2|2|4|6|11|1|1|0
+RZ1|163|2|Don|4|3|5|6|1|1|0|0|0
+RZ1|CHK|163|2|29|5|2|2|3|7|11|1|1|0
+RZ1|164|2|Don|4|2|5|7|1|1|0|0|0
+RZ1|CHK|164|2|29|5|2|2|2|8|11|1|1|0
+[Opponent] Draw 2 Don
+[Opponent] Jesus Burgess ["OP09-086">OP09-086] attacking Dracule Mihawk ["OP14-020">OP14-020]
+[You] I Know You're Strong... So I'll Go All Out ["OP13-040">OP13-040]: Activate Counter
+[You] I Know You're Strong... So I'll Go All Out ["OP13-040">OP13-040]: Rest 1 Don
+RZ1|165|1|Don|5|0|5|0|1|1|1|0|0
+RZ1|CHK|165|1|33|5|3|4|3|1|5|0|1|6
+RZ1|166|1|OP13-040|1|0|6|5|1|1|0|0|0
+RZ1|CHK|166|1|33|4|3|4|3|1|6|0|1|6
+[You] I Know You're Strong... So I'll Go All Out ["OP13-040">OP13-040]: Buff Dracule Mihawk ["OP14-020">OP14-020] 3000 for the Combat
+Jesus Burgess ["OP09-086">OP09-086][7000] vs Dracule Mihawk ["OP14-020">OP14-020][8000]
+Attack Fails
+[Opponent] Shiryu ["OP16-108">OP16-108] attacking Dracule Mihawk ["OP14-020">OP14-020]
+Shiryu ["OP16-108">OP16-108][8000] vs Dracule Mihawk ["OP14-020">OP14-020][5000]
+Dracule Mihawk ["OP14-020">OP14-020] hit for 1 damage
+RZ1|167|1|OP13-031|3|3|1|4|1|1|0|0|0
+RZ1|CHK|167|1|33|5|3|3|3|1|6|0|1|6
+[Opponent] Marshall D. Teach ["OP16-080">OP16-080] attacking Perona ["OP12-034">OP12-034]
+Marshall D. Teach ["OP16-080">OP16-080][5000] vs Perona ["OP12-034">OP12-034][2000]
+[You] Perona ["OP12-034">OP12-034] Destroyed
+RZ1|168|1|Don|9|100|5|0|1|1|1|0|0
+RZ1|CHK|168|1|33|5|3|3|3|2|6|0|1|5
+RZ1|169|1|Don|9|100|5|0|1|1|1|0|0
+RZ1|CHK|169|1|33|5|3|3|3|3|6|0|1|4
+RZ1|170|1|Don|9|100|5|0|1|1|1|0|0
+RZ1|CHK|170|1|33|5|3|3|3|4|6|0|1|3
+RZ1|171|1|OP12-034|2|1|6|6|1|1|0|0|0
+RZ1|CHK|171|1|33|5|2|3|3|4|7|0|1|3
+RZ1|172|2|Don|5|0|5|0|1|1|1|0|0
+RZ1|CHK|172|2|29|5|2|2|2|8|11|1|1|0
+RZ1|173|2|Don|5|1|5|1|1|1|1|0|0
+RZ1|CHK|173|2|29|5|2|2|2|8|11|1|1|0
+RZ1|174|2|Don|5|2|5|2|1|1|1|0|0
+RZ1|CHK|174|2|29|5|2|2|2|8|11|1|1|0
+RZ1|175|2|Don|5|3|5|3|1|1|1|0|0
+RZ1|CHK|175|2|29|5|2|2|2|8|11|1|1|0
+RZ1|176|2|Don|5|4|5|4|1|1|1|0|0
+RZ1|CHK|176|2|29|5|2|2|2|8|11|1|1|0
+RZ1|177|2|Don|5|5|5|5|1|1|1|0|0
+RZ1|CHK|177|2|29|5|2|2|2|8|11|1|1|0
+RZ1|178|2|Don|5|6|5|6|1|1|1|0|0
+RZ1|CHK|178|2|29|5|2|2|2|8|11|1|1|0
+RZ1|179|2|Don|5|7|5|7|1|1|1|0|0
+RZ1|CHK|179|2|29|5|2|2|2|8|11|1|1|0
+[Opponent] Deploy Marshall D. Teach ["OP16-119">OP16-119]
+RZ1|180|2|OP16-119|1|0|2|2|1|1|0|0|0
+RZ1|CHK|180|2|29|4|3|2|2|8|11|1|1|0
+[Opponent] Marshall D. Teach ["OP16-119">OP16-119]: Added card to top of Life from Hand
+RZ1|181|2|OP09-096|0|27|3|2|0|1|0|0|0
+RZ1|CHK|181|2|28|4|3|3|2|8|11|1|1|0
+[Opponent] Placing Cards on Bottom of Deck
+RZ1|182|2|OP09-096|0|27|0|0|0|0|0|0|0
+RZ1|CHK|182|2|28|4|3|3|2|8|11|1|1|0
+RZ1|183|2|OP09-093|0|27|0|0|0|0|0|0|0
+RZ1|CHK|183|2|28|4|3|3|2|8|11|1|1|0
+[] Hand: [OP09-093,OP06-115,OP09-093,OP16-116]
+[] Board: [OP09-086,OP16-108,OP16-119]
+[] Trash: [OP16-108,OP09-096,OP16-104,EB04-058,OP09-086,OP16-104,OP16-110,OP09-096,OP16-104,OP16-109,OP16-115]
+[] Life: 3
+[] Hand: [OP06-038,OP01-055,OP01-055,OP13-031,OP13-031]
+[] Trash: [OP12-023,OP08-036,ST32-001,OP06-033,OP07-022,OP13-040,OP12-034]
+[] Board: [ST32-001,ST32-002]
+[] Life: 3
+[Opponent] End Turn
+[] Hand: [OP06-038,OP01-055,OP01-055,OP13-031,OP13-031]
+[] Board: [ST32-001,ST32-002]
+[] Trash: [OP12-023,OP08-036,ST32-001,OP06-033,OP07-022,OP13-040,OP12-034]
+[] Life: 3
+[] Hand: [OP09-093,OP06-115,OP09-093,OP16-116]
+[] Trash: [OP16-108,OP09-096,OP16-104,EB04-058,OP09-086,OP16-104,OP16-110,OP09-096,OP16-104,OP16-109,OP16-115]
+[] Board: [OP09-086,OP16-108,OP16-119]
+[] Life: 3
+RZ1|184|1|Don|9|0|5|0|1|1|1|0|0
+RZ1|CHK|184|1|33|5|2|3|3|5|7|0|1|2
+RZ1|185|1|Don|9|0|5|0|1|1|1|0|0
+RZ1|CHK|185|1|33|5|2|3|3|6|7|0|1|1
+RZ1|186|1|Don|9|0|5|0|1|1|1|0|0
+RZ1|CHK|186|1|33|5|2|3|3|7|7|0|1|0
+[You] Draw 1 Card
+[] Drew card from deck: Otama ["OP07-022">OP07-022]
+RZ1|187|1|OP07-022|0|32|1|5|1|1|0|0|0
+RZ1|CHK|187|1|32|6|2|3|3|7|7|0|1|0
+RZ1|188|1|Don|4|2|5|7|1|1|0|0|0
+RZ1|CHK|188|1|32|6|2|3|2|8|7|0|1|0
+RZ1|189|1|Don|4|1|5|8|1|1|0|0|0
+RZ1|CHK|189|1|32|6|2|3|1|9|7|0|1|0
+[You] Draw 2 Don
+[You] Kouzuki Oden ["ST32-002">ST32-002] attacking Marshall D. Teach ["OP16-080">OP16-080]
+Kouzuki Oden ["ST32-002">ST32-002][6000] vs Marshall D. Teach ["OP16-080">OP16-080][5000]
+Marshall D. Teach ["OP16-080">OP16-080] hit for 1 damage
+RZ1|190|2|OP09-096|3|2|1|4|1|1|0|0|0
+RZ1|CHK|190|2|28|5|3|2|2|8|11|1|1|0
+[Opponent] This is MY AGE!!!! ["OP09-096">OP09-096]: Activate Trigger
+RZ1|191|2|OP09-096|1|4|6|11|1|1|0|0|0
+RZ1|CHK|191|2|28|4|3|2|2|8|12|1|1|0
+RZ1|192|2|OP16-116|0|26|1|4|1|1|0|0|0
+RZ1|CHK|192|2|27|5|3|2|2|8|12|1|1|0
+[Opponent] This is MY AGE!!!! ["OP09-096">OP09-096]: <b>Reveal and Draw ZEHAHAHAHA ["OP16-116">OP16-116]</b>
+[Opponent] This is MY AGE!!!! ["OP09-096">OP09-096]: Trash 2 Remaining Cards
+RZ1|193|2|OP12-112|0|26|6|12|1|1|0|0|0
+RZ1|CHK|193|2|26|5|3|2|2|8|13|1|1|0
+RZ1|194|2|OP09-099|0|25|6|13|1|1|0|0|0
+RZ1|CHK|194|2|25|5|3|2|2|8|14|1|1|0
+RZ1|195|1|Don|5|0|5|0|1|1|1|0|0
+RZ1|CHK|195|1|32|6|2|3|1|9|7|0|1|0
+RZ1|196|1|Don|5|1|5|1|1|1|1|0|0
+RZ1|CHK|196|1|32|6|2|3|1|9|7|0|1|0
+RZ1|197|1|Don|5|2|5|2|1|1|1|0|0
+RZ1|CHK|197|1|32|6|2|3|1|9|7|0|1|0
+RZ1|198|1|Don|5|3|5|3|1|1|1|0|0
+RZ1|CHK|198|1|32|6|2|3|1|9|7|0|1|0
+RZ1|199|1|Don|5|4|5|4|1|1|1|0|0
+RZ1|CHK|199|1|32|6|2|3|1|9|7|0|1|0
+RZ1|200|1|Don|5|5|5|5|1|1|1|0|0
+RZ1|CHK|200|1|32|6|2|3|1|9|7|0|1|0
+[You] Deploy Trafalgar Law ["OP13-031">OP13-031]
+RZ1|201|1|OP13-031|1|3|2|2|1|1|0|0|0
+RZ1|CHK|201|1|32|5|3|3|1|9|7|0|1|0
+[You] Trafalgar Law ["OP13-031">OP13-031]: Return Kin'emon ["ST32-001">ST32-001] to Hand
+RZ1|202|1|ST32-001|2|0|1|5|1|1|0|0|0
+RZ1|CHK|202|1|32|6|2|3|1|9|7|0|1|0
+RZ1|203|1|OP07-022|1|4|2|2|1|1|1|0|0
+RZ1|CHK|203|1|32|5|3|3|1|9|7|0|1|0
+[You] Trafalgar Law ["OP13-031">OP13-031]: Deploy Otama ["OP07-022">OP07-022]
+RZ1|204|1|OP12-023|0|28|1|5|1|1|0|0|0
+RZ1|CHK|204|1|31|6|3|3|1|9|7|0|1|0
+[You] Otama ["OP07-022">OP07-022]: <b>Reveal and Draw Kawamatsu ["OP12-023">OP12-023]</b>
+[You] Placing Cards on Bottom of Deck
+RZ1|205|1|OP07-022|0|30|0|0|0|0|0|0|0
+RZ1|CHK|205|1|31|6|3|3|1|9|7|0|1|0
+RZ1|206|1|OP13-031|0|30|0|0|0|0|0|0|0
+RZ1|CHK|206|1|31|6|3|3|1|9|7|0|1|0
+RZ1|207|1|OP12-034|0|30|0|0|0|0|0|0|0
+RZ1|CHK|207|1|31|6|3|3|1|9|7|0|1|0
+RZ1|208|1|OP17-031|0|30|0|0|0|0|0|0|0
+RZ1|CHK|208|1|31|6|3|3|1|9|7|0|1|0
+RZ1|209|1|Don|5|6|9|9900|1|1|0|0|0
+RZ1|CHK|209|1|31|6|3|3|1|8|7|0|1|1
+RZ1|210|1|Don|5|6|9|9901|1|1|0|0|0
+RZ1|CHK|210|1|31|6|3|3|1|7|7|0|1|2
+[You] Attach 2 Don to Dracule Mihawk ["OP14-020">OP14-020] (2 Total)
+[You] Dracule Mihawk ["OP14-020">OP14-020] attacking Marshall D. Teach ["OP16-080">OP16-080]
+RZ1|211|2|OP06-115|1|1|6|14|1|1|0|0|0
+RZ1|CHK|211|2|25|4|3|2|2|8|15|1|1|0
+[Opponent] Marshall D. Teach ["OP16-080">OP16-080]: Trash You're the one who should disappear! ["OP06-115">OP06-115]
+[Opponent] Marshall D. Teach ["OP16-080">OP16-080]: Target of Attack changed to Marshall D. Teach ["OP16-080">OP16-080]
+Dracule Mihawk ["OP14-020">OP14-020][7000] vs Marshall D. Teach ["OP16-080">OP16-080][5000]
+Marshall D. Teach ["OP16-080">OP16-080] hit for 1 damage
+RZ1|212|2|OP16-109|3|1|1|4|1|1|0|0|0
+RZ1|CHK|212|2|25|5|3|1|2|8|15|1|1|0
+[Opponent] Doc Q ["OP16-109">OP16-109]: Activate Trigger
+RZ1|213|2|OP16-109|1|4|6|15|1|1|0|0|0
+RZ1|CHK|213|2|25|4|3|1|2|8|16|1|1|0
+[] Drew card from deck: Vasco Shot ["OP16-110">OP16-110]
+RZ1|214|2|OP16-110|0|24|1|4|1|1|0|0|0
+RZ1|CHK|214|2|24|5|3|1|2|8|16|1|1|0
+[Opponent] Doc Q ["OP16-109">OP16-109]: Draw 1 Card
+[Opponent] Doc Q ["OP16-109">OP16-109]: Destroy Otama ["OP07-022">OP07-022]
+RZ1|215|1|OP07-022|2|2|6|7|1|1|0|0|0
+RZ1|CHK|215|1|31|6|2|3|1|7|8|0|1|2
+[You] Dracule Mihawk ["OP14-020">OP14-020]: Rest Trafalgar Law ["OP13-031">OP13-031]
+[You] Dracule Mihawk ["OP14-020">OP14-020]: Activate 1 Don
+RZ1|216|1|Don|5|5|5|5|1|1|0|0|0
+RZ1|CHK|216|1|31|6|2|3|1|7|8|0|1|2
+[You] Dracule Mihawk ["OP14-020">OP14-020]: Activate 1 Don
+RZ1|217|1|Don|5|4|5|4|1|1|0|0|0
+RZ1|CHK|217|1|31|6|2|3|1|7|8|0|1|2
+[You] Dracule Mihawk ["OP14-020">OP14-020]: Activate 1 Don
+RZ1|218|1|Don|5|3|5|3|1|1|0|0|0
+RZ1|CHK|218|1|31|6|2|3|1|7|8|0|1|2
+[You] Dracule Mihawk ["OP14-020">OP14-020]: Can't play Cost 1 Or More Characters for the Turn!
+[] Hand: [OP06-038,OP01-055,OP01-055,OP13-031,ST32-001,OP12-023]
+[] Board: [ST32-002,OP13-031]
+[] Trash: [OP12-023,OP08-036,ST32-001,OP06-033,OP07-022,OP13-040,OP12-034,OP07-022]
+[] Life: 3
+[] Hand: [OP09-093,OP09-093,OP16-116,OP16-116,OP16-110]
+[] Trash: [OP16-108,OP09-096,OP16-104,EB04-058,OP09-086,OP16-104,OP16-110,OP09-096,OP16-104,OP16-109,OP16-115,OP09-096,OP12-112,OP09-099,OP06-115,OP16-109]
+[] Board: [OP09-086,OP16-108,OP16-119]
+[] Life: 1
+[You] End Turn
+[] Hand: [OP09-093,OP09-093,OP16-116,OP16-116,OP16-110]
+[] Board: [OP09-086,OP16-108,OP16-119]
+[] Trash: [OP16-108,OP09-096,OP16-104,EB04-058,OP09-086,OP16-104,OP16-110,OP09-096,OP16-104,OP16-109,OP16-115,OP09-096,OP12-112,OP09-099,OP06-115,OP16-109]
+[] Life: 1
+[] Hand: [OP06-038,OP01-055,OP01-055,OP13-031,ST32-001,OP12-023]
+[] Trash: [OP12-023,OP08-036,ST32-001,OP06-033,OP07-022,OP13-040,OP12-034,OP07-022]
+[] Board: [ST32-002,OP13-031]
+[] Life: 3
+[Opponent] Draw 1 Card
+[] Drew card from deck: Borsalino ["EB04-058">EB04-058]
+RZ1|219|2|EB04-058|0|23|1|5|1|1|0|0|0
+RZ1|CHK|219|2|23|6|3|1|2|8|16|1|1|0
+RZ1|220|2|Don|4|1|5|8|1|1|0|0|0
+RZ1|CHK|220|2|23|6|3|1|1|9|16|1|1|0
+RZ1|221|2|Don|4|0|5|9|1|1|0|0|0
+RZ1|CHK|221|2|23|6|3|1|0|10|16|1|1|0
+[Opponent] Draw 2 Don
+[Opponent] ZEHAHAHAHA ["OP16-116">OP16-116]: Rest 8 Don
+RZ1|222|2|Don|5|0|5|0|1|1|1|0|0
+RZ1|CHK|222|2|23|6|3|1|0|10|16|1|1|0
+RZ1|223|2|Don|5|1|5|1|1|1|1|0|0
+RZ1|CHK|223|2|23|6|3|1|0|10|16|1|1|0
+RZ1|224|2|Don|5|2|5|2|1|1|1|0|0
+RZ1|CHK|224|2|23|6|3|1|0|10|16|1|1|0
+RZ1|225|2|Don|5|3|5|3|1|1|1|0|0
+RZ1|CHK|225|2|23|6|3|1|0|10|16|1|1|0
+RZ1|226|2|Don|5|4|5|4|1|1|1|0|0
+RZ1|CHK|226|2|23|6|3|1|0|10|16|1|1|0
+RZ1|227|2|Don|5|5|5|5|1|1|1|0|0
+RZ1|CHK|227|2|23|6|3|1|0|10|16|1|1|0
+RZ1|228|2|Don|5|6|5|6|1|1|1|0|0
+RZ1|CHK|228|2|23|6|3|1|0|10|16|1|1|0
+RZ1|229|2|Don|5|7|5|7|1|1|1|0|0
+RZ1|CHK|229|2|23|6|3|1|0|10|16|1|1|0
+RZ1|230|2|OP16-116|1|3|6|16|1|1|0|0|0
+RZ1|CHK|230|2|23|5|3|1|0|10|17|1|1|0
+RZ1|231|2|OP09-093|1|1|2|3|1|1|0|0|0
+RZ1|CHK|231|2|23|4|4|1|0|10|17|1|1|0
+[Opponent] ZEHAHAHAHA ["OP16-116">OP16-116]: Deploy Marshall D. Teach ["OP09-093">OP09-093]
+[Opponent] ZEHAHAHAHA ["OP16-116">OP16-116]: Send 1 Life to Hand
+RZ1|232|1|ST32-003|3|2|1|6|1|1|0|0|0
+RZ1|CHK|232|1|31|7|2|2|1|7|8|0|1|2
+[Opponent] Marshall D. Teach ["OP09-093">OP09-093]: Nullify effects of Dracule Mihawk ["OP14-020">OP14-020]
+[Opponent] Marshall D. Teach ["OP09-093">OP09-093]: Kouzuki Oden ["ST32-002">ST32-002] can't attack next turn
+[Opponent] Marshall D. Teach ["OP09-093">OP09-093]: Nullify effects of Kouzuki Oden ["ST32-002">ST32-002] until next turn end!
+[Opponent] Jesus Burgess ["OP09-086">OP09-086] attacking Dracule Mihawk ["OP14-020">OP14-020]
+[You] Billion-fold World Trichiliocosm ["OP06-038">OP06-038]: Activate Counter
+[You] Billion-fold World Trichiliocosm ["OP06-038">OP06-038]: Rest 1 Don
+RZ1|233|1|Don|5|3|5|3|1|1|1|0|0
+RZ1|CHK|233|1|31|7|2|2|1|7|8|0|1|2
+RZ1|234|1|OP06-038|1|0|6|8|1|1|0|0|0
+RZ1|CHK|234|1|31|6|2|2|1|7|9|0|1|2
+[You] Billion-fold World Trichiliocosm ["OP06-038">OP06-038]: Buff Dracule Mihawk ["OP14-020">OP14-020] 2000 for the Combat
+Jesus Burgess ["OP09-086">OP09-086][9000] vs Dracule Mihawk ["OP14-020">OP14-020][7000]
+Dracule Mihawk ["OP14-020">OP14-020] hit for 1 damage
+RZ1|235|1|ST32-001|3|1|1|6|1|1|0|0|0
+RZ1|CHK|235|1|31|7|2|1|1|7|9|0|1|2
+[Opponent] Shiryu ["OP16-108">OP16-108] attacking Dracule Mihawk ["OP14-020">OP14-020]
+[You] Discard Kin'emon ["ST32-001">ST32-001] for Counter 1000
+RZ1|236|1|ST32-001|1|3|6|9|1|1|0|0|0
+RZ1|CHK|236|1|31|6|2|1|1|7|10|0|1|2
+[You] Discard Kin'emon ["ST32-001">ST32-001] for Counter 1000
+RZ1|237|1|ST32-001|1|5|6|10|1|1|0|0|0
+RZ1|CHK|237|1|31|5|2|1|1|7|11|0|1|2
+[You] Discard Kawamatsu ["OP12-023">OP12-023] for Counter 2000
+RZ1|238|1|OP12-023|1|3|6|11|1|1|0|0|0
+RZ1|CHK|238|1|31|4|2|1|1|7|12|0|1|2
+Shiryu ["OP16-108">OP16-108][8000] vs Dracule Mihawk ["OP14-020">OP14-020][9000]
+Attack Fails
+[Opponent] Attach 1 Don to Marshall D. Teach ["OP16-080">OP16-080] (1 Total)
+RZ1|239|2|Don|5|9|9|9900|1|1|0|0|0
+RZ1|CHK|239|2|23|4|4|1|0|9|17|1|1|1
+[Opponent] Attach 1 Don to Marshall D. Teach ["OP16-080">OP16-080] (2 Total)
+RZ1|240|2|Don|5|8|9|9901|1|1|0|0|0
+RZ1|CHK|240|2|23|4|4|1|0|8|17|1|1|2
+[Opponent] Marshall D. Teach ["OP16-080">OP16-080] attacking Dracule Mihawk ["OP14-020">OP14-020]
+Marshall D. Teach ["OP16-080">OP16-080][7000] vs Dracule Mihawk ["OP14-020">OP14-020][5000]
+Dracule Mihawk ["OP14-020">OP14-020] hit for 1 damage
+RZ1|241|1|OP17-022|3|0|1|4|1|1|0|0|0
+RZ1|CHK|241|1|31|5|2|0|1|7|12|0|1|2
+[Opponent] Marshall D. Teach ["OP16-119">OP16-119] attacking Dracule Mihawk ["OP14-020">OP14-020]
+Marshall D. Teach ["OP16-119">OP16-119][10000] vs Dracule Mihawk ["OP14-020">OP14-020][5000]
+Dracule Mihawk ["OP14-020">OP14-020] hit for 1 damage
+[You] <b>Downloaded the Combat Log!</b>
+GameOver

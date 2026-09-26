@@ -1,0 +1,1311 @@
+{
+  "meta": {
+    "players": {
+      "p1": {
+        "name": "You",
+        "leader": {
+          "name": "Dracule Mihawk",
+          "code": "OP14-020"
+        }
+      },
+      "p2": {
+        "name": "Opponent",
+        "leader": {
+          "name": "Marshall D. Teach",
+          "code": "OP16-080"
+        }
+      }
+    },
+    "goes_first": null
+  },
+  "total_turns": 10,
+  "turns": [
+    {
+      "turn": 1,
+      "player": "You",
+      "card_drawn": null,
+      "don_drawn": 1,
+      "actions": [],
+      "snapshot": {
+        "You": {
+          "hand": [
+            "OP12-034",
+            "OP07-022",
+            "OP13-040",
+            "ST32-002",
+            "OP12-023"
+          ],
+          "board": [],
+          "trash": [],
+          "life": 5,
+          "life_cards": [
+            "OP01-055",
+            "OP13-031",
+            "OP17-022",
+            "ST32-001",
+            "ST32-003"
+          ],
+          "don_cost": [
+            "Don"
+          ]
+        },
+        "Opponent": {
+          "hand": [
+            "OP09-096",
+            "OP09-099",
+            "OP16-108",
+            "OP16-119",
+            "OP16-108"
+          ],
+          "trash": [],
+          "board": [],
+          "life": 4,
+          "deck": [
+            "EB04-058",
+            "OP06-115",
+            "OP09-086",
+            "OP09-093",
+            "OP09-095",
+            "OP12-112",
+            "OP16-104",
+            "OP16-110",
+            "OP16-116"
+          ],
+          "life_cards": [
+            "OP09-096",
+            "OP16-109",
+            "OP16-109",
+            "OP16-115"
+          ]
+        }
+      }
+    },
+    {
+      "turn": 2,
+      "player": "Opponent",
+      "card_drawn": null,
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "play",
+          "card": "OP09-099",
+          "card_name": "Fullalead",
+          "effects": [
+            "Rest Fullalead [\"OP09-099\">OP09-099]",
+            "Trash Shiryu [\"OP16-108\">OP16-108]",
+            "<b>Reveal and Draw Jesus Burgess [\"OP09-086\">OP09-086]</b>"
+          ]
+        },
+        {
+          "type": "activate",
+          "card": "OP09-096",
+          "card_name": "This is MY AGE!!!!",
+          "effects": [
+            "Rest 1 Don",
+            "<b>Reveal and Draw Vasco Shot [\"OP16-110\">OP16-110]</b>",
+            "Trash 2 Remaining Cards"
+          ]
+        }
+      ],
+      "snapshot": {
+        "Opponent": {
+          "hand": [
+            "OP16-108",
+            "OP16-119",
+            "OP09-093",
+            "OP09-086",
+            "OP16-110"
+          ],
+          "board": [],
+          "trash": [
+            "OP16-108",
+            "OP09-096",
+            "OP16-104",
+            "EB04-058"
+          ],
+          "life": 4,
+          "deck": [
+            "OP06-115",
+            "OP09-095",
+            "OP12-112",
+            "OP16-116"
+          ],
+          "life_cards": [
+            "OP09-096",
+            "OP16-109",
+            "OP16-109",
+            "OP16-115"
+          ],
+          "don_cost": [
+            "Don",
+            "Don"
+          ],
+          "stage": [
+            "OP09-099"
+          ],
+          "rested_rz1": {
+            "don_cost": [
+              "Don"
+            ]
+          }
+        },
+        "You": {
+          "hand": [
+            "OP12-034",
+            "OP07-022",
+            "OP13-040",
+            "ST32-002",
+            "OP12-023"
+          ],
+          "trash": [],
+          "board": [],
+          "life": 5,
+          "life_cards": [
+            "OP01-055",
+            "OP13-031",
+            "OP17-022",
+            "ST32-001",
+            "ST32-003"
+          ],
+          "don_cost": [
+            "Don"
+          ]
+        }
+      }
+    },
+    {
+      "turn": 3,
+      "player": "You",
+      "card_drawn": null,
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "attack",
+          "attacker": "Dracule Mihawk",
+          "attacker_code": "OP14-020",
+          "target": "Marshall D. Teach [\"OP16-080\">OP16-080]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "play",
+          "card": "ST32-001",
+          "card_name": "Kin'emon",
+          "effects": [
+            "Rest Don [\"Don\">Don]",
+            "Draw 2 Card",
+            "Trash Kawamatsu [\"OP12-023\">OP12-023]"
+          ]
+        },
+        {
+          "type": "play",
+          "card": "OP12-034",
+          "card_name": "Perona",
+          "effects": [
+            "<b>Reveal and Draw Kin'emon [\"ST32-001\">ST32-001]</b>"
+          ]
+        }
+      ],
+      "snapshot": {
+        "You": {
+          "hand": [
+            "OP07-022",
+            "OP13-040",
+            "ST32-002",
+            "OP08-036",
+            "OP06-038",
+            "ST32-001"
+          ],
+          "board": [
+            "ST32-001",
+            "OP12-034"
+          ],
+          "trash": [
+            "OP12-023"
+          ],
+          "life": 5,
+          "deck": [
+            "OP06-033",
+            "OP06-038",
+            "OP12-023",
+            "OP14-039"
+          ],
+          "life_cards": [
+            "OP01-055",
+            "OP13-031",
+            "OP17-022",
+            "ST32-001",
+            "ST32-003"
+          ],
+          "don_cost": [
+            "Don",
+            "Don",
+            "Don"
+          ],
+          "rested_rz1": {
+            "don_cost": [
+              "Don"
+            ]
+          },
+          "rested": {
+            "ST32-001": 1,
+            "OP12-034": 1
+          }
+        },
+        "Opponent": {
+          "hand": [
+            "OP16-108",
+            "OP16-119",
+            "OP09-093",
+            "OP09-086",
+            "OP16-110",
+            "OP16-115"
+          ],
+          "trash": [
+            "OP16-108",
+            "OP09-096",
+            "OP16-104",
+            "EB04-058"
+          ],
+          "board": [],
+          "life": 3,
+          "deck": [
+            "OP06-115",
+            "OP09-095",
+            "OP12-112",
+            "OP16-116"
+          ],
+          "life_cards": [
+            "OP09-096",
+            "OP16-109",
+            "OP16-109"
+          ],
+          "don_cost": [
+            "Don",
+            "Don"
+          ],
+          "stage": [
+            "OP09-099"
+          ],
+          "rested_rz1": {
+            "don_cost": [
+              "Don"
+            ]
+          }
+        }
+      }
+    },
+    {
+      "turn": 4,
+      "player": "Opponent",
+      "card_drawn": null,
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "play",
+          "card": "OP09-086",
+          "card_name": "Jesus Burgess",
+          "effects": []
+        },
+        {
+          "type": "attack",
+          "attacker": "Marshall D. Teach",
+          "attacker_code": "OP16-080",
+          "target": "Dracule Mihawk [\"OP14-020\">OP14-020]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        }
+      ],
+      "snapshot": {
+        "Opponent": {
+          "hand": [
+            "OP16-108",
+            "OP16-119",
+            "OP09-093",
+            "OP09-086",
+            "OP16-110",
+            "OP16-115"
+          ],
+          "board": [
+            "OP09-086"
+          ],
+          "trash": [
+            "OP16-108",
+            "OP09-096",
+            "OP16-104",
+            "EB04-058"
+          ],
+          "life": 3,
+          "deck": [
+            "OP06-115",
+            "OP09-095",
+            "OP12-112",
+            "OP16-116"
+          ],
+          "life_cards": [
+            "OP09-096",
+            "OP16-109",
+            "OP16-109"
+          ],
+          "don_cost": [
+            "Don",
+            "Don",
+            "Don",
+            "Don"
+          ],
+          "stage": [
+            "OP09-099"
+          ],
+          "rested_rz1": {
+            "don_cost": [
+              "Don"
+            ]
+          },
+          "rested": {
+            "OP09-086": 1
+          }
+        },
+        "You": {
+          "hand": [
+            "OP07-022",
+            "OP13-040",
+            "ST32-002",
+            "OP08-036",
+            "OP06-038",
+            "ST32-001",
+            "OP01-055"
+          ],
+          "trash": [
+            "OP12-023"
+          ],
+          "board": [
+            "ST32-001",
+            "OP12-034"
+          ],
+          "life": 4,
+          "deck": [
+            "OP06-033",
+            "OP06-038",
+            "OP12-023",
+            "OP14-039"
+          ],
+          "life_cards": [
+            "OP13-031",
+            "OP17-022",
+            "ST32-001",
+            "ST32-003"
+          ],
+          "don_cost": [
+            "Don",
+            "Don",
+            "Don"
+          ],
+          "rested_rz1": {
+            "don_cost": [
+              "Don"
+            ]
+          },
+          "rested": {
+            "ST32-001": 1,
+            "OP12-034": 1
+          }
+        }
+      }
+    },
+    {
+      "turn": 5,
+      "player": "You",
+      "card_drawn": null,
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "attack",
+          "attacker": "Dracule Mihawk",
+          "attacker_code": "OP14-020",
+          "target": "Marshall D. Teach [\"OP16-080\">OP16-080]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": [
+            "OP09-086"
+          ]
+        },
+        {
+          "type": "play",
+          "card": "ST32-002",
+          "card_name": "Kouzuki Oden",
+          "effects": [
+            "Draw 1 Card",
+            "Jesus Burgess [\"OP09-086\">OP09-086] can't be rested until next turn ends"
+          ]
+        },
+        {
+          "type": "activate",
+          "card": "OP14-020",
+          "card_name": "Dracule Mihawk",
+          "effects": [
+            "Rest Kin'emon [\"ST32-001\">ST32-001]",
+            "Activate 1 Don",
+            "Activate 1 Don",
+            "Activate 1 Don",
+            "Can't play Cost 1 Or More Characters for the Turn!"
+          ]
+        },
+        {
+          "type": "activate",
+          "card": "OP08-036",
+          "card_name": "Electrical Luna",
+          "effects": [
+            "Rest 3 Don"
+          ]
+        }
+      ],
+      "snapshot": {
+        "You": {
+          "hand": [
+            "OP07-022",
+            "OP13-040",
+            "OP06-038",
+            "ST32-001",
+            "OP01-055",
+            "OP01-055",
+            "OP06-033"
+          ],
+          "board": [
+            "ST32-001",
+            "OP12-034",
+            "ST32-002"
+          ],
+          "trash": [
+            "OP12-023",
+            "OP08-036"
+          ],
+          "life": 4,
+          "deck": [
+            "OP06-038",
+            "OP12-023",
+            "OP14-039"
+          ],
+          "life_cards": [
+            "OP13-031",
+            "OP17-022",
+            "ST32-001",
+            "ST32-003"
+          ],
+          "don_cost": [
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don"
+          ],
+          "rested_rz1": {
+            "don_cost": [
+              "Don"
+            ]
+          },
+          "rested": {
+            "ST32-001": 1,
+            "ST32-002": 1
+          }
+        },
+        "Opponent": {
+          "hand": [
+            "OP16-108",
+            "OP16-119",
+            "OP09-093",
+            "OP16-110",
+            "OP16-115"
+          ],
+          "trash": [
+            "OP16-108",
+            "OP09-096",
+            "OP16-104",
+            "EB04-058",
+            "OP09-086"
+          ],
+          "board": [
+            "OP09-086"
+          ],
+          "life": 3,
+          "deck": [
+            "OP06-115",
+            "OP09-095",
+            "OP12-112",
+            "OP16-116"
+          ],
+          "life_cards": [
+            "OP09-096",
+            "OP16-109",
+            "OP16-109"
+          ],
+          "don_cost": [
+            "Don",
+            "Don",
+            "Don",
+            "Don"
+          ],
+          "stage": [
+            "OP09-099"
+          ],
+          "rested_rz1": {
+            "don_cost": [
+              "Don"
+            ]
+          },
+          "rested": {
+            "OP09-086": 1
+          }
+        }
+      }
+    },
+    {
+      "turn": 6,
+      "player": "Opponent",
+      "card_drawn": null,
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "play",
+          "card": "OP16-108",
+          "card_name": "Shiryu",
+          "effects": [
+            "Trash Catarina Devon [\"OP16-104\">OP16-104]",
+            "Add Catarina Devon [\"OP16-104\">OP16-104] to top of Life"
+          ]
+        },
+        {
+          "type": "attack",
+          "attacker": "Marshall D. Teach",
+          "attacker_code": "OP16-080",
+          "target": "Kin'emon [\"ST32-001\">ST32-001]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": [
+            "ST32-001",
+            "OP06-033",
+            "OP07-022"
+          ]
+        }
+      ],
+      "snapshot": {
+        "Opponent": {
+          "hand": [
+            "OP16-119",
+            "OP09-093",
+            "OP16-110",
+            "OP16-115"
+          ],
+          "board": [
+            "OP09-086",
+            "OP16-108"
+          ],
+          "trash": [
+            "OP16-108",
+            "OP09-096",
+            "OP16-104",
+            "EB04-058",
+            "OP09-086"
+          ],
+          "life": 4,
+          "deck": [
+            "OP06-115",
+            "OP09-095",
+            "OP12-112",
+            "OP16-116"
+          ],
+          "life_cards": [
+            "OP09-096",
+            "OP16-104",
+            "OP16-109",
+            "OP16-109"
+          ],
+          "don_cost": [
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don"
+          ],
+          "stage": [
+            "OP09-099"
+          ],
+          "rested_rz1": {
+            "don_cost": [
+              "Don"
+            ]
+          },
+          "rested": {
+            "OP16-108": 1
+          }
+        },
+        "You": {
+          "hand": [
+            "OP13-040",
+            "OP06-038",
+            "OP01-055",
+            "OP01-055"
+          ],
+          "trash": [
+            "OP12-023",
+            "OP08-036",
+            "ST32-001",
+            "OP06-033",
+            "OP07-022"
+          ],
+          "board": [
+            "ST32-001",
+            "OP12-034",
+            "ST32-002"
+          ],
+          "life": 4,
+          "deck": [
+            "OP06-038",
+            "OP12-023",
+            "OP14-039"
+          ],
+          "life_cards": [
+            "OP13-031",
+            "OP17-022",
+            "ST32-001",
+            "ST32-003"
+          ],
+          "don_cost": [
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don"
+          ],
+          "rested_rz1": {
+            "don_cost": [
+              "Don"
+            ]
+          },
+          "rested": {
+            "ST32-001": 1,
+            "ST32-002": 1
+          }
+        }
+      }
+    },
+    {
+      "turn": 7,
+      "player": "You",
+      "card_drawn": null,
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "attack",
+          "attacker": "Kouzuki Oden",
+          "attacker_code": "ST32-002",
+          "target": "Marshall D. Teach [\"OP16-080\">OP16-080]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "attack",
+          "attacker": "Dracule Mihawk",
+          "attacker_code": "OP14-020",
+          "target": "Marshall D. Teach [\"OP16-080\">OP16-080]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": [
+            "OP16-110"
+          ]
+        },
+        {
+          "type": "attach_don",
+          "amount": 3,
+          "to": "OP12-034",
+          "to_name": "Perona",
+          "total": 3
+        },
+        {
+          "type": "attack",
+          "attacker": "Perona",
+          "attacker_code": "OP12-034",
+          "target": "Marshall D. Teach [\"OP16-080\">OP16-080]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "attach_don",
+          "amount": 3,
+          "to": "ST32-001",
+          "to_name": "Kin'emon",
+          "total": 3
+        },
+        {
+          "type": "attack",
+          "attacker": "Kin'emon",
+          "attacker_code": "ST32-001",
+          "target": "Marshall D. Teach [\"OP16-080\">OP16-080]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": []
+        }
+      ],
+      "snapshot": {
+        "You": {
+          "hand": [
+            "OP13-040",
+            "OP06-038",
+            "OP01-055",
+            "OP01-055",
+            "OP13-031"
+          ],
+          "board": [
+            "ST32-001",
+            "OP12-034",
+            "ST32-002"
+          ],
+          "trash": [
+            "OP12-023",
+            "OP08-036",
+            "ST32-001",
+            "OP06-033",
+            "OP07-022"
+          ],
+          "life": 4,
+          "deck": [
+            "OP06-038",
+            "OP12-023",
+            "OP14-039"
+          ],
+          "life_cards": [
+            "OP13-031",
+            "OP17-022",
+            "ST32-001",
+            "ST32-003"
+          ],
+          "don_cost": [
+            "Don"
+          ],
+          "attached_don": [
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don"
+          ],
+          "rested": {
+            "ST32-001": 1,
+            "OP12-034": 1,
+            "ST32-002": 1
+          }
+        },
+        "Opponent": {
+          "hand": [
+            "OP16-119",
+            "OP09-093",
+            "OP06-115",
+            "OP09-093"
+          ],
+          "trash": [
+            "OP16-108",
+            "OP09-096",
+            "OP16-104",
+            "EB04-058",
+            "OP09-086",
+            "OP16-104",
+            "OP16-110",
+            "OP09-096",
+            "OP16-104",
+            "OP16-109",
+            "OP16-115"
+          ],
+          "board": [
+            "OP09-086",
+            "OP16-108"
+          ],
+          "life": 2,
+          "deck": [
+            "OP09-095",
+            "OP12-112",
+            "OP16-116"
+          ],
+          "life_cards": [
+            "OP16-109",
+            "OP16-109"
+          ],
+          "don_cost": [
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don"
+          ],
+          "stage": [
+            "OP09-099"
+          ],
+          "rested_rz1": {
+            "don_cost": [
+              "Don"
+            ]
+          },
+          "rested": {
+            "OP16-108": 1
+          }
+        }
+      }
+    },
+    {
+      "turn": 8,
+      "player": "Opponent",
+      "card_drawn": null,
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "attack",
+          "attacker": "Jesus Burgess",
+          "attacker_code": "OP09-086",
+          "target": "Dracule Mihawk [\"OP14-020\">OP14-020]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "attack",
+          "attacker": "Shiryu",
+          "attacker_code": "OP16-108",
+          "target": "Dracule Mihawk [\"OP14-020\">OP14-020]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "attack",
+          "attacker": "Marshall D. Teach",
+          "attacker_code": "OP16-080",
+          "target": "Perona [\"OP12-034\">OP12-034]",
+          "result": null,
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "play",
+          "card": "OP16-119",
+          "card_name": "Marshall D. Teach",
+          "effects": [
+            "Added card to top of Life from Hand"
+          ]
+        }
+      ],
+      "snapshot": {
+        "Opponent": {
+          "hand": [
+            "OP09-093",
+            "OP06-115",
+            "OP09-093",
+            "OP16-116"
+          ],
+          "board": [
+            "OP09-086",
+            "OP16-108",
+            "OP16-119"
+          ],
+          "trash": [
+            "OP16-108",
+            "OP09-096",
+            "OP16-104",
+            "EB04-058",
+            "OP09-086",
+            "OP16-104",
+            "OP16-110",
+            "OP09-096",
+            "OP16-104",
+            "OP16-109",
+            "OP16-115"
+          ],
+          "life": 3,
+          "deck": [
+            "OP09-093",
+            "OP09-095",
+            "OP09-096",
+            "OP12-112"
+          ],
+          "life_cards": [
+            "OP09-096",
+            "OP16-109",
+            "OP16-109"
+          ],
+          "don_cost": [
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don"
+          ],
+          "stage": [
+            "OP09-099"
+          ],
+          "rested_rz1": {
+            "don_cost": [
+              "Don"
+            ]
+          },
+          "rested": {
+            "OP09-086": 1,
+            "OP16-108": 1,
+            "OP16-119": 1
+          }
+        },
+        "You": {
+          "hand": [
+            "OP06-038",
+            "OP01-055",
+            "OP01-055",
+            "OP13-031",
+            "OP13-031"
+          ],
+          "trash": [
+            "OP12-023",
+            "OP08-036",
+            "ST32-001",
+            "OP06-033",
+            "OP07-022",
+            "OP13-040",
+            "OP12-034"
+          ],
+          "board": [
+            "ST32-001",
+            "ST32-002"
+          ],
+          "life": 3,
+          "deck": [
+            "OP06-038",
+            "OP12-023",
+            "OP14-039"
+          ],
+          "life_cards": [
+            "OP17-022",
+            "ST32-001",
+            "ST32-003"
+          ],
+          "don_cost": [
+            "Don",
+            "Don",
+            "Don",
+            "Don"
+          ],
+          "attached_don": [
+            "Don",
+            "Don",
+            "Don"
+          ],
+          "rested_rz1": {
+            "don_cost": [
+              "Don",
+              "Don",
+              "Don",
+              "Don"
+            ]
+          },
+          "rested": {
+            "ST32-001": 1,
+            "ST32-002": 1
+          }
+        }
+      }
+    },
+    {
+      "turn": 9,
+      "player": "You",
+      "card_drawn": null,
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "attack",
+          "attacker": "Kouzuki Oden",
+          "attacker_code": "ST32-002",
+          "target": "Marshall D. Teach [\"OP16-080\">OP16-080]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "play",
+          "card": "OP13-031",
+          "card_name": "Trafalgar Law",
+          "effects": [
+            "Return Kin'emon [\"ST32-001\">ST32-001] to Hand",
+            "Deploy Otama [\"OP07-022\">OP07-022]"
+          ]
+        },
+        {
+          "type": "activate",
+          "card": "OP07-022",
+          "card_name": "Otama",
+          "effects": [
+            "<b>Reveal and Draw Kawamatsu [\"OP12-023\">OP12-023]</b>"
+          ]
+        },
+        {
+          "type": "attach_don",
+          "amount": 2,
+          "to": "OP14-020",
+          "to_name": "Dracule Mihawk",
+          "total": 2
+        },
+        {
+          "type": "attack",
+          "attacker": "Dracule Mihawk",
+          "attacker_code": "OP14-020",
+          "target": "Marshall D. Teach [\"OP16-080\">OP16-080]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "activate",
+          "card": "OP14-020",
+          "card_name": "Dracule Mihawk",
+          "effects": [
+            "Rest Trafalgar Law [\"OP13-031\">OP13-031]",
+            "Activate 1 Don",
+            "Activate 1 Don",
+            "Activate 1 Don",
+            "Can't play Cost 1 Or More Characters for the Turn!"
+          ]
+        }
+      ],
+      "snapshot": {
+        "You": {
+          "hand": [
+            "OP06-038",
+            "OP01-055",
+            "OP01-055",
+            "OP13-031",
+            "ST32-001",
+            "OP12-023"
+          ],
+          "board": [
+            "ST32-002",
+            "OP13-031"
+          ],
+          "trash": [
+            "OP12-023",
+            "OP08-036",
+            "ST32-001",
+            "OP06-033",
+            "OP07-022",
+            "OP13-040",
+            "OP12-034",
+            "OP07-022"
+          ],
+          "life": 3,
+          "deck": [
+            "OP06-038",
+            "OP07-022",
+            "OP12-034",
+            "OP13-031",
+            "OP14-039",
+            "OP17-031"
+          ],
+          "life_cards": [
+            "OP17-022",
+            "ST32-001",
+            "ST32-003"
+          ],
+          "don_cost": [
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don"
+          ],
+          "attached_don": [
+            "Don",
+            "Don"
+          ],
+          "rested_rz1": {
+            "don_cost": [
+              "Don",
+              "Don"
+            ]
+          },
+          "rested": {
+            "ST32-002": 1,
+            "OP13-031": 1
+          }
+        },
+        "Opponent": {
+          "hand": [
+            "OP09-093",
+            "OP09-093",
+            "OP16-116",
+            "OP16-116",
+            "OP16-110"
+          ],
+          "trash": [
+            "OP16-108",
+            "OP09-096",
+            "OP16-104",
+            "EB04-058",
+            "OP09-086",
+            "OP16-104",
+            "OP16-110",
+            "OP09-096",
+            "OP16-104",
+            "OP16-109",
+            "OP16-115",
+            "OP09-096",
+            "OP12-112",
+            "OP09-099",
+            "OP06-115",
+            "OP16-109"
+          ],
+          "board": [
+            "OP09-086",
+            "OP16-108",
+            "OP16-119"
+          ],
+          "life": 1,
+          "deck": [
+            "OP09-093",
+            "OP09-095",
+            "OP09-096"
+          ],
+          "life_cards": [
+            "OP16-109"
+          ],
+          "don_cost": [
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don"
+          ],
+          "stage": [
+            "OP09-099"
+          ],
+          "rested_rz1": {
+            "don_cost": [
+              "Don"
+            ]
+          },
+          "rested": {
+            "OP09-086": 1,
+            "OP16-108": 1,
+            "OP16-119": 1
+          }
+        }
+      }
+    },
+    {
+      "turn": 10,
+      "player": "Opponent",
+      "card_drawn": null,
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "activate",
+          "card": "OP16-116",
+          "card_name": "ZEHAHAHAHA",
+          "effects": [
+            "Rest 8 Don",
+            "Deploy Marshall D. Teach [\"OP09-093\">OP09-093]",
+            "Send 1 Life to Hand"
+          ]
+        },
+        {
+          "type": "activate",
+          "card": "OP09-093",
+          "card_name": "Marshall D. Teach",
+          "effects": [
+            "Nullify effects of Dracule Mihawk [\"OP14-020\">OP14-020]",
+            "Kouzuki Oden [\"ST32-002\">ST32-002] can't attack next turn",
+            "Nullify effects of Kouzuki Oden [\"ST32-002\">ST32-002] until next turn end!"
+          ]
+        },
+        {
+          "type": "attack",
+          "attacker": "Jesus Burgess",
+          "attacker_code": "OP09-086",
+          "target": "Dracule Mihawk [\"OP14-020\">OP14-020]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "attack",
+          "attacker": "Shiryu",
+          "attacker_code": "OP16-108",
+          "target": "Dracule Mihawk [\"OP14-020\">OP14-020]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": [
+            "ST32-001",
+            "ST32-001",
+            "OP12-023"
+          ]
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP16-080",
+          "to_name": "Marshall D. Teach",
+          "total": 1
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP16-080",
+          "to_name": "Marshall D. Teach",
+          "total": 2
+        },
+        {
+          "type": "attack",
+          "attacker": "Marshall D. Teach",
+          "attacker_code": "OP16-080",
+          "target": "Dracule Mihawk [\"OP14-020\">OP14-020]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "attack",
+          "attacker": "Marshall D. Teach",
+          "attacker_code": "OP16-119",
+          "target": "Dracule Mihawk [\"OP14-020\">OP14-020]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        }
+      ],
+      "snapshot": {}
+    }
+  ]
+}
