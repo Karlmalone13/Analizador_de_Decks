@@ -10978,6 +10978,7 @@ def main() -> int:
     test_evento_sem_efeito_viavel_nao_vira_candidato_26_09()
     test_custo_restar_carta_usa_stage_igual_no_motor_e_ao_vivo_26_09()
     test_audita_custo_stage_sequenciamento_identifica_zona_e_ordem_26_09()
+    test_select_grant_rush_piso_de_power_vale_pro_ramo_do_nome_26_09()
     test_explorar_longe_descobre_alem_do_topo_19_09()
     test_opp_turn_reactive_effects_krieg_leader_debuff_24_08()
     test_give_don_filtro_de_tipo_no_destinatario_24_08()
@@ -15707,6 +15708,52 @@ def test_custo_restar_carta_usa_stage_igual_no_motor_e_ao_vivo_26_09() -> None:
     EffectExecutor(me, opp)._pay_costs([{'type': 'rest_own_card', 'count': 1}], me.leader)
     check("CONTROLE: sem Stage o custo cai numa carta de campo (lider, menor valor)",
           me.leader.rested and not ch.rested)
+
+
+def test_select_grant_rush_piso_de_power_vale_pro_ramo_do_nome_26_09() -> None:
+    """
+    Achado AO VIVO 26/09/2026 (banco de logs, 4a partida): OP16-001 (Ace)
+    -- "Up to 1 of your [Monkey.D.Luffy] Characters or up to 1 of your
+    Characters with a type including 'Whitebeard Pirates', WITH 8000 POWER
+    OR MORE, gains [Rush]" -- tinha o piso de power aplicado SO no ramo do
+    tipo (leitura do bloco 229/17/07, so do TEXTO da carta). O jogo REAL
+    rejeitou a ativacao 2 vezes, em 2 partidas diferentes desta sessao,
+    quando o unico alvo em campo era um Luffy abaixo de 8000 -- "estado
+    inalterado no proximo main state estavel", once_per_turn desperdicado
+    por inteiro. O motor escolhia um alvo que a REGRA DO JOGO nao aceitava:
+    exatamente o padrao que o usuario descreveu ("joga sem conferir se
+    existe a condicao necessaria"), so que na candidatura de ALVO dentro
+    de um efeito, nao na jogada da carta.
+    """
+    ace = real_card("OP16-001")
+    luffy_fraco = mk("RSD", "Monkey.D.Luffy", power=6000)
+    luffy_fraco.just_played = True
+    me = GameState(leader=ace, turn=2)
+    me.field_chars = [luffy_fraco]
+    opp = GameState(leader=mk("RSOPP2", "Opp", card_type="LEADER"), turn=2)
+
+    step = get_card_effects("OP16-001")["activate_main"]["steps"][0]
+    ee = EffectExecutor(me, opp)
+    check("NAO viavel: unico alvo (Luffy) fica abaixo do piso de 8000 de power",
+          not ee._step_is_viable(step, ace))
+
+    ee.execute(ace, "activate_main")
+    check("execucao: Luffy abaixo do piso NAO ganha Rush (nada acontece, sem desperdicar once_per_turn)",
+          not luffy_fraco.rush_this_turn)
+
+    # CONTROLE: o mesmo Luffy, com power suficiente (efeito de buff externo
+    # simulado direto no campo power), passa a ser alvo valido pelo NOME.
+    luffy_forte = mk("RSE", "Monkey.D.Luffy", power=8000)
+    luffy_forte.just_played = True
+    me2 = GameState(leader=real_card("OP16-001"), turn=2)
+    me2.field_chars = [luffy_forte]
+    opp2 = GameState(leader=mk("RSOPP3", "Opp", card_type="LEADER"), turn=2)
+    ee2 = EffectExecutor(me2, opp2)
+    check("CONTROLE: com 8000+ de power o mesmo Luffy volta a ser alvo valido pelo nome",
+          ee2._step_is_viable(step, me2.leader))
+    ee2.execute(me2.leader, "activate_main")
+    check("CONTROLE: execucao real concede Rush ao Luffy forte",
+          luffy_forte.rush_this_turn)
 
 
 def test_explorar_longe_descobre_alem_do_topo_19_09() -> None:

@@ -1,5 +1,82 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-09-26 (904) - ACHADO REAL, via auditoria de efeitos (obrigatoria) dos 4 logs de hoje: `select_grant_rush` (OP16-001/Ace) rejeitava alvo, once_per_turn desperdicado
+
+**Meta do dia** (usuario): "vamos fazer o 2" (investigar bug de NAO EXECUCAO
+de efeitos) -- passo 2 da meta oficial de 18/09. Rodei `auditoria_efeitos.py`
+manualmente nos 4 decision logs de hoje (partidas 2, 3 e 4 nunca tiveram essa
+auditoria gerada automaticamente -- abortaram no falso-alarme conhecido do
+auto-collect, ver bloco 901). Achado real na sessao do bloco 900/903.
+
+**O bug**: `OP16-001` (Ace, lider) -- `"Up to 1 of your [Monkey.D.Luffy]
+Characters or up to 1 of your Characters with a type including 'Whitebeard
+Pirates', with 8000 power or more, gains [Rush]"`. O parser (bloco 229,
+17/07) leu isso como OR entre dois ramos, com o piso de power valendo SO pro
+ramo de tipo -- `filter_name` (Luffy) passava com QUALQUER power. Achado real
+2 vezes, em 2 partidas DIFERENTES desta sessao: o motor escolhia Luffy
+(OP16-015, 6000 de power, sem DON suficiente pra chegar a 8000) como alvo, e
+o JOGO REAL rejeitava a ativacao -- `status: "failed"`, erro `"estado
+inalterado no proximo main state estavel"` no decision_log, e a habilidade
+(`once_per_turn`) desperdicada por inteiro, sem log nenhum de "Activate" no
+combat log bruto (a acao nunca chegou a acontecer de verdade no cliente).
+7 ativacoes de OP16-001 nesta sessao: 4 confirmadas, **3 rejeitadas
+(42,9%)**, todas as 3 com o mesmo padrao (so Luffy fraco em campo).
+
+**Por que nao e hardcode**: mesmo padrao do usuario nesta sessao (blocos
+899/900) -- "o bot nao confere se a condicao necessaria existe antes de
+agir" -- so que aqui a condicao que faltava e a de UM ALVO dentro de um
+efeito, nao a jogada da carta inteira. O piso de power_gte ja era aplicado
+corretamente no ramo de TIPO (pool_tipo); o bug era so nao aplica-lo tambem
+no ramo de NOME (pool_nome) -- correcao generica pela FORMA (qualquer step
+`select_grant_rush` com `filter_name` E `power_gte` ao mesmo tempo), nao
+amarrada a esta carta. Nenhuma outra carta do banco tem essa combinacao
+exata (censo com `EB03-001/OP04-001/OP12-007/PRB01-001/OP17-004` confirmou:
+so OP16-001 tem `filter_name` + `power_gte` juntos hoje), mas a correcao
+cobre a FORMA pra qualquer carta futura com o mesmo desenho.
+
+**A leitura antiga vinha SO do texto da carta** (bloco 229, nunca validada
+contra o oraculo real). O jogo de verdade (OPTCGSim) contradisse 2 vezes,
+em 2 partidas independentes -- exatamente o padrao "premissa invalida" do
+framework `R, D |- G` que o projeto ja usa: a regra estava certa pro parser
+mas errada pro dominio real.
+
+**Fix, em `decision_engine.py`** (2 pontos, mesma forma, sem duplicar --
+`REGRA_SEM_DUPLICACAO`):
+- `_step_is_viable` (viabilidade, ~linha 4889): `pool_nome` passa a receber
+  `power_gte=step.get('power_gte')` igual `pool_tipo` ja recebia.
+- execucao real do `select_grant_rush` (~linha 11230): mesmo ajuste no
+  `pool_nome` que monta os candidatos de fato.
+- O terceiro consumidor (`_can_activate_worth_it`, ~linha 17592) ja REUSA
+  `_step_is_viable` em vez de duplicar logica -- herdou o fix de graca.
+
+**Teste permanente** (`smoke_fast.py`,
+`test_select_grant_rush_piso_de_power_vale_pro_ramo_do_nome_26_09`):
+Luffy sozinho em campo com 6000 de power -> `_step_is_viable` reprova, a
+execucao nao concede Rush a ele (nada acontece, sem gastar o
+`once_per_turn` a toa); CONTROLE com o mesmo Luffy a 8000+ de power -> volta
+a ser alvo valido pelo nome e a execucao real concede Rush.
+
+**Validado**: `smoke_fast.py` (SMOKE FAST OK, incl. os 4 checks novos) e
+`smoke_test.py` completo (TODOS OS TESTES PASSARAM) -- mexi em codigo
+compartilhado (`select_grant_rush`, usado por 6 cartas incluindo lideres),
+entao rodei a suite ampla, nao so a rapida.
+
+**NAO validado ao vivo ainda**: a correcao nao foi testada de novo no
+OPTCGSim real (o usuario nao pediu mais partidas agora, so investigar e
+corrigir -- "se acharmos alguma coisa a gente corrige, ai depois vamos
+fazer um treino"). Proxima partida com Ace (OP16-001) no deck e um Luffy
+fraco sozinho em campo E OUTRAS opcoes de tipo (Whitebeard Pirates >=8000)
+disponiveis serve de confirmacao viva: o motor deve preferir o alvo de tipo
+forte, ou simplesmente nao ativar se nenhum alvo (nome ou tipo) bater o
+piso -- em vez de escolher Luffy fraco e ser rejeitado pelo jogo nas duas
+situacoes observadas hoje.
+
+**Proximo passo, per pedido do usuario**: partir pra outra etapa -- ele
+disse "aí depois vamos fazer um treino" -- ou seja, depois de corrigir o
+que achamos aqui, o proximo passo natural e algum ciclo/treino de ML
+(`treino_continuo.py`/`ciclo.py`), nao mais investigacao de nao-execucao
+neste momento, a menos que ele peca outra rodada.
+
 ## 2026-09-26 (903) - Ferramenta NOVA: deteccao automatica do padrao do bloco 900 em QUALQUER log futuro
 
 Pedido do usuario: *"deixa registrado, e vamos partir para outra, caso

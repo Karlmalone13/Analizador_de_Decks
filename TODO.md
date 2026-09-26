@@ -1,6 +1,20 @@
 # TODO — Analisador de Decks OPTCG
 
-**Última atualização:** 26 de setembro de 2026 (bloco 903)
+**Última atualização:** 26 de setembro de 2026 (bloco 904)
+
+> **CORRIGIDO (bloco 904): `select_grant_rush` (OP16-001/Ace) rejeitava alvo
+> ao vivo, once_per_turn desperdicado.** Achado rodando `auditoria_efeitos.py`
+> (obrigatorio) nos 4 logs de hoje: o piso de power (8000+) so valia pro ramo
+> de TIPO ("Whitebeard Pirates"), nao pro ramo de NOME ("Monkey.D.Luffy") --
+> leitura que vinha so do texto (bloco 229, 17/07), nunca validada contra o
+> jogo real. O jogo REJEITOU a ativacao 2x em 2 partidas diferentes (3 de 7
+> ativacoes de Ace na sessao, 42,9%) quando o unico alvo em campo era um
+> Luffy abaixo de 8000. Corrigido em `decision_engine.py` (2 pontos,
+> `_step_is_viable` + execucao real do `select_grant_rush`) pra aplicar
+> `power_gte` nos DOIS ramos -- forma generica, nao amarrada so a esta carta.
+> Teste permanente em `smoke_fast.py`. `smoke_fast.py` + `smoke_test.py`
+> completo passaram. **Ainda sem reconfirmacao ao vivo** (proxima partida com
+> Ace + Luffy fraco sozinho em campo e a prova).
 
 > **AUTOMATIZADO (bloco 903): nao precisa mais repetir a analise manual do
 > bloco 902.** Rode `python audita_custo_stage_sequenciamento.py` (em

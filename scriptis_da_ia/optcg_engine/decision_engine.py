@@ -4887,7 +4887,22 @@ class EffectExecutor:
                                else character_needs_rush_character)
 
             if a == 'select_grant_rush' and step.get('filter_name'):
-                pool_nome = eligible_cards(me.field_chars, name_or_code=step.get('filter_name', ''))
+                # power_gte vale pros DOIS ramos (nome e tipo), nao so o
+                # tipo -- achado ao vivo 26/09/2026 (OP16-001/Ace, 2 partidas
+                # diferentes): o motor escolhia Luffy (OP16-015, 6000 de
+                # power) como alvo do proprio nome mesmo abaixo do piso de
+                # 8000, e o jogo REJEITAVA a ativacao (once_per_turn
+                # desperdicado por inteiro, "estado inalterado no proximo
+                # main state estavel"). A leitura antiga (bloco 229, 17/07)
+                # vinha so do TEXTO da carta ("OR entre nome exato e
+                # tipo+power"); o oraculo real (o proprio jogo) contradisse
+                # nos dois casos observados -- corrigido pra aplicar o piso
+                # de power em ambos os ramos, igual ja fazia o ramo de tipo.
+                pool_nome = eligible_cards(
+                    me.field_chars,
+                    name_or_code=step.get('filter_name', ''),
+                    power_gte=step.get('power_gte'),
+                )
                 pool_tipo = eligible_cards(
                     me.field_chars,
                     filter_text=step.get('filter_type', ''),
@@ -11204,12 +11219,16 @@ class EffectExecutor:
         if action == 'select_grant_rush':
             # "Up to N of your [Nome] Characters OR up to M of your
             # Characters with a type including "Tipo", with X power or
-            # more, gains [Rush]" -- OR entre nome exato E (tipo+power),
-            # nao AND (achado 17/07, OP16-001). filter_name casa QUALQUER
-            # power; filter_type exige power_gte tambem. Variante GENERICA
-            # (sem filter_name, achado 17/07: EB03-001/OP04-001/OP12-007/
-            # PRB01-001): filtro UNICO combinando tipo/custo/exclusao/
-            # filter_no_tag (AND, nao OR).
+            # more, gains [Rush]" -- nome e tipo sao OR entre si, mas o
+            # piso de power vale pros DOIS ramos (corrigido 26/09/2026: a
+            # leitura antiga do bloco 229/17/07 -- "filter_name casa
+            # QUALQUER power" -- vinha so do texto da carta, e o jogo REAL
+            # rejeitou a ativacao 2 vezes, em partidas diferentes, quando o
+            # alvo escolhido pelo nome nao batia o piso de power; ver
+            # `_step_is_viable` acima pro mesmo fix na checagem de
+            # viabilidade). Variante GENERICA (sem filter_name, achado
+            # 17/07: EB03-001/OP04-001/OP12-007/PRB01-001): filtro UNICO
+            # combinando tipo/custo/exclusao/filter_no_tag (AND, nao OR).
             from optcg_engine.rules_facade import choose_highest_board_value, eligible_cards
             count = step.get('count', 1)
             # Rush so importa pra quem ENTROU EM CAMPO NESTE TURNO
@@ -11228,8 +11247,11 @@ class EffectExecutor:
             # totalmente desperdicada, nenhum efeito real.
             _precisa_de_rush = character_needs_rush
             if step.get('filter_name'):
-                pool_nome = [c for c in eligible_cards(me.field_chars, name_or_code=step.get('filter_name', ''))
-                            if _precisa_de_rush(c)]
+                pool_nome = [c for c in eligible_cards(
+                    me.field_chars,
+                    name_or_code=step.get('filter_name', ''),
+                    power_gte=step.get('power_gte'),
+                ) if _precisa_de_rush(c)]
                 pool_tipo = [c for c in eligible_cards(
                     me.field_chars,
                     filter_text=step.get('filter_type', ''),
