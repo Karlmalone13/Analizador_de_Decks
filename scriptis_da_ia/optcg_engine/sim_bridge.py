@@ -2821,11 +2821,14 @@ def order_target_candidates(gs: GameState, opp_gs: GameState,
                     _alvo_desconhecido = True
 
     actor_zonas_de_custo = set()
+    actor_rest_card_cost = False
     if actor_code:
         for _blk in _relevant_blocks(actor_code, attacker_power > 0):
             for _c in (_blk.get('costs') or []):
                 if isinstance(_c, dict):
                     actor_zonas_de_custo |= _CUSTO_ZONAS.get(_c.get('type') or '', set())
+                    if _c.get('type') == 'rest_own_card':
+                        actor_rest_card_cost = True
 
     # ── O JOGO DIZ PRA QUE ESTA PEDINDO (bloco 854) ────────────────────────
     # Ate aqui esta funcao so recebia o SACO de candidatos: nao sabia se a
@@ -2972,6 +2975,16 @@ def order_target_candidates(gs: GameState, opp_gs: GameState,
     def sort_key(cand: dict):
         card = card_of(cand)
         zone = cand.get('zone', '')
+        # Pagar "rest 1 of your cards": MESMA escolha do motor (_pay_costs,
+        # menor board_value entre personagem/Stage/lider). Aqui o Stage caia
+        # no tier generico e o personagem era sempre restado -- divergia da
+        # simulacao e custava um atacante (achado 26/09, Mihawk).
+        if (purpose == 'cost' and actor_rest_card_cost
+                and zone in ('own_board', 'own_stage', 'own_leader')):
+            viva = (gs.leader if zone == 'own_leader'
+                    else gs.field_stage if zone == 'own_stage' else card)
+            if viva is not None:
+                return (3, viva.board_value())
         # Zonas de DON -- candidatas pra custo "DON!! -N" (don_minus) e pra
         # efeitos que miram DON adversario (Krieg). Achado real 21/07 (partida
         # ao vivo): qualquer carta com custo DON!! -N (Katakuri, Mamaragan

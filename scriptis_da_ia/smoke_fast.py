@@ -2418,8 +2418,10 @@ def test_plano_katakuri_prefere_rampa_e_bloqueia_desperdicios() -> None:
     match2 = OPTCGMatch((me2.leader, []), (opp2.leader, []))
     acts2 = match2._generate_and_score_actions(me2, opp2, DecisionEngine(me2, opp2))
     mama = next((a for a in acts2 if a[1] == "play" and a[2].code == "OP15-078"), None)
+    # Desde 26/09 evento sem step viavel nem vira candidato (gate em
+    # _can_play_card) -- mais forte que o -999, que o Q (sem_pontuacao) ignora.
     check("Mamaragan sem alvo material e atrasando bomba fica bloqueada",
-          mama is not None and mama[0] <= -999)
+          mama is None or mama[0] <= -999)
 
 
 def test_ataque_respeita_orcamento_da_jogada_principal_e_don_anexado() -> None:
@@ -10973,6 +10975,8 @@ def main() -> int:
     test_optcgmatch_varios_ataques_pendentes_mesmo_turno_19_09()
     test_ativar_depois_de_atacar_encerra_o_ataque_da_carta_25_09()
     test_trigger_com_alvo_categorico_confere_elegibilidade_26_09()
+    test_evento_sem_efeito_viavel_nao_vira_candidato_26_09()
+    test_custo_restar_carta_usa_stage_igual_no_motor_e_ao_vivo_26_09()
     test_explorar_longe_descobre_alem_do_topo_19_09()
     test_opp_turn_reactive_effects_krieg_leader_debuff_24_08()
     test_give_don_filtro_de_tipo_no_destinatario_24_08()
@@ -15591,6 +15595,73 @@ def test_trigger_com_alvo_categorico_confere_elegibilidade_26_09() -> None:
     check("personagem custo<=3 mas ATIVO (rested_only exige restado): "
           "continua recusando",
           sim_bridge.resolve_trigger_choice(me, "OP06-038", opp_ativo) is False)
+
+
+def test_evento_sem_efeito_viavel_nao_vira_candidato_26_09() -> None:
+    """
+    Achado ao vivo 26/09 (usuario, bloco 898/900): Electrical Luna (OP08-036,
+    "[Main] todos os personagens RESTADOS do oponente custo<=7 nao viram
+    ativos no proximo refresh") jogada contra board todo ATIVO -- 3 DON e a
+    carta por nada. Duas falhas genericas: (1) a viabilidade de
+    lock_opp_character_refresh contava personagem ativo (o executor so trava
+    restado); (2) jogar EVENTO nunca conferia se algum step do [Main] tinha
+    efeito -- so DON/custo/condicao.
+    """
+    def estado(rested):
+        me = GameState(leader=real_card("OP14-020")); me.turn = 3
+        me.don_available = 3; me.don_field = 3
+        me.hand = [real_card("OP08-036"), real_card("OP14-039")]
+        opp = GameState(leader=real_card("OP16-001"))
+        c = real_card("OP01-055"); c.rested = rested
+        opp.field_chars = [c]
+        return me, opp
+
+    me, opp = estado(False)
+    check("evento cujo unico efeito nao atinge ninguem (board ATIVO) nao e jogavel",
+          DecisionEngine(me, opp)._can_play_card(me.hand[0]) is False)
+    check("o Stage da mesma mao continua jogavel (gate so vale pra EVENTO)",
+          DecisionEngine(me, opp)._can_play_card(me.hand[1]) is True)
+    me, opp = estado(True)
+    check("CONTROLE: com personagem RESTADO custo<=7 o evento volta a ser jogavel",
+          DecisionEngine(me, opp)._can_play_card(me.hand[0]) is True)
+
+
+def test_custo_restar_carta_usa_stage_igual_no_motor_e_ao_vivo_26_09() -> None:
+    """
+    Achado 26/09 (usuario: Mihawk ativa o lider so depois de atacar; "de
+    preferencia restando o stage"). "rest 1 of your cards" aceita o Stage,
+    mas 4 copias da regra no motor contavam so personagem+lider -- na
+    simulacao ativar antes custava um atacante, entao a linha "ativa pagando
+    com o Stage e usa os 3 DON no ataque" nem existia pro modelo. E ao vivo
+    o prompt de custo restava personagem (tier 3) antes do Stage (tier 6).
+    """
+    def estado(com_stage):
+        me = GameState(leader=real_card("OP14-020")); me.turn = 4
+        ch = real_card("OP17-031"); ch._deck_uid = 11; me.field_chars = [ch]
+        me.leader._deck_uid = 13
+        if com_stage:
+            st = real_card("OP14-039"); st._deck_uid = 12; me.field_stage = st
+        return me, GameState(leader=real_card("OP16-001")), ch
+
+    me, opp, ch = estado(True)
+    check("Stage ativo conta como carta restavel",
+          me.field_stage in me.cartas_proprias_restaveis())
+    ok = EffectExecutor(me, opp)._pay_costs([{'type': 'rest_own_card', 'count': 1}], me.leader)
+    check("motor paga o custo restando o Stage; personagem e lider seguem ativos",
+          ok and me.field_stage.rested and not ch.rested and not me.leader.rested)
+
+    me, opp, ch = estado(True)
+    cands = [{"id": 11, "zone": "own_board", "code": "OP17-031"},
+             {"id": 12, "zone": "own_stage", "code": "OP14-039"},
+             {"id": 13, "zone": "own_leader", "code": "OP14-020"}]
+    order = sim_bridge.order_target_candidates(me, opp, cands, actor_code="OP14-020",
+                                               purpose="cost")
+    check("ao vivo, prompt de custo escolhe o MESMO Stage que o motor", order[0] == 12)
+
+    me, opp, ch = estado(False)
+    EffectExecutor(me, opp)._pay_costs([{'type': 'rest_own_card', 'count': 1}], me.leader)
+    check("CONTROLE: sem Stage o custo cai numa carta de campo (lider, menor valor)",
+          me.leader.rested and not ch.rested)
 
 
 def test_explorar_longe_descobre_alem_do_topo_19_09() -> None:

@@ -1,5 +1,55 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-09-26 (900) - Luna e Mihawk do bloco 898: nao era julgamento, era OPCAO que nao existia (Opus)
+
+Usuario recusou hardcode (*"tenho certeza que nao e um caso isolado... o bot
+se tem DON e custo suficiente ele joga, mesmo sem conferir se existem as
+condicoes necessarias ou se e possivel gerar as condicoes primeiro"*). A
+investigacao confirmou a tese dele, e as duas causas sao GENERICAS (forma,
+nao carta). Nenhuma regra de valor foi escrita -- o modelo continua
+decidindo; o que mudou e que as opcoes reais passaram a existir/ser
+corretas pra ele (`REGRA_O_CRITERIO_EMERGE`).
+
+### 1. Evento jogado sem efeito possivel (Electrical Luna OP08-036)
+
+Decisao `8adbca3c...` (match c407): quem escolheu foi a busca com rede de
+valor, praticamente indiferente (Stage 0,4575 x Luna 0,4601). Duas falhas:
+- `_step_is_viable` de `lock_opp_character_refresh` contava personagem
+  ATIVO; o executor so trava RESTADO (e o texto real diz "rested"). Agora
+  espelha o executor.
+- `_can_play_card` so conferia DON/custo/condicao -- nunca se algum step do
+  `[Main]` de um EVENTO faz algo. Evento nao deixa corpo: sem step viavel e
+  DON + carta no lixo. Gate novo, SO pra EVENTO, com a mesma regua de
+  `_rest_activates_effect` (`resolve_choice_for_scoring` + `_step_is_viable`,
+  viabilidade ampla, so reprova com certeza).
+Efeito colateral medido: Mamaragan (teste antigo esperava score -999) agora
+nem vira candidata -- mais forte, porque com o Q no comando (`sem_pontuacao`)
+o -999 nem valia ao vivo. Teste ajustado pra aceitar os dois.
+
+### 2. Mihawk ativava o lider so depois de atacar
+
+Custo real: "rest 1 of your cards" (personagem, Stage ou lider). **Quatro
+copias** da regra no motor (`_pay_costs`, alternativa de custo ~5951,
+pagabilidade ~13531, gate ~17499) contavam so personagem+lider -- o Stage
+nunca. Na simulacao, ativar antes custava um atacante (o lider, por menor
+`board_value`), entao "ativar pagando com o Stage e usar os 3 DON nos
+ataques" nao existia pro modelo avaliar. Unificado em
+`GameState.cartas_proprias_restaveis()` (REGRA_SEM_DUPLICACAO).
+E o ao vivo (`order_target_candidates`, prompt `purpose='cost'`) usava OUTRA
+regra: personagem tier 3, Stage/lider tier 6 -- sempre restava personagem.
+Agora usa o mesmo `board_value()` do motor pra `rest_own_card`.
+
+Telemetria que sustentou (3 partidas do 898): a ativacao era candidata antes
+dos ataques em 7 turnos, sempre um pouco abaixo de atacar (ex 0,7653 x
+0,8022) -- coerente com "ativar = perder um ataque" na simulacao antiga.
+
+### Validacao
+`smoke_fast.py` OK com 3 testes novos (cada um com CONTROLE que reprova a
+versao antiga). `as_is.py --n 2` sem quebra. `smoke_test.py` TODOS OS TESTES PASSARAM.
+**NAO medido**: se o bot passa a ativar antes de atacar -- isso agora e do
+modelo; conferir nas proximas partidas do Mihawk (`auditoria_efeitos.py
+--codigo OP14-020` + ordem das decisoes por turno).
+
 ## 2026-09-26 (899) - RESOLVIDO: causa raiz do achado 898 (counter decidido x executado)
 
 Causa raiz do achado tecnico do bloco 898 (Jesus Burgess 9000 vs Mihawk,

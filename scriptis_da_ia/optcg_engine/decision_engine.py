@@ -3209,6 +3209,17 @@ class GameState:
         valores = [effective_counter(c, self) for c in self.hand]
         return sum(v for v in valores if v > 0)
 
+    def cartas_proprias_restaveis(self) -> List[Card]:
+        """Candidatas a custo "rest N of your cards": personagem, Stage ou
+        lider ATIVOS (nao DON). O Stage ficava de fora em 4 copias desta
+        regra -- ativar o lider do Mihawk sempre custava um atacante."""
+        cands = [c for c in self.field_chars if not c.rested]
+        if self.field_stage is not None and not self.field_stage.rested:
+            cands.append(self.field_stage)
+        if not self.leader.rested:
+            cands.append(self.leader)
+        return cands
+
     def blockers_active(self) -> List[Card]:
         elegiveis = [c for c in self.field_chars
                      if c.is_blocker() and not c.rested and not c.cannot_be_rested_until
@@ -4736,7 +4747,11 @@ class EffectExecutor:
                 cost_eq=step.get('cost_eq'),
                 power_lte=step.get('power_lte'),
                 don_attached_gte=step.get('don_attached_gte'),
-                rested_only=step.get('rested_only', False),
+                # Travar o refresh so atinge personagem JA restado -- o
+                # executor exige `c.rested` sempre; sem espelhar isso aqui,
+                # evento como OP08-036 era "viavel" contra board todo ativo.
+                rested_only=(step.get('rested_only', False)
+                             or a == 'lock_opp_character_refresh'),
                 active_only=(a == 'rest_opp_character'),
                 filter_text=step.get('filter_type', ''),
                 exclude_name=step.get('exclude', ''),
@@ -5948,9 +5963,7 @@ class EffectExecutor:
             # OP14-029/OP15-035: "you may rest N of your cards instead" --
             # qualquer carta propria (Character OU Leader), sem filtro.
             count = cost.get('count', 1)
-            candidatos = [c for c in me.field_chars if not c.rested]
-            if not me.leader.rested:
-                candidatos.append(me.leader)
+            candidatos = me.cartas_proprias_restaveis()
             if len(candidatos) < count:
                 return None
             restados = []
@@ -7073,9 +7086,7 @@ class EffectExecutor:
                 # quando não sobra nenhum personagem ativo -- igual um
                 # jogador real nunca restaria o próprio líder por essa
                 # habilidade tendo qualquer outra opção.
-                candidates = [c for c in self.me.field_chars if not c.rested]
-                if not self.me.leader.rested:
-                    candidates.append(self.me.leader)
+                candidates = self.me.cartas_proprias_restaveis()
                 count = cost.get('count', 1)
                 if len(candidates) < count:
                     return False
@@ -13525,10 +13536,7 @@ class GameAnalyzer:
             # de banco/o proprio lider, nao trava o lider de atacar) --
             # so pagavel se sobrar ALGUMA carta propria ativa pra restar.
             if c.get('type') == 'rest_own_card':
-                candidatos = sum(1 for ch in self.me.field_chars if not ch.rested)
-                if not self.me.leader.rested:
-                    candidatos += 1
-                if candidatos < c.get('count', 1):
+                if len(self.me.cartas_proprias_restaveis()) < c.get('count', 1):
                     return 0.0
         return 0.5 * centralidade
 
@@ -14931,6 +14939,15 @@ class DecisionEngine:
             return False
         if card.card_type == 'EVENT' and not has_main:
             return False
+        # EVENTO nao deixa corpo: se nenhum step do [Main] produz efeito agora,
+        # jogar e pagar DON + carta por nada. Mesma regua de _rest_activates_
+        # effect/activate_main (viabilidade ampla, so reprova com certeza).
+        if card.card_type == 'EVENT' and effects.get('main'):
+            steps = resolve_choice_for_scoring(effects['main'], card, self.me, self.opp)
+            if steps:
+                ee = EffectExecutor(self.me, self.opp)
+                if not any(ee._step_is_viable(s, card) for s in steps):
+                    return False
         if not self._effect_conditions_met(card):
             # Efeito condicional nao dispara agora -- so vale jogar mesmo assim
             # se o CORPO em si (poder, counter, keywords, tudo que avaliar_carta
@@ -17490,10 +17507,7 @@ class OPTCGMatch:
                 # once_per_turn como usado) nunca via essa carencia:
                 # qualquer personagem proprio ativo OU o proprio lider
                 # conta como candidato pra restar.
-                candidatos_rc = sum(1 for c2 in p.field_chars if not c2.rested)
-                if not p.leader.rested:
-                    candidatos_rc += 1
-                if candidatos_rc < cnt:
+                if len(p.cartas_proprias_restaveis()) < cnt:
                     return False, f'custo rest_own_card {cnt}: nenhuma carta própria ativa pra restar'
 
             elif ctype == 'give_don_opp':

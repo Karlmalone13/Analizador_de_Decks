@@ -1,6 +1,16 @@
 # TODO — Analisador de Decks OPTCG
 
-**Última atualização:** 26 de setembro de 2026 (bloco 899)
+**Última atualização:** 26 de setembro de 2026 (bloco 900)
+
+> **CORRIGIDO, FALTA VER AO VIVO: Luna e Mihawk do bloco 898 (bloco 900)**
+>
+> Nao eram julgamento -- eram opcoes erradas/inexistentes pro modelo:
+> evento agora so e candidato se algum step do `[Main]` tem efeito
+> (`_can_play_card`), e o custo "rest 1 of your cards" passou a aceitar o
+> Stage no motor (4 copias unificadas em `cartas_proprias_restaveis`) e no
+> prompt ao vivo (mesmo `board_value`). Pendente: ver nas proximas partidas
+> do Mihawk se a ativacao passa a vir antes dos ataques (decisao do modelo,
+> nao regra).
 
 > **RESOLVIDO: counter DECIDIDO diverge do EXECUTADO (26/09/2026, bloco 899,
 > causa raiz do achado 898)**
