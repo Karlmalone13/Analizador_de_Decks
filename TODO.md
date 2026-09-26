@@ -1,15 +1,18 @@
 # TODO — Analisador de Decks OPTCG
 
-**Última atualização:** 26 de setembro de 2026 (bloco 898)
+**Última atualização:** 26 de setembro de 2026 (bloco 899)
 
-> **ABERTO: counter DECIDIDO diverge do EXECUTADO (26/09/2026, bloco 898,
-> achado do usuario)**
+> **RESOLVIDO: counter DECIDIDO diverge do EXECUTADO (26/09/2026, bloco 899,
+> causa raiz do achado 898)**
 >
-> Decision_log registrou 3 cartas escolhidas pra cobrir um ataque de 9000
-> (total 5000, cobriria) -- combat log real mostra so 1 descartada, Mihawk
-> apanhou. As outras 2 foram usadas no ataque SEGUINTE em vez do que
-> deveriam cobrir. Causa nao-obvia (decisao parece certa, execucao ao vivo
-> diverge) -- **vale Opus**. Ver bloco 898 do HANDOFF pros ids exatos.
+> Nao era o motor Python -- era `PlayCounters` (`BotExecutor.cs`): counter
+> de EVENTO causa `return` no meio do loop (o efeito enfileira e resolve em
+> ticks seguintes), e a lista tinha o evento ANTES dos personagens
+> (descarte instantaneo), entao os personagens nunca chegavam a ser
+> aplicados naquele tick. Fix: personagem sempre primeiro, evento por
+> ultimo, dentro do mesmo tick. `smoke_fast.py` OK (fix e so C#/Unity, nao
+> toca Python). **Falta validar ao vivo** (sem teste automatizado pro
+> client). Ver bloco 899 do HANDOFF.
 >
 > **NAO fixar por hardcode**: 2 observacoes de qualidade de decisao no
 > mesmo bloco (sequenciar `[Activate:Main]` antes de atacar + preferir

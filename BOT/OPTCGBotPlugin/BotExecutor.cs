@@ -199,24 +199,40 @@ namespace OPTCGBotPlugin
         public static void PlayCounters(GameplayLogicScript gls, PlayerState botPs, List<int> counterIds)
         {
             gls.bConfirmCounter = false;   // descarta direto, sem dialogo de confirmacao
+
+            // Causa raiz CONFIRMADA ao vivo em 26/09 (partida
+            // Dracule.Mihawk-G x Marshall.D.Teach-BY 09.47.55_p2, decisao
+            // eeffc649...): o /defense pediu [Billion-fold(evento), Kin'emon,
+            // Kawamatsu] cobrindo o gap (5000 >= needed 4001), mas o combat
+            // log real mostra SO o Billion-fold descartado -- Mihawk levou 1
+            // dano, e Kin'emon/Kawamatsu so foram aplicados no ataque
+            // SEGUINTE (ainda estavam na mao). Nao e a janela fechando cedo
+            // por conta do JOGO (hipotese de 16/08, nunca confirmada) -- e
+            // que EVENTO [Counter] faz este loop dar `return` (linha abaixo,
+            // pois a acao do evento enfileira e precisa de ticks seguintes
+            // pra resolver), e o evento tinha vindo PRIMEIRO na lista. Os
+            // personagens seguintes (descarte instantaneo, sem `return`)
+            // nunca chegavam a ser processados NESTE tick.
+            // Fix: aplica todo counter de PERSONAGEM (instantaneo) primeiro,
+            // dentro do MESMO tick, e deixa evento por ultimo -- assim o
+            // `return` do evento so corta a lista depois que os descartes
+            // instantaneos ja foram enviados ao jogo. Nao muda QUAL carta o
+            // motor escolhe (select_counter_cards/pick_counters seguem
+            // decidindo isso), so a ORDEM de aplicacao no client.
+            var ordenado = new List<int>(counterIds.Count);
+            var eventos = new List<int>();
             foreach (int id in counterIds)
             {
-                // Achado real 16/08 (pedido do usuario -- investigar "so 1 dos
-                // 2 counters selecionados pelo motor e aplicado", combat log
-                // mostrando 1 buff quando /defense pediu 2 uids). Hipotese
-                // NAO confirmada (sem jogo ao vivo pra reproduzir aqui): se o
-                // proprio jogo ja considera o combate resolvido depois do
-                // PRIMEIRO desconto (poder real do jogo divergindo da
-                // estimativa do motor no momento do calculo), a janela de
-                // counter fecha e o(s) descarte(s) seguinte(s) cairiam aqui
-                // MESMO ASSIM, sem checagem -- carta some da mao pro trash
-                // sem counter de verdade aplicado, batendo exatamente com o
-                // sintoma reportado. Checagem defensiva: NAO muda o caminho
-                // feliz (quando o jogo continua em Attack_WaitOnCounters o
-                // loop inteiro roda igual a antes), so para e loga se a
-                // janela ja fechou no meio -- confirma ou descarta esta
-                // hipotese com dado real na proxima partida, em vez de
-                // continuar descartando carta numa janela morta.
+                var go0 = FindCard(botPs.Lgo_MyHand, id);
+                var cls0 = go0 != null ? go0.GetComponent<CardLogicScript>() : null;
+                bool isEvent0 = cls0 != null && cls0.myCard.cardDef != null
+                               && cls0.myCard.cardDef.cardType == CardType.Event;
+                (isEvent0 ? eventos : ordenado).Add(id);
+            }
+            ordenado.AddRange(eventos);
+
+            foreach (int id in ordenado)
+            {
                 if (gls.e_CurrentState != GameplayState.Attack_WaitOnCounters)
                 {
                     Plugin.Log.LogWarning(

@@ -1,5 +1,41 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-09-26 (899) - RESOLVIDO: causa raiz do achado 898 (counter decidido x executado)
+
+Causa raiz do achado tecnico do bloco 898 (Jesus Burgess 9000 vs Mihawk,
+decisao `eeffc649...` pediu 3 cartas de counter, so 1 aplicada) estava em
+[BotExecutor.cs](BOT/OPTCGBotPlugin/BotExecutor.cs) `PlayCounters`, **nao**
+no motor de decisao Python.
+
+**NAO era** a hipotese de 16/08 ("a janela do jogo fecha cedo por conta
+propria, sem explicacao") -- essa nunca foi confirmada e continuava so
+como hipotese. **Era**: quando uma carta de counter e um EVENTO
+(ex: Billion-fold World Trichiliocosm), o loop de `PlayCounters` da
+`return` logo depois de clicar nela (o efeito enfileira e resolve em
+ticks seguintes, comentario ja existia desde 12/07). Um counter de
+PERSONAGEM (`DiscardCardForCounter`) e instantaneo e NAO da `return` --
+o loop continua pro proximo id. A decisao `eeffc649...` devolveu a lista
+`[430=Billion-fold(evento), 100=Kin'emon, 180=Kawamatsu]` NESSA ordem
+(o evento primeiro), entao o `return` do evento cortou a lista ANTES de
+aplicar Kin'emon/Kawamatsu NAQUELE tick. O combat log confirma: Mihawk
+levou 1 dano no ataque do Jesus Burgess (so 2000 de buff, faltando
+2001), e as duas cartas de personagem so foram descartadas no ataque
+SEGUINTE (Shiryu) -- ainda estavam na mao, nunca tinham sido de fato
+aplicadas.
+
+**Fix**: `PlayCounters` agora particiona `counterIds` em
+personagem-primeiro / evento-por-ultimo ANTES do loop, sem mudar QUAL
+carta o motor escolhe (`select_counter_cards`/`pick_counters` em
+`sim_bridge.py`/`decision_engine.py` continuam decidindo isso — regra
+`REGRA_SEM_DUPLICACAO`, so a ORDEM de aplicacao no client mudou). Assim
+os descartes instantaneos sempre saem no mesmo tick antes de qualquer
+`return` causado por evento.
+
+`smoke_fast.py` passou (SMOKE FAST OK) — o fix e em C#/Unity, nao toca
+Python, entao smoke so confirma ausencia de regressao no motor.
+**Pendente**: validar ao vivo numa partida real com counter misto
+personagem+evento (nao ha teste automatizado pro lado C#/Unity).
+
 ## 2026-09-26 (898) - 3 partidas novas: achado tecnico (counter decidido x executado diverge) + 2 observacoes de qualidade de decisao (usuario pediu NAO hardcodar)
 
 Usuario jogou 3 partidas (`..._09.47.55_p2` e `..._10.08.36_p3` vs Marshall
