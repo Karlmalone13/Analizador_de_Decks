@@ -15744,16 +15744,22 @@ def test_ml_aprende_todas_as_decisoes_pela_consequencia_27_09() -> None:
           f_b[-4] == 1.0 and f_c[-3] == 1.0 and f_c[-1] == 1.0 and f_t[-2] == 1.0)
     check("CONTROLE: jogada principal tem as 4 colunas novas zeradas (igual ao corpus antigo)",
           f_a[-4:] == [0.0, 0.0, 0.0, 0.0])
-    traj = {(9, 3, 'L1'): [(0, 0.0, 1), (2, 1.0, 1), (4, 2.0, 1)]}
+    traj = {(9, 3, 'L1'): [(0, 0.0, 1, 0.40), (2, 1.0, 1, 0.55), (4, 2.0, 1, 0.70)]}
     esc = {'escolhida': True, 'decisao': 1, 'gen': 9, 'match': 3, 'leader': 'L1',
            'turn': 1, 'ld_agora': 0.0}
     v = treinar_q.alvo_consequencia(esc, traj)
-    check("escolhida recebe o rotulo da consequencia (ganhou + vida subiu -> > 0.75)",
-          v is not None and v > 0.75)
+    check("rotulo TD = valor da posicao 2 turnos proprios depois (inclui a resposta do oponente)",
+          v == 0.55)
+    check("CONTROLE: rotulo TD NAO e o resultado final da partida (partida ganha, rotulo 0.55)",
+          v != 1.0)
+    check("fim de partida DENTRO do horizonte vale o resultado (consequencia direta)",
+          treinar_q.alvo_consequencia(dict(esc, turn=3), traj) == 1.0)
+    check("modo 'vitoria' (bloco 910, A/B) continua disponivel e mistura o resultado",
+          treinar_q.alvo_consequencia(esc, traj, modo='vitoria') > 0.75)
     check("CONTROLE: candidata NAO escolhida nao tem consequencia",
           treinar_q.alvo_consequencia(dict(esc, escolhida=False), traj) is None)
-    check("defesa (fora da vez) fecha no PROXIMO turno proprio",
-          treinar_q.alvo_consequencia(dict(esc, vez=False, turn=0), traj) is not None)
+    check("defesa (fora da vez) conta a partir do PROXIMO turno proprio",
+          treinar_q.alvo_consequencia(dict(esc, vez=False, turn=0), traj) == 0.55)
     check("todas as 8 decisoes do jogo sao contadas na cobertura",
           set(treinar_q.FAMILIAS_JOGO) >= {'block', 'counter', 'target', 'attack', 'pass'})
 

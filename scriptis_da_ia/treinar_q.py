@@ -158,12 +158,14 @@ def modelo_do_campeao(caminho, n_cols: int):
         return None
 
 
-def carrega_trajetorias(caminho=SELFPLAY) -> dict:
-    """(gen, partida, lider) -> [(turno, life_diff no fim do turno, venceu)]."""
-    import math  # noqa: F401
+def carrega_trajetorias(caminho=SELFPLAY, avaliador=None) -> dict:
+    """(gen, partida, lider) -> [(turno, life_diff no fim do turno, venceu,
+    valor da posicao no fim do turno)]. `avaliador` (bundle de valor de
+    posicao) preenche o 4o campo; sem ele fica None."""
+    import numpy as np
     from optcg_engine import value_net as vn
     i_ld = list(vn.FEATURE_NAMES_V3).index('life_diff')
-    traj = {}
+    traj, regs = {}, []
     if not Path(caminho).exists():
         return traj
     with open(caminho, encoding='utf-8') as fh:
@@ -171,14 +173,27 @@ def carrega_trajetorias(caminho=SELFPLAY) -> dict:
             d = json.loads(linha)
             if not d.get('gen'):
                 continue   # gen 0 junta rodadas antigas com ids repetidos
-            traj.setdefault((d['gen'], d['match'], d['leader']), []).append(
-                (d['turn'], d['feats'][i_ld], d['win']))
-    for v in traj.values():
-        v.sort()
+            regs.append(d)
+    vals = [None] * len(regs)
+    if avaliador is not None and regs:
+        try:
+            nomes = avaliador['feature_names']
+            idx = [list(vn.FEATURE_NAMES_V3).index(nm) for nm in nomes]
+            X = np.asarray([[d['feats'][i] for i in idx] for d in regs], dtype=float)
+            m = avaliador['modelo']
+            vals = list(m.predict_proba(X)[:, 1] if hasattr(m, 'predict_proba') else m.predict(X))
+        except Exception:
+            vals = [None] * len(regs)
+    for d, v in zip(regs, vals):
+        traj.setdefault((d['gen'], d['match'], d['leader']), []).append(
+            (d['turn'], d['feats'][i_ld], d['win'], None if v is None else float(v)))
+    for t in traj.values():
+        t.sort(key=lambda r: r[0])
     return traj
 
 
-def alvo_consequencia(d: dict, traj: dict, n: int = 2, lam: float = 0.5):
+def alvo_consequencia(d: dict, traj: dict, n: int = 2, lam: float = 0.5,
+                      modo: str = 'td'):
     """Rotulo pela CONSEQUENCIA da jogada escolhida (bloco 910): o que aconteceu
     DEPOIS dela na propria partida -- mesma formula da Fase 1
     (`rotulo_professor.py`): (1-lam)*logistica(vantagem de vida em n turnos
@@ -197,6 +212,15 @@ def alvo_consequencia(d: dict, traj: dict, n: int = 2, lam: float = 0.5):
     base = k - 1 if d.get('vez', True) else k
     if not t or base < 0 or base >= len(t) or ld_agora is None:
         return None
+    if modo == 'td':
+        # RETORNO DE n PASSOS (bloco 913, INSTRUCAO_MESTRA item 9): o valor
+        # da POSICAO n turnos proprios depois -- ja inclui a resposta do
+        # oponente no meio -- e NAO o resultado distante da partida. Se a
+        # partida acabou dentro do horizonte, o fim E a consequencia direta.
+        j = base + n - 1
+        if j >= len(t):
+            return float(t[-1][2])
+        return t[j][3]
     j = min(base + n - 1, len(t) - 1)
     vant = t[j][1] - ld_agora
     return (1 - lam) / (1 + math.exp(-vant)) + lam * float(t[j][2])
@@ -261,6 +285,12 @@ def main() -> int:
     ap.add_argument('--selfplay', default=str(SELFPLAY),
                     help='estados de fim de turno com o resultado, de onde sai a '
                          'consequencia de cada jogada (default: o do ciclo).')
+    ap.add_argument('--rotulo', choices=('td', 'vitoria'), default='td',
+                    help='td (default, bloco 913): valor da POSICAO 2 turnos '
+                         'proprios depois (inclui a resposta do oponente); fim '
+                         'de partida dentro do horizonte vale o resultado. '
+                         'vitoria: formula do bloco 910 (metade vantagem de vida, '
+                         'metade resultado final) -- so pra A/B.')
     ap.add_argument('--sem-consequencia', dest='consequencia', action='store_false',
                     default=True,
                     help='desliga o rotulo pela consequencia (bloco 910) e volta '
@@ -282,7 +312,13 @@ def main() -> int:
     from optcg_engine import value_net as _vn
     i_ld_q = list(_vn.FEATURE_NAMES_ALUNO).index('life_diff')
     n_cols = len(_vn.FEATURE_NAMES_ALUNO) + len(_vn.FEATURE_NAMES_ACAO)
-    traj = carrega_trajetorias(args.selfplay) if args.consequencia else {}
+    traj = {}
+    if args.consequencia:
+        _aval = None
+        if args.rotulo == 'td':
+            from optcg_engine.decision_engine import MODELO_ORDENA_PATH
+            _aval = _vn.load_value_net(MODELO_ORDENA_PATH)
+        traj = carrega_trajetorias(args.selfplay, avaliador=_aval)
     cobertura = {f: [0, 0, 0] for f in FAMILIAS_JOGO}   # linhas, escolhidas, consequencia
     with caminho.open(encoding='utf-8') as fh:
         for linha in fh:
@@ -306,7 +342,7 @@ def main() -> int:
                 cob[1] += 1 if d.get('escolhida') else 0
             if traj:
                 d['ld_agora'] = feats[i_ld_q]
-                _c = alvo_consequencia(d, traj)
+                _c = alvo_consequencia(d, traj, modo=args.rotulo)
                 if _c is not None:
                     alvo = _c
                     if cob is not None:
@@ -597,7 +633,7 @@ def main() -> int:
         'replay_priorizado': bool(args.priorizar and X_treino is not X),
         'cobertura': {f: {'linhas': v[0], 'escolhidas': v[1], 'consequencia': v[2]}
                       for f, v in cobertura.items()},
-        'rotulo_consequencia': bool(traj),
+        'rotulo_consequencia': (args.rotulo if traj else None),
         'continuado_de': (args.continua_de if campeao is not None else None),
     }
     import joblib

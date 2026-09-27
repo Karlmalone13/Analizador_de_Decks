@@ -1,5 +1,57 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-09-27 (913) - Conformidade com a INSTRUCAO_MESTRA_ML: decisoes do usuario + violacoes 1, 3 e 4
+
+Decisoes do usuario (formato do item 28): **P1 = C, P2 = B**, ordem das
+violacoes aprovada.
+
+**P1 (item 7) -- exploracao so onde o modelo esta incerto.** `_explorar` e
+`_q_escolhe_familia` sorteiam SO entre as candidatas cujo valor fica dentro do
+ERRO FORA DA AMOSTRA do proprio modelo em relacao a melhor
+(`_margem_incerteza`); onde ele tem certeza, joga como o bot real. Familia que
+o modelo ainda nao aprendeu = tudo incerto. A exploracao "longe" (19/09) saiu.
+
+**P2 (item 14.7) -- treino continua do promovido.** `treinar_q.py` carrega o
+campeao (`modelo_do_campeao`), expande a 1a camada com PESO ZERO pras 4
+colunas de defesa/alvo (responde identico ao original -- teste), mantem a
+normalizacao dele e continua o treino (`warm_start`). `--do-zero` so pra
+experimento. Replay priorizado voltou a funcionar (usa o campeao expandido).
+RESSALVA: a validacao por lider (erro/concordancia reportados) ainda treina
+modelos do zero por fold -- e relatorio, nao o modelo salvo.
+
+**Violacao 1 (itens 10/11, Fase 0) -- rotulo bootstrap espiava.** A copia que
+rotula as opcoes nao escolhidas carregava mao, vida e deck REAIS do oponente e
+o meu deck na ordem real. Agora cada opcao e simulada em 4 mundos plausiveis
+(`OpponentModel.sample_mundo`, so observavel; meu deck/vida face-down
+reembaralhados) e o alvo e a media. **Medido em 37 estados com ataque:
+trocando a mao real do oponente, o rotulo antigo mudava em 28; o cego em 0.**
+Teste permanente com controle. Custo: geracao +57% (49s -> 77s / 40 partidas).
+Achado lateral: `AUTO_JOGO_CEGO` (bloco 785) ja cegava as decisoes do motor
+offline -- o registro do bloco 888 dizendo o contrario estava desatualizado.
+
+**Violacao 2 (item 5) -- alvo ao vivo: AGUARDANDO DECISAO (A/B).** O ao vivo
+recebe a mesa inteira (518 de 529 pedidos com proposito "unknown"), nao sabe o
+que e legal; o plugin clica ate o jogo aceitar (34% dos episodios nunca acertam,
+bloco 854). A = plugin manda so os candidatos que o validador do jogo aceita e o
+motor escolhe com `_pick_effect_target`; B = motor deduz legalidade pelo parser.
+Recomendado A.
+
+**Violacao 3 (item 21) -- registro de geracoes.** `geracoes.py` +
+`metrics/geracoes/` (versionado): linhagem `generation_NNN` com binario, pai,
+dataset, config, treino, duelo, commit e motivo; todo candidato rejeitado com o
+motivo. `ciclo.py` registra e promove pelo registro. Corpus e log ao vivo
+gravam o hash do modelo que decidiu. Linhagem: generation_001 (27516094) ->
+generation_002 (07cf511b, atual); ciclos 13-15 como candidatos rejeitados.
+
+**Violacao 4 (item 9) -- rotulo sem o resultado distante.** Default novo
+`--rotulo td`: a jogada escolhida recebe o VALOR DA POSICAO 2 turnos proprios
+depois (inclui a resposta do oponente), avaliado pelo `value_net_aluno`; fim de
+partida dentro do horizonte vale o resultado. `--rotulo vitoria` (formula do
+910) fica pro A/B. **Duelo TD x vitoria rodando** -- ver bloco seguinte.
+
+**Pendentes**: violacao 2 (decisao), 5 (confirmar o campeao 07cf -- 1 seed, e
+toda reproducao perde dele), 6 (partida contra o usuario).
+
 ## 2026-09-27 (912) - INSTRUCAO_MESTRA_ML.md vira a regra do projeto
 
 O usuario entregou uma instrucao mestra e disse: *"esse vai ser suas regras

@@ -1,6 +1,12 @@
 # TODO — Analisador de Decks OPTCG
 
-**Última atualização:** 27 de setembro de 2026 (bloco 912)
+**Última atualização:** 27 de setembro de 2026 (bloco 913)
+
+> **INSTRUCAO_MESTRA (bloco 913)**: feitos P1 (explora so onde incerto), P2
+> (treino continua do promovido), violacao 1 (rotulo bootstrap nao espia mais:
+> 28/37 -> 0/37), 3 (registro de geracoes) e 4 (rotulo TD, duelo rodando).
+> **Aguardando o usuario**: violacao 2 (alvo ao vivo, opcao A ou B). Depois: 5
+> (confirmar campeao 07cf em mais seeds) e 6 (partida contra o usuario).
 
 > **REGRA DO PROJETO (bloco 912): [`INSTRUCAO_MESTRA_ML.md`](INSTRUCAO_MESTRA_ML.md).**
 > Ler inteira antes de qualquer tarefa de ML. Conflitos e violacoes atuais
