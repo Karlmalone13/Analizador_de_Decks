@@ -128,6 +128,36 @@ FAMILIAS_JOGO = ('attack', 'play', 'pass', 'activate', 'attach_don',
 SELFPLAY = RAIZ / 'metrics' / 'selfplay_v2.jsonl'
 
 
+def modelo_do_campeao(caminho, n_cols: int):
+    """O campeao pronto pra CONTINUAR o treino (bloco 913, INSTRUCAO_MESTRA
+    item 14.7: "o proximo treinamento obrigatoriamente parte do modelo
+    promovido"). Copia o Pipeline(StandardScaler, MLP) dele; se ele foi
+    treinado sem as 4 colunas de defesa/alvo (bloco 910), a 1a camada ganha
+    essas entradas com PESO ZERO e o scaler com media 0/escala 1 -- o modelo
+    comeca respondendo EXATAMENTE como o campeao. None se nao der pra continuar
+    (sem arquivo, outra familia de modelo, dimensao incompativel)."""
+    import copy
+    import joblib
+    import numpy as np
+    try:
+        b = joblib.load(caminho)
+        m = copy.deepcopy(b.get('modelo') if isinstance(b, dict) else None)
+        sc, mlp = m.steps[0][1], m.steps[-1][1]
+        n_in = mlp.coefs_[0].shape[0]
+        if n_in == n_cols - 4:
+            mlp.coefs_[0] = np.vstack([mlp.coefs_[0], np.zeros((4, mlp.coefs_[0].shape[1]))])
+            mlp.n_features_in_ = n_cols
+            sc.mean_ = np.concatenate([sc.mean_, np.zeros(4)])
+            sc.scale_ = np.concatenate([sc.scale_, np.ones(4)])
+            sc.var_ = np.concatenate([sc.var_, np.ones(4)])
+            sc.n_features_in_ = n_cols
+        elif n_in != n_cols:
+            return None
+        return m
+    except Exception:
+        return None
+
+
 def carrega_trajetorias(caminho=SELFPLAY) -> dict:
     """(gen, partida, lider) -> [(turno, life_diff no fim do turno, venceu)]."""
     import math  # noqa: F401
@@ -221,6 +251,13 @@ def main() -> int:
                          'usado no paper original de Prioritized Experience '
                          'Replay (Schaul et al 2016) pra nao deixar a '
                          'distribuicao extrema demais.')
+    ap.add_argument('--continua-de', dest='continua_de',
+                    default=str(RAIZ / 'metrics' / 'q_net.joblib'),
+                    help='modelo PROMOVIDO de onde o treino CONTINUA (bloco 913, '
+                         'INSTRUCAO_MESTRA item 14.7). Default: o campeao atual.')
+    ap.add_argument('--do-zero', dest='do_zero', action='store_true',
+                    help='treina do zero em vez de continuar do promovido '
+                         '(so pra experimento controlado).')
     ap.add_argument('--selfplay', default=str(SELFPLAY),
                     help='estados de fim de turno com o resultado, de onde sai a '
                          'consequencia de cada jogada (default: o do ciclo).')
@@ -489,20 +526,24 @@ def main() -> int:
     # compativel (1o ciclo, cold start, ou dimensao de feature mudou),
     # degrada pra amostra UNIFORME -- nunca trava o treino por falta dele.
     X_treino, y_treino = X, y
+    campeao = (None if (args.do_zero or args.modelo != 'rede')
+               else modelo_do_campeao(args.continua_de, X.shape[1]))
     if args.priorizar:
         pesos = None
         try:
-            import joblib as _jl
-            _camp_path = RAIZ / 'metrics' / 'q_net.joblib'
-            if _camp_path.exists():
-                _camp = _jl.load(_camp_path)
-                _cmodelo = _camp.get('modelo') if isinstance(_camp, dict) else None
-                if (_cmodelo is not None
-                        and getattr(_cmodelo, 'n_features_in_', None) == X.shape[1]):
-                    _pred_campeao = _cmodelo.predict(X)
-                    erro = np.abs(_pred_campeao - y)
-                    prio = (erro + 1e-3) ** args.priorizar_alpha
-                    pesos = prio / prio.sum()
+            _cmodelo = campeao
+            if _cmodelo is None:
+                import joblib as _jl
+                _camp_path = RAIZ / 'metrics' / 'q_net.joblib'
+                if _camp_path.exists():
+                    _camp = _jl.load(_camp_path)
+                    _cmodelo = _camp.get('modelo') if isinstance(_camp, dict) else None
+            if (_cmodelo is not None
+                    and getattr(_cmodelo, 'n_features_in_', None) == X.shape[1]):
+                _pred_campeao = _cmodelo.predict(X)
+                erro = np.abs(_pred_campeao - y)
+                prio = (erro + 1e-3) ** args.priorizar_alpha
+                pesos = prio / prio.sum()
         except Exception:
             pesos = None
         if pesos is not None:
@@ -518,7 +559,21 @@ def main() -> int:
             print('  replay priorizado pedido mas sem campeao compativel -- '
                   'treinando com amostra uniforme (comportamento antigo)')
 
-    modelo = novo().fit(X_treino, y_treino)
+    if campeao is not None:
+        # CONTINUA do promovido: mesma normalizacao do campeao (reajustar o
+        # scaler tiraria o sentido dos pesos) e o treino da rede segue dos
+        # pesos dele (warm_start).
+        _sc, _mlp = campeao.steps[0][1], campeao.steps[-1][1]
+        _mlp.set_params(warm_start=True)
+        _mlp.fit(_sc.transform(X_treino), y_treino)
+        modelo = campeao
+        print()
+        print('  treino CONTINUADO do modelo promovido: %s' % args.continua_de)
+    else:
+        modelo = novo().fit(X_treino, y_treino)
+        print()
+        print('  treino DO ZERO (%s)' % ('--do-zero' if args.do_zero
+                                         else 'sem promovido compativel'))
     bundle = {
         'modelo': modelo,
         'tipo': 'q',
@@ -543,6 +598,7 @@ def main() -> int:
         'cobertura': {f: {'linhas': v[0], 'escolhidas': v[1], 'consequencia': v[2]}
                       for f, v in cobertura.items()},
         'rotulo_consequencia': bool(traj),
+        'continuado_de': (args.continua_de if campeao is not None else None),
     }
     import joblib
     saida = RAIZ / args.out

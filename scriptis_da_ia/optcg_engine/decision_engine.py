@@ -1247,6 +1247,19 @@ _EM_SIMULACAO = {'on': False}
 _Q_CTX = {'match': None, 'ativo': None}
 
 
+def _margem_incerteza(p=None, bundle=None) -> float:
+    """Ate onde o modelo NAO distingue duas opcoes: o erro fora da amostra que
+    ele mediu no treino (bloco 913). Sem modelo, nada e distinguivel (inf)."""
+    try:
+        if bundle is None:
+            from optcg_engine import value_net as _vn
+            bundle = _vn.load_value_net(getattr(p, 'q_net_path', None) or Q_NET_PATH)
+        e = (bundle or {}).get('erro_fora_amostra')
+        return float(e) if e is not None else float('inf')
+    except Exception:
+        return float('inf')
+
+
 def _q_escolhe_familia(me, opp, familia: str, opcoes: list, padrao_idx: int) -> int:
     """PONTO UNICO das decisoes que o ML passou a aprender no bloco 910:
     bloqueio, counter e alvo de efeito. `opcoes` sao tuplas de acao no formato
@@ -1264,6 +1277,7 @@ def _q_escolhe_familia(me, opp, familia: str, opcoes: list, padrao_idx: int) -> 
     if _EM_SIMULACAO['on'] or not opcoes:
         return padrao_idx
     idx = padrao_idx
+    incertos = list(range(len(opcoes)))   # sem opiniao do modelo: tudo incerto
     try:
         from optcg_engine import value_net as _vn
         _b = _vn.load_value_net(getattr(me, 'q_net_path', None) or Q_NET_PATH)
@@ -1273,13 +1287,16 @@ def _q_escolhe_familia(me, opp, familia: str, opcoes: list, padrao_idx: int) -> 
             _vals = _vn.q_valores(me, opp, opcoes, bundle=_b)
             _ok = [(i, v) for i, v in enumerate(_vals) if v is not None]
             if _ok:
-                idx = max(_ok, key=lambda t: t[1])[0]
+                idx, _vmax = max(_ok, key=lambda t: t[1])
+                _marg = _margem_incerteza(me, _b)
+                incertos = [i for i, v in _ok if _vmax - v <= _marg]
     except Exception:
         idx = padrao_idx
     m = _Q_CTX.get('match')
     _eps = float(getattr(m, '_explora_eps', 0.0) or 0.0) if m is not None else 0.0
-    if _eps and len(opcoes) > 1 and random.random() < _eps:
-        idx = random.randrange(len(opcoes))
+    # Explora SO onde o modelo esta incerto (bloco 913, INSTRUCAO_MESTRA item 7).
+    if _eps and len(incertos) > 1 and random.random() < _eps:
+        idx = incertos[random.randrange(len(incertos))]
     cap = getattr(m, '_q_captura', None) if m is not None else None
     if cap is not None:
         try:
@@ -20043,7 +20060,8 @@ class OPTCGMatch:
                         if _segura:
                             _melhor, _v = max(_segura, key=lambda t: t[1])
                         if getattr(self, '_explora_eps', 0.0):
-                            _melhor, _v = self._explorar(_pares_q)
+                            _melhor, _v = self._explorar(
+                                _pares_q, _margem_incerteza(p, _qb))
                         return (_melhor, float(_v),
                                 [{"action": c, "value": (v if v is not None else -1e9)}
                                  for c, v in zip(candidatas, _vals)],
@@ -20094,7 +20112,8 @@ class OPTCGMatch:
         # e eco -- reforca, nao descobre. Default 0.0 => nada muda.
         if getattr(self, '_explora_eps', 0.0):
             melhor, melhor_valor = self._explorar(
-                [(c, (v if v is not None else -1e9)) for c, v in _pares])
+                [(c, (v if v is not None else -1e9)) for c, v in _pares],
+                _margem_incerteza(p))
 
         # CAPTURA PRA REDE DE POLITICA (bloco 772) -- inalterada.
         _pol = getattr(self, '_pol_captura', None)
@@ -21710,7 +21729,7 @@ class OPTCGMatch:
             _EM_SIMULACAO['on'] = _old_sim
             _DEFESA['on'] = _old_defesa
 
-    def _explorar(self, cand_valor: list):
+    def _explorar(self, cand_valor: list, margem: 'float | None' = None):
         """EXPLORACAO epsilon-gulosa na escolha FINAL (bloco 767).
 
         Pedido do usuario: *"ele tem que ser capaz de aprender e descobrir e
@@ -21746,19 +21765,24 @@ class OPTCGMatch:
         continua reprodutivel por seed, igual ao resto do motor.
 
         `cand_valor`: lista de (candidata, valor). Devolve (candidata, valor).
+
+        SO ONDE O MODELO ESTA INCERTO (bloco 913, decisao do usuario pela
+        INSTRUCAO_MESTRA_ML item 7: a geracao nao pode ser um bot pior). Explora
+        apenas entre as candidatas cujo valor fica a menos de `margem` da
+        melhor -- `margem` e o ERRO FORA DA AMOSTRA que o proprio modelo mediu
+        no treino: abaixo disso ele nao distingue as opcoes. Onde so a melhor
+        cabe na faixa, ele tem certeza e joga como o bot real. A exploracao
+        "longe" (19/09) saiu: sorteava justamente onde o modelo tinha certeza.
         """
         ordenados = sorted(cand_valor, key=lambda cv: cv[1], reverse=True)
         eps = getattr(self, '_explora_eps', 0.0) or 0.0
-        if eps > 0.0 and len(ordenados) >= 2 and random.random() < eps:
-            far_frac = getattr(self, '_explora_far_frac', 0.3) or 0.0
-            if far_frac > 0.0 and random.random() < far_frac:
-                escolhido = ordenados[random.randrange(1, len(ordenados))]
-                self._explora_longe_n = getattr(self, '_explora_longe_n', 0) + 1
-                return escolhido
-            k = min(len(ordenados) - 1, 3)
-            escolhido = ordenados[1 + random.randrange(k)]
-            self._explora_n = getattr(self, '_explora_n', 0) + 1
-            return escolhido
+        if eps > 0.0 and len(ordenados) >= 2:
+            if margem is None:
+                margem = _margem_incerteza(getattr(self, '_explora_dono', None))
+            incertos = [cv for cv in ordenados if ordenados[0][1] - cv[1] <= margem]
+            if len(incertos) >= 2 and random.random() < eps:
+                self._explora_n = getattr(self, '_explora_n', 0) + 1
+                return incertos[random.randrange(len(incertos))]
         self._explora_greedy_n = getattr(self, '_explora_greedy_n', 0) + 1
         return ordenados[0]
 

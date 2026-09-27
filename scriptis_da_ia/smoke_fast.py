@@ -10988,7 +10988,8 @@ def main() -> int:
     test_select_grant_rush_piso_de_power_vale_pro_ramo_do_nome_26_09()
     test_treino_ignora_rotulo_busca_por_default_27_09()
     test_ml_aprende_todas_as_decisoes_pela_consequencia_27_09()
-    test_explorar_longe_descobre_alem_do_topo_19_09()
+    test_explora_so_onde_o_modelo_esta_incerto_27_09()
+    test_treino_continua_do_campeao_27_09()
     test_opp_turn_reactive_effects_krieg_leader_debuff_24_08()
     test_give_don_filtro_de_tipo_no_destinatario_24_08()
     test_play_card_total_cost_lte_e_distinct_names_24_08()
@@ -15815,51 +15816,56 @@ def test_select_grant_rush_piso_de_power_vale_pro_ramo_do_nome_26_09() -> None:
           luffy_forte.rush_this_turn)
 
 
-def test_explorar_longe_descobre_alem_do_topo_19_09() -> None:
-    """
-    Pedido do usuario 19/09/2026: "uma forma de descobrir o que ele nunca
-    cogitaria". A exploracao ja existia (bloco 767) mas so sorteava entre
-    as 3 candidatas seguintes ao topo -- descobre "quase escolhi", nunca
-    o que o modelo rankeou por ultimo. `_explorar` ganhou uma 2a distancia:
-    com `_explora_far_frac`, uma fracao das exploracoes sorteia UNIFORME
-    entre TODAS as alternativas (rank 2 ate o ultimo), nao so rank 2-4.
-    """
+def test_treino_continua_do_campeao_27_09() -> None:
+    """Bloco 913 (INSTRUCAO_MESTRA item 14.7): o treino parte do promovido. Ao
+    ganhar as 4 colunas novas com peso zero, o campeao expandido tem que
+    responder EXATAMENTE igual ao original."""
+    import numpy as np, joblib, treinar_q
+    from optcg_engine import value_net as vn
+    from pathlib import Path
+    caminho = Path(__file__).resolve().parent / 'metrics' / 'q_net.joblib'
+    orig = joblib.load(caminho)['modelo']
+    n_orig = orig.n_features_in_
+    n_cols = len(vn.FEATURE_NAMES_ALUNO) + len(vn.FEATURE_NAMES_ACAO)
+    exp = treinar_q.modelo_do_campeao(caminho, n_cols)
+    check("campeao carregado pra continuar o treino", exp is not None)
+    if exp is None:
+        return
+    X = np.random.RandomState(3).normal(size=(200, n_orig))
+    Xp = np.hstack([X, np.zeros((200, n_cols - n_orig))]) if n_cols > n_orig else X
+    check("campeao expandido responde IGUAL ao original (colunas novas com peso 0)",
+          np.allclose(exp.predict(Xp), orig.predict(X), atol=1e-9))
+    if n_cols > n_orig:
+        Xq = Xp.copy(); Xq[:, -2] = 1.0
+        check("CONTROLE: as colunas novas estao ligadas (valor nao-zero chega na rede)",
+              exp.steps[-1][1].coefs_[0].shape[0] == n_cols)
+    check("CONTROLE: dimensao incompativel -> nao continua (None)",
+          treinar_q.modelo_do_campeao(caminho, n_cols + 7) is None)
+
+
+def test_explora_so_onde_o_modelo_esta_incerto_27_09() -> None:
+    """Bloco 913 (decisao do usuario pela INSTRUCAO_MESTRA_ML item 7: a geracao
+    nao pode ser um bot pior). Explora SO entre as candidatas que o modelo nao
+    distingue da melhor -- a faixa e o erro fora da amostra dele."""
     import random
     match = OPTCGMatch((real_card("OP15-001"), []), (real_card("OP13-001"), []))
-
-    # 10 candidatas com valores DECRESCENTES -- c9 e a ULTIMA, a mais
-    # distante do topo possivel.
-    cand_valor = [(f"c{i}", 10 - i) for i in range(10)]
-
+    cand = [("c0", 0.60), ("c1", 0.58), ("c2", 0.57), ("c3", 0.40), ("c4", 0.10)]
     random.seed(42)
-    match._explora_eps = 1.0       # sempre explora (determinismo do teste)
-    match._explora_far_frac = 1.0  # sempre LONGE
-    vistos = set()
-    for _ in range(200):
-        c, _ = match._explorar(cand_valor)
-        vistos.add(c)
-    check("com far_frac=1.0, a exploracao alcanca candidatas ALEM do rank "
-          "2-4 (a ultima, c9, tem que aparecer em 200 tentativas)",
-          "c9" in vistos)
-    check("com far_frac=1.0, o topo (c0) nunca e escolhido por exploracao "
-          "(sempre sai do topo, nunca fica nele)",
-          "c0" not in vistos)
-
-    random.seed(42)
-    match._explora_far_frac = 0.0  # so PERTO (comportamento antigo)
-    vistos_perto = set()
-    for _ in range(200):
-        c, _ = match._explorar(cand_valor)
-        vistos_perto.add(c)
-    check("com far_frac=0.0 (comportamento antigo preservado): so rank 2-4 "
-          "(c1,c2,c3) aparecem, nunca a ultima",
-          vistos_perto <= {"c1", "c2", "c3"} and "c9" not in vistos_perto)
-
-    random.seed(7)
+    match._explora_eps = 1.0
+    vistos = {match._explorar(cand, margem=0.05)[0] for _ in range(300)}
+    check("explora entre as incertas (c0-c2 dentro de 0,05 da melhor)",
+          vistos == {"c0", "c1", "c2"})
+    check("NUNCA joga opcao em que o modelo tem certeza de que e pior (c3, c4)",
+          "c3" not in vistos and "c4" not in vistos)
+    certo = [("c0", 0.90), ("c1", 0.50), ("c2", 0.20)]
+    check("CONTROLE: modelo com certeza (so a melhor na faixa) joga como o bot real",
+          all(match._explorar(certo, margem=0.05)[0] == "c0" for _ in range(100)))
+    check("sem modelo (margem infinita) tudo e incerto e tudo pode ser explorado",
+          {match._explorar(cand, margem=float("inf"))[0] for _ in range(300)}
+          == {"c0", "c1", "c2", "c3", "c4"})
     match._explora_eps = 0.0
-    c, v = match._explorar(cand_valor)
-    check("sem exploracao (_explora_eps=0.0), sempre devolve o topo",
-          c == "c0" and v == 10)
+    check("sem exploracao (_explora_eps=0.0), sempre o topo",
+          match._explorar(cand, margem=0.05)[0] == "c0")
 
 
 def test_opp_turn_reactive_effects_krieg_leader_debuff_24_08() -> None:
