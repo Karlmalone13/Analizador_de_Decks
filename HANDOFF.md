@@ -1,5 +1,55 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-09-27 (909) - Frente do Q: a "concordancia de 42%" nao e teto de qualidade; o professor empata as opcoes, e dar-lhe resolucao PIORA o jogo
+
+Sessao Claude (Sonnet 5 -> Opus 5.5), pedido do usuario: investigar o Q.
+
+**1. A metrica estava mal enquadrada.** No modo bootstrap a `escolhida` e o que
+o CAMPEAO DA EPOCA jogou (com 17% de exploracao e pool de adversarios
+antigos), marcado `escolhida_por='q'` -- o proprio codigo avisa que e
+circular. "Concordancia top-1" mede quanto o Q novo concorda com uma
+politica antiga e ruidosa, nao qualidade. **Nao usar como alvo** (e o Sonnet
+desta sessao tinha proposto exatamente isso -- corrigido).
+
+**2. O que de fato limita o rotulo: o professor empata.** O alvo de cada
+candidata e `value_net_aluno` avaliando o estado depois da acao (1 passo).
+Decisoes das gens 12-13: as 2 melhores opcoes com valor IDENTICO em **41,2%**
+(gap < 0,01 em 61,9%). Medido em 453 decisoes reais: 83% desses empates sao
+estados DIFERENTES com o mesmo valor; so 7,5% sao estados identicos
+(horizonte). O professor e HistGB profundidade 3, folha 60, lr 0,02 --
+sub-ajustado (o bloco 885 ja registrava que a validacao nao estabiliza) --,
+treinado 1 vez em 73.821 estados antigos e nunca retreinado pelo ciclo.
+
+**3. Tentativas, todas medidas e registradas no `REPROVADOS.md`:**
+
+| professor | resultado |
+|---|---|
+| rede (MLP) | AUC 0,764 x 0,803 -- decora |
+| + dado recente | AUC +0,006, resolucao igual |
+| menos regularizado (V3) | AUC 0,816 -> **0,853**, empates 36% -> **0,8%** |
+| Q treinado com rotulo do V3 x Q com o atual (600 partidas) | **8x29 DESCARTA** |
+| V3 decidindo defesa/counter/alvo (mesmo campeao) | **33x45 DESCARTA** |
+
+Prever melhor QUEM GANHA nao e ordenar melhor as OPCOES (licao dos blocos
+680-683, de novo). Os empates do professor atual nao escondiam sinal
+recuperavel por esse caminho.
+
+**4. Achado lateral**: `value_net_aluno` (via `MODELO_ORDENA_PATH`) nao e so o
+professor do bootstrap -- tambem decide defesa/counter/alvo ao vivo. Trocar o
+arquivo muda o jogo, nao so o rotulo.
+
+**5. Metodo**: scripts de experimento com `ProcessPoolExecutor` PRECISAM de
+`if __name__ == '__main__'` -- sem ele os workers do duelo caiam e o
+`duelar_sprt` degradava pra sequencial (resultado identico por seed, so mais
+lento). Conferido que o modelo promovido no 906 nao foi afetado: 1.121.413
+alvos = exatamente prefixo + bootstrap.
+
+**O que continua medido como o que funciona**: volume de self-play com corpus
+limpo (ciclos 10-13 bootstrap -> promocao 75x46 no 906). Proximo passo pratico
+e rodar ciclos (execucao, Sonnet). O salto de verdade continua em aberto e
+exige um sinal de rotulo diferente (consequencia jogada, nao avaliacao de 1
+passo) -- sem premissa barata que o sustente hoje.
+
 ## 2026-09-27 (908) - "Atacar a passividade" (pedido do usuario, pos-bloco 907): MEDIDO e DESCARTADO -- deixar o Q escolher PASS ao vivo e NEUTRO, nao um bug
 
 Sessao Claude (Sonnet 5). O bloco 907 mostrou um caso onde PASS (0,7616)

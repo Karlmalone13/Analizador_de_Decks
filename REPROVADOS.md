@@ -587,6 +587,30 @@ comecar do zero -- exige trocar o ROTULO, nao o mecanismo.
 > especifica: alvo do efeito (16,4%), cartas de counter (18,5%), DON
 > (23,5%).
 
+## Professor do bootstrap (`value_net_aluno`) com mais RESOLUCAO (bloco 909)
+
+Diagnostico que motivou: nas decisoes recentes o professor da o MESMO valor
+as duas melhores opcoes em 41,2% dos casos (gap < 0,01 em 61,9%); em 83%
+desses empates os estados resultantes sao DIFERENTES -- o modelo (HistGB
+profundidade 3, folha 60, lr 0,02, sub-ajustado) nao os separa.
+
+| tentativa | resultado medido | bloco |
+|---|---|---|
+| Professor em REDE (MLP) no mesmo corpus/rotulo | AUC fora da amostra **0,764** x 0,803 (decora: 0,94 no treino) | 909 |
+| Professor + dado recente (selfplay gens 4-11 rotulado igual) | AUC nos estados das gens 12-13: 0,8211 -> 0,8266; resolucao igual | 909 |
+| **Professor menos regularizado (63 folhas, lr 0,05)** | AUC 0,8164 -> **0,8531**, empates "em degraus" 36,4% -> **0,8%** -- e o Q treinado com ele **PERDE 8x29** do Q treinado com o professor atual (600 partidas cada) | 909 |
+| O mesmo V3 como avaliador de DECISAO (defesa/counter/alvo), campeao igual dos dois lados | **33x45 DESCARTA** | 909 |
+
+**A licao (mesma dos blocos 680-683, de novo)**: prever melhor QUEM GANHA
+(AUC entre estados) nao e ordenar melhor as OPCOES de uma decisao. Os
+desempates do professor fino sao, em boa parte, ruido com cara de confianca, e
+o Q aprende o ruido com consistencia. Empate do professor atual nao escondia
+sinal recuperavel desse jeito.
+
+**Tambem medido**: a "concordancia top-1" no modo bootstrap NAO e qualidade --
+a `escolhida` e o que o campeao da epoca jogou, com 17% de exploracao e pool
+de adversarios antigos. Nao usar como alvo.
+
 ## Rotulo do Q vindo do professor `busca` que ESPIA (bloco 906)
 
 | tentativa | resultado medido | bloco |

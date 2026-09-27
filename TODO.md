@@ -1,6 +1,12 @@
 # TODO — Analisador de Decks OPTCG
 
-**Última atualização:** 27 de setembro de 2026 (bloco 908)
+**Última atualização:** 27 de setembro de 2026 (bloco 909)
+
+> **Frente do Q (bloco 909)**: "concordancia top-1" NAO e qualidade (compara com
+> o campeao antigo + exploracao) -- nao usar como alvo. O professor do
+> bootstrap empata as 2 melhores opcoes em 41% das decisoes; dar-lhe resolucao
+> (AUC 0,816 -> 0,853) fez o Q PERDER 8x29 e o avaliador perder 33x45. Registrado
+> no REPROVADOS. **Lever medido que funciona: mais ciclos com corpus limpo.**
 
 > **"Passividade" MEDIDA e DESCARTADA como bug (bloco 908)**: deixar o Q
 > escolher PASS ao vivo (bloco 907) foi testado em duelo espelhado (mesmo
