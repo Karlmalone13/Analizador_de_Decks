@@ -1,6 +1,19 @@
 # TODO — Analisador de Decks OPTCG
 
-**Última atualização:** 26 de setembro de 2026 (bloco 904)
+**Última atualização:** 26 de setembro de 2026 (bloco 905)
+
+> **CICLO 13 RODADO (bloco 905), pos-fix 904: NAO promovido.** Portao 7x24 em
+> 31 pares decididos, 109 divididos -- "DESCARTA (equivalentes)". Corpus
+> 1.243.321 alvos. **ACHADO OPERACIONAL, nao do projeto**: lancei o mesmo
+> `ciclo.py` duas vezes por engano (uma via `&`, achando que morreria, e nao
+> morreu) -- os dois processos corromperam `q_alvos.jsonl`/`selfplay_v2.jsonl`
+> com escrita concorrente (208 linhas corrompidas + ~101 mil duplicadas,
+> gen=13 com 2x as linhas esperadas). Corrigido: truncar de volta ao estado
+> sincronizado com o git, rerodar UMA vez só. **Licao pra futuras sessoes**:
+> antes de relancar um comando ja backgrounded, checar `tasklist` primeiro --
+> dois processos locais escrevendo no mesmo arquivo corrompem em silencio,
+> mesma familia do problema que `REGRA_DUAS_MAQUINAS.md` ja cobre pra duas
+> maquinas.
 
 > **CORRIGIDO (bloco 904): `select_grant_rush` (OP16-001/Ace) rejeitava alvo
 > ao vivo, once_per_turn desperdicado.** Achado rodando `auditoria_efeitos.py`

@@ -1,5 +1,64 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-09-26 (905) - Ciclo 13 (pos-fix 904): NAO promovido. ACHADO OPERACIONAL: dois lancamentos do mesmo ciclo.py corromperam o corpus, causa era minha (sessao), nao o projeto
+
+**Pedido do usuario** (depois do bloco 904): "vamos fazer um treino entao
+depois dessas correcoes e ajuste e ver se o bot e promovido". Rodei
+`ciclo.py --workers 4 --auditar 3`.
+
+**INCIDENTE, achado ANTES de aceitar qualquer resultado (nunca reportar
+numero sem desconfiar do redondo demais -- regra do bloco 780)**: a
+primeira execucao deste ciclo falhou no passo `[2/5] TREINA o Q` com
+`JSONDecodeError` lendo `q_alvos.jsonl`. Investigado: **eu mesma lancei o
+MESMO comando `ciclo.py` DUAS VEZES** -- uma vez via `&` num shell comum
+(assumindo, errado, que morreria quando o shell do Bash tool encerrasse) e
+de novo via `run_in_background` (o jeito certo). O primeiro processo NAO
+morreu -- ficou orfao, rodando em paralelo com o segundo, e os dois leram
+o MESMO `ciclo_estado.json` (12 ciclos), calcularam o MESMO
+`seed=10313` pro "ciclo 13", e escreveram ao mesmo tempo nos mesmos
+arquivos (`q_alvos.jsonl`, `selfplay_v2.jsonl`) -- exatamente o tipo de
+corrida que `REGRA_DUAS_MAQUINAS.md` documenta pra DUAS MAQUINAS, so que
+aqui foram DOIS PROCESSOS na MESMA maquina, dentro da MESMA sessao.
+
+**Prova quantitativa** (nao foi so suspeita): `selfplay_v2.jsonl` tinha
+**exatamente 5342** linhas com `gen=13` -- o DOBRO EXATO dos 2671 que UM
+processo reportou gerar. `q_alvos.jsonl` tinha 208 linhas corrompidas
+(fragmentos de escrita intercalada, ex: uma linha inteira era so
+`em": "Arthur_PC"}`) e ~101 mil linhas a mais do que uma execucao sozinha
+deveria produzir. Nenhum processo peer/de outra sessao estava envolvido
+(conferido via `ListAgents` + `tasklist`/`Get-CimInstance Win32_Process`
+-- so `server.py` e 4 processos nao relacionados do Blender MCP rodavam).
+
+**Correcao**: backup dos dois arquivos, truncar `q_alvos.jsonl` de volta
+pras 1.137.070 linhas que batiam com o git (`corpus_git.py status`
+confirmou "nada a importar/exportar" antes do ciclo), remover as
+`gen=13` de `selfplay_v2.jsonl` (todas, 5342 -- eram todas contaminadas
+pela corrida), e rodar o ciclo de novo, **uma unica vez desta vez**
+(conferido `tasklist` limpo antes de lancar).
+
+**Ciclo 13 (limpo) resultado**: corpus 1.243.321 alvos (106.251 novos,
+sem duplicata/corrupcao). Treino: erro fora da amostra 0,0602 (72,6%
+melhor que a media), concordancia top-1 com o professor 41,8% (vs 26,2%
+do acaso). **Portao: 7x24 em 31 pares decididos (109 divididos) --
+DESCARTA (equivalentes). NAO promovido.** Por lider, nenhum grupo com
+volume razoavel mostrou vantagem consistente (majoria 0-40%, so
+`OP14-020` em 67% de 21 divididos). O aviso de "CHECKPOINT HUMANO
+PENDENTE" no fim do log e residuo da promocao anterior (bloco 888,
+24/09) -- este ciclo NAO promoveu nada de novo.
+
+**Licao de metodo pra registrar** (mesma familia do `REPROVADOS.md` --
+"erro de medicao ja cometido"): lancar um job em background e depois
+lancar de NOVO "pra garantir", sem confirmar que o primeiro morreu, e
+uma forma NOVA (nao documentada ate agora) do mesmo problema que
+`REGRA_DUAS_MAQUINAS.md` ja cobre pra duas maquinas -- **dois processos
+locais escrevendo no mesmo arquivo compartilhado tambem corrompem em
+silencio**. Antes de relancar um comando que ja foi backgrounded, checar
+`tasklist`/processos vivos, nao assumir que o `&` anterior nao colou.
+
+**Proximo passo**: nenhum -- ciclo nao promoveu, sem checkpoint humano
+novo pra jogar. Corpus exportado (`corpus_git.py exporta`, fatia nova de
+106.251 linhas da Arthur_PC) e commitado.
+
 ## 2026-09-26 (904) - ACHADO REAL, via auditoria de efeitos (obrigatoria) dos 4 logs de hoje: `select_grant_rush` (OP16-001/Ace) rejeitava alvo, once_per_turn desperdicado
 
 **Meta do dia** (usuario): "vamos fazer o 2" (investigar bug de NAO EXECUCAO
