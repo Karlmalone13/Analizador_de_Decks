@@ -1493,6 +1493,14 @@
       "para": "27516094c242",
       "portao": "SPRT p1=0.58, 3 seeds: 119x82 / 131x94 / 172x129 (59,2% / 58,2% / 57,1%), llr +3.365 / +3.054 / +3.037",
       "nota": "promovido fora do ciclo, a pedido do usuario, depois que o portao corrigido concluiu PROMOVE nas 3 seeds"
+    },
+    {
+      "quando": "2026-09-27T10:34:05",
+      "bloco": 906,
+      "de": "27516094c242",
+      "para": "07cf511b5934",
+      "portao": "SPRT p1=0.58, seed 10326: 75x46 (62,0%), llr +3.111, 121 decididos / 318 divididos",
+      "nota": "treinado sem as 95.282 linhas modo=busca (professor que espia) e sem PER; mesmo corpus com busca deu 24x39 DESCARTA. Promovido a pedido do usuario, 1 seed."
     }
   ]
 }

@@ -587,6 +587,20 @@ comecar do zero -- exige trocar o ROTULO, nao o mecanismo.
 > especifica: alvo do efeito (16,4%), cartas de counter (18,5%), DON
 > (23,5%).
 
+## Rotulo do Q vindo do professor `busca` que ESPIA (bloco 906)
+
+| tentativa | resultado medido | bloco |
+|---|---|---|
+| **Misturar as linhas `modo=busca` (95.282, 19-21/09) no corpus do Q** | Mesma receita, duelo contra o campeao: prefixo + `busca` **24x39 DESCARTA**; prefixo + `bootstrap` **75x46 PROMOVE**. O ciclo 13 com tudo junto: 7x24 | 906 |
+| Replay priorizado (PER) como causa da regressao do ciclo 13 | **Hipotese derrubada**: sem PER, o mesmo corpus perdeu 12x31 | 906 |
+
+**Revoga a conclusao do 20/09** ("misturar ajuda mais do que atrapalha"): aquele
+teste comparou `busca` SOZINHO contra `todos` e nunca rodou a celula `todos`
+contra `todos menos busca`. Causa provavel (bloco 888): a busca que gera o
+rotulo ve a mao REAL do oponente -- alvo otimista (media 0,581 x 0,503) e
+inalcancavel pra quem so ve o observavel. Para voltar: gerar `busca` com o
+professor CEGO e medir de novo -- nao e proibicao eterna.
+
 ## Lethal certificado -- conserto CERTO que PIOROU o jogo (bloco 779)
 
 | tentativa | resultado medido | bloco |

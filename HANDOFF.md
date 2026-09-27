@@ -1,5 +1,52 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-09-27 (906) - Por que o ciclo 13 perdeu: as linhas `busca` (professor que ESPIA) envenenavam o corpus. PROMOVIDO o Q sem elas
+
+Sessao Claude (Opus 5.5), pedido do usuario: "faz o 3" (atacar a causa
+estrutural de o bot nao ser promovido). **Correcao do que eu tinha dito**: as
+Fases 1 e 3 do plano professor/aluno NAO estavam pendentes (blocos 796/877);
+o diagnostico de 12/09 estava velho. Fui pela premissa, com controle em cada
+passo:
+
+| desafiante (receita de hoje) vs campeao `27516094c242` | resultado |
+|---|---|
+| corpus inteiro, com PER (ciclo 13) | 7x24 DESCARTA |
+| corpus inteiro, SEM PER | 12x31 DESCARTA -> **PER nao e a causa** |
+| so as 697.479 primeiras linhas (controle de reproducao) | 1x0, 1.399 divididos -> **receita reproduz o campeao** |
+| prefixo + 95.282 linhas `modo=busca` | **24x39 DESCARTA** |
+| prefixo + 423.934 linhas `modo=bootstrap` | **75x46 (62%) PROMOVE**, llr +3,11 |
+
+**Achado**: os ciclos 10-13 (bootstrap) APRENDERAM; o ganho ficava escondido
+porque as linhas `busca` de 19-21/09 puxavam o modelo pra tras. Causa provavel
+e a armadilha ja registrada no bloco 888 e nunca testada: a busca que gera
+esse rotulo ve a mao REAL do oponente (`self_play_info_hidden` desligado na
+geracao) -- alvo otimista (media 0,581 x 0,503). Revoga a conclusao de 20/09
+("misturar ajuda"), que nunca rodou a celula `todos` x `todos menos busca`.
+
+**Feito**:
+- **PROMOVIDO** (a pedido do usuario, 1 seed): `27516094c242 -> 07cf511b5934`,
+  mesmo mecanismo do ciclo (`_atualiza_pool_adversarios` + copia +
+  conferencia de hash), registrado em `ciclo_estado.json/promocoes_avulsas`.
+  Checkpoint humano segue pendente.
+- **Guarda-corpo** (`ciclo.guarda_corpo`): acerto_por_jogada 36,5 -> **40,3**;
+  `activate` 10,7 -> **29,8** (o alarme do bloco 889 voltou); play 28,1 ->
+  32,2; attach_don 9,4 -> 14,5. Ressalva: motor mudou desde 24/09 (899-904),
+  regua nao identica -- as categorias que o Q nao decide mexeram pouco
+  (blocker 88,2 -> 88,6, counter 65,8 -> 66,0).
+- `treinar_q.py`: default `--modo` `todos` -> **`bootstrap`** (funcao
+  `passa_filtro_modo`). Nada apagado do corpus; `--modo todos` continua.
+  O `ciclo.py` usa o default, entao os proximos ciclos ja treinam assim.
+  Teste `test_treino_ignora_rotulo_busca_por_default_27_09` com controle.
+- `REPROVADOS.md`: entrada nova (busca no corpus; PER como causa).
+
+**Aberto**:
+- Promocao com 1 seed so (bloco 888 usou 3). Se a partida humana correr mal,
+  primeiro lugar a olhar.
+- O modelo promovido NAO viu as 26.626 linhas sem `modo` da cauda (simulador
+  ao vivo); o default novo as inclui (contam como bootstrap). Diferenca pequena.
+- Professor `busca` CEGO: se um dia voltar a gerar `busca`, ligar
+  `self_play_info_hidden` na geracao e medir antes de misturar.
+
 ## 2026-09-26 (905) - Ciclo 13 (pos-fix 904): NAO promovido. ACHADO OPERACIONAL: dois lancamentos do mesmo ciclo.py corromperam o corpus, causa era minha (sessao), nao o projeto
 
 **Pedido do usuario** (depois do bloco 904): "vamos fazer um treino entao

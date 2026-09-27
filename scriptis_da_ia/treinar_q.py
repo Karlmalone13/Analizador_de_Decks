@@ -89,6 +89,18 @@ flag fica pra quando o volume de 'busca' crescer o bastante pra re-testar
 (o campo `modo` grava certo desde o bloco 877, entao a comparacao pode ser
 refeita a qualquer momento sem precisar gerar dado novo).
 
+**REVISTO 27/09/2026 (bloco 906): default passa a ser 'bootstrap'.** O teste
+de 20/09 comparou 'busca' SOZINHO contra 'todos'; faltava a celula que
+decide -- 'todos' contra 'todos MENOS busca'. Mesma receita, duelo contra o
+campeao: prefixo + linhas 'busca' deu 24x39 (DESCARTA); prefixo + linhas
+'bootstrap' deu 75x46 (PROMOVE). As linhas 'busca' PIORAM o modelo. Causa
+provavel, ja apontada no bloco 888 e nunca testada: a busca que gera esse
+rotulo roda com a mao REAL do oponente visivel (`self_play_info_hidden` nao e
+ligado na geracao), entao o alvo e otimista (media 0,581 x 0,503) e
+inalcancavel pra quem so ve o observavel. Nada e apagado do corpus: 'todos'
+continua disponivel, e linhas 'busca' geradas com o professor cego podem
+voltar a entrar quando existirem.
+
 Uso:
     python treinar_q.py --dataset metrics/q_alvos.jsonl --out metrics/q_net.joblib
 """
@@ -100,6 +112,12 @@ from collections import Counter
 from pathlib import Path
 
 RAIZ = Path(__file__).parent
+MODO_PADRAO = 'bootstrap'
+
+
+def passa_filtro_modo(linha: dict, modo: str = MODO_PADRAO) -> bool:
+    """Linha sem o campo `modo` e bootstrap (bloco 877)."""
+    return modo == 'todos' or (linha.get('modo') or 'bootstrap') == modo
 
 
 def main() -> int:
@@ -125,12 +143,14 @@ def main() -> int:
                          'x 0,0676) e a previsao custa 0,100 ms contra 8,47 -- '
                          '85x. Nao ha troca entre qualidade e velocidade aqui.')
     ap.add_argument('--modo', choices=('busca', 'bootstrap', 'todos'),
-                    default='todos',
+                    default=MODO_PADRAO,
                     help='qual CRITERIO DE ROTULO usar pra treinar (ver '
                          'docstring do modulo). Linha sem o campo `modo` conta '
-                         'como \'bootstrap\'. Default \'todos\' -- \'busca\' '
-                         'sozinho foi testado em duelo real e PERDEU 0x9 '
-                         '(20/09/2026), corpus ainda pequeno demais.')
+                         'como \'bootstrap\'. Default \'bootstrap\' desde o '
+                         'bloco 906: as linhas \'busca\' vem de um professor '
+                         'que ESPIA a mao do oponente, e somadas ao corpus '
+                         'fazem o modelo PERDER (24x39) do mesmo corpus sem '
+                         'elas (75x46 PROMOVE).')
     ap.add_argument('--priorizar', dest='priorizar', action='store_true',
                     default=True,
                     help='replay PRIORIZADO (21/09/2026, pesquisa externa: '
@@ -169,8 +189,7 @@ def main() -> int:
                 continue
             d = json.loads(linha)
             n_lidas += 1
-            modo = d.get('modo') or 'bootstrap'
-            if args.modo != 'todos' and modo != args.modo:
+            if not passa_filtro_modo(d, args.modo):
                 n_filtradas_modo += 1
                 continue
             feats, alvo = d.get('feats'), d.get('alvo')

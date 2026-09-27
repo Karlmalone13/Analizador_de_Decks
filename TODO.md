@@ -1,6 +1,13 @@
 # TODO — Analisador de Decks OPTCG
 
-**Última atualização:** 26 de setembro de 2026 (bloco 905)
+**Última atualização:** 27 de setembro de 2026 (bloco 906)
+
+> **PROMOVIDO (bloco 906): `07cf511b5934`, 75x46 contra o campeao anterior.**
+> Causa de o ciclo 13 perder: as 95 mil linhas `modo=busca` (professor que
+> ESPIA a mao do oponente) envenenavam o corpus -- prefixo+busca 24x39,
+> prefixo+bootstrap 75x46. `treinar_q.py` agora ignora `busca` por default.
+> Guarda-corpo 36,5 -> 40,3%. **Pendente: checkpoint humano (jogar contra o
+> bot)**; confirmar a promocao em mais seeds se a partida humana correr mal.
 
 > **CICLO 13 RODADO (bloco 905), pos-fix 904: NAO promovido.** Portao 7x24 em
 > 31 pares decididos, 109 divididos -- "DESCARTA (equivalentes)". Corpus

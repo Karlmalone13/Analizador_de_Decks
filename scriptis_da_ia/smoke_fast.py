@@ -10979,6 +10979,7 @@ def main() -> int:
     test_custo_restar_carta_usa_stage_igual_no_motor_e_ao_vivo_26_09()
     test_audita_custo_stage_sequenciamento_identifica_zona_e_ordem_26_09()
     test_select_grant_rush_piso_de_power_vale_pro_ramo_do_nome_26_09()
+    test_treino_ignora_rotulo_busca_por_default_27_09()
     test_explorar_longe_descobre_alem_do_topo_19_09()
     test_opp_turn_reactive_effects_krieg_leader_debuff_24_08()
     test_give_don_filtro_de_tipo_no_destinatario_24_08()
@@ -15708,6 +15709,20 @@ def test_custo_restar_carta_usa_stage_igual_no_motor_e_ao_vivo_26_09() -> None:
     EffectExecutor(me, opp)._pay_costs([{'type': 'rest_own_card', 'count': 1}], me.leader)
     check("CONTROLE: sem Stage o custo cai numa carta de campo (lider, menor valor)",
           me.leader.rested and not ch.rested)
+
+
+def test_treino_ignora_rotulo_busca_por_default_27_09() -> None:
+    """Bloco 906: as linhas modo=busca (professor que espia a mao do
+    oponente) fazem o Q perder (24x39) do mesmo corpus sem elas (75x46)."""
+    import treinar_q
+    check("default do treino ignora linha modo=busca",
+          not treinar_q.passa_filtro_modo({'modo': 'busca'}))
+    check("default do treino mantem linha modo=bootstrap",
+          treinar_q.passa_filtro_modo({'modo': 'bootstrap'}))
+    check("linha antiga sem campo modo conta como bootstrap e entra",
+          treinar_q.passa_filtro_modo({}))
+    check("CONTROLE: --modo todos ainda inclui busca (nada foi apagado)",
+          treinar_q.passa_filtro_modo({'modo': 'busca'}, 'todos'))
 
 
 def test_select_grant_rush_piso_de_power_vale_pro_ramo_do_nome_26_09() -> None:
