@@ -1,5 +1,16 @@
 # CLAUDE.md — guia para qualquer sessão nova (Claude Code / Codex)
 
+> # ⛔ PRIMEIRA LEITURA OBRIGATÓRIA: [`INSTRUCAO_MESTRA_ML.md`](INSTRUCAO_MESTRA_ML.md)
+>
+> **Regra do projeto desde 27/09/2026**, dada pelo usuário: *"esse vai ser suas
+> regras nesse projeto agora, pois você estava desviando muito do que eu estava
+> pedindo"*. Leia o arquivo INTEIRO antes de qualquer tarefa de ML, self-play,
+> CPU×CPU, treino, avaliação, árvore, professor/aluno ou telemetria. Faça a
+> checagem interna (item 2) e o checklist (item 26) antes de modificar código.
+> **Conflito entre uma regra e o pedido: NÃO escolha sozinho** -- use o formato
+> do item 28 e pergunte. Esta instrução PREVALECE sobre o resto deste arquivo
+> quando os dois divergirem.
+
 > # ⚠️ O QUE ESTE PROJETO ESTA FAZENDO AGORA: **UM MACHINE LEARNING**
 >
 > **Pedido explicito e REPETIDO do usuario (12/09/2026):** *"Deixe como

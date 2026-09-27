@@ -1,6 +1,10 @@
 # TODO — Analisador de Decks OPTCG
 
-**Última atualização:** 27 de setembro de 2026 (bloco 911)
+**Última atualização:** 27 de setembro de 2026 (bloco 912)
+
+> **REGRA DO PROJETO (bloco 912): [`INSTRUCAO_MESTRA_ML.md`](INSTRUCAO_MESTRA_ML.md).**
+> Ler inteira antes de qualquer tarefa de ML. Conflitos e violacoes atuais
+> levados ao usuario (item 28), aguardando decisao.
 
 > **VALE RE-TESTAR (bloco 911)** -- sairam do `REPROVADOS.md` porque a premissa
 > que as reprovou MUDOU:

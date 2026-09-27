@@ -1,5 +1,16 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-09-27 (912) - INSTRUCAO_MESTRA_ML.md vira a regra do projeto
+
+O usuario entregou uma instrucao mestra e disse: *"esse vai ser suas regras
+nesse projeto agora, pois você estava desviando muito do que eu estava
+pedindo"*. Registrada integral em `INSTRUCAO_MESTRA_ML.md` (raiz), com
+ponteiro no topo do `CLAUDE.md` e do `AGENTS.md` (prevalece quando divergir),
+impressa inteira pelo hook `pre-commit` e na memoria local. Leitura, checagem
+(item 2) e checklist (item 26) feitos nesta sessao; os conflitos e violacoes
+atuais foram levados ao usuario no formato do item 28 -- ver o bloco seguinte
+quando decididos.
+
 ## 2026-09-27 (911) - REPROVADOS.md revisado: 896 -> 138 linhas
 
 Pedido do usuario: *"revise ele, e apague o que nao faz mais sentido, acho que

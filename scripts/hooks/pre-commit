@@ -55,6 +55,18 @@ if [ -f "$REPO_ROOT/scriptis_da_ia/REGRA_SEM_DUPLICACAO.md" ]; then
     echo ""
 fi
 
+# INSTRUCAO MESTRA DO ML (27/09/2026, regra do projeto dada pelo usuario:
+# "esse vai ser suas regras nesse projeto agora, pois voce estava desviando
+# muito do que eu estava pedindo"). Impressa INTEIRA em todo commit.
+if [ -f "$REPO_ROOT/INSTRUCAO_MESTRA_ML.md" ]; then
+    echo "=============================================================="
+    echo " OBRIGATORIO: INSTRUCAO_MESTRA_ML.md (regras do projeto)"
+    echo "=============================================================="
+    cat "$REPO_ROOT/INSTRUCAO_MESTRA_ML.md"
+    echo "=============================================================="
+    echo ""
+fi
+
 # O CRITERIO EMERGE DO APRENDIZADO (bloco 790, pedido explicito do usuario:
 # "registra isso para vc nao esquecer e coloque como obrigacao para vc lembrar
 # antes de um commit"). Mesmo tratamento de MEMORY.md e REGRA_SEM_DUPLICACAO:
