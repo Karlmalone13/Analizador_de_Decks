@@ -10990,6 +10990,7 @@ def main() -> int:
     test_ml_aprende_todas_as_decisoes_pela_consequencia_27_09()
     test_explora_so_onde_o_modelo_esta_incerto_27_09()
     test_treino_continua_do_campeao_27_09()
+    test_rotulo_bootstrap_nao_espia_a_mao_do_oponente_27_09()
     test_opp_turn_reactive_effects_krieg_leader_debuff_24_08()
     test_give_don_filtro_de_tipo_no_destinatario_24_08()
     test_play_card_total_cost_lte_e_distinct_names_24_08()
@@ -15814,6 +15815,57 @@ def test_select_grant_rush_piso_de_power_vale_pro_ramo_do_nome_26_09() -> None:
     ee2.execute(me2.leader, "activate_main")
     check("CONTROLE: execucao real concede Rush ao Luffy forte",
           luffy_forte.rush_this_turn)
+
+
+def test_rotulo_bootstrap_nao_espia_a_mao_do_oponente_27_09() -> None:
+    """Bloco 913 (INSTRUCAO_MESTRA itens 10/11, Fase 0): o rotulo das opcoes nao
+    escolhidas nao pode depender da mao REAL do oponente. Troca a mao real por
+    cartas de counter alto / baixo: com a copia CEGA os rotulos sao identicos;
+    no CONTROLE (copia com a mao real) eles mudam -- senao o teste nao enxerga."""
+    import random as _r
+    from copy import deepcopy as _dc
+    import gerar_selfplay_dataset as g
+    from optcg_engine import decision_engine as de
+    dl = g._load_deck_list()
+
+    def rot(m, p, o, cands):
+        cap = []
+        _r.seed(7)
+        m._coleta_bootstrap(p, o, de.DecisionEngine(p, o), cands, cap)
+        return [round(x['alvo'], 6) for x in cap]
+    n = cego = espiao = 0
+    for s in range(4):
+        _r.seed(s)
+        a, b = _r.Random(s).sample(range(len(dl)), 2)
+        m = de.OPTCGMatch(dl[a][1], dl[b][1]); m.setup()
+        p, o = (m.state_a, m.state_b) if m.state_a.is_first else (m.state_b, m.state_a)
+        for t in range(12):
+            if t >= 3 and n < 8:
+                cands = [c for c in m._generate_and_score_actions(
+                    p, o, de.DecisionEngine(p, o), sem_pontuacao=True) if c[1] == 'attack']
+                if len(cands) >= 2 and o.hand:
+                    n += 1
+                    k = len(o.hand)
+                    forte = [_dc(c) for c in sorted(o.deck, key=lambda c: -getattr(c, 'counter', 0))[:k]]
+                    fraca = [_dc(c) for c in sorted(o.deck, key=lambda c: getattr(c, 'counter', 0))[:k]]
+                    real = o.hand
+                    o.hand = forte; r1 = rot(m, p, o, cands)
+                    o.hand = fraca; r2 = rot(m, p, o, cands)
+                    cego += r1 != r2
+                    mods = (m.model_for_a, m.model_for_b)
+                    m.model_for_a = m.model_for_b = None
+                    o.hand = forte; e1 = rot(m, p, o, cands)
+                    o.hand = fraca; e2 = rot(m, p, o, cands)
+                    espiao += e1 != e2
+                    m.model_for_a, m.model_for_b = mods
+                    o.hand = real
+            if m.play_turn(p, o):
+                break
+            p, o = o, p
+    check("estados de meio de jogo com ataques testados (>= 4)", n >= 4)
+    check("CEGO: rotulo nao muda quando a mao REAL do oponente muda", cego == 0)
+    check("CONTROLE: copia com a mao real ESPIA (rotulo muda) -- o teste enxerga",
+          espiao > 0)
 
 
 def test_treino_continua_do_campeao_27_09() -> None:

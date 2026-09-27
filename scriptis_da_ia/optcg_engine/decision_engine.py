@@ -1247,6 +1247,36 @@ _EM_SIMULACAO = {'on': False}
 _Q_CTX = {'match': None, 'ativo': None}
 
 
+# Quantos mundos plausiveis por opcao no rotulo bootstrap (bloco 913).
+MUNDOS_BOOTSTRAP = max(1, int(os.environ.get('OPTCG_MUNDOS', '4') or 4))
+
+
+def _cega_copia(p2, o2, modelo_op) -> None:
+    """Tira da COPIA de simulacao o que o jogador nao sabe (bloco 913,
+    INSTRUCAO_MESTRA itens 10/11): mao, vida e deck do oponente viram um mundo
+    plausivel sorteado so do observavel; o meu deck e a minha vida face-down
+    (que nem o dono conhece) sao reembaralhados juntos. Cartas conhecidas
+    (reveladas) ficam como estao."""
+    if modelo_op is not None:
+        try:
+            mao, vida, deck = modelo_op.sample_mundo(o2)
+            o2.hand, o2.life, o2.deck = mao, vida, _SimDeck(deck)
+        except Exception:
+            pass
+    try:
+        conhecidas = {id(c) for c in p2.known_life_cards()}
+        slots = [j for j, c in enumerate(p2.life) if id(c) not in conhecidas]
+        pool = list(p2.deck) + [p2.life[j] for j in slots]
+        random.shuffle(pool)
+        vida = list(p2.life)
+        for j, c in zip(slots, pool[:len(slots)]):
+            vida[j] = deepcopy(c)
+        p2.life = vida
+        p2.deck = _SimDeck(pool[len(slots):])
+    except Exception:
+        pass
+
+
 def _margem_incerteza(p=None, bundle=None) -> float:
     """Ate onde o modelo NAO distingue duas opcoes: o erro fora da amostra que
     ele mediu no treino (bloco 913). Sem modelo, nada e distinguivel (inf)."""
@@ -19751,62 +19781,71 @@ class OPTCGMatch:
         _dec = self._q_nova_decisao()
         _sim = _EM_SIMULACAO['on']
         _EM_SIMULACAO['on'] = True
-        estados, acoes = [], []
+        # CEGO (bloco 913, INSTRUCAO_MESTRA itens 10/11, Fase 0): cada opcao e
+        # simulada em MUNDOS_BOOTSTRAP mundos plausiveis -- a mao, a vida e o
+        # deck do oponente sorteados SO do observavel, e o meu deck/vida
+        # face-down reembaralhados -- e o alvo e a MEDIA. Antes a copia
+        # carregava a mao REAL do oponente: o ataque parecia bom ou ruim
+        # conforme o counter que ele de fato tinha.
+        _modelo_op = getattr(self, 'model_for_a' if p is self.state_a else 'model_for_b', None)
+        acoes, estados, dono, vitorias, mundos = [], [], [], {}, {}
         try:
-            for a in candidatas:
-                try:
-                    _pd, _od = p.deck, opp.deck
-                    p.deck, opp.deck = [], []
-                    p2, o2 = deepcopy(p), deepcopy(opp)
-                    p.deck, opp.deck = _pd, _od
-                    p2.deck, o2.deck = _SimDeck(_pd), _SimDeck(_od)
-                    a2 = self._remap_action(a, p, p2, opp, o2)
-                    if a2 is None:
-                        continue
-                    e2 = DecisionEngine(p2, o2)
-                    ee2 = EffectExecutor(p2, o2)
-                    _sup = self._suppress_replay_log
-                    self._suppress_replay_log = True
+            for i, a in enumerate(candidatas):
+                for _k in range(MUNDOS_BOOTSTRAP):
                     try:
-                        venceu = self._apply_action(a2, p2, o2, ee2, e2,
-                                                    verbose=False)
-                    finally:
-                        self._suppress_replay_log = _sup
-                    if venceu:
-                        cap.append({'feats': base + _vn.acao_features(a, opp),
-                                    'alvo': 1.0, 'escolhida': False,
-                                    'decisao': _dec,
-                                    'acao': a[1] if len(a) > 1 else None,
-                                    'leader': getattr(getattr(p, 'leader', None),
-                                                      'code', None),
-                                    'turn': int(getattr(p, 'turn', 0) or 0),
-                                    'modo': 'bootstrap'})
-                        self._q_registra(a, cap[-1])
+                        _pd, _od = p.deck, opp.deck
+                        p.deck, opp.deck = [], []
+                        p2, o2 = deepcopy(p), deepcopy(opp)
+                        p.deck, opp.deck = _pd, _od
+                        p2.deck, o2.deck = _SimDeck(_pd), _SimDeck(_od)
+                        a2 = self._remap_action(a, p, p2, opp, o2)
+                        if a2 is None:
+                            break
+                        _cega_copia(p2, o2, _modelo_op)
+                        e2 = DecisionEngine(p2, o2)
+                        ee2 = EffectExecutor(p2, o2)
+                        _sup = self._suppress_replay_log
+                        self._suppress_replay_log = True
+                        try:
+                            venceu = self._apply_action(a2, p2, o2, ee2, e2,
+                                                        verbose=False)
+                        finally:
+                            self._suppress_replay_log = _sup
+                        mundos[i] = mundos.get(i, 0) + 1
+                        if venceu:
+                            vitorias[i] = vitorias.get(i, 0) + 1
+                            continue
+                        estados.append((p2, o2))
+                        dono.append(i)
+                    except Exception:
                         continue
-                    estados.append((p2, o2))
-                    acoes.append(a)
-                except Exception:
-                    continue
+                acoes.append(a)
         finally:
             _EM_SIMULACAO['on'] = _sim
 
-        if not estados:
-            return
         try:
             from optcg_engine import value_net as _vn2
-            vals = _vn2.win_prob_lote(estados, bundle=_b)
+            vals = _vn2.win_prob_lote(estados, bundle=_b) if estados else []
         except Exception:
             return
-        lider = getattr(getattr(p, 'leader', None), 'code', None)
-        turno = int(getattr(p, 'turn', 0) or 0)
-        for a, v in zip(acoes, vals):
+        soma = dict(vitorias)
+        cont = dict(vitorias)
+        for i, v in zip(dono, vals):
             if v is None:
                 continue
+            soma[i] = soma.get(i, 0.0) + float(v)
+            cont[i] = cont.get(i, 0) + 1
+        lider = getattr(getattr(p, 'leader', None), 'code', None)
+        turno = int(getattr(p, 'turn', 0) or 0)
+        for i, a in enumerate(acoes):
+            if not cont.get(i):
+                continue
             cap.append({'feats': base + _vn2.acao_features(a, opp),
-                        'alvo': float(v), 'escolhida': False,
+                        'alvo': soma[i] / cont[i], 'escolhida': False,
                         'decisao': _dec,
                         'acao': a[1] if len(a) > 1 else None,
                         'leader': lider, 'turn': turno,
+                        'mundos': cont[i],
                         'modo': 'bootstrap'})
             self._q_registra(a, cap[-1])
 

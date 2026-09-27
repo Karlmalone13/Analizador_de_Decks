@@ -159,8 +159,22 @@ class OpponentModel:
         # verdade) que jogou essa carta hipoteticamente.
         hand_sample = [deepcopy(c) for c in known_hand] + [deepcopy(c) for c in sorteadas[:n_hand_unknown]]
         life_sample = [deepcopy(c) for c in known_life] + [deepcopy(c) for c in sorteadas[n_hand_unknown:n_hand_unknown + n_life_unknown]]
+        # O que sobrou da populacao e o DECK plausivel, em ordem sorteada
+        # (bloco 913: `sample_mundo` usa isto pra que a copia de simulacao nao
+        # herde o deck REAL na ordem REAL).
+        self._ultimo_resto = pool[n_slots:]
 
         return hand_sample, life_sample
+
+    def sample_mundo(self, opp: 'GameState', rng: random.Random = None) -> tuple[list, list, list]:
+        """UM mundo plausivel inteiro do oponente: (mao, vida, deck), so a
+        partir do observavel (bloco 913, INSTRUCAO_MESTRA itens 10/11). O deck
+        e o resto da populacao, embaralhado, como REFERENCIAS -- o chamador
+        embrulha num `_SimDeck`, que copia a carta quando ela sai do deck.
+        Tamanho do deck preservado quando a populacao permite."""
+        mao, vida = self.sample(opp, rng)
+        resto = list(getattr(self, '_ultimo_resto', []))
+        return mao, vida, resto[:len(opp.deck)]
 
     def counter_available_in_sample(self, hand_sample: list) -> int:
         """Soma de counter disponível na amostra de mão (mesma semântica de GameState.counter_in_hand)."""
