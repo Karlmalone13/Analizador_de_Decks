@@ -1,6 +1,13 @@
 # TODO — Analisador de Decks OPTCG
 
-**Última atualização:** 27 de setembro de 2026 (bloco 907)
+**Última atualização:** 27 de setembro de 2026 (bloco 908)
+
+> **"Passividade" MEDIDA e DESCARTADA como bug (bloco 908)**: deixar o Q
+> escolher PASS ao vivo (bloco 907) foi testado em duelo espelhado (mesmo
+> modelo, `pass_disponivel` on/off) -- **130x129, DESCARTA (equivalentes)**.
+> Neutro, nao prejudicial. Nao ha mecanismo especifico de PASS pra construir;
+> o teto real e a concordancia top-1 com o professor (~42%), o mesmo gargalo
+> generico ja mapeado nos blocos 809/906.
 
 > **PARIDADE offline x ao vivo (bloco 907)**: o ao vivo montava as opcoes por
 > outro caminho (sem PASS, piso e corte da pontuacao estatica) -- jogava 1,17

@@ -19694,7 +19694,12 @@ class OPTCGMatch:
             sem_corte=(_tem_q(p) and getattr(p, 'shortlist_sem_corte', True)))
         # "encerrar o turno agora" compete como candidata (blocos 656/785);
         # fora de LETHAL, onde fechar a partida vem antes de economizar.
-        if candidatas and (priority != 'LETHAL' or abaixo_do_piso):
+        # `pass_disponivel` por JOGADOR (bloco 908, mesmo padrao de
+        # `shortlist_sem_corte`): so existe pra medir no portao ESPELHADO se
+        # deixar o modelo escolher PASS ao vivo ajuda ou atrapalha -- default
+        # True (comportamento do bloco 907, nao um knob de compatibilidade).
+        if (candidatas and getattr(p, 'pass_disponivel', True)
+                and (priority != 'LETHAL' or abaixo_do_piso)):
             candidatas = list(candidatas) + [PASS_ACTION]
         return candidatas
 

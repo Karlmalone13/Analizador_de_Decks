@@ -1,5 +1,41 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-09-27 (908) - "Atacar a passividade" (pedido do usuario, pos-bloco 907): MEDIDO e DESCARTADO -- deixar o Q escolher PASS ao vivo e NEUTRO, nao um bug
+
+Sessao Claude (Sonnet 5). O bloco 907 mostrou um caso onde PASS (0,7616)
+ficava a frente de 3 ataques (0,7505-0,7568) por uma margem menor que o
+proprio erro fora da amostra do Q (0,0602) -- e o usuario pediu pra atacar
+essa passividade. **Antes de desenhar mecanismo, medi se ela e de fato
+prejudicial** (doutrina do projeto: premissa barata de testar, testa antes de
+construir).
+
+**Ferramenta**: novo flag por JOGADOR `pass_disponivel` (default `True`, mesmo
+padrao de `shortlist_sem_corte`/`modelo_ordena` -- so existe pra isolar num
+duelo ESPELHADO). Duelo com o MESMO `q_net.joblib` nos dois lados, um deles
+com `pass_disponivel=False` (comportamento pre-907, PASS nunca compete):
+
+```
+130x129 em 259 pares decididos (741 divididos) -- DESCARTA (equivalentes)
+```
+
+**Essencialmente um empate perfeito.** Deixar o modelo escolher PASS ao vivo
+NAO muda o resultado, pra melhor nem pra pior -- o caso reproduzido no bloco
+907 e RUIDO do proprio modelo, nao um vies sistematico pra passar. Nao ha
+mecanismo especifico de "passividade" pra corrigir: o que existe e o teto
+geral ja mapeado (concordancia top-1 com o professor ~42%, bloco 906/809) --
+qualquer par de acoes com valor proximo (PASS-vs-ataque ou ataque-vs-ataque)
+cai dentro dessa margem de erro. Atacar "passividade" isolada seria consertar
+o sintoma, nao a causa.
+
+**Nao revertido**: `pass_disponivel` fica no codigo (custo zero, mesmo padrao
+de instrumentacao ja usado) para outra sessao reusar se precisar isolar de
+novo.
+
+**Validado**: `smoke_fast.py` 0 falhas.
+
+**Aberto**: o alvo real, se o usuario quiser continuar nessa frente, e a
+concordancia top-1 (~42%) -- nao um caso especifico de PASS.
+
 ## 2026-09-27 (907) - Offline e ao vivo NAO jogavam o mesmo jogo: o ao vivo montava as opcoes por outro caminho. Unificado
 
 Pedido do usuario: *"o offline que vc roda em torno de 200 partidas em 9 min
