@@ -29,12 +29,22 @@ Teste permanente com controle. Custo: geracao +57% (49s -> 77s / 40 partidas).
 Achado lateral: `AUTO_JOGO_CEGO` (bloco 785) ja cegava as decisoes do motor
 offline -- o registro do bloco 888 dizendo o contrario estava desatualizado.
 
-**Violacao 2 (item 5) -- alvo ao vivo: AGUARDANDO DECISAO (A/B).** O ao vivo
-recebe a mesa inteira (518 de 529 pedidos com proposito "unknown"), nao sabe o
-que e legal; o plugin clica ate o jogo aceitar (34% dos episodios nunca acertam,
-bloco 854). A = plugin manda so os candidatos que o validador do jogo aceita e o
-motor escolhe com `_pick_effect_target`; B = motor deduz legalidade pelo parser.
-Recomendado A.
+**Violacao 2 (item 5) -- alvo ao vivo: opcao A (decisao do usuario),
+IMPLEMENTADA, NAO TESTADA.** O ao vivo recebia a mesa inteira (518 de 529
+pedidos com proposito "unknown") e clicava ate o jogo aceitar (34% nunca
+acertavam, bloco 854). Agora: o plugin pergunta ao validador do PROPRIO jogo
+(`CheckCardIsViableTargetV3` / `CardIsViableTarget`, so leitura, via
+reflexao) e manda so os candidatos validos, marcados `valido`; o
+`order_target_candidates` do sim_bridge, com candidatos validados de EFEITO,
+escolhe pela mesma funcao do offline (`_pick_effect_target`, onde o Q decide),
+em sequencia. Custo, redirect e pedidos sem validacao seguem no caminho antigo.
+Plugin compilado (0 erros) e instalado no jogo. **Pendente**: o teste
+`test_alvo_ao_vivo_validado_usa_a_mesma_funcao_do_offline_27_09` foi escrito mas
+NAO rodou nem esta na lista de execucao; falta validar ao vivo (CPU x CPU com o
+server reiniciado). **Limite conhecido**: o offline filtra candidatos por regra
+do PASSO antes de escolher (ex.: Rush so pra quem entrou no turno); o ao vivo
+recebe os legais do jogo sem esse filtro -- fechar exige mapear o passo do jogo
+(`iActionStep`) pro passo do parser.
 
 **Violacao 3 (item 21) -- registro de geracoes.** `geracoes.py` +
 `metrics/geracoes/` (versionado): linhagem `generation_NNN` com binario, pai,

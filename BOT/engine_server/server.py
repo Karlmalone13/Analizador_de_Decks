@@ -797,6 +797,7 @@ class TargetCandidate(BaseModel):
     zone: str        # own_hand | own_board | own_trash | opp_board | opp_trash |
                      # top_deck | own_leader | opp_leader | own_stage | opp_stage
     code: str = ""   # cardID p/ valorar cartas fora do DTO (trash/top deck)
+    valido: Optional[bool] = None   # True = o validador do JOGO aceita (bloco 913)
 
 
 class ChooseTargetRequest(BaseModel):
@@ -1600,7 +1601,8 @@ def choose_target(req: ChooseTargetRequest):
         # porque, na categoria mais fraca da regua.
         marcados = bridge.order_target_candidates(
             gs, opp_gs,
-            [{"id": c.id, "zone": c.zone, "code": c.code} for c in req.candidates],
+            [{"id": c.id, "zone": c.zone, "code": c.code, "valido": c.valido}
+             for c in req.candidates],
             attacker_power=attacker_power_efetivo,
             defender_uid=req.defenderId,
             actor_code=req.actorCode,

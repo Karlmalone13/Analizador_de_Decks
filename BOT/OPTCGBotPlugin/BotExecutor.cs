@@ -37,6 +37,40 @@ namespace OPTCGBotPlugin
         private static readonly MethodInfo _mLastDrawnCard =
             AccessTools.Method(typeof(GameplayLogicScript), "LastDrawnCard");
 
+        // VALIDADORES DE ALVO DO PROPRIO JOGO (bloco 913, INSTRUCAO_MESTRA
+        // item 5, decisao do usuario "opcao A"). Os mesmos que o jogo usa pra
+        // aceitar/recusar o clique; so LEEM o estado. Com eles o plugin manda
+        // ao motor SO os candidatos legais, e o motor escolhe com a mesma
+        // funcao do offline -- antes ia a mesa inteira e ~34% dos pedidos
+        // nunca acertavam um alvo valido (bloco 854).
+        private static readonly MethodInfo _mViavelV3 =
+            AccessTools.Method(typeof(GameplayLogicScript), "CheckCardIsViableTargetV3");
+        private static readonly MethodInfo _mViavel =
+            AccessTools.Method(typeof(GameplayLogicScript), "CardIsViableTarget");
+        private static readonly MethodInfo _mAcaoAtiva =
+            AccessTools.Method(typeof(GameplayLogicScript), "GetActiveAction");
+
+        /// true = o jogo aceitaria este clique; null = nao deu pra perguntar
+        /// (sem acao ativa, metodo nao achado, excecao) -- o chamador NAO
+        /// descarta o candidato nesse caso.
+        public static bool? AlvoValidoNoJogo(GameplayLogicScript gls, GameObject go)
+        {
+            try
+            {
+                var aca = gls?.acaActive;
+                if (aca == null || go == null) return null;
+                if (aca.UsesV3())
+                {
+                    if (_mViavelV3 == null) return null;
+                    return (bool)_mViavelV3.Invoke(gls, new object[] { aca, go, -1 });
+                }
+                if (_mViavel == null || _mAcaoAtiva == null) return null;
+                var acao = _mAcaoAtiva.Invoke(gls, null);
+                return (bool)_mViavel.Invoke(gls, new object[] { aca, go, aca.goActor, acao });
+            }
+            catch { return null; }
+        }
+
         // Ordem de ativacao quando 2+ cartas disparam gatilho ao mesmo tempo
         // (ex: 2 copias de Izou reagindo ao mesmo ataque do oponente). O jogo
         // enfileira TODAS em acaPending (publico) e deixa acaActive (publico)
@@ -883,6 +917,7 @@ namespace OPTCGBotPlugin
                             zone = name,
                             code = (hideCode || cls.myCard.cardDef == null)
                                    ? "" : cls.myCard.cardDef.cardID,
+                            valido = AlvoValidoNoJogo(gls, go),
                         });
                 }
             }
@@ -960,7 +995,11 @@ namespace OPTCGBotPlugin
             // os jogadores no branch don_area_card, entao o DON do oponente e
             // alvo valido; so faltava a zona ser candidata aqui.
             Add(oppPs.Lgo_MyDonCostArea, "opp_don");
-            return list;
+            // So os LEGAIS, quando o jogo respondeu (bloco 913). Se nenhum
+            // candidato foi confirmado valido (validador indisponivel pra este
+            // tipo de pedido), vai a lista inteira como antes -- nunca vazia.
+            var legais = list.FindAll(c => c.valido == true);
+            return legais.Count > 0 ? legais : list;
         }
 
         // Clica num candidato (mesmo caminho do clique humano; o jogo valida

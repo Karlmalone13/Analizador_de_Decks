@@ -10917,6 +10917,7 @@ def main() -> int:
     test_gain_double_attack_respeita_target_leader_e_selecionado()
     test_score_play_prioriza_carta_que_buffa_ataque_do_lider_hoje()
     test_order_target_candidates_select_grant_rush_ignora_rested_ja_atacou()
+    test_alvo_ao_vivo_validado_usa_a_mesma_funcao_do_offline_27_09()
     test_score_attack_target_double_attack_banish_priorizam_a_vida()
     test_order_target_candidates_debuff_on_play_coordena_com_ataque_disponivel()
     test_give_don_prefere_lider_a_character_recem_jogado_sem_uso_hoje()
@@ -12557,6 +12558,36 @@ def test_gain_double_attack_respeita_target_leader_e_selecionado() -> None:
     ee4.execute(prometheus, "activate_main")
     check("Prometheus: Double Attack vai pra Charlotte Linlin selecionada, nao pro Prometheus",
           linlin.double_attack_this_turn and not prometheus.double_attack_this_turn)
+
+
+def test_alvo_ao_vivo_validado_usa_a_mesma_funcao_do_offline_27_09() -> None:
+    """Bloco 913 (INSTRUCAO_MESTRA item 5, opcao A): candidatos validados pelo
+    jogo -> a escolha e do `_pick_effect_target` (o mesmo do offline); sem
+    validacao cai no caminho antigo (controle)."""
+    lider = real_card("OP16-001"); lider._deck_uid = 1
+    a, b, c = mk("TA1", "Fraco", power=2000), mk("TA2", "Medio", power=5000), mk("TA3", "Forte", power=9000)
+    for i, x in enumerate((a, b, c), 10):
+        x._deck_uid = i
+    me = GameState(leader=lider)
+    opp = GameState(leader=real_card("OP14-079")); opp.field_chars = [a, b, c]
+    cands = [{"id": i, "zone": "opp_board", "code": "", "valido": True} for i in (10, 11, 12)]
+    r = sim_bridge.order_target_candidates(me, opp, cands, actor_code="OP16-001",
+                                           purpose="unknown", with_scores=True)
+    ee = EffectExecutor(me, opp)
+    esperado = []
+    rest = [a, b, c]
+    while rest:
+        e = ee._pick_effect_target(rest); esperado.append(e._deck_uid)
+        rest = [x for x in rest if x is not e]
+    check("validado: a ordem ao vivo e a do _pick_effect_target (mesma funcao do offline)",
+          [i for i, _ in r] == esperado)
+    check("validado: a telemetria registra que quem decidiu foi o motor",
+          all(k[0] == 'motor_pick_effect_target' for _, k in r))
+    cands_nv = [dict(x, valido=None) for x in cands]
+    r2 = sim_bridge.order_target_candidates(me, opp, cands_nv, actor_code="OP16-001",
+                                            purpose="unknown", with_scores=True)
+    check("CONTROLE: sem validacao do jogo cai no caminho antigo",
+          not any(k and k[0] == 'motor_pick_effect_target' for _, k in r2))
 
 
 def test_order_target_candidates_select_grant_rush_ignora_rested_ja_atacou() -> None:

@@ -5,8 +5,10 @@
 > **INSTRUCAO_MESTRA (bloco 913)**: feitos P1 (explora so onde incerto), P2
 > (treino continua do promovido), violacao 1 (rotulo bootstrap nao espia mais:
 > 28/37 -> 0/37), 3 (registro de geracoes) e 4 (rotulo TD, duelo rodando).
-> **Aguardando o usuario**: violacao 2 (alvo ao vivo, opcao A ou B). Depois: 5
-> (confirmar campeao 07cf em mais seeds) e 6 (partida contra o usuario).
+> Violacao 2 (opcao A): plugin manda so alvos validos pelo jogo, motor escolhe
+> com a funcao do offline -- **implementada, falta rodar o teste e validar ao
+> vivo**. Depois: 5 (confirmar campeao 07cf em mais seeds) e 6 (partida contra
+> o usuario).
 
 > **REGRA DO PROJETO (bloco 912): [`INSTRUCAO_MESTRA_ML.md`](INSTRUCAO_MESTRA_ML.md).**
 > Ler inteira antes de qualquer tarefa de ML. Conflitos e violacoes atuais

@@ -2318,6 +2318,35 @@ def order_target_candidates(gs: GameState, opp_gs: GameState,
                                               get_card_effects, on_ko_value,
                                               EffectExecutor)
 
+    # ALVO DE EFEITO COM CANDIDATOS VALIDADOS PELO JOGO (bloco 913, decisao do
+    # usuario "opcao A", INSTRUCAO_MESTRA item 5): o plugin manda so os alvos
+    # que o validador do proprio jogo aceita, e quem escolhe e a MESMA funcao
+    # do offline (`_pick_effect_target`, onde o Q decide quando aprendeu). A
+    # regua por zona abaixo fica so pro que ainda nao chega validado (custo,
+    # redirect, plugin antigo).
+    if (purpose != 'cost' and attacker_power <= 0 and candidates
+            and all(c.get('valido') is True for c in candidates)):
+        ee = EffectExecutor(gs, opp_gs)
+        fonte = next((c for c in [gs.leader] + gs.field_chars + gs.hand
+                      if getattr(c, 'code', None) == actor_code), None) if actor_code else None
+        if fonte is None and actor_code and _cards_db.get(actor_code):
+            fonte = _make_card(actor_code, _cards_db[actor_code])
+        ee._fonte_em_curso = fonte
+        pares = [(c, card_of(c)) for c in candidates]
+        restantes = [card for _, card in pares if card is not None]
+        ordem = []
+        while restantes:
+            esc = ee._pick_effect_target(restantes)
+            if esc is None:
+                break
+            ordem.append(esc)
+            restantes = [c for c in restantes if c is not esc]
+        ids = [cand['id'] for esc in ordem for cand, card in pares if card is esc]
+        ids += [cand['id'] for cand, _ in pares if cand['id'] not in ids]
+        if with_scores:
+            return [(i, ['motor_pick_effect_target', pos]) for pos, i in enumerate(ids)]
+        return ids
+
     # O ATOR do efeito pendente e uma habilidade de REDIRECT de ataque de
     # verdade (redirect_attack_target em algum bloco dele)? Achado real
     # 08/07: attacker_power>0 so significa "estamos numa janela de ataque"

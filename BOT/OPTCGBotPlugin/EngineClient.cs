@@ -221,6 +221,10 @@ namespace OPTCGBotPlugin
             public int id;
             public string zone = "";
             public string code = "";   // cardID — engine valora cartas fora do DTO (trash/top deck)
+            // true = o VALIDADOR DO JOGO aceita este alvo; null = nao deu pra
+            // perguntar (bloco 913). Com todos true, o motor escolhe entre
+            // legais com a mesma funcao do offline.
+            public bool? valido;
         }
 
         public class EffectOption
