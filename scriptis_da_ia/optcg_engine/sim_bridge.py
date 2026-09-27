@@ -615,8 +615,13 @@ def choose_action(gs: GameState, opp_gs: GameState,
                 fail_key[2] for fail_key in exclude_failed_actions
                 if fail_key[0] == 'activate'
             }
+            # Com o Q no comando, gera EXATAMENTE como o Turn Planner offline
+            # (sem pontuacao estatica): o piso `score < 0` logo abaixo vira
+            # no-op e a lista chega inteira em `_candidatas_para_decidir`.
+            _q_decide = _de._tem_q(gs)
             actions = match._generate_and_score_actions(
-                gs, opp_gs, engine, exclude_activate_uids=exclude_activate_uids)
+                gs, opp_gs, engine, exclude_activate_uids=exclude_activate_uids,
+                sem_pontuacao=_q_decide)
             generated_at = time.perf_counter()
             if trace_out is not None:
                 trace_out["scored_actions"] = [
@@ -638,9 +643,10 @@ def choose_action(gs: GameState, opp_gs: GameState,
             # (main_phase) usa -- so o SEARCH_TOP_K (orcamento de tempo)
             # e proprio do caminho ao vivo.
             candidatos_elegiveis = []
+            # Sem piso de score aqui (bloco 907): quem decide o que entra e
+            # `_candidatas_para_decidir`, a mesma do offline -- sem o Q ela
+            # mesma aplica o piso; com o Q, passa a lista inteira.
             for a in actions:
-                if a[0] < 0:
-                    break
                 if a[1] == 'activate' and len(a) > 2 and getattr(a[2], 'code', None) in exclude_activate_codes:
                     continue
                 # (type, card_code, card_uid, target_uid): ação já enviada
@@ -703,9 +709,18 @@ def choose_action(gs: GameState, opp_gs: GameState,
             cheap_values = (
                 match._compute_cheap_values(gs, opp_gs, actions, n_samples=_de.CHEAP_LAYER_SAMPLES)
                 if _de.USE_CHEAP_LAYER_SHORTLIST else None)
-            candidatos = match._select_search_candidates(
-                candidatos_elegiveis, SEARCH_TOP_K, priority,
+            # MESMA montagem do offline (bloco 907): sem corte com o Q no
+            # comando e com PASS competindo. So os filtros de EXECUCAO acima
+            # (tipo que o plugin executa, acao ja rejeitada pelo jogo) sao
+            # proprios do ao vivo.
+            candidatos = match._candidatas_para_decidir(
+                gs, candidatos_elegiveis, SEARCH_TOP_K, priority,
                 cheap_values=cheap_values)
+            if not candidatos:
+                result[0] = None
+                if trace_out is not None:
+                    trace_out["selection"] = "no_eligible_action"
+                return
 
             # ITEM 3 do plano: com >1 candidato de score proximo, refina a
             # escolha simulando a linha ate o fim do MEU turno + o turno de
@@ -772,7 +787,9 @@ def choose_action(gs: GameState, opp_gs: GameState,
                         # Isso permite preservar orcamento/curva e comparar a
                         # sequencia inteira, em vez de ficar preso ao score da
                         # primeira acao. A base deixa explicito o limite da prova.
-                        result[0] = melhor
+                        # PASS escolhido pelo modelo = encerrar o turno, que o
+                        # server.py le como `None` (mesmo desfecho do offline).
+                        result[0] = None if melhor is _de.PASS_ACTION else melhor
                         if trace_out is not None:
                             # TELEMETRIA CORRIGIDA (bloco 785): com o Monte
                             # Carlo fora, nao ha amostragem e o `model` de

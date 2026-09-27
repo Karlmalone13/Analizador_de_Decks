@@ -2274,8 +2274,15 @@ def test_contrafactual_ao_vivo_usa_monte_carlo_com_fallback_de_cor() -> None:
         me, opp, match, timeout=3.0,
         allowed_types={"play", "attack", "attach_don", "activate"},
         trace_out=trace)
-    check("contrafactual live escolhe uma acao sem conhecer cartas ocultas",
-          action is not None)
+    # Bloco 907: encerrar o turno (PASS) virou escolha legitima do modelo ao
+    # vivo, igual ao offline -- `None` so vale se veio da busca.
+    check("contrafactual live decide pela busca sem conhecer cartas ocultas",
+          action is not None or trace.get("selection") == "busca_determinista")
+    _tipos_busca = [(r.get("action") or {}).get("type") for r in trace.get("search_values", [])]
+    check("PARIDADE offline/ao vivo: PASS compete como candidata ao vivo (bloco 907)",
+          "pass" in _tipos_busca)
+    check("PARIDADE offline/ao vivo: acao de score estatico negativo chega ao modelo",
+          "play" in _tipos_busca)
     check("contrafactual live registra pelo menos duas alternativas simuladas",
           len(trace.get("search_values", [])) >= 2)
     check("telemetria diz de onde veio o valor: rede na folha, nao amostragem",
@@ -14898,18 +14905,22 @@ def test_ponder_payload_byte_identico_ao_caminho_normal_09_08() -> None:
         opp_gs = ps._dto_to_gs(state_real.opp, state_real.turnNumber, hide_hidden=True)
         gs.is_active_turn = True
         opp_gs.is_active_turn = False
+        _trace_normal = {}
         action = bridge.choose_action(
             gs, opp_gs, match_ao_vivo, timeout=3.0,
             allowed_types={"play", "attack", "attach_don", "activate"},
-            exclude_activate_codes=set(), exclude_failed_actions=set(), trace_out={})
+            exclude_activate_codes=set(), exclude_failed_actions=set(),
+            trace_out=_trace_normal)
         payload_normal, reason_normal, _ = ps._package_action(action, gs, opp_gs, match_ao_vivo, bridge)
 
         check("payload do pondering e BYTE-IDENTICO ao payload do caminho normal",
               cached["payload"] == payload_normal)
         check("reason do pondering bate com o caminho normal",
               cached["reason"] == reason_normal)
-        check("payload nao e o fallback end_turn (prova que uma decisao real foi tomada)",
-              payload_normal["type"] != "end_turn")
+        # Bloco 907: end_turn pode ser escolha do modelo (PASS), entao a prova
+        # de decisao real e a selecao ter vindo da busca, nao o tipo do payload.
+        check("decisao real tomada pela busca (nao fallback)",
+              _trace_normal.get("selection") == "busca_determinista")
     finally:
         ps.PONDER_ENABLED = False
         ps._ponder_result = None

@@ -1,6 +1,14 @@
 # TODO — Analisador de Decks OPTCG
 
-**Última atualização:** 27 de setembro de 2026 (bloco 906)
+**Última atualização:** 27 de setembro de 2026 (bloco 907)
+
+> **PARIDADE offline x ao vivo (bloco 907)**: o ao vivo montava as opcoes por
+> outro caminho (sem PASS, piso e corte da pontuacao estatica) -- jogava 1,17
+> carta/turno x 0,81 offline, ativava 100% x ~50%, deixava 0,85 x 1,69 DON
+> parado. Unificado em `_candidatas_para_decidir`. **Proximo**: reiniciar o
+> server, rodar CPU x CPU e `python mede_paridade.py` pra confirmar ao vivo;
+> depois atacar o modelo que NAO separa PASS de atacar (valores a 0,01) e as
+> 9 acoes que o jogo recusou ao vivo.
 
 > **PROMOVIDO (bloco 906): `07cf511b5934`, 75x46 contra o campeao anterior.**
 > Causa de o ciclo 13 perder: as 95 mil linhas `modo=busca` (professor que

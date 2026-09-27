@@ -1,5 +1,61 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-09-27 (907) - Offline e ao vivo NAO jogavam o mesmo jogo: o ao vivo montava as opcoes por outro caminho. Unificado
+
+Pedido do usuario: *"o offline que vc roda em torno de 200 partidas em 9 min
+tem que ter a mesma qualidade do cpu x cpu ao vivo"*. Medido com a ferramenta
+nova `mede_paridade.py` (mesmos 8 matchups/decks das partidas de 26/09, mesmo
+modelo que jogou ao vivo `27516094`, sem exploracao):
+
+| por turno de cada jogador | ao vivo (confirmado pelo jogo) | offline |
+|---|---|---|
+| ataques | 1,57 | 1,49 |
+| cartas jogadas | **1,17** | **0,81** |
+| ativacoes | **0,43** | **0,13** |
+| attach_don | 0,15 | 0,00 |
+| DON ativo sobrando no fim | **0,85** | **1,69** |
+| turnos por jogador | 5,0 | 6,6 |
+
+Ativacao quando DISPONIVEL: ao vivo 100% (Mihawk, Ace, Newgate), offline ~50%.
+
+**Causa: dois caminhos montando a lista de opcoes (`REGRA_SEM_DUPLICACAO`).**
+O bloco 868 tirou a heuristica so do `main_phase` offline. O
+`sim_bridge.choose_action` ao vivo continuava com: (1) piso de score estatico
+(`score < 0` nem virava opcao), (2) corte no `SEARCH_TOP_K`, (3) **sem
+`PASS_ACTION`** -- o modelo nunca podia escolher "encerrar o turno"; quem
+decidia parar era a heuristica. O modelo treinava num jogo e jogava outro.
+
+**Fix (decisao do usuario: ao vivo igual ao offline)**: metodo unico
+`OPTCGMatch._candidatas_para_decidir` (sem corte com o Q no comando, PASS
+competindo fora de LETHAL), usado pelo `main_phase` e pelo `sim_bridge`. O
+ao vivo gera com `sem_pontuacao` quando o Q decide (igual ao offline), perde o
+piso, e PASS escolhido vira `None` (`server.py` ja trata como `end_turn`).
+Filtros PROPRIOS do ao vivo mantidos: so os de EXECUCAO (tipo que o plugin
+executa, acao ja recusada pelo jogo neste turno).
+
+**Consequencia que o usuario aceitou, e o PROXIMO problema**: o modelo NAO
+separa "passar" de "atacar". Caso reproduzido (turno 3, 5 DON, 3 ataques
+possiveis): PASS 0,7616 x ataques 0,7505-0,7568 -- diferenca de ruido. Ao vivo
+isso ficava escondido porque PASS nao existia; agora o bot ao vivo vai jogar
+tao passivo quanto o offline ate o modelo aprender a distinguir.
+
+**Tambem medido**: 9 decisoes ao vivo que o motor julgou legais e o JOGO
+RECUSOU (5 play, 3 activate, 1 attach_don) -- offline sao zero por construcao.
+Divergencia de REGRA motor x jogo (mesma familia do Ace, bloco 904): materia-
+prima pra investigacao de nao-execucao.
+
+**Validado**: `smoke_fast` OK (2 testes adaptados: encerrar turno virou escolha
+legitima; 2 checks novos de PARIDADE -- PASS e acao de score negativo chegam
+ao modelo ao vivo), `smoke_test` completo OK. `mede_paridade.py` reproduz os
+numeros acima.
+
+**Aberto**:
+- **REINICIAR o server** antes da proxima CPU x CPU (o PID atual e anterior a
+  este commit). Depois: bateria CPU x CPU + `python mede_paridade.py` pra
+  confirmar a paridade AO VIVO (aqui ela e garantida por construcao, nao medida).
+- Modelo nao distingue PASS de atacar.
+- As 9 recusas do jogo.
+
 ## 2026-09-27 (906) - Por que o ciclo 13 perdeu: as linhas `busca` (professor que ESPIA) envenenavam o corpus. PROMOVIDO o Q sem elas
 
 Sessao Claude (Opus 5.5), pedido do usuario: "faz o 3" (atacar a causa

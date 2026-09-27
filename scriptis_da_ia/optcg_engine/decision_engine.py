@@ -19668,6 +19668,36 @@ class OPTCGMatch:
                         'modo': 'bootstrap'})
             self._q_registra(a, cap[-1])
 
+    def _candidatas_para_decidir(self, p, actions, top_k, priority,
+                                 cheap_values=None, ordenada_pelo_modelo=False):
+        """FONTE UNICA do que o modelo ve numa decisao de turno: Turn Planner
+        offline (`main_phase`) e caminho ao vivo (`sim_bridge.choose_action`).
+
+        Ate o bloco 907 o ao vivo montava a lista sozinho -- piso de score
+        estatico, corte no SEARCH_TOP_K e SEM `PASS_ACTION` -- e o bloco 868 so
+        tinha tirado a heuristica do offline. Medido com os mesmos decks e o
+        mesmo modelo: ao vivo ativava 100% das vezes que podia (offline ~50%),
+        jogava 1,17 carta/turno (offline 0,83) e deixava 0,9 DON parado (1,53).
+        O modelo treinava num jogo e jogava outro.
+        """
+        abaixo_do_piso = bool(actions) and actions[0][0] < _k.get('ACTION_SCORE_FLOOR')
+        candidatas = self._select_search_candidates(
+            actions, top_k, priority, cheap_values=cheap_values,
+            min_candidates=(self.search_top_k_override
+                            if self.search_top_k_override is not None
+                            else SEARCH_MIN_CANDIDATES),
+            ordenada_pelo_modelo=ordenada_pelo_modelo,
+            permite_score_negativo=abaixo_do_piso,
+            # Com o Q no comando, a lista INTEIRA vai pra ele (bloco 868).
+            # `shortlist_sem_corte` por JOGADOR (bloco 869): o portao e duelo
+            # espelhado no MESMO processo, so assim da pra medir a troca.
+            sem_corte=(_tem_q(p) and getattr(p, 'shortlist_sem_corte', True)))
+        # "encerrar o turno agora" compete como candidata (blocos 656/785);
+        # fora de LETHAL, onde fechar a partida vem antes de economizar.
+        if candidatas and (priority != 'LETHAL' or abaixo_do_piso):
+            candidatas = list(candidatas) + [PASS_ACTION]
+        return candidatas
+
     def _select_action_via_search(self, p, opp, engine, candidatas):
         """Fino: delega e marca no corpus QUAL candidata foi escolhida.
 
@@ -22173,8 +22203,6 @@ class OPTCGMatch:
             # competem contra `PASS_ACTION`, que ja e candidata desde o bloco
             # 656. Se o modelo achar que passar e melhor, o turno acaba do
             # mesmo jeito -- a diferenca e que a jogada chegou a ser AVALIADA.
-            _abaixo_do_piso = bool(actions) and actions[0][0] < _k.get(
-                'ACTION_SCORE_FLOOR')
             if not actions:
                 # Ultimo recurso ANTES de encerrar o turno: banca DON ocioso
                 # no proprio lider pra um ataque futuro (achado real 17/08,
@@ -22324,37 +22352,9 @@ class OPTCGMatch:
 
             cheap_values = (self._compute_cheap_values(p, opp, actions, n_samples=CHEAP_LAYER_SAMPLES)
                             if USE_CHEAP_LAYER_SHORTLIST and not USE_CHEAP_LAYER_GATE else None)
-            candidatas = self._select_search_candidates(
-                actions, TOP_K, priority, cheap_values=cheap_values,
-                min_candidates=(self.search_top_k_override
-                                if self.search_top_k_override is not None
-                                else SEARCH_MIN_CANDIDATES),
-                ordenada_pelo_modelo=_ordenou_modelo,
-                permite_score_negativo=_abaixo_do_piso,
-                # Com o Q no comando, a lista INTEIRA vai pra ele (bloco 868).
-                # Ele e o unico decisor e pontua tudo em lote -- deixar a
-                # pontuacao estatica escolher os finalistas era o teto que
-                # nenhum modelo melhor atravessava.
-                #
-                # `shortlist_sem_corte` por JOGADOR (bloco 869), mesmo padrao
-                # de `modelo_ordena`/`value_net_weight`/`resposta_oponente`:
-                # o portao e um duelo ESPELHADO, os dois lados rodam no MESMO
-                # processo, entao a unica forma de medir a troca e um lado
-                # com e outro sem. **Default True = comportamento novo** --
-                # isto NAO e knob de compatibilidade (o antigo nao volta por
-                # default), e o instrumento que permite derrotar o antigo com
-                # numero.
-                sem_corte=(_q_no_comando
-                           and getattr(p, 'shortlist_sem_corte', True)))
-            # bloco 656: "encerrar o turno agora" entra como CANDIDATA e
-            # compete na busca -- ver comentario de PASS_ACTION. Nao entra em
-            # LETHAL (fechar a partida vem antes de qualquer economia de
-            # recurso) nem quando a lista ja esta vazia (o `break` de cima ja
-            # cobre "nao ha nada a fazer").
-            if candidatas and priority != 'LETHAL':
-                candidatas = list(candidatas) + [PASS_ACTION]
-            elif _abaixo_do_piso and candidatas:
-                candidatas = list(candidatas) + [PASS_ACTION]
+            candidatas = self._candidatas_para_decidir(
+                p, actions, TOP_K, priority, cheap_values=cheap_values,
+                ordenada_pelo_modelo=_ordenou_modelo)
             if len(candidatas) == 1:
                 melhor_acao = candidatas[0]
                 if self._is_unsafe_zero_life_leader_attack(melhor_acao, p, opp, engine):
