@@ -1,5 +1,27 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-09-27 (911) - REPROVADOS.md revisado: 896 -> 138 linhas
+
+Pedido do usuario: *"revise ele, e apague o que nao faz mais sentido, acho que
+deve ter coisa reprovada la que possa funcionar depois das nossas correcoes"*.
+
+**Saiu** (premissa deixou de existir): ajustes da heuristica (pesos da funcao
+de valor, `ACTION_SCORE_FLOOR`, `KIND_SCALE`, desempates, arquetipo, bonus de
+alinhamento humano, `ATTACK_LEADER_BASE_SCORE`), itens do Monte Carlo
+(removido no 785), rede de poda de shortlist (a arvore nao e mais estreita e o
+Q pontua tudo), imitacao/ranqueador por semelhanca com humano (meta trocada em
+10/09), "curva achata apos 4.000 estados" (desmentida pelo volume, bloco 775),
+e duplicatas (busca-sozinha e rede-pro-aluno ja cobertas nos 906/909).
+
+**Reaberto** (vai pro TODO, "VALE RE-TESTAR"): prova de lethal com mao oculta
+(779), incerteza por quantil (793), DON ocioso no lider como opcao (593/594).
+
+**Ficou**: 906 e 909 (com nota de que o 909 foi medido antes do rotulo pela
+consequencia), fatos de velocidade de CPU, todos os erros de medicao (3 novos:
+chave sem geracao, script sem main-guard, job lancado 2x) e os enquadramentos
+(1 novo: "medir ao redor no lugar de construir o pedido"). Texto antigo
+completo no git, commit `f512f86`.
+
 ## 2026-09-27 (910) - O ML passa a APRENDER PELA CONSEQUENCIA, em TODAS as decisoes (incl. bloqueio, counter e alvo)
 
 Pedido do usuario, repetido ha semanas: *"teria um ciclo de treino, o motor

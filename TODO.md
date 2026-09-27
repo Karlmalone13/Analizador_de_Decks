@@ -1,6 +1,18 @@
 # TODO — Analisador de Decks OPTCG
 
-**Última atualização:** 27 de setembro de 2026 (bloco 910)
+**Última atualização:** 27 de setembro de 2026 (bloco 911)
+
+> **VALE RE-TESTAR (bloco 911)** -- sairam do `REPROVADOS.md` porque a premissa
+> que as reprovou MUDOU:
+> 1. **Prova de lethal enxergando a mao oculta** (bloco 779, 9x15): perdeu
+>    porque cortava pela metade um gatilho de agressividade da HEURISTICA, que
+>    nao decide mais. Re-medir no duelo com o Q decidindo.
+> 2. **Incerteza por quantil** (bloco 793, "0,5000 exato"): falhou porque o
+>    rotulo era 0/1. Hoje e continuo (consequencia/professor). Serve pra defesa
+>    e escolhas de valor proximo saberem quando NAO sabem.
+> 3. **DON ocioso no lider como OPCAO** (blocos 593/594): regrediu por disputar
+>    vaga num corte de shortlist que nao existe mais (bloco 868) -- o Q pontua a
+>    lista inteira.
 
 > **O ML APRENDE PELA CONSEQUENCIA (bloco 910)**: toda jogada escolhida recebe
 > o rotulo do que aconteceu depois na partida; bloqueio, counter e alvo entram
