@@ -350,7 +350,12 @@ FEATURE_NAMES_ACAO = [
     'alvo_eh_leader', 'alvo_eh_character', 'alvo_ausente',
     'alvo_power', 'alvo_cost', 'alvo_rested', 'alvo_blocker',
     'don_da_acao', 'vantagem_de_poder',
+    # Bloco 910: as decisoes de DEFESA e de ALVO entram no mesmo Q. Ficam no
+    # FIM de proposito -- as linhas antigas do corpus (so jogada principal)
+    # ganham 0 aqui, que e o valor certo pra elas.
+    'eh_bloqueio', 'eh_counter', 'eh_alvo_efeito', 'alvo_e_meu',
 ]
+N_ACAO_ANTIGO = len(FEATURE_NAMES_ACAO) - 4
 
 
 def _prop(c, attr, default=0.0) -> float:
@@ -380,6 +385,11 @@ def acao_features(acao, opp=None) -> list:
         alvo = getattr(opp, 'leader', None)
     alvo_power = _prop(alvo, 'power') + _prop(alvo, 'power_buff')
 
+    fam = str(kind or '')
+    extra = [1.0 if fam.startswith('block') else 0.0,
+             1.0 if fam.startswith('counter') else 0.0,
+             1.0 if fam == 'target' else 0.0,
+             1.0 if (len(acao) > 6 and acao[6]) else 0.0]
     return um_de + [
         _prop(ator, 'cost'), ator_power / 1000.0, _prop(ator, 'counter') / 1000.0,
         1.0 if _prop(ator, 'has_blocker') else 0.0,
@@ -396,7 +406,7 @@ def acao_features(acao, opp=None) -> list:
         1.0 if _prop(alvo, 'has_blocker') else 0.0,
         don,
         (ator_power + don * 1000.0 - alvo_power) / 1000.0,
-    ]
+    ] + extra
 
 
 def q_features(p, opp, acao, nomes=None) -> list:
@@ -439,6 +449,10 @@ def q_valores(p, opp, acoes, bundle=None) -> list:
         base = state_features(p, opp, nomes=FEATURE_NAMES_ALUNO)
         linhas = [base + acao_features(a, opp) for a in acoes]
         esperado = getattr(modelo, 'n_features_in_', None)
+        if esperado is not None and len(linhas[0]) == esperado + 4:
+            # modelo anterior ao bloco 910: nao conhece as 4 colunas de
+            # defesa/alvo -- ve a acao como sempre viu.
+            linhas = [ln[:esperado] for ln in linhas]
         if esperado is not None and len(linhas[0]) != esperado:
             return [None] * n
         _rapido = _forward_rapido(modelo, linhas)

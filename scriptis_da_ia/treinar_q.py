@@ -120,6 +120,58 @@ def passa_filtro_modo(linha: dict, modo: str = MODO_PADRAO) -> bool:
     return modo == 'todos' or (linha.get('modo') or 'bootstrap') == modo
 
 
+# TODAS as decisoes do jogo que o ML tem que aprender (bloco 910). A cobertura
+# por familia sai em todo treino: familia com ZERO jogada rotulada pela
+# consequencia e familia que o ML NAO aprende -- o numero nao da pra fingir.
+FAMILIAS_JOGO = ('attack', 'play', 'pass', 'activate', 'attach_don',
+                 'block', 'counter', 'target')
+SELFPLAY = RAIZ / 'metrics' / 'selfplay_v2.jsonl'
+
+
+def carrega_trajetorias(caminho=SELFPLAY) -> dict:
+    """(gen, partida, lider) -> [(turno, life_diff no fim do turno, venceu)]."""
+    import math  # noqa: F401
+    from optcg_engine import value_net as vn
+    i_ld = list(vn.FEATURE_NAMES_V3).index('life_diff')
+    traj = {}
+    if not Path(caminho).exists():
+        return traj
+    with open(caminho, encoding='utf-8') as fh:
+        for linha in fh:
+            d = json.loads(linha)
+            if not d.get('gen'):
+                continue   # gen 0 junta rodadas antigas com ids repetidos
+            traj.setdefault((d['gen'], d['match'], d['leader']), []).append(
+                (d['turn'], d['feats'][i_ld], d['win']))
+    for v in traj.values():
+        v.sort()
+    return traj
+
+
+def alvo_consequencia(d: dict, traj: dict, n: int = 2, lam: float = 0.5):
+    """Rotulo pela CONSEQUENCIA da jogada escolhida (bloco 910): o que aconteceu
+    DEPOIS dela na propria partida -- mesma formula da Fase 1
+    (`rotulo_professor.py`): (1-lam)*logistica(vantagem de vida em n turnos
+    proprios) + lam*resultado. Sem continuacao registrada -> None (fica o
+    rotulo bootstrap). So a ESCOLHIDA tem continuacao; e a exploracao que faz
+    alternativas ruins virarem escolhidas e receberem a consequencia delas."""
+    import math
+    if not d.get('escolhida') or d.get('decisao') is None:
+        return None
+    t = traj.get((d.get('gen'), d.get('match'), d.get('leader')))
+    k = int(d.get('turn') or 0)
+    ld_agora = d.get('ld_agora')
+    # `turn` e a contagem de turnos PROPRIOS. Decisao no proprio turno (vez)
+    # fecha no fim DESTE turno (indice k-1); defesa no turno do oponente
+    # (counter/bloqueio) fecha no fim do PROXIMO turno proprio (indice k).
+    base = k - 1 if d.get('vez', True) else k
+    if not t or base < 0 or base >= len(t) or ld_agora is None:
+        return None
+    j = min(base + n - 1, len(t) - 1)
+    vant = t[j][1] - ld_agora
+    return (1 - lam) / (1 + math.exp(-vant)) + lam * float(t[j][2])
+
+
 def main() -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument('--dataset', default='metrics/q_alvos.jsonl')
@@ -169,6 +221,14 @@ def main() -> int:
                          'usado no paper original de Prioritized Experience '
                          'Replay (Schaul et al 2016) pra nao deixar a '
                          'distribuicao extrema demais.')
+    ap.add_argument('--selfplay', default=str(SELFPLAY),
+                    help='estados de fim de turno com o resultado, de onde sai a '
+                         'consequencia de cada jogada (default: o do ciclo).')
+    ap.add_argument('--sem-consequencia', dest='consequencia', action='store_false',
+                    default=True,
+                    help='desliga o rotulo pela consequencia (bloco 910) e volta '
+                         'a usar so o bootstrap do juiz fixo. Default LIGADO: o '
+                         'ML tem que aprender com o que as jogadas causaram.')
     args = ap.parse_args()
 
     import numpy as np
@@ -182,6 +242,11 @@ def main() -> int:
     X, y, grupos = [], [], []
     decisoes, escolhidas, familias = [], [], []
     n_lidas = n_filtradas_modo = 0
+    from optcg_engine import value_net as _vn
+    i_ld_q = list(_vn.FEATURE_NAMES_ALUNO).index('life_diff')
+    n_cols = len(_vn.FEATURE_NAMES_ALUNO) + len(_vn.FEATURE_NAMES_ACAO)
+    traj = carrega_trajetorias(args.selfplay) if args.consequencia else {}
+    cobertura = {f: [0, 0, 0] for f in FAMILIAS_JOGO}   # linhas, escolhidas, consequencia
     with caminho.open(encoding='utf-8') as fh:
         for linha in fh:
             linha = linha.strip()
@@ -193,21 +258,47 @@ def main() -> int:
                 n_filtradas_modo += 1
                 continue
             feats, alvo = d.get('feats'), d.get('alvo')
-            if not feats or alvo is None:
+            if not feats:
                 continue
+            if len(feats) == n_cols - 4:
+                feats = feats + [0.0, 0.0, 0.0, 0.0]   # linha anterior ao bloco 910
+            fam = d.get('acao') or '?'
+            cob = cobertura.get(fam)
+            if cob is not None:
+                cob[0] += 1
+                cob[1] += 1 if d.get('escolhida') else 0
+            if traj:
+                d['ld_agora'] = feats[i_ld_q]
+                _c = alvo_consequencia(d, traj)
+                if _c is not None:
+                    alvo = _c
+                    if cob is not None:
+                        cob[2] += 1
+            if alvo is None:
+                continue   # decisao de defesa/alvo sem continuacao registrada
             X.append(feats)
             y.append(float(alvo))
             grupos.append(d.get('leader') or '?')
             # Quais linhas competiram na MESMA decisao, quem o professor
             # escolheu, e de que familia era a acao. Linhas antigas nao tem
             # `decisao` e ficam de fora da concordancia (nao do treino).
-            decisoes.append((d.get('match'), d.get('decisao')))
+            # A GERACAO entra na chave (bloco 910): os ids de partida
+            # recomecam do 0 a cada ciclo, e sem ela decisoes de partidas
+            # diferentes eram tratadas como a mesma.
+            decisoes.append(('%s:%s' % (d.get('gen'), d.get('match')), d.get('decisao')))
             escolhidas.append(bool(d.get('escolhida')))
             familias.append(d.get('acao') or '?')
 
     print()
     print('  corpus: %d linhas lidas | %d descartadas pelo filtro --modo=%s '
           '(%d restantes)' % (n_lidas, n_filtradas_modo, args.modo, len(X)))
+    print()
+    print('  O QUE O ML APRENDE, por decisao do jogo (bloco 910):')
+    print('  %-11s %9s %10s %22s' % ('decisao', 'linhas', 'escolhidas', 'rotulo pela consequencia'))
+    for fam in FAMILIAS_JOGO:
+        n, e, c = cobertura[fam]
+        aviso = '   <-- NAO APRENDE esta decisao' if c == 0 else ''
+        print('  %-11s %9d %10d %22d%s' % (fam, n, e, c, aviso))
 
     if len(X) < 500:
         raise SystemExit('corpus pequeno demais (%d alvos) -- gere mais antes, '
@@ -449,6 +540,9 @@ def main() -> int:
         'dataset': args.dataset,
         'lideres': sorted(set(grupos.tolist())),
         'replay_priorizado': bool(args.priorizar and X_treino is not X),
+        'cobertura': {f: {'linhas': v[0], 'escolhidas': v[1], 'consequencia': v[2]}
+                      for f, v in cobertura.items()},
+        'rotulo_consequencia': bool(traj),
     }
     import joblib
     saida = RAIZ / args.out

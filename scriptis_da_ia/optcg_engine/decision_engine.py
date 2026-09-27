@@ -1241,6 +1241,64 @@ def _modelo_sacrificio_ativo(me) -> bool:
 # (`EffectExecutor`). Mesmo padrao de `_DEFESA['on']`, que ja existe.
 _EM_SIMULACAO = {'on': False}
 
+# Partida em curso e jogador da VEZ, pra decisoes tomadas fora do OPTCGMatch
+# (bloqueio/counter no DecisionEngine do defensor, alvo no EffectExecutor).
+# Setado em `OPTCGMatch.play_turn`. Mesmo padrao de `_EM_SIMULACAO`.
+_Q_CTX = {'match': None, 'ativo': None}
+
+
+def _q_escolhe_familia(me, opp, familia: str, opcoes: list, padrao_idx: int) -> int:
+    """PONTO UNICO das decisoes que o ML passou a aprender no bloco 910:
+    bloqueio, counter e alvo de efeito. `opcoes` sao tuplas de acao no formato
+    do Q; `padrao_idx` e o que a regra atual escolheria.
+
+    - Em simulacao interna: a regra (lookahead nao e decisao real).
+    - Q que JA aprendeu esta familia (cobertura com rotulo de consequencia no
+      bundle): o Q decide, por argmax. Senao, a regra -- degradacao segura, o
+      mesmo tratamento das jogadas principais sem modelo.
+    - Geracao com exploracao ligada: com prob. eps joga uma opcao sorteada, pra
+      que alternativas tambem recebam a consequencia delas.
+    - Registra a escolhida no corpus, sem rotulo: o `treinar_q.py` da o rotulo
+      pela CONSEQUENCIA (o que aconteceu depois na partida).
+    """
+    if _EM_SIMULACAO['on'] or not opcoes:
+        return padrao_idx
+    idx = padrao_idx
+    try:
+        from optcg_engine import value_net as _vn
+        _b = _vn.load_value_net(getattr(me, 'q_net_path', None) or Q_NET_PATH)
+        _aprendeu = bool(_b and _b.get('tipo') == 'q' and
+                         ((_b.get('cobertura') or {}).get(familia) or {}).get('consequencia'))
+        if _aprendeu and len(opcoes) > 1:
+            _vals = _vn.q_valores(me, opp, opcoes, bundle=_b)
+            _ok = [(i, v) for i, v in enumerate(_vals) if v is not None]
+            if _ok:
+                idx = max(_ok, key=lambda t: t[1])[0]
+    except Exception:
+        idx = padrao_idx
+    m = _Q_CTX.get('match')
+    _eps = float(getattr(m, '_explora_eps', 0.0) or 0.0) if m is not None else 0.0
+    if _eps and len(opcoes) > 1 and random.random() < _eps:
+        idx = random.randrange(len(opcoes))
+    cap = getattr(m, '_q_captura', None) if m is not None else None
+    if cap is not None:
+        try:
+            from optcg_engine import value_net as _vn
+            cap.append({
+                'feats': (_vn.state_features(me, opp, nomes=_vn.FEATURE_NAMES_ALUNO)
+                          + _vn.acao_features(opcoes[idx], opp)),
+                'alvo': None, 'escolhida': True,
+                'decisao': m._q_nova_decisao(),
+                'acao': familia,
+                'leader': getattr(getattr(me, 'leader', None), 'code', None),
+                'turn': int(getattr(me, 'turn', 0) or 0),
+                'vez': me is _Q_CTX.get('ativo'),
+                'modo': 'bootstrap',
+            })
+        except Exception:
+            pass
+    return idx
+
 
 def _e_reserva_de_defesa(card) -> bool:
     """Evento [Counter] na mao = defesa GUARDADA, nao recurso gasta-vel.
@@ -4494,7 +4552,20 @@ class EffectExecutor:
         registro nenhum -- nao dava pra distinguir "escolheu mal" de "o
         alvo certo nem estava entre os candidatos".
         """
+        _forcado = any(c is a for a in _FORCED_EFFECT_TARGETS for c in (candidatos or []))
         escolhido = self._pick_effect_target_inner(candidatos)
+        # O ML DECIDE E APRENDE O ALVO (bloco 910) -- so quando ha escolha de
+        # verdade (o alvo EXPLICITO da acao continua mandando).
+        if not _forcado and candidatos and len(candidatos) > 1:
+            _meus = [self.me.leader] + list(self.me.field_chars) + list(self.me.hand) \
+                + list(self.me.trash) + list(getattr(self.me, 'life', []) or [])
+            _fonte = getattr(self, '_fonte_em_curso', None)
+            _opcoes = [(0.0, 'target', _fonte,
+                        'leader' if getattr(c, 'card_type', '') == 'LEADER' else 'character',
+                        c, None, any(c is x for x in _meus)) for c in candidatos]
+            _padrao = next((i for i, c in enumerate(candidatos) if c is escolhido), 0)
+            _i = _q_escolhe_familia(self.me, self.opp, 'target', _opcoes, _padrao)
+            escolhido = candidatos[_i]
         if _DEFESA['on'] and candidatos:
             _log_defesa({
                 'kind': 'effect_target',
@@ -7856,6 +7927,7 @@ class EffectExecutor:
         from optcg_engine.rules_facade import eligible_cards
 
         action = step.get('action', '')
+        self._fonte_em_curso = card   # quem aplica o efeito, pro alvo (bloco 910)
         me = self.me
         opp = self.opp
 
@@ -16041,6 +16113,18 @@ class DecisionEngine:
         # da familia "o que fazer", que ja esta boa (85,7%).
         if escolhido is not None and len(cands) > 1 and _familia_aleatoria('blocker', self.me):
             escolhido = random.choice(cands)
+        # O ML DECIDE E APRENDE O BLOQUEIO (bloco 910). Opcoes: nao bloquear,
+        # ou bloquear com cada blocker ativo. O atacante entra so pelo poder.
+        if cands:
+            from types import SimpleNamespace
+            _atk = SimpleNamespace(power=attacker_power, power_buff=0, cost=0,
+                                   rested=False, has_blocker=False)
+            _opcoes = [(0.0, 'block_none', None, 'character', _atk)] + [
+                (0.0, 'block', c, 'character', _atk) for c in cands]
+            _padrao = 0 if escolhido is None else next(
+                (i for i, c in enumerate(cands, 1) if c is escolhido), 0)
+            _i = _q_escolhe_familia(self.me, self.opp, 'block', _opcoes, _padrao)
+            escolhido = _opcoes[_i][2]
         if _DEFESA['on']:
             _log_defesa({
                 'kind': 'blocker_choice',
@@ -16449,11 +16533,46 @@ class DecisionEngine:
     def should_use_counter(self, atk_power: int, def_power: int, alvo=None,
                            counter_avail: int | None = None,
                            gasto: float | None = None,
-                           valor_protegido: float | None = None) -> bool:
+                           valor_protegido: float | None = None,
+                           pool: 'list | None' = None) -> bool:
         """Categoria `usar counter ou nao` (59,7%) -- wrapper de registro."""
         usar = self._should_use_counter_inner(
             atk_power, def_power, counter_avail=counter_avail,
             gasto=gasto, valor_protegido=valor_protegido, alvo=alvo)
+        # O ML DECIDE E APRENDE O COUNTER (bloco 910): SE usa e COM QUAIS
+        # cartas, numa decisao so. Opcoes: nao usar; o conjunto da regua
+        # (`pick_counters`); cada carta que sozinha ja cobre. Conjunto vira
+        # uma "acao" descrita pelo que queima (soma de custo/poder/counter).
+        self._counter_escolhido = None
+        if atk_power >= def_power and not _EM_SIMULACAO['on']:
+            needed = atk_power - def_power + 1
+            if pool is None:
+                pool = [(v, c) for v, c in
+                        ((effective_counter(c, self.me), c) for c in self.me.hand) if v > 0]
+            _valor = {id(c): v for v, c in pool}
+            _conj = []
+            _base, _g, _tot = self.pick_counters(needed, pool=pool)
+            if _base and _tot >= needed:
+                _conj.append(list(_base))
+            for v, c in pool:
+                if v >= needed and not any(len(s) == 1 and s[0] is c for s in _conj):
+                    _conj.append([c])
+            if _conj:
+                from types import SimpleNamespace
+                _def = alvo if alvo is not None else self.me.leader
+                _tipo = 'character' if alvo is not None else 'leader'
+
+                def _agrega(s):
+                    return SimpleNamespace(
+                        cost=sum(getattr(x, 'cost', 0) for x in s),
+                        power=sum(getattr(x, 'power', 0) for x in s), power_buff=0,
+                        counter=sum(_valor.get(id(x), 0) for x in s))
+                _opcoes = [(0.0, 'counter_none', None, _tipo, _def, None, True)] + [
+                    (0.0, 'counter', _agrega(s), _tipo, _def, None, True) for s in _conj]
+                _i = _q_escolhe_familia(self.me, self.opp, 'counter', _opcoes,
+                                        1 if usar else 0)
+                usar = _i > 0
+                self._counter_escolhido = _conj[_i - 1] if usar else None
         if _DEFESA['on']:
             _log_defesa({
                 'kind': 'counter_use',
@@ -16649,7 +16768,13 @@ class DecisionEngine:
         selecao de pick_counters que should_use_counter usou pra decidir
         — as duas pontas nao podem divergir).
         """
-        escolha, _, total = self.pick_counters(needed)
+        # Conjunto decidido em `should_use_counter` (bloco 910) -- so vale se
+        # as cartas ainda estao na mao e cobrem o necessario.
+        escolha = getattr(self, '_counter_escolhido', None)
+        self._counter_escolhido = None
+        if not (escolha and all(any(x is h for h in self.me.hand) for x in escolha)
+                and sum(effective_counter(x, self.me) for x in escolha) >= needed):
+            escolha, _, total = self.pick_counters(needed)
         for c in escolha:
             remove_by_identity(self.me.hand, c)
             self.me.trash.append(c)
@@ -23775,6 +23900,9 @@ class OPTCGMatch:
         pending_play_cost_reductions/deck_out_win_instead_of_loss ficavam
         de fora do replay). Nao usado no caminho ao vivo nem em simulate().
         """
+        if not _EM_SIMULACAO['on']:
+            _Q_CTX['match'] = self
+            _Q_CTX['ativo'] = p
         self.global_turn += 1
         p.turn += 1
         p.global_turn = self.global_turn

@@ -1,6 +1,14 @@
 # TODO — Analisador de Decks OPTCG
 
-**Última atualização:** 27 de setembro de 2026 (bloco 909)
+**Última atualização:** 27 de setembro de 2026 (bloco 910)
+
+> **O ML APRENDE PELA CONSEQUENCIA (bloco 910)**: toda jogada escolhida recebe
+> o rotulo do que aconteceu depois na partida; bloqueio, counter e alvo entram
+> no mesmo Q. Medido: consequencia x juiz fixo **31x7 PROMOVE**. Todo treino
+> imprime a cobertura por decisao (zero = "NAO APRENDE"). **Pendente**: alvo AO
+> VIVO ainda por `order_target_candidates` (unificar); rodar ciclos com as 8
+> decisoes; reiniciar o server; entender por que o campeao 07cf e dificil de
+> reproduzir.
 
 > **Frente do Q (bloco 909)**: "concordancia top-1" NAO e qualidade (compara com
 > o campeao antigo + exploracao) -- nao usar como alvo. O professor do

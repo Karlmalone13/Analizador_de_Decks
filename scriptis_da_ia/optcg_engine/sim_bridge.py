@@ -1460,47 +1460,19 @@ def select_counter_cards(gs: GameState, atk_power: int, def_power: int,
         # nao conseguia dizer.
         _registra('nao_cobre', False, needed=needed, total_disponivel=total)
         return []
-    ids = [uid for c in escolha if (uid := getattr(c, '_deck_uid', 0))]
-
-    if defender_char is not None:
-        # Defendendo um PERSONAGEM: troca de recursos, nao vida. Sem
-        # comparar com should_use_counter (que so faz sentido pro lider).
-        #
-        # NET, nao bruto (achado ao vivo 14/07, log 14.16.10 -- usuario
-        # apontou 2 pontas que faltavam):
-        # 1) o que a carta DA se morrer (on_ko_value, ex: Warcury "draw 1")
-        #    e o CUSTO DE OPORTUNIDADE de salva-la -- salvar um corpo com
-        #    on-KO bom vale menos do que o char_value_score bruto sugere,
-        #    porque abre mao do gatilho. Mesma logica ja usada pra escolher
-        #    SACRIFICIO (redirect do Teach); nunca tinha sido aplicada aqui,
-        #    do lado de "vale salvar".
-        # 2) se o OPONENTE ainda tem mais atacantes ativos este turno (nao
-        #    so este), gastar o counter AGORA compete com precisar dele DE
-        #    NOVO na mesma sequencia de combate -- sobe a barra proporcional
-        #    aos ataques restantes (nao reserva fixo, ganho liquido caso a
-        #    caso: usuario pediu pra "pensar" se sobra defesa pro resto).
-        valor_liquido = (engine.analyzer.char_value_score(defender_char)
-                         - on_ko_value(defender_char.code, opp_stub, owner=gs))
-        ataques_restantes = max(0, engine.analyzer.opp_attack_count() - 1)
-        if ataques_restantes:
-            valor_liquido -= gasto * 0.5 * min(ataques_restantes, 2)
-        _usou = valor_liquido > gasto
-        _registra('troca_de_recursos', _usou, needed=needed,
-                  valor_protegido=round(float(valor_liquido), 2),
-                  gasto=round(float(gasto), 2),
-                  defendendo=getattr(defender_char, 'code', None),
-                  ataques_restantes=ataques_restantes,
-                  cartas=_cods(escolha))
-        return ids if _usou else []
-
-    if not engine.should_use_counter(atk_power, def_power,
-                                     counter_avail=total, gasto=gasto):
+    # A MESMA decisao do motor offline, lider OU personagem (bloco 910): SE
+    # counteria e COM QUAIS cartas saem de `should_use_counter`, que e onde o
+    # modelo decide e aprende. Aqui havia uma regra propria pra defender
+    # personagem ("troca de recursos") que o offline nao usava -- duas
+    # funcoes pra mesma decisao (`REGRA_SEM_DUPLICACAO`).
+    if not engine.should_use_counter(atk_power, def_power, alvo=defender_char,
+                                     counter_avail=total, gasto=gasto, pool=pool):
         return []
-    # O gate acima ja registra a decisao; aqui so fica QUAIS cartas saem --
-    # a categoria pior medida do projeto (`quais cartas de counter`, 18,5%).
-    _registra('aceito_defendendo_lider', True, needed=needed,
-              gasto=round(float(gasto), 2), cartas=_cods(escolha))
-    return ids
+    final = getattr(engine, '_counter_escolhido', None) or escolha
+    _registra('decisao_do_motor', True, needed=needed,
+              gasto=round(float(gasto), 2), cartas=_cods(final),
+              defendendo=getattr(defender_char, 'code', None))
+    return [uid for c in final if (uid := getattr(c, '_deck_uid', 0))]
 
 
 def resolve_reaction(gs: GameState, opp_gs: GameState,

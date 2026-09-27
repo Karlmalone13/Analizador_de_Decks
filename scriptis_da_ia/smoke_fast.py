@@ -10987,6 +10987,7 @@ def main() -> int:
     test_audita_custo_stage_sequenciamento_identifica_zona_e_ordem_26_09()
     test_select_grant_rush_piso_de_power_vale_pro_ramo_do_nome_26_09()
     test_treino_ignora_rotulo_busca_por_default_27_09()
+    test_ml_aprende_todas_as_decisoes_pela_consequencia_27_09()
     test_explorar_longe_descobre_alem_do_topo_19_09()
     test_opp_turn_reactive_effects_krieg_leader_debuff_24_08()
     test_give_don_filtro_de_tipo_no_destinatario_24_08()
@@ -15720,6 +15721,38 @@ def test_custo_restar_carta_usa_stage_igual_no_motor_e_ao_vivo_26_09() -> None:
     EffectExecutor(me, opp)._pay_costs([{'type': 'rest_own_card', 'count': 1}], me.leader)
     check("CONTROLE: sem Stage o custo cai numa carta de campo (lider, menor valor)",
           me.leader.rested and not ch.rested)
+
+
+def test_ml_aprende_todas_as_decisoes_pela_consequencia_27_09() -> None:
+    """Bloco 910: bloqueio, counter e alvo entram no MESMO Q das jogadas
+    principais, e toda jogada escolhida aprende pela CONSEQUENCIA."""
+    from optcg_engine import value_net as vn
+    import treinar_q
+    na = len(vn.FEATURE_NAMES_ACAO)
+    atk = mk("TQA", "Atacante", power=5000)
+    blk = mk("TQB", "Blocker", power=4000)
+    f_b = vn.acao_features((0.0, 'block', blk, 'character', atk), None)
+    f_c = vn.acao_features((0.0, 'counter_none', None, 'leader', atk, None, True), None)
+    f_t = vn.acao_features((0.0, 'target', atk, 'character', blk, None, False), None)
+    f_a = vn.acao_features((0.0, 'attack', atk, 'leader', None), None)
+    check("acao_features tem a largura de FEATURE_NAMES_ACAO",
+          len(f_b) == na and len(f_a) == na)
+    check("bloqueio, counter e alvo marcados nas colunas novas",
+          f_b[-4] == 1.0 and f_c[-3] == 1.0 and f_c[-1] == 1.0 and f_t[-2] == 1.0)
+    check("CONTROLE: jogada principal tem as 4 colunas novas zeradas (igual ao corpus antigo)",
+          f_a[-4:] == [0.0, 0.0, 0.0, 0.0])
+    traj = {(9, 3, 'L1'): [(0, 0.0, 1), (2, 1.0, 1), (4, 2.0, 1)]}
+    esc = {'escolhida': True, 'decisao': 1, 'gen': 9, 'match': 3, 'leader': 'L1',
+           'turn': 1, 'ld_agora': 0.0}
+    v = treinar_q.alvo_consequencia(esc, traj)
+    check("escolhida recebe o rotulo da consequencia (ganhou + vida subiu -> > 0.75)",
+          v is not None and v > 0.75)
+    check("CONTROLE: candidata NAO escolhida nao tem consequencia",
+          treinar_q.alvo_consequencia(dict(esc, escolhida=False), traj) is None)
+    check("defesa (fora da vez) fecha no PROXIMO turno proprio",
+          treinar_q.alvo_consequencia(dict(esc, vez=False, turn=0), traj) is not None)
+    check("todas as 8 decisoes do jogo sao contadas na cobertura",
+          set(treinar_q.FAMILIAS_JOGO) >= {'block', 'counter', 'target', 'attack', 'pass'})
 
 
 def test_treino_ignora_rotulo_busca_por_default_27_09() -> None:

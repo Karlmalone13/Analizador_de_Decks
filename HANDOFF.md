@@ -1,5 +1,53 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-09-27 (910) - O ML passa a APRENDER PELA CONSEQUENCIA, em TODAS as decisoes (incl. bloqueio, counter e alvo)
+
+Pedido do usuario, repetido ha semanas: *"teria um ciclo de treino, o motor
+iria mapear as jogadas que deram errado, melhorar essas areas e treinar de
+novo"*. Diagnostico honesto (Opus): o ciclo REGISTRAVA o resultado das
+partidas e NUNCA o usava pra julgar as jogadas -- o rotulo vinha de um juiz
+fixo (`value_net_aluno`) avaliando 1 passo. E bloqueio, counter e alvo nunca
+estiveram no laco (juiz fixo / regra `board_value`).
+
+**Feito:**
+1. `treinar_q.py`: toda jogada ESCOLHIDA recebe o rotulo da CONSEQUENCIA real
+   na propria partida -- `(1-lam)*logistica(vantagem de vida em 2 turnos
+   proprios) + lam*resultado` (formula da Fase 1, `rotulo_professor.py`),
+   ligando o corpus Q ao `selfplay_v2.jsonl` por (gen, partida, lider, turno).
+   Default LIGADO (`--sem-consequencia` desliga). Candidatas nao escolhidas
+   mantem o bootstrap; e a exploracao (17%) que da consequencia as alternativas.
+2. **Contagem que nao da pra fingir**: todo treino imprime, por decisao do
+   jogo (attack/play/pass/activate/attach_don/**block/counter/target**),
+   quantas jogadas tiveram rotulo pela consequencia; zero sai marcado
+   `NAO APRENDE esta decisao`. Fica gravado no bundle (`cobertura`).
+3. **Bloqueio, counter e alvo no MESMO Q** (`_q_escolhe_familia`, ponto unico):
+   cada opcao vira uma acao (4 colunas novas no fim de `acao_features`; linhas
+   antigas ganham 0; modelo antigo de 101 colunas continua decidindo). O Q
+   decide quando o bundle diz que aprendeu a familia; senao a regra
+   (degradacao segura). Exploracao e captura na geracao.
+4. Counter ao vivo: o `sim_bridge` tinha REGRA PROPRIA pra defender personagem
+   ("troca de recursos", 0,5 por ataque restante) -- removida; ao vivo e
+   offline agora usam `should_use_counter` e o conjunto que ele escolhe.
+5. Bug corrigido: a chave de decisao da concordancia nao tinha a GERACAO
+   (ids de partida recomecam a cada ciclo -> decisoes de partidas diferentes
+   misturadas).
+
+**Medido (mesmo dado, mesma receita, so o rotulo)**: consequencia x juiz fixo
+= **31x7 PROMOVE**. Contra o campeao `07cf511b5934`: 28x41 (o mesmo treino sem
+consequencia fazia 4x21). Esse teste NAO tinha bloqueio/counter/alvo -- eles
+entram a partir do proximo ciclo. Teste de ponta a ponta: 16 partidas geraram
+block 47 / counter 123 / target 30 linhas, todas com consequencia no treino; com
+o modelo resultante o Q troca a escolha da regra em ~metade dessas decisoes.
+
+**Aberto, dito explicitamente:**
+- **Alvo AO VIVO nao usa o Q**: o `server.py` escolhe alvo por
+  `sim_bridge.order_target_candidates` (regras por zona/proposito) -- segundo
+  caminho, a unificar.
+- Por que toda receita reproduzida perde do campeao 07cf (A 6x23, B 4x21,
+  C 28x41) -- promovido com 1 seed so.
+- Replay priorizado cai pra uniforme com modelo novo (105 x 101 colunas).
+- Servidor ao vivo precisa reiniciar pra pegar tudo isto.
+
 ## 2026-09-27 (909) - Frente do Q: a "concordancia de 42%" nao e teto de qualidade; o professor empata as opcoes, e dar-lhe resolucao PIORA o jogo
 
 Sessao Claude (Sonnet 5 -> Opus 5.5), pedido do usuario: investigar o Q.
