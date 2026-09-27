@@ -214,6 +214,12 @@ def _atualiza_pool_adversarios() -> None:
             pass
 
 
+def _mundos() -> int:
+    """Mundos plausiveis por opcao no rotulo bootstrap (bloco 913)."""
+    import os
+    return max(1, int(os.environ.get('OPTCG_MUNDOS', '4') or 4))
+
+
 def gera(n, seed, workers, n_ciclo=0) -> bool:
     """
     `n_ciclo` grava em CADA linha (campo `gen` do corpus) -- achado 19/09
@@ -521,10 +527,31 @@ def main() -> int:
 
         promoveu = bool(d.get('promove'))
         gc = {}
+        # REGISTRO DE GERACOES (bloco 913, INSTRUCAO_MESTRA item 21): todo
+        # candidato fica registrado com dados, config, treino, duelo e motivo;
+        # promovido vira `generation_NNN` versionada e o campeao em uso.
+        import geracoes
+        _pai = geracoes.carrega().get('atual')
+        ident = geracoes.registra_candidato(
+            Q_DESAFIANTE,
+            dataset={'alvos': (sum(1 for _ in Q_CORPUS.open(encoding='utf-8'))
+                               if Q_CORPUS.exists() else 0),
+                     'fatias': sorted(p.name for p in (RAIZ / 'metrics' / 'q_alvos').glob('*.jsonl.gz')),
+                     'modo': 'bootstrap',
+                     'rotulo_consequencia': b.get('rotulo_consequencia')},
+            config={'ciclo': n_ciclo, 'partidas': args.partidas, 'seed_geracao': seed,
+                    'workers': args.workers, 'mundos_bootstrap': _mundos(),
+                    'continuado_de': b.get('continuado_de')},
+            treino={k: b.get(k) for k in ('erro_fora_amostra', 'concordancia_top1',
+                                          'n_alvos', 'n_features', 'cobertura')},
+            duelo=dict({k: d.get(k) for k in ('vitorias_desafiante', 'derrotas_desafiante',
+                                              'decididas', 'pares_divididos', 'veredito', 'llr')},
+                       contra=_pai, seed=seed + 13),
+            promovido=promoveu,
+            motivo='portao SPRT: %s' % d.get('veredito'))
+        print('      registrado como %s (contra %s)' % (ident, _pai), flush=True)
         if promoveu:
-            import shutil
-            shutil.copyfile(Q_DESAFIANTE, Q_CAMPEAO)
-            print('      PROMOVIDO -- o Q vira campeao', flush=True)
+            print('      PROMOVIDO -- %s vira o campeao' % ident, flush=True)
             cron.inicia('guarda_corpo')
             gc = guarda_corpo(args.workers)
             cron.fecha()

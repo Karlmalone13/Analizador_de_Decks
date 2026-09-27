@@ -30,6 +30,20 @@ def _commit() -> str:
 COMMIT = _commit()
 
 
+def _modelo() -> str | None:
+    """Hash do Q em uso (bloco 913, INSTRUCAO_MESTRA item 21): responde "qual
+    modelo produziu este jogo?". `geracoes.id_do_hash` traduz pra geracao."""
+    try:
+        import hashlib
+        caminho = ROOT / 'scriptis_da_ia' / 'metrics' / 'q_net.joblib'
+        return hashlib.sha256(caminho.read_bytes()).hexdigest()[:12]
+    except Exception:
+        return None
+
+
+MODELO = _modelo()
+
+
 def new_decision_id() -> str:
     return uuid.uuid4().hex
 
@@ -40,6 +54,7 @@ def write_event(event: str, decision_id: str, **payload: Any) -> None:
         "timestamp": dt.datetime.now(dt.timezone.utc).isoformat(),
         "session_id": SESSION_ID,
         "commit": COMMIT,
+        "modelo": MODELO,
         "event": event,
         "decision_id": decision_id,
         **payload,

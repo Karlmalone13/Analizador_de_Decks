@@ -10990,6 +10990,7 @@ def main() -> int:
     test_ml_aprende_todas_as_decisoes_pela_consequencia_27_09()
     test_explora_so_onde_o_modelo_esta_incerto_27_09()
     test_treino_continua_do_campeao_27_09()
+    test_registro_de_geracoes_27_09()
     test_rotulo_bootstrap_nao_espia_a_mao_do_oponente_27_09()
     test_opp_turn_reactive_effects_krieg_leader_debuff_24_08()
     test_give_don_filtro_de_tipo_no_destinatario_24_08()
@@ -15866,6 +15867,39 @@ def test_rotulo_bootstrap_nao_espia_a_mao_do_oponente_27_09() -> None:
     check("CEGO: rotulo nao muda quando a mao REAL do oponente muda", cego == 0)
     check("CONTROLE: copia com a mao real ESPIA (rotulo muda) -- o teste enxerga",
           espiao > 0)
+
+
+def test_registro_de_geracoes_27_09() -> None:
+    """Bloco 913 (INSTRUCAO_MESTRA item 21): candidato rejeitado fica
+    registrado com o motivo e NAO mexe no campeao; promovido vira
+    generation_NNN, guarda o binario e vira o campeao em uso."""
+    import tempfile, shutil
+    from pathlib import Path
+    import geracoes as G
+    orig = (G.DIR, G.INDEX, G.Q_CAMPEAO)
+    tmp = Path(tempfile.mkdtemp())
+    try:
+        G.DIR, G.INDEX, G.Q_CAMPEAO = tmp / 'g', tmp / 'g' / 'index.json', tmp / 'campeao.joblib'
+        G.Q_CAMPEAO.write_bytes(b'campeao')
+        cand = tmp / 'desafiante.joblib'
+        cand.write_bytes(b'desafiante-1')
+        kw = dict(dataset={}, config={}, treino={}, duelo={'veredito': 'DESCARTA'})
+        r = G.registra_candidato(cand, promovido=False, motivo='DESCARTA', **kw)
+        check("rejeitado vira candidato com motivo", r == 'candidato_001'
+              and G.carrega()['candidatos'][0]['motivo'] == 'DESCARTA')
+        check("CONTROLE: rejeitado NAO troca o campeao", G.Q_CAMPEAO.read_bytes() == b'campeao')
+        cand.write_bytes(b'desafiante-2')
+        r = G.registra_candidato(cand, promovido=True, motivo='PROMOVE', **kw)
+        d = G.carrega()
+        check("promovido vira generation_001 e atual", r == 'generation_001' and d['atual'] == r)
+        check("binario da geracao guardado e campeao em uso atualizado",
+              (G.DIR / 'generation_001.joblib').read_bytes() == b'desafiante-2'
+              and G.Q_CAMPEAO.read_bytes() == b'desafiante-2')
+        check("id_do_hash acha a geracao pelo hash do modelo",
+              G.id_do_hash(G.hash_arquivo(G.Q_CAMPEAO)) == 'generation_001')
+    finally:
+        G.DIR, G.INDEX, G.Q_CAMPEAO = orig
+        shutil.rmtree(tmp, ignore_errors=True)
 
 
 def test_treino_continua_do_campeao_27_09() -> None:

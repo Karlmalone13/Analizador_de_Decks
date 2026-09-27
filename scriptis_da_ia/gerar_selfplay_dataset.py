@@ -302,9 +302,19 @@ def _run_one_match(task) -> list:
         # estender isso quebraria o outro caminho em silencio. Workers sao
         # processos filhos e herdam `os.environ`, entao o valor chega igual.
         _org = _origem_padrao()
+        # QUAL MODELO decidiu esta linha (bloco 913, INSTRUCAO_MESTRA item 21):
+        # hash do Q de cada lado -- o campeao ou um adversario do pool.
+        # `geracoes.id_do_hash` traduz pra `generation_NNN`.
+        from optcg_engine.decision_engine import Q_NET_PATH as _QP
+        import geracoes as _ger
+        _hash_lider = {}
+        for _st in (match.state_a, match.state_b):
+            _hash_lider.setdefault(getattr(_st.leader, 'code', None),
+                                   _ger.hash_arquivo(getattr(_st, 'q_net_path', None) or _QP))
         for linha in (getattr(match, '_q_captura', None) or []):
             linha['match'] = i
             linha['gen'] = geracao
+            linha['modelo'] = _hash_lider.get(linha.get('leader'))
             # DE QUAL MAQUINA veio esta linha (bloco 820, pedido do usuario ao
             # planejar gerar corpus em DUAS maquinas em paralelo).
             #

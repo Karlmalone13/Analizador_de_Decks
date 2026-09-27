@@ -1,0 +1,147 @@
+{
+  "atual": "generation_002",
+  "geracoes": [
+    {
+      "id": "generation_001",
+      "hash": "27516094c242",
+      "pai": null,
+      "pai_nota": "68ea2c639b3a (anterior ao registro, binario nao guardado)",
+      "data": "2026-09-24T14:05:33",
+      "commit": null,
+      "arquivo": "metrics/geracoes/generation_001.joblib",
+      "dataset": {
+        "alvos": 697479,
+        "nota": "corpus bootstrap ate 14/09"
+      },
+      "config": {
+        "modelo": "rede"
+      },
+      "treino": {},
+      "duelo": {
+        "contra": "68ea2c639b3a",
+        "vitorias_desafiante": 119,
+        "derrotas_desafiante": 82,
+        "seeds": "4242/777/31337: 119x82, 131x94, 172x129",
+        "veredito": "PROMOVE",
+        "p1": 0.58
+      },
+      "promovido": true,
+      "motivo": "SPRT PROMOVE em 3 seeds (blocos 888/889), a pedido do usuario"
+    },
+    {
+      "id": "generation_002",
+      "hash": "07cf511b5934",
+      "pai": "generation_001",
+      "data": "2026-09-27T10:34:05",
+      "commit": "f20e32b",
+      "arquivo": "metrics/geracoes/generation_002.joblib",
+      "dataset": {
+        "alvos": 1121413,
+        "nota": "prefixo 697.479 + 423.934 linhas modo=bootstrap (sem busca)"
+      },
+      "config": {
+        "modelo": "rede",
+        "priorizar": false
+      },
+      "treino": {
+        "erro_fora_amostra": 0.0554,
+        "concordancia_top1": 45.0
+      },
+      "duelo": {
+        "contra": "generation_001",
+        "vitorias_desafiante": 75,
+        "derrotas_desafiante": 46,
+        "decididas": 121,
+        "llr": 3.111,
+        "seed": 10326,
+        "veredito": "PROMOVE",
+        "p1": 0.58
+      },
+      "promovido": true,
+      "motivo": "SPRT PROMOVE, 1 seed, a pedido do usuario (bloco 906)"
+    }
+  ],
+  "candidatos": [
+    {
+      "id": "candidato_001",
+      "ciclo": 13,
+      "hash": null,
+      "pai": "generation_001",
+      "data": "2026-09-26T21:57:52",
+      "commit": null,
+      "dataset": {
+        "alvos": 1243321
+      },
+      "config": {
+        "partidas": 200
+      },
+      "treino": {
+        "erro_fora_amostra": 0.0601900295808286
+      },
+      "duelo": {
+        "vitorias_desafiante": 7,
+        "derrotas_desafiante": 24,
+        "decididas": 31,
+        "pares_divididos": 109,
+        "veredito": "DESCARTA (equivalentes)",
+        "llr": -3.1455412556467515
+      },
+      "promovido": false,
+      "motivo": "portao: DESCARTA (equivalentes)"
+    },
+    {
+      "id": "candidato_002",
+      "ciclo": 14,
+      "hash": null,
+      "pai": "generation_002",
+      "data": "2026-09-27T15:53:01",
+      "commit": null,
+      "dataset": {
+        "alvos": 1343540
+      },
+      "config": {
+        "partidas": 200
+      },
+      "treino": {
+        "erro_fora_amostra": 0.046827260398452246
+      },
+      "duelo": {
+        "vitorias_desafiante": 3,
+        "derrotas_desafiante": 22,
+        "decididas": 25,
+        "pares_divididos": 55,
+        "veredito": "DESCARTA (equivalentes)",
+        "llr": -3.390514501830289
+      },
+      "promovido": false,
+      "motivo": "portao: DESCARTA (equivalentes)"
+    },
+    {
+      "id": "candidato_003",
+      "ciclo": 15,
+      "hash": null,
+      "pai": "generation_002",
+      "data": "2026-09-27T16:17:07",
+      "commit": null,
+      "dataset": {
+        "alvos": 1445114
+      },
+      "config": {
+        "partidas": 200
+      },
+      "treino": {
+        "erro_fora_amostra": 0.04541197721702803
+      },
+      "duelo": {
+        "vitorias_desafiante": 8,
+        "derrotas_desafiante": 25,
+        "decididas": 33,
+        "pares_divididos": 87,
+        "veredito": "DESCARTA (equivalentes)",
+        "llr": -3.1714746376732554
+      },
+      "promovido": false,
+      "motivo": "portao: DESCARTA (equivalentes)"
+    }
+  ]
+}
