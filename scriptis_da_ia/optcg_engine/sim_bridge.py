@@ -25,6 +25,7 @@ from optcg_engine.decision_engine import (
     Card,
     CardData,
     DecisionEngine,
+    GameAnalyzer,
     attack_time_power,
     character_can_attack_now,
     effective_hand_play_cost,
@@ -138,6 +139,114 @@ def load_sim_deck(deck_name: str) -> tuple:
         raise ValueError(f"Nenhum líder encontrado em {path}")
 
     return leader, cards, None
+
+
+# ── MESMO MUNDO ao vivo e offline (28/09/2026) ────────────────────────────────
+# Pedido do usuario: *"eles tem que treinar e jogar no mesmo mundo, e no mundo
+# com maiores informacoes possiveis da partida"*. O modelo le 17 campos que o
+# motor offline acumula ao longo da partida (dano causado, valor dos KOs, DON
+# gasto em combate, counters usados, DON no deck, quem comecou...). O plugin so
+# manda uma FOTO por decisao, entao ao vivo eles chegavam SEMPRE zerados --
+# medido: zerar esses campos muda a escolha do Q em 26,4% das decisoes.
+#
+# O rastreador reconstroi cada campo comparando fotos sucessivas da MESMA
+# partida, com a mesma definicao do `GameState` offline. Tudo que ele usa e
+# PUBLICO (vida contada, mesa, lixeira, DON) -- nada da mao do oponente.
+_RASTREIO: dict = {}
+
+
+def rastreio_reset() -> None:
+    """Partida nova (chamado no /mulligan)."""
+    _RASTREIO.clear()
+
+
+def _foto(player) -> dict:
+    """O que interessa de um PlayerDto pra acumular os campos."""
+    def _uid(c):
+        return getattr(c, 'deckUniqueId', None)
+    mesa = [c for c in ([player.leader] if player.leader else []) + list(player.board or [])]
+    return {
+        'vida': len(player.life or []),
+        'board': {_uid(c): c for c in (player.board or []) if _uid(c) is not None},
+        'mesa_ids': {_uid(c) for c in mesa} | ({_uid(player.stage)} if player.stage else set()),
+        'trash_ids': {_uid(c) for c in (player.trash or [])},
+        'trash': list(player.trash or []),
+        'anexado': sum(int(getattr(c, 'donAttached', 0) or 0) for c in mesa),
+        # por carta na mesa: (DON anexado, virada?) -- quem ATACA vira
+        'por_carta': {_uid(c): (int(getattr(c, 'donAttached', 0) or 0),
+                                bool(getattr(c, 'rested', False))) for c in mesa},
+        'don_campo': (int(player.activeDon or 0) + int(player.restedDon or 0)
+                      + sum(int(getattr(c, 'donAttached', 0) or 0) for c in mesa)),
+    }
+
+
+def aplica_mundo_completo(gs: GameState, opp_gs: GameState, bot_dto, opp_dto) -> None:
+    """Preenche em `gs`/`opp_gs` os campos acumulados da partida, a partir das
+    fotos que o plugin mandou ate agora. Chamar em TODO ponto do server que
+    monta o estado a partir do plugin -- o mesmo mundo pra toda decisao."""
+    try:
+        lid = bot_dto.leader
+        chave = (getattr(lid, 'code', None), getattr(lid, 'deckUniqueId', None))
+        r = _RASTREIO.setdefault(chave, {
+            'ant': None, 'is_first': None,
+            'mine': dict(dmg_dealt=0, char_kill_value=0.0, don_spent_on_combat=0,
+                         counters_used=0),
+            'opp': dict(dmg_dealt=0, char_kill_value=0.0, don_spent_on_combat=0,
+                        counters_used=0)})
+        cur = {'mine': _foto(bot_dto), 'opp': _foto(opp_dto)}
+        # Quem comecou: na regra, o primeiro jogador tem 1 DON no turno 1 e o
+        # segundo 2. Decidido na primeira foto em que da pra saber, e fixado.
+        if r['is_first'] is None and getattr(gs, 'turn', 0) == 1 and cur['mine']['don_campo'] > 0:
+            r['is_first'] = cur['mine']['don_campo'] == 1
+        ant = r['ant']
+        if ant is not None:
+            for eu, ele, gs_eu, gs_ele in (('mine', 'opp', gs, opp_gs), ('opp', 'mine', opp_gs, gs)):
+                c = r[eu]
+                # dano causado = vida que o OUTRO perdeu
+                c['dmg_dealt'] += max(0, ant[ele]['vida'] - cur[ele]['vida'])
+                # valor dos personagens do OUTRO que sairam da mesa pra lixeira
+                for uid, dto in ant[ele]['board'].items():
+                    if uid not in cur[ele]['board'] and uid in cur[ele]['trash_ids']:
+                        card = _make_card(dto.code, _cards_db.get(dto.code, {})) if _cards_db.get(dto.code) else None
+                        if card is not None:
+                            c['char_kill_value'] += float(
+                                GameAnalyzer(gs_eu, gs_ele).char_value_score(card))
+                # DON posto em combate = o DON que esta numa carta que ATACOU
+                # (estava de pe e virou) -- o offline conta o anexado pra
+                # atacar, antes ou na hora do ataque, nao anexo por efeito.
+                for uid, (don, virada) in cur[eu]['por_carta'].items():
+                    d0, v0 = ant[eu]['por_carta'].get(uid, (0, True))
+                    if virada and not v0:
+                        c['don_spent_on_combat'] += don
+                # counter usado = carta nova na MINHA lixeira, que nao saiu da
+                # minha mesa, com valor de counter -- e so enquanto o OUTRO
+                # atacava (alguma carta dele virou): counter e resposta a ataque.
+                ele_atacou = any(v and not ant[ele]['por_carta'].get(u, (0, True))[1]
+                                 for u, (_d, v) in cur[ele]['por_carta'].items())
+                for t in (cur[eu]['trash'] if ele_atacou else []):
+                    uid = getattr(t, 'deckUniqueId', None)
+                    if uid in ant[eu]['trash_ids'] or uid in ant[eu]['mesa_ids']:
+                        continue
+                    data = _cards_db.get(t.code) or {}
+                    c['counters_used'] += int(data.get('counter') or 0)
+        r['ant'] = cur
+        for alvo, lado in ((gs, 'mine'), (opp_gs, 'opp')):
+            for k, v in r[lado].items():
+                setattr(alvo, k, v)
+            alvo.don_deck = max(0, 10 - cur[lado]['don_campo'])
+        if r['is_first'] is not None:
+            gs.is_first = bool(r['is_first'])
+            opp_gs.is_first = not r['is_first']
+        # Uma linha por turno no log do server: prova, ao vivo, de que os
+        # campos chegam preenchidos (sem isto so daria pra supor).
+        t = getattr(gs, 'turn', None)
+        if r.get('turno_logado') != t:
+            r['turno_logado'] = t
+            print(f"[MUNDO] {chave[0]} t{t} primeiro={r['is_first']} "
+                  f"eu={r['mine']} ele={r['opp']} don_deck={gs.don_deck}/{opp_gs.don_deck}",
+                  flush=True)
+    except Exception as e:
+        print(f'[MUNDO][ERRO] rastreador ao vivo falhou: {e!r}', flush=True)
 
 
 def build_game_state(leader: Card, deck_cards: list[Card]) -> GameState:

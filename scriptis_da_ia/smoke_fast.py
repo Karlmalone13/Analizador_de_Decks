@@ -10993,6 +10993,8 @@ def main() -> int:
     test_treino_continua_do_campeao_27_09()
     test_registro_de_geracoes_27_09()
     test_rotulo_bootstrap_nao_espia_a_mao_do_oponente_27_09()
+    test_explica_diferenca_acha_o_motivo_certo_28_09()
+    test_ao_vivo_reconstroi_os_campos_acumulados_28_09()
     test_opp_turn_reactive_effects_krieg_leader_debuff_24_08()
     test_give_don_filtro_de_tipo_no_destinatario_24_08()
     test_play_card_total_cost_lte_e_distinct_names_24_08()
@@ -16913,6 +16915,69 @@ def test_event_concede_unblockable_a_carta_nomeada_24_09() -> None:
               len(passos) == 1
               and all(passos[0].get(k) == v for k, v in campos.items())
               and "filter_name" not in passos[0])
+
+
+def test_explica_diferenca_acha_o_motivo_certo_28_09() -> None:
+    """A explicacao de POR QUE uma decisao foi ruim tem que apontar o conceito
+    que o MODELO usa, e nao outro. Controle que pode falhar: o MESMO par de
+    estados, julgado por dois modelos diferentes, tem que dar motivos
+    DIFERENTES -- se a explicacao ignorasse o modelo, os dois bateriam."""
+    import numpy as np
+    from sklearn.linear_model import LinearRegression
+    from optcg_engine import value_net as vn
+    nomes = ['life_mine', 'life_opp', 'hand_mine', 'hand_opp', 'power_mine']
+    X = np.random.default_rng(0).normal(size=(200, 5))
+
+    def bundle(col):
+        return {'modelo': LinearRegression().fit(X, X[:, col]), 'feature_names': nomes}
+
+    a = [3, 4, 5, 5, 10]     # estado depois da escolhida
+    b = [3, 6, 8, 5, 10]     # depois da melhor: difere em life_opp (+2) e hand_mine (+3)
+    pela_vida = vn.explica_diferenca(bundle(1), a, b)
+    pela_mao = vn.explica_diferenca(bundle(2), a, b)
+    assert [g for g, _ in pela_vida] == ['life'], pela_vida
+    assert [g for g, _ in pela_mao] == ['hand'], pela_mao
+    assert abs(pela_vida[0][1] - 2.0) < 1e-6 and abs(pela_mao[0][1] - 3.0) < 1e-6
+    assert vn.explica_diferenca({'modelo': None, 'feature_names': nomes}, a, b) == []
+
+
+def test_ao_vivo_reconstroi_os_campos_acumulados_28_09() -> None:
+    """Ao vivo o plugin manda FOTOS; o modelo le campos que o offline acumula
+    (dano causado, DON em combate, quem comecou, DON no deck). Sem o
+    rastreador eles chegavam sempre 0 -- medido: 28,5% das escolhas do Q
+    mudavam. Controle: sem fotos anteriores (1a foto), nada e acumulado."""
+    from types import SimpleNamespace as NS
+    from optcg_engine import sim_bridge as sb
+    from optcg_engine.decision_engine import GameState
+
+    def carta(uid, don=0, virada=False, code='OP14-020'):
+        return NS(code=code, deckUniqueId=uid, donAttached=don, rested=virada)
+
+    def jogador(uid_lider, vida, don_ativo, lider_don=0, lider_virado=False):
+        return NS(leader=carta(uid_lider, lider_don, lider_virado), board=[],
+                  life=[0] * vida, trash=[], stage=None,
+                  activeDon=don_ativo, restedDon=0)
+
+    def estado(turno):
+        g = GameState(leader=None); g.turn = turno; return g
+
+    sb.rastreio_reset()
+    eu, ele = estado(1), estado(1)
+    sb.aplica_mundo_completo(eu, ele, jogador(1, 5, 1), jogador(2, 5, 0))
+    assert eu.dmg_dealt == 0 and eu.don_spent_on_combat == 0      # controle
+    assert eu.is_first is True and ele.is_first is False           # 1 DON no turno 1
+    assert eu.don_deck == 9
+    # meu lider ataca com 1 DON e tira 1 vida dele
+    eu, ele = estado(1), estado(1)
+    sb.aplica_mundo_completo(eu, ele, jogador(1, 5, 0, lider_don=1, lider_virado=True),
+                             jogador(2, 4, 0))
+    assert eu.dmg_dealt == 1 and ele.dmg_dealt == 0
+    assert eu.don_spent_on_combat == 1
+    # partida nova zera tudo
+    sb.rastreio_reset()
+    eu, ele = estado(1), estado(1)
+    sb.aplica_mundo_completo(eu, ele, jogador(1, 5, 2), jogador(2, 5, 1))
+    assert eu.dmg_dealt == 0 and eu.is_first is False
 
 
 if __name__ == "__main__":

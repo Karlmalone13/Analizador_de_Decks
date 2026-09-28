@@ -1,5 +1,56 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-09-28 (914) - O bot sabe POR QUE uma decisao foi ruim; e ao vivo passa a jogar no MESMO MUNDO do treino (campos acumulados)
+
+Pedido do usuario: *"analisar a qualidade de cada decisao, ai caso tenha uma
+decisao ruim, saber o porque ela foi ruim e saber como melhorar. E tambem
+descobrir/explorar novas decisoes ai ele vai saber se a decisao melhorou ou
+nao"* e *"eles tem que treinar e jogar no mesmo mundo, e no mundo com maiores
+informacoes possiveis da partida"*.
+
+**1. POR QUE a decisao foi ruim** (`_q_diagnostica`, `decision_engine.py`).
+O bootstrap ja simulava cada opcao em 4 mundos plausiveis; agora guarda o
+ESTADO que cada uma produziu. Ao marcar a escolhida: `regret` = melhor
+alternativa da MESMA decisao menos a escolhida (gravado sempre). RUIM = regret
+> erro fora da amostra do proprio Q (0,055 -- limiar do modelo, nao a mao).
+Ruim ganha `porque = {escolhida, melhor (com cartas), causas}`; `causas` vem
+de `value_net.explica_diferenca`: troca cada CONCEITO (vida, mao, poder, DON --
+agrupado pelo nome da feature) entre os dois estados e mede no modelo. Teste
+com controle: o mesmo par, dois modelos, motivos diferentes. Medido (16
+partidas): 8,1% das decisoes ruins; attack 8,8%, play 10%, pass 3,4%.
+Custo sem mudanca visivel (26s/8 partidas).
+
+**2. Se melhorou**: `porque_decisoes.py` -- por geracao: taxa de ruins, regret
+medio, motivo principal e "o melhor era" por tipo de jogada e por lider, e as
+piores. `ciclo.py` roda sozinho apos cada geracao. Primeira comparacao real
+aparece no proximo ciclo.
+
+**3. MESMO MUNDO ao vivo** (`sim_bridge.aplica_mundo_completo`, ligado nos 5
+pontos do `server.py` que montam estado; zera no `/mulligan`). O modelo le 17
+campos que o offline ACUMULA na partida (dano causado, valor de KO, DON em
+combate, counters usados, DON no deck, quem comecou...). Ao vivo chegavam
+SEMPRE 0 (`_dto_to_gs` nao preenche). Medido: zerar muda a escolha do Q em
+26,4% (4.000 decisoes do corpus; controle com 17 colunas aleatorias: 46,9%).
+O rastreador reconstroi por FOTOS sucessivas (so publico). Validado contra o
+exato offline (8 partidas): escolha difere do exato em **28,5% zerado ->
+9,6% reconstruido**; por campo: is_first 97%, dano 94%, don_deck 91%, KO 80%,
+DON combate 68%, counters 65%. Ao vivo confirmado (CPU x CPU 14.19.36_p3):
+linha `[MUNDO]` por turno no log do server.
+**Limites**: searchers/triggers seguem 0 ao vivo; counters ASSIMETRICO (o
+defensor nao se ve usando counter: o atacante ja esta virado no /defense).
+
+**4. Paridade offline x ao vivo** (antes do item 3; 2 CPU x CPU Mihawk x Ace):
+attack 1,46 x 1,60, activate 0,38 x 0,37, play **0,62 x 0,84**, DON parado
+**1,68 x 1,17**. `q_fallback` 0. Alvo ao vivo validado: 8 de 10 pela funcao do
+offline (`motor_pick_effect_target`), 2 pelo caminho antigo (custo/redirect).
+
+**PROXIMO (caminho B, aprovado como sequencia)**: o jogo guarda o combat log
+NA MEMORIA -- `GameplayLogicScript.currentCombatLog` (List<string>, cada
+evento via `.Add`). O plugin ja le esse objeto por reflexao: mandar as linhas
+novas em cada pedido e o server acumula os campos EXATOS (incl.
+searchers/triggers/counters). O rastreador por foto fica como reserva. Depois:
+re-medir a paridade (play/DON parado).
+
 ## 2026-09-27 (913) - Conformidade com a INSTRUCAO_MESTRA_ML: decisoes do usuario + violacoes 1, 3 e 4
 
 Decisoes do usuario (formato do item 28): **P1 = C, P2 = B**, ordem das

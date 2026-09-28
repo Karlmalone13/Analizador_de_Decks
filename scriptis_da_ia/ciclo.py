@@ -506,6 +506,10 @@ def main() -> int:
         cron.fecha()
         if not ok:
             break
+        # POR QUE as decisoes desta geracao foram ruins (28/09/2026). So
+        # relatorio: falhar aqui nao interrompe o ciclo.
+        _rodar(['porque_decisoes.py', '--dataset', str(Q_CORPUS),
+                '--gen', str(n_ciclo)], 'diagnostico das decisoes')
 
         print('[2/5] TREINA o Q desafiante', flush=True)
         cron.inicia('treina')

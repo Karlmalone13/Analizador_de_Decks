@@ -1277,6 +1277,21 @@ def _cega_copia(p2, o2, modelo_op) -> None:
         pass
 
 
+def _descreve_acao(a) -> str:
+    """Texto curto da acao pro diagnostico: familia + codigos das cartas."""
+    try:
+        partes = []
+        for x in a[1:]:
+            c = getattr(x, 'code', None)
+            if c:
+                partes.append(str(c))
+            elif isinstance(x, (str, int)) and not isinstance(x, bool):
+                partes.append(str(x))
+        return ' '.join(partes)
+    except Exception:
+        return str(a[1]) if len(a) > 1 else '?'
+
+
 def _margem_incerteza(p=None, bundle=None) -> float:
     """Ate onde o modelo NAO distingue duas opcoes: o erro fora da amostra que
     ele mediu no treino (bloco 913). Sem modelo, nada e distinguivel (inf)."""
@@ -19755,7 +19770,55 @@ class OPTCGMatch:
             # medicao do projeto manda tratar como sintoma. A concordancia so
             # conta decisoes rotuladas por um professor INDEPENDENTE.
             linha['escolhida_por'] = 'q'
+            self._q_diagnostica(linha, list(pend.values()))
         self._q_pendentes = {}
+        self._q_depois = None
+
+    def _q_diagnostica(self, linha, linhas) -> None:
+        """A decisao foi RUIM? Se foi, POR QUE, e o que teria sido melhor
+        (pedido do usuario, 28/09/2026).
+
+        RUIM = a melhor alternativa da MESMA decisao vale mais que a escolhida
+        por mais que o ERRO FORA DA AMOSTRA do proprio Q -- abaixo disso o
+        modelo nao sabe distinguir as duas, e chamar de erro seria ruido. O
+        limiar nao e escolhido a mao: e o erro que o modelo mediu.
+
+        Grava na linha da escolhida:
+          porque = {regret, margem, melhor: acao, causas: [(conceito, peso)]}
+        `causas` vem de `value_net.explica_diferenca` -- o proprio modelo
+        dizendo qual parte do estado resultante fez a diferenca. A MELHOR
+        alternativa ja recebe o rotulo dela no corpus; e ela que ensina o Q a
+        escolher diferente da proxima vez.
+        """
+        try:
+            ctx = getattr(self, '_q_depois', None) or {}
+            ok = [l for l in linhas if l.get('alvo') is not None]
+            if len(ok) < 2 or linha.get('alvo') is None:
+                return
+            melhor = max(ok, key=lambda l: l['alvo'])
+            regret = float(melhor['alvo']) - float(linha['alvo'])
+            margem = _margem_incerteza(self.state_a)
+            # Sempre: e o que separa "diagnosticada e boa" de "sem diagnostico".
+            linha['regret'] = round(regret, 4)
+            if melhor is linha or not (regret > margem):
+                return
+            fa = ctx.get('feats', {}).get(id(linha))
+            fb = ctx.get('feats', {}).get(id(melhor))
+            if fb == 'vence_a_partida':
+                causas = [('vence_a_partida', regret)]
+            elif isinstance(fa, list) and isinstance(fb, list):
+                from optcg_engine import value_net as _vn
+                causas = _vn.explica_diferenca(ctx.get('bundle') or {}, fa, fb)
+            else:
+                causas = []
+            linha['porque'] = {
+                'regret': round(regret, 4), 'margem': round(margem, 4),
+                'escolhida': ctx.get('descr', {}).get(id(linha)),
+                'melhor': ctx.get('descr', {}).get(id(melhor)) or melhor.get('acao'),
+                'causas': [[c, round(v, 4)] for c, v in causas],
+            }
+        except Exception:
+            pass
 
     def _coleta_bootstrap(self, p, opp, engine, candidatas, cap):
         """Alvo do DQN: o valor do ESTADO QUE A ACAO PRODUZ (bloco 799).
@@ -19835,6 +19898,24 @@ class OPTCGMatch:
                 continue
             soma[i] = soma.get(i, 0.0) + float(v)
             cont[i] = cont.get(i, 0) + 1
+        # O ESTADO que cada opcao produziu (media dos mundos), pra que
+        # `_q_marca_escolhida` possa explicar POR QUE a escolhida ficou atras
+        # da melhor. So em memoria -- vai pro corpus apenas a explicacao.
+        depois: dict = {}
+        try:
+            _nomes = _b.get('feature_names')
+            _acc: dict = {}
+            for i, (p2, o2) in zip(dono, estados):
+                f = _vn2.state_features(p2, o2, nomes=_nomes)
+                s = _acc.setdefault(i, [0.0] * len(f) + [0])
+                for j, x in enumerate(f):
+                    s[j] += float(x)
+                s[-1] += 1
+            for i, s in _acc.items():
+                depois[i] = [x / s[-1] for x in s[:-1]]
+        except Exception:
+            depois = {}
+        self._q_depois = {'bundle': _b, 'feats': {}, 'descr': {}}
         lider = getattr(getattr(p, 'leader', None), 'code', None)
         turno = int(getattr(p, 'turn', 0) or 0)
         for i, a in enumerate(acoes):
@@ -19848,6 +19929,10 @@ class OPTCGMatch:
                         'mundos': cont[i],
                         'modo': 'bootstrap'})
             self._q_registra(a, cap[-1])
+            # Opcao que VENCE em todos os mundos nao tem estado depois.
+            self._q_depois['feats'][id(cap[-1])] = (
+                depois.get(i) if i in depois else 'vence_a_partida')
+            self._q_depois['descr'][id(cap[-1])] = _descreve_acao(a)
 
     def _candidatas_para_decidir(self, p, actions, top_k, priority,
                                  cheap_values=None, ordenada_pelo_modelo=False):

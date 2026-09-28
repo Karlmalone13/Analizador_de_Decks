@@ -1069,6 +1069,64 @@ def win_prob_lote(pares, bundle=None) -> list:
     return saidas
 
 
+def _grupo_da_feature(nome: str) -> str:
+    """`life_mine`/`life_opp`/`life_diff` -> `life`: o CONCEITO, dos dois
+    lados. A explicacao fala em conceitos, nao em 90 colunas."""
+    for suf in ('_mine', '_opp', '_diff'):
+        if nome.endswith(suf):
+            return nome[:-len(suf)]
+    return nome
+
+
+def explica_diferenca(bundle, feats_escolhida, feats_melhor, top: int = 3) -> list:
+    """POR QUE uma jogada foi pior que outra, na opiniao do PROPRIO modelo
+    (pedido do usuario, 28/09/2026: "caso tenha uma decisao ruim, saber o
+    porque ela foi ruim e saber como melhorar").
+
+    Recebe o estado que cada jogada produziu (vetor de features, na ordem do
+    `bundle`) e reparte a diferenca de valor entre os CONCEITOS do estado
+    (vida, mao, board, DON...). Contribuicao de um conceito = media das duas
+    trocas: por o conceito da melhor no estado da escolhida, e tirar o da
+    escolhida do estado da melhor. Nada aqui e regra escrita a mao -- os
+    conceitos saem dos nomes das features e o peso sai do modelo.
+
+    Devolve [(conceito, contribuicao), ...] do maior pro menor, so positivos.
+    Lista vazia se o modelo nao responder.
+    """
+    try:
+        import numpy as np
+        modelo = bundle.get('modelo')
+        nomes = bundle.get('feature_names') or []
+        a = np.asarray(feats_escolhida, dtype=float)
+        b = np.asarray(feats_melhor, dtype=float)
+        if modelo is None or len(nomes) != len(a) or len(a) != len(b):
+            return []
+        grupos: dict = {}
+        for j, n in enumerate(nomes):
+            grupos.setdefault(_grupo_da_feature(n), []).append(j)
+        ordem = list(grupos)
+        linhas = [a, b]
+        for g in ordem:
+            x = a.copy(); x[grupos[g]] = b[grupos[g]]; linhas.append(x)
+            y = b.copy(); y[grupos[g]] = a[grupos[g]]; linhas.append(y)
+        X = np.vstack(linhas)
+        if hasattr(modelo, 'predict_proba'):
+            v = np.asarray([r[1] for r in modelo.predict_proba(X)], dtype=float)
+        else:
+            r = _forward_rapido(modelo, X)
+            v = np.asarray(r if r is not None else modelo.predict(X), dtype=float)
+        va, vb = v[0], v[1]
+        out = []
+        for k, g in enumerate(ordem):
+            c = 0.5 * ((v[2 + 2 * k] - va) + (vb - v[3 + 2 * k]))
+            if c > 1e-6:
+                out.append((g, float(c)))
+        out.sort(key=lambda t: -t[1])
+        return out[:top]
+    except Exception:
+        return []
+
+
 def win_prob(p, opp, bundle=None) -> float | None:
     """Probabilidade estimada de `p` VENCER a partida a partir deste
     estado. None quando o modelo nao esta disponivel/compativel -- o

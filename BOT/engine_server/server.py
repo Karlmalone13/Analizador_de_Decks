@@ -434,6 +434,7 @@ def _ponder_worker(bot_dto, opp_dto, trigger_turn: int, generation: int,
                   flush=True)
         gs = _dto_to_gs(bot_dto, proximo_turno)
         opp_gs = _dto_to_gs(opp_dto, proximo_turno, hide_hidden=True)
+        _get_bridge().aplica_mundo_completo(gs, opp_gs, bot_dto, opp_dto)
         gs.is_active_turn = True
         opp_gs.is_active_turn = False
         trace: dict = {}
@@ -1168,6 +1169,9 @@ def mulligan(req: MulliganRequest):
         _match_has_decisions = False
         _match_has_outcome = False
         _decision_context.clear()
+        # Partida nova: zera os campos acumulados (dano, KOs, DON em combate...)
+        # que o modelo le -- `sim_bridge.aplica_mundo_completo`.
+        _get_bridge().rastreio_reset()
         # Partida nova: limpa recusas da partida anterior. Sem isso, uma
         # ativacao recusada no turno N da partida passada continuava
         # excluida no turno N de TODAS as partidas seguintes do mesmo
@@ -1294,6 +1298,7 @@ def defense(req: DefenseRequest):
         bridge = _get_bridge()
         gs     = _dto_to_gs(req.state.bot, req.state.turnNumber)
         opp_gs = _dto_to_gs(req.state.opp, req.state.turnNumber, hide_hidden=True)
+        _get_bridge().aplica_mundo_completo(gs, opp_gs, req.state.bot, req.state.opp)
 
         # O board NA HORA DO ATAQUE -- tirado ANTES da decisao, porque decidir
         # ja gasta counter da mao e o retrato depois nao e mais o estado em que
@@ -1570,6 +1575,7 @@ def choose_target(req: ChooseTargetRequest):
         bridge = _get_bridge()
         gs     = _dto_to_gs(req.state.bot, req.state.turnNumber)
         opp_gs = _dto_to_gs(req.state.opp, req.state.turnNumber, hide_hidden=True)
+        _get_bridge().aplica_mundo_completo(gs, opp_gs, req.state.bot, req.state.opp)
 
         # Cronometro proprio (nao so o `started` do endpoint inteiro):
         # achado real 20/07 (partida ao vivo) -- 2 chamadas de /choose_target
@@ -1707,6 +1713,7 @@ def choose_effect_option(req: ChooseEffectOptionRequest):
         # substring que ela tinha.
         gs_opt = _dto_to_gs(req.state.bot, req.state.turnNumber)
         opp_opt = _dto_to_gs(req.state.opp, req.state.turnNumber, hide_hidden=True)
+        _get_bridge().aplica_mundo_completo(gs_opt, opp_opt, req.state.bot, req.state.opp)
         bridge = _get_bridge()
         # `actorCode` ja vinha no request e nao era repassado -- sem ele a
         # bridge nao tem como consultar o efeito parseado do ator, que e o
@@ -1854,6 +1861,7 @@ def decide(state: GameStateDto):
 
         gs     = _dto_to_gs(state.bot, state.turnNumber)
         opp_gs = _dto_to_gs(state.opp, state.turnNumber, hide_hidden=True)
+        _get_bridge().aplica_mundo_completo(gs, opp_gs, state.bot, state.opp)
         # Devolve ao estado reconstruido a auto-restricao que o DTO nao
         # carrega (bloco 853). Sem isto o motor reoferece Personagem num turno
         # em que o JOGO ja proibiu -- medido em 6 de 6 plays recusados.

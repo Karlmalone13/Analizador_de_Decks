@@ -1,6 +1,14 @@
 # TODO — Analisador de Decks OPTCG
 
-**Última atualização:** 27 de setembro de 2026 (bloco 913)
+**Última atualização:** 28 de setembro de 2026 (bloco 914)
+
+> **POR QUE + MESMO MUNDO (bloco 914)**: toda decisao escolhida grava `regret`;
+> ruim (> erro do Q) grava o motivo segundo o modelo e a melhor alternativa --
+> `python porque_decisoes.py` (roda sozinho no `ciclo.py`). Ao vivo, os 17
+> campos acumulados que chegavam 0 agora sao reconstruidos por foto (escolha
+> diferente do exato: 28,5% -> 9,6%). **Proximo**: ler
+> `currentCombatLog` pelo plugin pra campos EXATOS (searchers/triggers/counters
+> ainda faltam), depois re-medir paridade (ao vivo joga 0,62 x 0,84 carta/turno).
 
 > **INSTRUCAO_MESTRA (bloco 913)**: feitos P1 (explora so onde incerto), P2
 > (treino continua do promovido), violacao 1 (rotulo bootstrap nao espia mais:
