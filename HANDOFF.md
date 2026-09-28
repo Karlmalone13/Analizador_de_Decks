@@ -1,5 +1,32 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-09-28 (915) - Campos acumulados ao vivo EXATOS: o plugin manda o combat log da MEMORIA do jogo
+
+Continuacao do 914 (caminho B, aprovado). O jogo guarda o combat log na
+memoria durante a partida (`GameplayLogicScript.currentCombatLog`). O plugin
+agora manda a lista inteira em cada pedido (`GameStateDto.combatLog`) e o
+rotulo do bot nas linhas (`botLogName`, pela MESMA regra do
+`AddLocalLogLine` do jogo: nome, senao "You" p/ jogador 0 / "Opponent" p/ 1 --
+`s_PlayerName` vem VAZIO no Solo v Self, primeira tentativa falhou por isso).
+
+`sim_bridge.campos_do_combat_log` le, desde o ultimo "Version is" (o log da
+memoria acumula partidas): dano (`hit for N damage` no lider), KO
+(`Destroyed`, valor por `char_value_score`), counter (`Discard X for Counter
+N`), trigger (`Activate Trigger`), busca (`Reveal and Draw`), DON em combate
+(`Attach ... (T Total)` seguido de `attacking`). Quando o log vem, e a fonte;
+a foto (bloco 914) fica de reserva (plugin antigo; dano em espelho de lider).
+
+**Ao vivo (CPU x CPU 15.08.53)**: `fonte=combat_log` em todas as linhas, e os
+dois lados SIMETRICOS turno a turno (o "eu" do Mihawk == o "ele" do Ace). Com
+foto, o defensor se via com 0 de counter e o atacante o via com 10.000.
+Teste permanente com controle (trocar o lado do bot troca eu/ele).
+
+**Aberto**: (1) `_ponder_worker` (pre-calculo do proximo turno) monta estado
+sem o log -- so foto. (2) Achado lateral: OP01-055 ("rest 2 of your
+Characters: Draw 2") ATIVADO E CANCELADO PELO JOGO 2x (partida 14.59.04) --
+tarefa separada sugerida. (3) Re-medir paridade offline x ao vivo
+(play/turno, DON parado) com o mundo completo.
+
 ## 2026-09-28 (914) - O bot sabe POR QUE uma decisao foi ruim; e ao vivo passa a jogar no MESMO MUNDO do treino (campos acumulados)
 
 Pedido do usuario: *"analisar a qualidade de cada decisao, ai caso tenha uma

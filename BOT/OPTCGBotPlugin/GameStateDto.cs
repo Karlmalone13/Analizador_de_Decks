@@ -57,6 +57,15 @@ namespace OPTCGBotPlugin
         public int turnNumber;
         public PlayerDto bot = new();   // sempre P2 (jogador do bot)
         public PlayerDto opp = new();   // sempre P1 (jogador humano)
+        // Combat log que o jogo guarda NA MEMORIA durante a partida
+        // (GameplayLogicScript.currentCombatLog). E dele que o server tira os
+        // campos acumulados que o modelo le (dano, KO, counters, triggers,
+        // buscas, DON em combate) -- exatos, em vez de deduzidos por foto
+        // (28/09/2026, "mesmo mundo" offline x ao vivo).
+        public List<string> combatLog = new();
+        // Como o jogador do bot aparece no log ("You"/"Opponent"): o prefixo
+        // [Nome] de cada linha e o s_PlayerName de quem agiu.
+        public string botLogName = "";
     }
 
     // Acao retornada pelo servidor Python

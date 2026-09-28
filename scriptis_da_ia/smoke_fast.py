@@ -10995,6 +10995,7 @@ def main() -> int:
     test_rotulo_bootstrap_nao_espia_a_mao_do_oponente_27_09()
     test_explica_diferenca_acha_o_motivo_certo_28_09()
     test_ao_vivo_reconstroi_os_campos_acumulados_28_09()
+    test_combat_log_da_memoria_da_os_campos_exatos_28_09()
     test_opp_turn_reactive_effects_krieg_leader_debuff_24_08()
     test_give_don_filtro_de_tipo_no_destinatario_24_08()
     test_play_card_total_cost_lte_e_distinct_names_24_08()
@@ -16978,6 +16979,32 @@ def test_ao_vivo_reconstroi_os_campos_acumulados_28_09() -> None:
     eu, ele = estado(1), estado(1)
     sb.aplica_mundo_completo(eu, ele, jogador(1, 5, 2), jogador(2, 5, 1))
     assert eu.dmg_dealt == 0 and eu.is_first is False
+
+
+def test_combat_log_da_memoria_da_os_campos_exatos_28_09() -> None:
+    """O combat log que o jogo guarda na memoria da os campos acumulados
+    EXATOS, com o lado certo. Controle: trocar quem e o bot tem que TROCAR os
+    valores entre 'eu' e 'ele' -- se o lado fosse ignorado, nao trocaria."""
+    from optcg_engine import sim_bridge as sb
+    log = [
+        '[You] Old line from previous game Discard A [OP16-004] for Counter 9000',
+        'Version is 1.43a.3',
+        '[You] Attach 2 Don to Dracule Mihawk ["OP14-020">OP14-020] (2 Total)',
+        '[You] Dracule Mihawk ["OP14-020">OP14-020] attacking Portgas D. Ace ["OP16-001">OP16-001]',
+        '[Opponent] Discard Curiel ["OP16-004">OP16-004] for Counter 2000',
+        'Portgas D. Ace ["OP16-001">OP16-001] hit for 1 damage',
+        '[Opponent] Uta ["ST23-001">ST23-001]: Activate Trigger',
+        '[You] End Turn',
+        '[Opponent] Marco ["OP16-021">OP16-021]: <b>Reveal and Draw Jozu ["OP16-015">OP16-015]</b>',
+    ]
+    eu, ele = sb.campos_do_combat_log(log, 'You', 'OP14-020', 'OP16-001')
+    assert eu['dmg_dealt'] == 1 and ele['dmg_dealt'] == 0
+    assert eu['don_spent_on_combat'] == 2
+    assert ele['counters_used'] == 2000 and eu['counters_used'] == 0   # a linha antiga nao conta
+    assert ele['triggers_activated'] == 1 and ele['searchers_used'] == 1
+    eu2, ele2 = sb.campos_do_combat_log(log, 'Opponent', 'OP16-001', 'OP14-020')
+    assert eu2 == ele and ele2 == eu                                     # controle
+    assert sb.campos_do_combat_log([], 'You', 'OP14-020', 'OP16-001') is None
 
 
 if __name__ == "__main__":

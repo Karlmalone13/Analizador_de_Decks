@@ -1,0 +1,1573 @@
+{
+  "meta": {
+    "players": {
+      "p1": {
+        "name": "You",
+        "leader": {
+          "name": "Dracule Mihawk",
+          "code": "OP14-020"
+        }
+      },
+      "p2": {
+        "name": "Opponent",
+        "leader": {
+          "name": "Portgas D. Ace",
+          "code": "OP16-001"
+        }
+      }
+    },
+    "goes_first": null
+  },
+  "total_turns": 12,
+  "turns": [
+    {
+      "turn": 1,
+      "player": "You",
+      "card_drawn": null,
+      "don_drawn": 1,
+      "actions": [],
+      "snapshot": {
+        "You": {
+          "hand": [
+            "OP17-031",
+            "ST32-003",
+            "OP12-034",
+            "OP14-039",
+            "OP13-040"
+          ],
+          "board": [],
+          "trash": [],
+          "life": 5,
+          "life_cards": [
+            "OP06-033",
+            "OP06-033",
+            "OP14-023",
+            "OP17-022",
+            "OP17-031"
+          ],
+          "don_cost": [
+            "Don"
+          ]
+        },
+        "Opponent": {
+          "hand": [
+            "OP16-004",
+            "OP16-014",
+            "OP16-118",
+            "OP17-005",
+            "OP17-017"
+          ],
+          "trash": [],
+          "board": [],
+          "life": 5,
+          "deck": [
+            "OP10-015",
+            "OP16-003",
+            "OP16-011",
+            "OP16-021",
+            "ST23-001",
+            "ST30-016"
+          ],
+          "life_cards": [
+            "OP13-016",
+            "OP16-015",
+            "OP16-015",
+            "OP17-006",
+            "OP17-006"
+          ]
+        }
+      }
+    },
+    {
+      "turn": 2,
+      "player": "Opponent",
+      "card_drawn": null,
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "play",
+          "card": "OP13-016",
+          "card_name": "Monkey D. Garp",
+          "effects": [
+            "<b>Reveal and Draw Marco [\"OP16-014\">OP16-014]</b>"
+          ]
+        }
+      ],
+      "snapshot": {
+        "Opponent": {
+          "hand": [
+            "OP16-004",
+            "OP16-014",
+            "OP16-118",
+            "OP17-005",
+            "OP17-017",
+            "OP16-014"
+          ],
+          "board": [
+            "OP13-016"
+          ],
+          "trash": [],
+          "life": 5,
+          "deck": [
+            "OP10-015",
+            "OP16-003",
+            "OP16-004",
+            "OP16-011",
+            "OP16-021",
+            "OP17-017",
+            "ST23-001",
+            "ST30-016"
+          ],
+          "life_cards": [
+            "OP13-016",
+            "OP16-015",
+            "OP16-015",
+            "OP17-006",
+            "OP17-006"
+          ],
+          "don_cost": [
+            "Don",
+            "Don"
+          ],
+          "rested_rz1": {
+            "don_cost": [
+              "Don"
+            ]
+          },
+          "rested": {
+            "OP13-016": 1
+          }
+        },
+        "You": {
+          "hand": [
+            "OP17-031",
+            "ST32-003",
+            "OP12-034",
+            "OP14-039",
+            "OP13-040"
+          ],
+          "trash": [],
+          "board": [],
+          "life": 5,
+          "life_cards": [
+            "OP06-033",
+            "OP06-033",
+            "OP14-023",
+            "OP17-022",
+            "OP17-031"
+          ],
+          "don_cost": [
+            "Don"
+          ]
+        }
+      }
+    },
+    {
+      "turn": 3,
+      "player": "You",
+      "card_drawn": null,
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "attack",
+          "attacker": "Dracule Mihawk",
+          "attacker_code": "OP14-020",
+          "target": "Portgas D. Ace [\"OP16-001\">OP16-001]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "play",
+          "card": "OP12-034",
+          "card_name": "Perona",
+          "effects": [
+            "<b>Reveal and Draw Kouzuki Oden [\"ST32-002\">ST32-002]</b>"
+          ]
+        }
+      ],
+      "snapshot": {
+        "You": {
+          "hand": [
+            "OP17-031",
+            "ST32-003",
+            "OP14-039",
+            "OP13-040",
+            "OP13-031",
+            "ST32-002"
+          ],
+          "board": [
+            "OP12-034"
+          ],
+          "trash": [],
+          "life": 5,
+          "deck": [
+            "OP01-055",
+            "OP06-033",
+            "OP17-031"
+          ],
+          "life_cards": [
+            "OP06-033",
+            "OP06-033",
+            "OP14-023",
+            "OP17-022",
+            "OP17-031"
+          ],
+          "don_cost": [
+            "Don",
+            "Don",
+            "Don"
+          ],
+          "rested_rz1": {
+            "don_cost": [
+              "Don"
+            ]
+          },
+          "rested": {
+            "OP12-034": 1
+          }
+        },
+        "Opponent": {
+          "hand": [
+            "OP16-004",
+            "OP16-014",
+            "OP16-118",
+            "OP17-005",
+            "OP17-017",
+            "OP16-014",
+            "OP13-016"
+          ],
+          "trash": [],
+          "board": [
+            "OP13-016"
+          ],
+          "life": 4,
+          "deck": [
+            "OP10-015",
+            "OP16-003",
+            "OP16-004",
+            "OP16-011",
+            "OP16-021",
+            "OP17-017",
+            "ST23-001",
+            "ST30-016"
+          ],
+          "life_cards": [
+            "OP16-015",
+            "OP16-015",
+            "OP17-006",
+            "OP17-006"
+          ],
+          "don_cost": [
+            "Don",
+            "Don"
+          ],
+          "rested_rz1": {
+            "don_cost": [
+              "Don"
+            ]
+          },
+          "rested": {
+            "OP13-016": 1
+          }
+        }
+      }
+    },
+    {
+      "turn": 4,
+      "player": "Opponent",
+      "card_drawn": null,
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "attack",
+          "attacker": "Portgas D. Ace",
+          "attacker_code": "OP16-001",
+          "target": "Dracule Mihawk [\"OP14-020\">OP14-020]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "play",
+          "card": "OP13-016",
+          "card_name": "Monkey D. Garp",
+          "effects": [
+            "<b>Reveal and Draw Uta [\"ST23-001\">ST23-001]</b>"
+          ]
+        },
+        {
+          "type": "attach_don",
+          "amount": 3,
+          "to": "OP13-016",
+          "to_name": "Monkey D. Garp",
+          "total": 3
+        },
+        {
+          "type": "attack",
+          "attacker": "Monkey D. Garp",
+          "attacker_code": "OP13-016",
+          "target": "Dracule Mihawk [\"OP14-020\">OP14-020]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        }
+      ],
+      "snapshot": {
+        "Opponent": {
+          "hand": [
+            "OP16-004",
+            "OP16-014",
+            "OP16-118",
+            "OP17-005",
+            "OP17-017",
+            "OP16-014",
+            "OP16-021",
+            "ST23-001"
+          ],
+          "board": [
+            "OP13-016",
+            "OP13-016"
+          ],
+          "trash": [],
+          "life": 4,
+          "deck": [
+            "OP10-015",
+            "OP16-003",
+            "OP16-004",
+            "OP16-011",
+            "OP16-118",
+            "OP17-017",
+            "ST30-016"
+          ],
+          "life_cards": [
+            "OP16-015",
+            "OP16-015",
+            "OP17-006",
+            "OP17-006"
+          ],
+          "don_cost": [
+            "Don"
+          ],
+          "attached_don": [
+            "Don",
+            "Don",
+            "Don"
+          ],
+          "rested": {
+            "OP13-016": 2
+          }
+        },
+        "You": {
+          "hand": [
+            "OP17-031",
+            "ST32-003",
+            "OP14-039",
+            "OP13-040",
+            "OP13-031",
+            "ST32-002",
+            "OP17-022",
+            "OP06-033"
+          ],
+          "trash": [],
+          "board": [
+            "OP12-034"
+          ],
+          "life": 3,
+          "deck": [
+            "OP01-055",
+            "OP06-033",
+            "OP17-031"
+          ],
+          "life_cards": [
+            "OP06-033",
+            "OP14-023",
+            "OP17-031"
+          ],
+          "don_cost": [
+            "Don",
+            "Don",
+            "Don"
+          ],
+          "rested_rz1": {
+            "don_cost": [
+              "Don"
+            ]
+          },
+          "rested": {
+            "OP12-034": 1
+          }
+        }
+      }
+    },
+    {
+      "turn": 5,
+      "player": "You",
+      "card_drawn": null,
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "play",
+          "card": "OP17-031",
+          "card_name": "Yasopp",
+          "effects": [
+            "Draw 1 Card",
+            "Rest Monkey D. Garp [\"OP13-016\">OP13-016]",
+            "Set Yasopp [\"OP17-031\">OP17-031] to Active"
+          ]
+        },
+        {
+          "type": "attack",
+          "attacker": "Dracule Mihawk",
+          "attacker_code": "OP14-020",
+          "target": "Monkey D. Garp [\"OP13-016\">OP13-016]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": [
+            "OP16-004",
+            "ST23-001"
+          ]
+        },
+        {
+          "type": "attack",
+          "attacker": "Perona",
+          "attacker_code": "OP12-034",
+          "target": "Monkey D. Garp [\"OP13-016\">OP13-016]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": [
+            "OP16-118"
+          ]
+        },
+        {
+          "type": "activate",
+          "card": "OP14-020",
+          "card_name": "Dracule Mihawk",
+          "effects": [
+            "Rest Yasopp [\"OP17-031\">OP17-031]",
+            "Activate 1 Don",
+            "Activate 1 Don",
+            "Activate 1 Don",
+            "Can't play Cost 1 Or More Characters for the Turn!"
+          ]
+        },
+        {
+          "type": "play",
+          "card": "OP14-039",
+          "card_name": "Coffin Boat",
+          "effects": [
+            "Draw 1 Card",
+            "Activate 1 Don"
+          ]
+        },
+        {
+          "type": "activate",
+          "card": "OP13-040",
+          "card_name": "I Know You're Strong... So I'll Go All Out",
+          "effects": [
+            "Rest 1 Don",
+            "Rest 1 Don"
+          ]
+        }
+      ],
+      "snapshot": {
+        "You": {
+          "hand": [
+            "ST32-003",
+            "OP13-031",
+            "ST32-002",
+            "OP17-022",
+            "OP06-033",
+            "OP01-055",
+            "OP17-022"
+          ],
+          "board": [
+            "OP12-034",
+            "OP17-031"
+          ],
+          "trash": [
+            "OP13-040",
+            "OP13-040"
+          ],
+          "life": 3,
+          "deck": [
+            "OP06-033",
+            "OP17-031"
+          ],
+          "life_cards": [
+            "OP06-033",
+            "OP14-023",
+            "OP17-031"
+          ],
+          "don_cost": [
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don"
+          ],
+          "stage": [
+            "OP14-039"
+          ],
+          "rested": {
+            "OP12-034": 1,
+            "OP17-031": 1
+          }
+        },
+        "Opponent": {
+          "hand": [
+            "OP16-014",
+            "OP17-005",
+            "OP17-017",
+            "OP16-014",
+            "OP16-021"
+          ],
+          "trash": [
+            "OP16-004",
+            "ST23-001",
+            "OP16-118"
+          ],
+          "board": [
+            "OP13-016",
+            "OP13-016"
+          ],
+          "life": 4,
+          "deck": [
+            "OP10-015",
+            "OP16-003",
+            "OP16-004",
+            "OP16-011",
+            "OP16-118",
+            "OP17-017",
+            "ST30-016"
+          ],
+          "life_cards": [
+            "OP16-015",
+            "OP16-015",
+            "OP17-006",
+            "OP17-006"
+          ],
+          "don_cost": [
+            "Don"
+          ],
+          "attached_don": [
+            "Don",
+            "Don",
+            "Don"
+          ],
+          "rested": {
+            "OP13-016": 2
+          }
+        }
+      }
+    },
+    {
+      "turn": 6,
+      "player": "Opponent",
+      "card_drawn": null,
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "play",
+          "card": "OP16-014",
+          "card_name": "Marco",
+          "effects": []
+        },
+        {
+          "type": "attack",
+          "attacker": "Portgas D. Ace",
+          "attacker_code": "OP16-001",
+          "target": "Perona [\"OP12-034\">OP12-034]",
+          "result": "hit",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "activate",
+          "card": "OP16-001",
+          "card_name": "Portgas D. Ace",
+          "effects": [
+            "Give Marco [\"OP16-014\">OP16-014] Rush"
+          ]
+        },
+        {
+          "type": "attack",
+          "attacker": "Marco",
+          "attacker_code": "OP16-014",
+          "target": "Dracule Mihawk [\"OP14-020\">OP14-020]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        }
+      ],
+      "snapshot": {
+        "Opponent": {
+          "hand": [
+            "OP17-005",
+            "OP17-017",
+            "OP16-014",
+            "OP16-021",
+            "OP10-015"
+          ],
+          "board": [
+            "OP13-016",
+            "OP13-016",
+            "OP16-014"
+          ],
+          "trash": [
+            "OP16-004",
+            "ST23-001",
+            "OP16-118"
+          ],
+          "life": 4,
+          "deck": [
+            "OP16-003",
+            "OP16-004",
+            "OP16-011",
+            "OP16-118",
+            "OP17-017",
+            "ST30-016"
+          ],
+          "life_cards": [
+            "OP16-015",
+            "OP16-015",
+            "OP17-006",
+            "OP17-006"
+          ],
+          "don_cost": [
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don"
+          ],
+          "rested_rz1": {
+            "don_cost": [
+              "Don",
+              "Don",
+              "Don"
+            ]
+          },
+          "rested": {
+            "OP16-014": 1
+          }
+        },
+        "You": {
+          "hand": [
+            "ST32-003",
+            "OP13-031",
+            "ST32-002",
+            "OP17-022",
+            "OP06-033",
+            "OP01-055",
+            "OP17-022",
+            "OP17-031"
+          ],
+          "trash": [
+            "OP13-040",
+            "OP13-040",
+            "OP12-034"
+          ],
+          "board": [
+            "OP17-031"
+          ],
+          "life": 2,
+          "deck": [
+            "OP06-033",
+            "OP17-031"
+          ],
+          "life_cards": [
+            "OP06-033",
+            "OP14-023"
+          ],
+          "don_cost": [
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don"
+          ],
+          "stage": [
+            "OP14-039"
+          ],
+          "rested": {
+            "OP17-031": 1
+          }
+        }
+      }
+    },
+    {
+      "turn": 7,
+      "player": "You",
+      "card_drawn": null,
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "attach_don",
+          "amount": 3,
+          "to": "OP14-020",
+          "to_name": "Dracule Mihawk",
+          "total": 3
+        },
+        {
+          "type": "attack",
+          "attacker": "Dracule Mihawk",
+          "attacker_code": "OP14-020",
+          "target": "Marco [\"OP16-014\">OP16-014]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": [
+            "OP10-015"
+          ]
+        },
+        {
+          "type": "attach_don",
+          "amount": 2,
+          "to": "OP17-031",
+          "to_name": "Yasopp",
+          "total": 2
+        },
+        {
+          "type": "attack",
+          "attacker": "Yasopp",
+          "attacker_code": "OP17-031",
+          "target": "Marco [\"OP16-014\">OP16-014]",
+          "result": null,
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "play",
+          "card": "ST32-001",
+          "card_name": "Kin'emon",
+          "effects": [
+            "Rest Don [\"Don\">Don]",
+            "Draw 2 Card",
+            "Trash Shanks [\"OP17-022\">OP17-022]"
+          ]
+        },
+        {
+          "type": "activate",
+          "card": "OP14-020",
+          "card_name": "Dracule Mihawk",
+          "effects": [
+            "Rest Kin'emon [\"ST32-001\">ST32-001]",
+            "Activate 1 Don",
+            "Activate 1 Don",
+            "Can't play Cost 1 Or More Characters for the Turn!"
+          ]
+        },
+        {
+          "type": "activate",
+          "card": "OP17-031",
+          "card_name": "Yasopp",
+          "effects": [
+            "Set Yasopp [\"OP17-031\">OP17-031] to Active"
+          ]
+        }
+      ],
+      "snapshot": {
+        "You": {
+          "hand": [
+            "ST32-003",
+            "OP13-031",
+            "ST32-002",
+            "OP06-033",
+            "OP01-055",
+            "OP17-022",
+            "OP17-031",
+            "OP07-022",
+            "OP17-022"
+          ],
+          "board": [
+            "OP17-031",
+            "ST32-001"
+          ],
+          "trash": [
+            "OP13-040",
+            "OP13-040",
+            "OP12-034",
+            "OP17-022"
+          ],
+          "life": 2,
+          "deck": [
+            "OP06-033",
+            "OP17-031"
+          ],
+          "life_cards": [
+            "OP06-033",
+            "OP14-023"
+          ],
+          "don_cost": [
+            "Don",
+            "Don"
+          ],
+          "stage": [
+            "OP14-039"
+          ],
+          "attached_don": [
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don"
+          ],
+          "rested": {
+            "OP17-031": 1,
+            "ST32-001": 1
+          }
+        },
+        "Opponent": {
+          "hand": [
+            "OP17-005",
+            "OP17-017",
+            "OP16-014",
+            "OP16-021"
+          ],
+          "trash": [
+            "OP16-004",
+            "ST23-001",
+            "OP16-118",
+            "OP10-015",
+            "OP16-014"
+          ],
+          "board": [
+            "OP13-016",
+            "OP13-016"
+          ],
+          "life": 4,
+          "deck": [
+            "OP16-003",
+            "OP16-004",
+            "OP16-011",
+            "OP16-118",
+            "OP17-017",
+            "ST30-016"
+          ],
+          "life_cards": [
+            "OP16-015",
+            "OP16-015",
+            "OP17-006",
+            "OP17-006"
+          ],
+          "don_cost": [
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don"
+          ],
+          "rested_rz1": {
+            "don_cost": [
+              "Don",
+              "Don",
+              "Don"
+            ]
+          }
+        }
+      }
+    },
+    {
+      "turn": 8,
+      "player": "Opponent",
+      "card_drawn": null,
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "play",
+          "card": "OP16-011",
+          "card_name": "Vista",
+          "effects": [
+            "Draw 1 Card"
+          ]
+        },
+        {
+          "type": "activate",
+          "card": "OP16-001",
+          "card_name": "Portgas D. Ace",
+          "effects": [
+            "Give Vista [\"OP16-011\">OP16-011] Rush"
+          ]
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP16-011",
+          "to_name": "Vista",
+          "total": 1
+        },
+        {
+          "type": "attack",
+          "attacker": "Vista",
+          "attacker_code": "OP16-011",
+          "target": "Dracule Mihawk [\"OP14-020\">OP14-020]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": [
+            "OP07-022",
+            "ST32-002",
+            "OP06-033",
+            "OP17-031"
+          ]
+        },
+        {
+          "type": "attack",
+          "attacker": "Portgas D. Ace",
+          "attacker_code": "OP16-001",
+          "target": "Dracule Mihawk [\"OP14-020\">OP14-020]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "attack",
+          "attacker": "Monkey D. Garp",
+          "attacker_code": "OP13-016",
+          "target": "Kin'emon [\"ST32-001\">ST32-001]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": [
+            "OP06-033"
+          ]
+        },
+        {
+          "type": "attack",
+          "attacker": "Monkey D. Garp",
+          "attacker_code": "OP13-016",
+          "target": "Kin'emon [\"ST32-001\">ST32-001]",
+          "result": "hit",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": []
+        }
+      ],
+      "snapshot": {
+        "Opponent": {
+          "hand": [
+            "OP17-005",
+            "OP17-017",
+            "OP16-014",
+            "OP16-021",
+            "OP16-014"
+          ],
+          "board": [
+            "OP13-016",
+            "OP13-016",
+            "OP16-011"
+          ],
+          "trash": [
+            "OP16-004",
+            "ST23-001",
+            "OP16-118",
+            "OP10-015",
+            "OP16-014"
+          ],
+          "life": 4,
+          "deck": [
+            "OP16-003",
+            "OP16-004",
+            "OP16-118",
+            "OP17-017",
+            "ST30-016"
+          ],
+          "life_cards": [
+            "OP16-015",
+            "OP16-015",
+            "OP17-006",
+            "OP17-006"
+          ],
+          "don_cost": [
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don"
+          ],
+          "attached_don": [
+            "Don"
+          ],
+          "rested_rz1": {
+            "don_cost": [
+              "Don",
+              "Don"
+            ]
+          },
+          "rested": {
+            "OP13-016": 2,
+            "OP16-011": 1
+          }
+        },
+        "You": {
+          "hand": [
+            "ST32-003",
+            "OP13-031",
+            "OP01-055",
+            "OP17-022",
+            "OP17-022"
+          ],
+          "trash": [
+            "OP13-040",
+            "OP13-040",
+            "OP12-034",
+            "OP17-022",
+            "OP07-022",
+            "ST32-002",
+            "OP06-033",
+            "OP17-031",
+            "OP06-033",
+            "ST32-001"
+          ],
+          "board": [
+            "OP17-031"
+          ],
+          "life": 1,
+          "deck": [
+            "OP06-033",
+            "OP17-031"
+          ],
+          "life_cards": [
+            "OP14-023"
+          ],
+          "don_cost": [
+            "Don",
+            "Don"
+          ],
+          "stage": [
+            "OP14-039"
+          ],
+          "attached_don": [
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don"
+          ],
+          "rested": {
+            "OP17-031": 1
+          }
+        }
+      }
+    },
+    {
+      "turn": 9,
+      "player": "You",
+      "card_drawn": null,
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "attach_don",
+          "amount": 3,
+          "to": "OP14-020",
+          "to_name": "Dracule Mihawk",
+          "total": 3
+        },
+        {
+          "type": "attack",
+          "attacker": "Dracule Mihawk",
+          "attacker_code": "OP14-020",
+          "target": "Vista [\"OP16-011\">OP16-011]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "attach_don",
+          "amount": 4,
+          "to": "OP17-031",
+          "to_name": "Yasopp",
+          "total": 4
+        },
+        {
+          "type": "attack",
+          "attacker": "Yasopp",
+          "attacker_code": "OP17-031",
+          "target": "Vista [\"OP16-011\">OP16-011]",
+          "result": "hit",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "activate",
+          "card": "OP17-031",
+          "card_name": "Yasopp",
+          "effects": [
+            "Set Yasopp [\"OP17-031\">OP17-031] to Active"
+          ]
+        }
+      ],
+      "snapshot": {
+        "You": {
+          "hand": [
+            "ST32-003",
+            "OP13-031",
+            "OP01-055",
+            "OP17-022",
+            "OP17-022",
+            "ST32-001"
+          ],
+          "board": [
+            "OP17-031"
+          ],
+          "trash": [
+            "OP13-040",
+            "OP13-040",
+            "OP12-034",
+            "OP17-022",
+            "OP07-022",
+            "ST32-002",
+            "OP06-033",
+            "OP17-031",
+            "OP06-033",
+            "ST32-001"
+          ],
+          "life": 1,
+          "deck": [
+            "OP06-033",
+            "OP17-031"
+          ],
+          "life_cards": [
+            "OP14-023"
+          ],
+          "don_cost": [
+            "Don",
+            "Don"
+          ],
+          "stage": [
+            "OP14-039"
+          ],
+          "attached_don": [
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don"
+          ],
+          "rested": {
+            "OP17-031": 1
+          }
+        },
+        "Opponent": {
+          "hand": [
+            "OP17-005",
+            "OP16-014",
+            "OP16-021",
+            "OP16-014"
+          ],
+          "trash": [
+            "OP16-004",
+            "ST23-001",
+            "OP16-118",
+            "OP10-015",
+            "OP16-014",
+            "OP17-017",
+            "OP16-011"
+          ],
+          "board": [
+            "OP13-016",
+            "OP13-016"
+          ],
+          "life": 4,
+          "deck": [
+            "OP16-003",
+            "OP16-004",
+            "OP16-118",
+            "OP17-017",
+            "ST30-016"
+          ],
+          "life_cards": [
+            "OP16-015",
+            "OP16-015",
+            "OP17-006",
+            "OP17-006"
+          ],
+          "don_cost": [
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don"
+          ],
+          "rested_rz1": {
+            "don_cost": [
+              "Don",
+              "Don",
+              "Don"
+            ]
+          },
+          "rested": {
+            "OP13-016": 2
+          }
+        }
+      }
+    },
+    {
+      "turn": 10,
+      "player": "Opponent",
+      "card_drawn": null,
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "play",
+          "card": "OP17-005",
+          "card_name": "Edward Newgate",
+          "effects": [
+            "Grant Portgas D. Ace [\"OP16-001\">OP16-001] 3000 until opponent's next turn end"
+          ]
+        },
+        {
+          "type": "activate",
+          "card": "OP16-001",
+          "card_name": "Portgas D. Ace",
+          "effects": [
+            "Give Edward Newgate [\"OP17-005\">OP17-005] Rush"
+          ]
+        },
+        {
+          "type": "attack",
+          "attacker": "Edward Newgate",
+          "attacker_code": "OP17-005",
+          "target": "Dracule Mihawk [\"OP14-020\">OP14-020]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        }
+      ],
+      "snapshot": {
+        "Opponent": {
+          "hand": [
+            "OP16-014",
+            "OP16-021",
+            "OP16-014",
+            "OP16-004"
+          ],
+          "board": [
+            "OP13-016",
+            "OP13-016",
+            "OP17-005"
+          ],
+          "trash": [
+            "OP16-004",
+            "ST23-001",
+            "OP16-118",
+            "OP10-015",
+            "OP16-014",
+            "OP17-017",
+            "OP16-011"
+          ],
+          "life": 4,
+          "deck": [
+            "OP16-003",
+            "OP16-118",
+            "OP17-017",
+            "ST30-016"
+          ],
+          "life_cards": [
+            "OP16-015",
+            "OP16-015",
+            "OP17-006",
+            "OP17-006"
+          ],
+          "don_cost": [
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don"
+          ],
+          "rested_rz1": {
+            "don_cost": [
+              "Don",
+              "Don",
+              "Don"
+            ]
+          },
+          "rested": {
+            "OP17-005": 1
+          }
+        },
+        "You": {
+          "hand": [
+            "ST32-003",
+            "OP13-031",
+            "OP01-055",
+            "OP17-022",
+            "OP17-022",
+            "ST32-001",
+            "OP14-023"
+          ],
+          "trash": [
+            "OP13-040",
+            "OP13-040",
+            "OP12-034",
+            "OP17-022",
+            "OP07-022",
+            "ST32-002",
+            "OP06-033",
+            "OP17-031",
+            "OP06-033",
+            "ST32-001"
+          ],
+          "board": [
+            "OP17-031"
+          ],
+          "life": 0,
+          "deck": [
+            "OP06-033",
+            "OP17-031"
+          ],
+          "don_cost": [
+            "Don",
+            "Don"
+          ],
+          "stage": [
+            "OP14-039"
+          ],
+          "attached_don": [
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don"
+          ],
+          "rested": {
+            "OP17-031": 1
+          }
+        }
+      }
+    },
+    {
+      "turn": 11,
+      "player": "You",
+      "card_drawn": null,
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "attach_don",
+          "amount": 7,
+          "to": "OP14-020",
+          "to_name": "Dracule Mihawk",
+          "total": 7
+        },
+        {
+          "type": "attack",
+          "attacker": "Dracule Mihawk",
+          "attacker_code": "OP14-020",
+          "target": "Edward Newgate [\"OP17-005\">OP17-005]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": [
+            "OP16-004"
+          ]
+        },
+        {
+          "type": "attach_don",
+          "amount": 2,
+          "to": "OP17-031",
+          "to_name": "Yasopp",
+          "total": 2
+        },
+        {
+          "type": "attack",
+          "attacker": "Yasopp",
+          "attacker_code": "OP17-031",
+          "target": "Portgas D. Ace [\"OP16-001\">OP16-001]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "activate",
+          "card": "OP17-031",
+          "card_name": "Yasopp",
+          "effects": [
+            "Set Yasopp [\"OP17-031\">OP17-031] to Active"
+          ]
+        }
+      ],
+      "snapshot": {
+        "You": {
+          "hand": [
+            "ST32-003",
+            "OP13-031",
+            "OP01-055",
+            "OP17-022",
+            "OP17-022",
+            "ST32-001",
+            "OP14-023",
+            "OP06-038"
+          ],
+          "board": [
+            "OP17-031"
+          ],
+          "trash": [
+            "OP13-040",
+            "OP13-040",
+            "OP12-034",
+            "OP17-022",
+            "OP07-022",
+            "ST32-002",
+            "OP06-033",
+            "OP17-031",
+            "OP06-033",
+            "ST32-001"
+          ],
+          "life": 0,
+          "deck": [
+            "OP06-033",
+            "OP17-031"
+          ],
+          "don_cost": [
+            "Don"
+          ],
+          "stage": [
+            "OP14-039"
+          ],
+          "attached_don": [
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don"
+          ],
+          "rested": {
+            "OP17-031": 1
+          }
+        },
+        "Opponent": {
+          "hand": [
+            "OP16-014",
+            "OP16-021",
+            "OP16-014",
+            "OP17-006"
+          ],
+          "trash": [
+            "OP16-004",
+            "ST23-001",
+            "OP16-118",
+            "OP10-015",
+            "OP16-014",
+            "OP17-017",
+            "OP16-011",
+            "OP16-004"
+          ],
+          "board": [
+            "OP13-016",
+            "OP13-016",
+            "OP17-005"
+          ],
+          "life": 3,
+          "deck": [
+            "OP16-003",
+            "OP16-118",
+            "OP17-017",
+            "ST30-016"
+          ],
+          "life_cards": [
+            "OP16-015",
+            "OP16-015",
+            "OP17-006"
+          ],
+          "don_cost": [
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don"
+          ],
+          "rested_rz1": {
+            "don_cost": [
+              "Don",
+              "Don",
+              "Don"
+            ]
+          },
+          "rested": {
+            "OP17-005": 1
+          }
+        }
+      }
+    },
+    {
+      "turn": 12,
+      "player": "Opponent",
+      "card_drawn": null,
+      "don_drawn": 0,
+      "actions": [
+        {
+          "type": "attach_don",
+          "amount": 2,
+          "to": "OP16-001",
+          "to_name": "Portgas D. Ace",
+          "total": 2
+        },
+        {
+          "type": "attach_don",
+          "amount": 2,
+          "to": "OP16-001",
+          "to_name": "Portgas D. Ace",
+          "total": 4
+        },
+        {
+          "type": "attach_don",
+          "amount": 2,
+          "to": "OP16-001",
+          "to_name": "Portgas D. Ace",
+          "total": 6
+        },
+        {
+          "type": "attack",
+          "attacker": "Portgas D. Ace",
+          "attacker_code": "OP16-001",
+          "target": "Dracule Mihawk [\"OP14-020\">OP14-020]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        }
+      ],
+      "snapshot": {}
+    }
+  ]
+}

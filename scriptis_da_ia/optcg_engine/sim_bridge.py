@@ -180,7 +180,87 @@ def _foto(player) -> dict:
     }
 
 
-def aplica_mundo_completo(gs: GameState, opp_gs: GameState, bot_dto, opp_dto) -> None:
+_RE_CODIGO = re.compile(r'\b([A-Z]{1,4}\d{0,2}-\d{3})\b')
+_RE_LADO = re.compile(r'^\[([^\]]*)\]\s*')
+
+
+def campos_do_combat_log(linhas: list, nome_bot: str, lider_bot: str,
+                         lider_opp: str, gs=None, opp_gs=None) -> tuple | None:
+    """Os campos acumulados da partida, EXATOS, a partir do combat log que o
+    jogo guarda na memoria (`GameplayLogicScript.currentCombatLog`, mandado
+    pelo plugin). Mesma definicao do `GameState` offline:
+
+      dmg_dealt           "<Lider> [..] hit for N damage" -> quem ATACOU
+      char_kill_value     "[Dono] <Carta> [..] Destroyed" -> o OUTRO, pelo
+                          `char_value_score` (mesma funcao do offline)
+      don_spent_on_combat "Attach N Don to X (T Total)" e depois "X attacking"
+      counters_used       "Discard X for Counter N"
+      triggers_activated  "<Carta>: Activate Trigger"
+      searchers_used      "Reveal and Draw"
+
+    Devolve (mine, opp) ou None se o log nao servir (vazio / sem o nome do
+    bot) -- ai fica o rastreador por foto.
+    """
+    if not linhas or not nome_bot:
+        return None
+    # So a partida atual: o log pode trazer a anterior (Rematch continua o
+    # mesmo log). Cada partida comeca com "Version is ...".
+    ini = 0
+    for i, l in enumerate(linhas):
+        if 'Version is' in l:
+            ini = i
+    lado = {'mine': dict(dmg_dealt=0, char_kill_value=0.0, don_spent_on_combat=0,
+                         counters_used=0, triggers_activated=0, searchers_used=0),
+            'opp': dict(dmg_dealt=0, char_kill_value=0.0, don_spent_on_combat=0,
+                        counters_used=0, triggers_activated=0, searchers_used=0)}
+    anexado = {'mine': {}, 'opp': {}}
+    for bruta in linhas[ini:]:
+        l = re.sub(r'<[^>]+>', '', str(bruta)).strip()
+        m = _RE_LADO.match(l)
+        quem = None
+        if m and m.group(1):
+            quem = 'mine' if m.group(1) == nome_bot else 'opp'
+        outro = {'mine': 'opp', 'opp': 'mine'}.get(quem)
+        cods = _RE_CODIGO.findall(l)
+        if 'hit for' in l and 'damage' in l and cods:
+            n = int((re.search(r'hit for (\d+)', l) or [0, 1])[1])
+            if cods[0] == lider_opp and cods[0] != lider_bot:
+                lado['mine']['dmg_dealt'] += n
+            elif cods[0] == lider_bot and cods[0] != lider_opp:
+                lado['opp']['dmg_dealt'] += n
+        elif quem is None:
+            continue
+        elif l.endswith('Destroyed') and cods:
+            data = _cards_db.get(cods[0])
+            if data:
+                card = _make_card(cods[0], data)
+                me_, el_ = (opp_gs, gs) if outro == 'opp' else (gs, opp_gs)
+                try:
+                    v = GameAnalyzer(me_, el_).char_value_score(card) if me_ is not None else 0.0
+                except Exception:
+                    v = 0.0
+                lado[outro]['char_kill_value'] += float(v)
+        elif ' for Counter ' in l:
+            mc = re.search(r'for Counter (\d+)', l)
+            if mc:
+                lado[quem]['counters_used'] += int(mc.group(1))
+        elif 'Activate Trigger' in l:
+            lado[quem]['triggers_activated'] += 1
+        elif 'Reveal and Draw' in l:
+            lado[quem]['searchers_used'] += 1
+        elif ' Attach ' in l and ' Don to ' in l and cods:
+            mt = re.search(r'\((\d+) Total\)', l)
+            if mt:
+                anexado[quem][cods[0]] = int(mt.group(1))
+        elif ' attacking ' in l and cods:
+            lado[quem]['don_spent_on_combat'] += anexado[quem].pop(cods[0], 0)
+        elif l.endswith('End Turn'):
+            anexado = {'mine': {}, 'opp': {}}
+    return lado['mine'], lado['opp']
+
+
+def aplica_mundo_completo(gs: GameState, opp_gs: GameState, bot_dto, opp_dto,
+                          combat_log: list | None = None, nome_bot: str = '') -> None:
     """Preenche em `gs`/`opp_gs` os campos acumulados da partida, a partir das
     fotos que o plugin mandou ate agora. Chamar em TODO ponto do server que
     monta o estado a partir do plugin -- o mesmo mundo pra toda decisao."""
@@ -230,9 +310,22 @@ def aplica_mundo_completo(gs: GameState, opp_gs: GameState, bot_dto, opp_dto) ->
                     data = _cards_db.get(t.code) or {}
                     c['counters_used'] += int(data.get('counter') or 0)
         r['ant'] = cur
+        # COMBAT LOG da memoria do jogo: quando vem, e a fonte EXATA. A foto
+        # fica como reserva (plugin antigo, ou dano em espelho de lider).
+        do_log = campos_do_combat_log(
+            combat_log or [], nome_bot, getattr(bot_dto.leader, 'code', None),
+            getattr(getattr(opp_dto, 'leader', None), 'code', None), gs, opp_gs)
+        r['fonte'] = 'combat_log' if do_log else 'foto'
         for alvo, lado in ((gs, 'mine'), (opp_gs, 'opp')):
             for k, v in r[lado].items():
                 setattr(alvo, k, v)
+            if do_log:
+                vals = do_log[0] if lado == 'mine' else do_log[1]
+                espelho = chave[0] == getattr(getattr(opp_dto, 'leader', None), 'code', None)
+                for k, v in vals.items():
+                    if k == 'dmg_dealt' and espelho:
+                        continue
+                    setattr(alvo, k, v)
             alvo.don_deck = max(0, 10 - cur[lado]['don_campo'])
         if r['is_first'] is not None:
             gs.is_first = bool(r['is_first'])
@@ -242,8 +335,14 @@ def aplica_mundo_completo(gs: GameState, opp_gs: GameState, bot_dto, opp_dto) ->
         t = getattr(gs, 'turn', None)
         if r.get('turno_logado') != t:
             r['turno_logado'] = t
-            print(f"[MUNDO] {chave[0]} t{t} primeiro={r['is_first']} "
-                  f"eu={r['mine']} ele={r['opp']} don_deck={gs.don_deck}/{opp_gs.don_deck}",
+            _campos = ('dmg_dealt', 'char_kill_value', 'don_spent_on_combat',
+                       'counters_used', 'triggers_activated', 'searchers_used')
+            print(f"[MUNDO] {chave[0]} t{t} fonte={r['fonte']} primeiro={r['is_first']} "
+                  f"eu={ {k: getattr(gs, k, 0) for k in _campos} } "
+                  f"ele={ {k: getattr(opp_gs, k, 0) for k in _campos} } "
+                  f"don_deck={gs.don_deck}/{opp_gs.don_deck} "
+                  f"log={len(combat_log or [])} linhas nome_bot={nome_bot!r} "
+                  f"ultima={(combat_log or [''])[-1][:80]!r}",
                   flush=True)
     except Exception as e:
         print(f'[MUNDO][ERRO] rastreador ao vivo falhou: {e!r}', flush=True)

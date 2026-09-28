@@ -1,6 +1,13 @@
 # TODO — Analisador de Decks OPTCG
 
-**Última atualização:** 28 de setembro de 2026 (bloco 914)
+**Última atualização:** 28 de setembro de 2026 (bloco 915)
+
+> **MUNDO COMPLETO AO VIVO (bloco 915)**: o plugin manda o combat log da
+> memoria do jogo; os campos acumulados (dano, KO, counters, triggers, buscas,
+> DON em combate) saem EXATOS e simetricos. **Proximo**: re-medir paridade
+> (`python mede_paridade.py` apos CPU x CPU); ponder ainda sem log; OP01-055
+> cancelado pelo jogo (tarefa separada). **Plugin mudou: rodar
+> `setup_bepinex` / build na outra maquina.**
 
 > **POR QUE + MESMO MUNDO (bloco 914)**: toda decisao escolhida grava `regret`;
 > ruim (> erro do Q) grava o motivo segundo o modelo e a melhor alternativa --

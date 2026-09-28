@@ -108,6 +108,10 @@ class GameStateDto(BaseModel):
     turnNumber: int
     bot: PlayerDto      # P2 = bot
     opp: PlayerDto      # P1 = humano
+    # Combat log da MEMORIA do jogo + como o bot aparece nele (28/09/2026):
+    # fonte exata dos campos acumulados que o modelo le.
+    combatLog: list[str] = []
+    botLogName: str = ""
 
 
 def _model_dict(model: BaseModel) -> dict:
@@ -1298,7 +1302,7 @@ def defense(req: DefenseRequest):
         bridge = _get_bridge()
         gs     = _dto_to_gs(req.state.bot, req.state.turnNumber)
         opp_gs = _dto_to_gs(req.state.opp, req.state.turnNumber, hide_hidden=True)
-        _get_bridge().aplica_mundo_completo(gs, opp_gs, req.state.bot, req.state.opp)
+        _get_bridge().aplica_mundo_completo(gs, opp_gs, req.state.bot, req.state.opp, req.state.combatLog, req.state.botLogName)
 
         # O board NA HORA DO ATAQUE -- tirado ANTES da decisao, porque decidir
         # ja gasta counter da mao e o retrato depois nao e mais o estado em que
@@ -1575,7 +1579,7 @@ def choose_target(req: ChooseTargetRequest):
         bridge = _get_bridge()
         gs     = _dto_to_gs(req.state.bot, req.state.turnNumber)
         opp_gs = _dto_to_gs(req.state.opp, req.state.turnNumber, hide_hidden=True)
-        _get_bridge().aplica_mundo_completo(gs, opp_gs, req.state.bot, req.state.opp)
+        _get_bridge().aplica_mundo_completo(gs, opp_gs, req.state.bot, req.state.opp, req.state.combatLog, req.state.botLogName)
 
         # Cronometro proprio (nao so o `started` do endpoint inteiro):
         # achado real 20/07 (partida ao vivo) -- 2 chamadas de /choose_target
@@ -1713,7 +1717,7 @@ def choose_effect_option(req: ChooseEffectOptionRequest):
         # substring que ela tinha.
         gs_opt = _dto_to_gs(req.state.bot, req.state.turnNumber)
         opp_opt = _dto_to_gs(req.state.opp, req.state.turnNumber, hide_hidden=True)
-        _get_bridge().aplica_mundo_completo(gs_opt, opp_opt, req.state.bot, req.state.opp)
+        _get_bridge().aplica_mundo_completo(gs_opt, opp_opt, req.state.bot, req.state.opp, req.state.combatLog, req.state.botLogName)
         bridge = _get_bridge()
         # `actorCode` ja vinha no request e nao era repassado -- sem ele a
         # bridge nao tem como consultar o efeito parseado do ator, que e o
@@ -1861,7 +1865,7 @@ def decide(state: GameStateDto):
 
         gs     = _dto_to_gs(state.bot, state.turnNumber)
         opp_gs = _dto_to_gs(state.opp, state.turnNumber, hide_hidden=True)
-        _get_bridge().aplica_mundo_completo(gs, opp_gs, state.bot, state.opp)
+        _get_bridge().aplica_mundo_completo(gs, opp_gs, state.bot, state.opp, state.combatLog, state.botLogName)
         # Devolve ao estado reconstruido a auto-restricao que o DTO nao
         # carrega (bloco 853). Sem isto o motor reoferece Personagem num turno
         # em que o JOGO ja proibiu -- medido em 6 de 6 plays recusados.

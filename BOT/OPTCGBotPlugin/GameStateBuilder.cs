@@ -26,7 +26,23 @@ namespace OPTCGBotPlugin
                 turnNumber = gls.gsv_CurrentGame.iTurnNumber,
                 bot = BuildPlayer(botPs, gls),
                 opp = BuildPlayer(oppPs, gls),
+                combatLog = gls.currentCombatLog != null
+                    ? new List<string>(gls.currentCombatLog) : new List<string>(),
+                botLogName = RotuloNoLog(botPs, gls),
             };
+        }
+
+        // Como o jogo prefixa as linhas do log de um jogador -- mesma regra do
+        // GameplayLogicScript.AddLocalLogLine: o nome, se houver; senao
+        // "You" (jogador 0) ou "Opponent" (jogador 1), traduzidos.
+        private static string RotuloNoLog(PlayerState ps, GameplayLogicScript gls)
+        {
+            if (!string.IsNullOrEmpty(ps.s_PlayerName) && !gls.bHideNames)
+                return ps.s_PlayerName;
+            int idx = gls.Lps_Players != null ? gls.Lps_Players.IndexOf(ps) : -1;
+            string chave = idx == 0 ? "Log.You" : "Log.Opponent";
+            try { return gls.tls_Translation.Translate(chave, "", "", -999, -999); }
+            catch { return idx == 0 ? "You" : "Opponent"; }
         }
 
         private static PlayerDto BuildPlayer(PlayerState ps, GameplayLogicScript gls)
