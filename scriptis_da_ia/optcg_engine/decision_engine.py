@@ -19770,6 +19770,9 @@ class OPTCGMatch:
             # medicao do projeto manda tratar como sintoma. A concordancia so
             # conta decisoes rotuladas por um professor INDEPENDENTE.
             linha['escolhida_por'] = 'q'
+            if getattr(self, '_q_explorou', False):
+                linha['explorada'] = True
+            self._q_explorou = False
             self._q_diagnostica(linha, list(pend.values()))
         self._q_pendentes = {}
         self._q_depois = None
@@ -21908,7 +21911,11 @@ class OPTCGMatch:
             incertos = [cv for cv in ordenados if ordenados[0][1] - cv[1] <= margem]
             if len(incertos) >= 2 and random.random() < eps:
                 self._explora_n = getattr(self, '_explora_n', 0) + 1
-                return incertos[random.randrange(len(incertos))]
+                sorteada = incertos[random.randrange(len(incertos))]
+                # Marca pro diagnostico (28/09): jogada de TESTE nao e erro do
+                # modelo -- `porque_decisoes.py` separa as duas.
+                self._q_explorou = sorteada is not ordenados[0]
+                return sorteada
         self._explora_greedy_n = getattr(self, '_explora_greedy_n', 0) + 1
         return ordenados[0]
 

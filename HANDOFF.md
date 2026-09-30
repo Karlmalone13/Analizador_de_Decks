@@ -27,6 +27,25 @@ aprendeu com mais informacao). Levado ao usuario no formato do item 28: B =
 testar (receita atual em corpus com rotulo espiao empata com o campeao?), A =
 trocar a base por decisao do usuario, juiz = partidas contra humano.
 
+**RE-ENQUADRAMENTO DO USUARIO (30/09)**: perder o portao NAO e problema -- o
+ciclo serve pra rodar centenas de partidas com varios decks e MAPEAR onde o bot
+erra, pra corrigir (memoria `feedback_ciclo_mapeia_fraquezas`). A pergunta da
+hipotese A/B acima ficou sem objeto; o produto do ciclo e o mapa.
+
+**MAPA DA GEN 16** (o que importa): (1) 31% das "ruins" eram EXPLORACAO
+(jogada de teste) -- agora marcadas `explorada` e fora do relatorio a partir do
+ciclo 18 (gen 16/17 sem a marca). (2) O Q NAO subestima ataque: vies medio
+modelo-professor +0,01~0,02 igual em todas as familias. (3) **FRAQUEZA N.1 =
+QUANTO DON POR NO ATAQUE**: entre erros reais attack->attack, a quantidade de
+DON difere na maioria (62 so DON; >200 com DON junto), SIMETRICO (100 a mais,
+100 a menos) -- o modelo nao distingue as quantidades. Geral (16 lideres,
+4,7%-12,7%). Bate com "distribuicao de DON" 23,5% contra humano. Depois:
+play->attack 98, attack->play 92.
+
+**PROXIMO (sessao nova, Opus)**: por que o Q nao separa "atacar com 1 DON" de
+"com 3 DON" -- suspeita: `acao_features` pobre pra quantidade de DON. Ciclo 17
+rodando (log `metrics/ciclo_2026-09-30.log`); comparar o mapa com a gen 16.
+
 Erro meu registrado: 1a rodada do isolamento sem `if __name__ == '__main__'`
 -> workers do duelo re-executavam o script (4 treinos simultaneos, OOM, 209
 min, modelo sobrescrito). Refeito.

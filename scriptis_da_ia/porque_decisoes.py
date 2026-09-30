@@ -60,13 +60,19 @@ def main():
               'desde 28/09/2026; geracoes anteriores nao tem).')
         return
 
-    print('=== decisoes ruins por GERACAO (ruim = regret > erro do modelo) ===')
-    print(f"{'gen':>5} {'decisoes':>9} {'ruins':>7} {'taxa':>7} {'regret medio':>13}")
+    # Jogada de EXPLORACAO (teste proposital) nao e erro do modelo: medido na
+    # gen 16, 31% das "ruins" eram exploracao. Ficam fora do mapa.
+    exploradas = {g: sum(1 for r in rs if r.get('explorada')) for g, rs in por_gen.items()}
+    por_gen = {g: [r for r in rs if not r.get('explorada')] for g, rs in por_gen.items()}
+    print('=== decisoes ruins por GERACAO (ruim = regret > erro do modelo; sem exploracao) ===')
+    print(f"{'gen':>5} {'decisoes':>9} {'ruins':>7} {'taxa':>7} {'regret medio':>13} {'exploradas (fora)':>18}")
     for g in sorted(por_gen, key=lambda x: (x is None, x)):
         rs = por_gen[g]
+        if not rs:
+            continue
         ruins = [r for r in rs if r.get('porque')]
         med = sum(r['regret'] for r in rs) / len(rs)
-        print(f'{str(g):>5} {len(rs):>9} {len(ruins):>7} {_pct(len(ruins), len(rs)):>7} {med:>13.4f}')
+        print(f'{str(g):>5} {len(rs):>9} {len(ruins):>7} {_pct(len(ruins), len(rs)):>7} {med:>13.4f} {exploradas.get(g, 0):>18}')
 
     for g in sorted(por_gen, key=lambda x: (x is None, x)):
         rs = por_gen[g]
