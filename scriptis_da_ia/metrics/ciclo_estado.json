@@ -2052,6 +2052,121 @@
         "modelo_oponente_sem_observar": 25.2,
         "custo_incerteza": 0.0115
       }
+    },
+    {
+      "ciclo": 19,
+      "quando": "2026-09-30T20:30:36",
+      "partidas": 200,
+      "alvos_corpus": 1850599,
+      "erro_q": 0.055879305012017114,
+      "ganho_pct": 74.3971573324214,
+      "portao": {
+        "vitorias_desafiante": 3,
+        "derrotas_desafiante": 23,
+        "decididas": 26,
+        "pares_divididos": 53,
+        "veredito": "DESCARTA (equivalentes)",
+        "llr": -3.5648678889750665
+      },
+      "promovido": false,
+      "winrate": 0.11538461538461539,
+      "portao_por_lider": {
+        "OP13-002": {
+          "vit": 0,
+          "der": 2,
+          "div": 9
+        },
+        "OP16-080": {
+          "vit": 0,
+          "der": 3,
+          "div": 7
+        },
+        "OP11-001": {
+          "vit": 0,
+          "der": 2,
+          "div": 6
+        },
+        "OP15-098": {
+          "vit": 1,
+          "der": 1,
+          "div": 9
+        },
+        "OP12-061": {
+          "vit": 0,
+          "der": 3,
+          "div": 8
+        },
+        "OP15-002": {
+          "vit": 0,
+          "der": 5,
+          "div": 8
+        },
+        "OP16-001": {
+          "vit": 1,
+          "der": 1,
+          "div": 4
+        },
+        "OP11-041": {
+          "vit": 1,
+          "der": 2,
+          "div": 11
+        },
+        "OP15-058": {
+          "vit": 0,
+          "der": 3,
+          "div": 3
+        },
+        "OP14-041": {
+          "vit": 1,
+          "der": 0,
+          "div": 8
+        },
+        "OP14-020": {
+          "vit": 0,
+          "der": 2,
+          "div": 8
+        },
+        "EB02-010": {
+          "vit": 1,
+          "der": 5,
+          "div": 6
+        },
+        "OP16-060": {
+          "vit": 0,
+          "der": 4,
+          "div": 4
+        },
+        "OP13-001": {
+          "vit": 0,
+          "der": 4,
+          "div": 6
+        },
+        "OP16-022": {
+          "vit": 1,
+          "der": 5,
+          "div": 5
+        },
+        "OP16-079": {
+          "vit": 0,
+          "der": 4,
+          "div": 4
+        }
+      },
+      "tempo_s": {
+        "gera": 309.2,
+        "treina_regua": 20.5,
+        "treina": 669.4,
+        "portao": 91.9,
+        "auditoria": 8.6,
+        "ancora": 9.2
+      },
+      "tempo_total_s": 1108.8,
+      "guarda_corpo": {},
+      "ancora_humana": {
+        "modelo_oponente": 26.9,
+        "modelo_oponente_sem_observar": 25.2,
+        "custo_incerteza": 0.0059
+      }
     }
   ],
   "checkpoint_humano_pendente": true,

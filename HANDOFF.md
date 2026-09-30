@@ -1,5 +1,22 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-09-30 (920) - Ciclo 19 (1o com a regua nova dando as notas): 3x23, nao promove; mapa piora 7,0% -> 9,4% (regua diferente julgando)
+
+Tempos: gera 309s | treina_regua 20s | treina Q 669s | portao 92s.
+**Regua**: separacao +0,2387 -> +0,2399, AUC 0,7877 -- estabilizando.
+**Q**: erro 0,0559. **Portao**: 3x23 (26 decididos, 53 divididos), DESCARTA,
+`candidato_007` contra `generation_002`.
+
+**Mapa gen 19** (sem exploracao, 928 fora): 7.541 decisoes, 9,4% ruins
+(gen 18: 7,0%), regret medio 0,0160. attack 12,2% (8,7%) | play 8,4% (8,5%) |
+attach_don 20,4% em 137 (3,4%) | activate 7,0% (2,1%) | pass 2,7% (2,0%).
+Motivo "power" no ataque 229 (era 117). Por lider 5,3%-12,5%, geral.
+
+**NAO e "o bot piorou"**: gen 18 e 19 foram jogadas pelo MESMO Q campeao
+(nada promovido); o que mudou foi a REGUA que julga (gen 18 = congelada,
+gen 19 = regua do ciclo 18). Comparacao controlada em andamento: mesmas 60
+partidas (seed 10818, mesmo campeao) julgadas pelas duas reguas.
+
 ## 2026-09-30 (919) - Ciclo 18 (1o com a regua que aprende de si mesma): 2x27, nao promove; regua fecha o laco
 
 Tempos: gera 339s | treina_regua 23s | treina Q 830s | portao 60s.
