@@ -1,5 +1,42 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-09-30 (917) - DECISAO DO USUARIO: tirar o professor CONGELADO -- o proprio modelo gera o rotulo e aprende com o resultado
+
+**Achado**: o "professor" (`metrics/value_net_aluno.joblib`, via
+`MODELO_ORDENA_PATH`) esta CONGELADO desde 21/09 -- o `ciclo.py` nunca o
+retreina. Ele da a nota de TODA candidata no bootstrap (`_coleta_bootstrap`) e
+tambem avalia a posicao "2 turnos depois" do rotulo TD (`treinar_q.py
+--rotulo td`). Logo o Q so aprende a imitar um avaliador fixo: nao passa dele,
+nao descobre nada -- explica todo desafiante empatar/perder (bloco 916) e o
+teto de ~60% nas escolhas proximas (REPROVADOS: vantagem 58,9% x 61,8%).
+
+**Pergunta do usuario que levou a decisao**: *"melhorar o professor a gente
+melhora o motor, entao pq nao so melhorar o motor direto? [...] onde esta o
+machine learning nisso? desse jeito a gente tem que ensinar o professor, e
+acaba que nosso motor nao aprende sozinho e nem descobre melhoras"*.
+
+**DECISAO (usuario, 30/09, formato item 28 -- "sim")**: o professor congelado
+SAI. O rotulo passa a vir do PROPRIO modelo retreinado a cada ciclo (estilo
+DQN/AlphaZero): jogada -> valor da posicao seguinte SEGUNDO O MODELO ATUAL;
+fim de partida -> resultado REAL, que corrige e propaga pra tras. O que
+aprende e o que julga. Impacto aceito: os primeiros ciclos podem jogar pior
+enquanto a propria regua se corrige pelo resultado.
+
+**PARA A PROXIMA SESSAO (Opus)** -- pontos a desenhar/medir:
+1. Quem da a nota das candidatas no bootstrap: o proprio Q (q_valores da
+   posicao seguinte) ou uma rede de VALOR treinada junto a cada ciclo (hoje o
+   Q e acao-valor; `_coleta_bootstrap` usa `win_prob_lote` de um modelo de
+   ESTADO). Decidir a forma sem criar segundo decisor (REGRA_SEM_DUPLICACAO).
+2. `treinar_q.py --rotulo td`: trocar o avaliador da posicao +2 turnos pelo
+   modelo do ciclo; ancorar no resultado real no fim da partida.
+3. `ciclo.py`: retreinar a regua junto (ou ela e o proprio Q).
+4. Estabilidade: alvo com modelo "alvo" congelado POR CICLO (target network do
+   DQN) -- nao por meses. Medir contra o campeao 07cf (portao) e pelo mapa de
+   fraquezas (`porque_decisoes.py`) -- perder o portao nos primeiros ciclos e
+   esperado e NAO e motivo pra reverter (memoria feedback_ciclo_mapeia_fraquezas).
+5. Controle que pode falhar: com rotulo pelo proprio modelo, um estado ganho
+   tem que subir de valor ao longo dos ciclos; se nada mudar, o laco nao fecha.
+
 ## 2026-09-30 (916) - Ciclo 16 nao promoveu (3x20): 7 variantes isoladas, NENHUMA bate o campeao 07cf; portao conferido com controle
 
 **Ciclo 16** (1o com TODO o bloco 913 ligado): 200 partidas, corpus 1.544.298,

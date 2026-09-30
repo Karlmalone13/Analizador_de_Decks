@@ -1,6 +1,12 @@
 # TODO — Analisador de Decks OPTCG
 
-**Última atualização:** 30 de setembro de 2026 (bloco 916)
+**Última atualização:** 30 de setembro de 2026 (bloco 917)
+
+> **DECISAO (bloco 917)**: o professor `value_net_aluno.joblib` esta CONGELADO
+> desde 21/09 e da TODAS as notas de treino -- o Q so imita ele. O usuario
+> decidiu: o professor SAI; o rotulo vem do PROPRIO modelo retreinado a cada
+> ciclo, ancorado no resultado real. **Proximo: implementar (Opus, sessao
+> nova), ler o bloco 917 inteiro.**
 
 > **MAPA DE FRAQUEZAS (bloco 916)**: perder o portao nao e problema -- o ciclo
 > mapeia onde o bot erra. Gen 16: fraqueza n.1 = QUANTO DON por no ataque
