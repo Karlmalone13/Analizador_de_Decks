@@ -33,6 +33,25 @@ as entradas que dependiam dela saem ou vao pra "VALE RE-TESTAR" no TODO.
 
 ---
 
+## Treinar o Q na VANTAGEM dentro da decisao (bloco 916, 30/09/2026)
+
+Motivacao: a "fraqueza n.1" do mapa (quanto DON no ataque) e, medido, a mesma
+de toda escolha proxima: o Q ordena como o professor 60-65% dos pares com
+diferenca 0,005-0,03 e ~83% acima de 0,03, com ou sem DON envolvido. Ideia: o
+erro absoluto (0,055) e 4x a diferenca tipica entre opcoes (0,013); aprender a
+vantagem (alvo - media da decisao) focaria a capacidade no que decide.
+
+| teste (treino gens 13-15, teste gen 16, mesma MLP 64x32) | pares proximos | pares distantes | acerta a melhor |
+|---|---|---|---|
+| alvo absoluto (hoje) | 61,8% | 82,5% | 55,5% |
+| **vantagem** | **58,9%** | 82,4% | 54,0% |
+| controle (vantagem embaralhada) | 8,1% | 10,1% | 27,9% |
+
+**Nao ajuda.** O teto nas escolhas proximas e o mesmo pros dois objetivos --
+coerente com a licao do bloco 909 (desempate fino do professor e em boa parte
+ruido). Ruido ENTRE MUNDOS do professor e pequeno (erro padrao 0,0014 x
+diferenca 0,013); o que limita e o erro do PROPRIO professor, nao a amostragem.
+
 ## Professor do bootstrap (`value_net_aluno`) com mais RESOLUCAO (bloco 909)
 
 Diagnostico que motivou: nas decisoes recentes o professor da o MESMO valor
