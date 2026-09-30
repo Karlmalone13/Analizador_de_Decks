@@ -1,5 +1,36 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-09-30 (916) - Ciclo 16 nao promoveu (3x20): 7 variantes isoladas, NENHUMA bate o campeao 07cf; portao conferido com controle
+
+**Ciclo 16** (1o com TODO o bloco 913 ligado): 200 partidas, corpus 1.544.298,
+erro Q 0,053 (ciclo 15: 0,045), portao 3x20 DESCARTA. Geracao 630s (era 116s).
+Diagnostico da gen 16 (`porque_decisoes.py`): 9,3% ruins; attach_don 15,8%,
+attack 11%, play 9,5%; motivo mais citado = vida do oponente; o "melhor era"
+dominante e ATACAR. Linha de base pro proximo ciclo.
+
+**Lentidao**: perfil de 3 partidas -- 65% em `_coleta_bootstrap` (4 mundos,
+exigencia de nao espiar, fica). O recalculo de features do diagnostico era ~9%:
+`win_prob_lote(feats_prontas=...)` reaproveita. Mesmo hash nas 1.787 linhas,
+26,9s -> 23,3s (comparado contra worktree do HEAD).
+
+**Isolamento do 3x20** (mesmo corpus/seed 10616/campeao 07cf, uma variavel):
+A ciclo16 td+continua 3x20 | B vitoria+continua 5x23 | C td+do zero 15x31 |
+D vitoria+do zero 4x24 | E so gen16 0x17 | F gen13+ 1x19 | G = C sem assumir
+block/counter/target (so 427/1713/354 linhas de consequencia) 24x40; seed
+31337: 27x40. **Controle**: campeao x copia dele = 0x0 em 1400 pares
+(todos divididos) -> portao justo. Corpus: 46% e gen 0 (legado), so a gen 16
+tem rotulo cego; menos dado PIORA (volume > recencia).
+
+**Hipotese (nao medida)**: 07cf foi treinado ANTES do rotulo cego (913), com
+professor que espiava -- e o portao nao valida Fase 0 (auto-jogo favorece quem
+aprendeu com mais informacao). Levado ao usuario no formato do item 28: B =
+testar (receita atual em corpus com rotulo espiao empata com o campeao?), A =
+trocar a base por decisao do usuario, juiz = partidas contra humano.
+
+Erro meu registrado: 1a rodada do isolamento sem `if __name__ == '__main__'`
+-> workers do duelo re-executavam o script (4 treinos simultaneos, OOM, 209
+min, modelo sobrescrito). Refeito.
+
 ## 2026-09-28 (915) - Campos acumulados ao vivo EXATOS: o plugin manda o combat log da MEMORIA do jogo
 
 Continuacao do 914 (caminho B, aprovado). O jogo guarda o combat log na

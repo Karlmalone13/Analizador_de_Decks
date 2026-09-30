@@ -19888,7 +19888,11 @@ class OPTCGMatch:
 
         try:
             from optcg_engine import value_net as _vn2
-            vals = _vn2.win_prob_lote(estados, bundle=_b) if estados else []
+            _nomes = _b.get('feature_names')
+            # UMA vez por estado: servem a nota (win_prob_lote) e o
+            # diagnostico do porque (`depois`, abaixo).
+            _feats = [_vn2.state_features(p2, o2, nomes=_nomes) for p2, o2 in estados]
+            vals = _vn2.win_prob_lote(estados, bundle=_b, feats_prontas=_feats) if estados else []
         except Exception:
             return
         soma = dict(vitorias)
@@ -19903,10 +19907,8 @@ class OPTCGMatch:
         # da melhor. So em memoria -- vai pro corpus apenas a explicacao.
         depois: dict = {}
         try:
-            _nomes = _b.get('feature_names')
             _acc: dict = {}
-            for i, (p2, o2) in zip(dono, estados):
-                f = _vn2.state_features(p2, o2, nomes=_nomes)
+            for i, f in zip(dono, _feats):
                 s = _acc.setdefault(i, [0.0] * len(f) + [0])
                 for j, x in enumerate(f):
                     s[j] += float(x)

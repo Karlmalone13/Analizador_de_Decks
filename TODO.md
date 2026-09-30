@@ -1,6 +1,12 @@
 # TODO — Analisador de Decks OPTCG
 
-**Última atualização:** 28 de setembro de 2026 (bloco 915)
+**Última atualização:** 30 de setembro de 2026 (bloco 916)
+
+> **CICLO TRAVADO NO CAMPEAO (bloco 916)**: 7 variantes de treino perdem do
+> 07cf (portao conferido: copia x campeao = 0x0). Hipotese: 07cf aprendeu com
+> rotulo que ESPIAVA; o portao nao julga isso. **Decisao pendente do usuario**:
+> B (testar a hipotese, ~15 min) e/ou A (trocar a base; juiz = partidas contra
+> humano, que tambem fecham o checkpoint aberto desde 24/09).
 
 > **MUNDO COMPLETO AO VIVO (bloco 915)**: o plugin manda o combat log da
 > memoria do jogo; os campos acumulados (dano, KO, counters, triggers, buscas,

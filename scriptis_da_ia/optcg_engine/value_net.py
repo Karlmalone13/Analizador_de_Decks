@@ -996,7 +996,7 @@ def _forward_rapido(modelo, X):
         return None
 
 
-def win_prob_lote(pares, bundle=None) -> list:
+def win_prob_lote(pares, bundle=None, feats_prontas=None) -> list:
     """`win_prob` para VARIOS estados numa UNICA chamada ao modelo.
 
     MEDIDO (AS-IS de 13/09/2026, bloco 787), este modelo nesta maquina:
@@ -1035,7 +1035,10 @@ def win_prob_lote(pares, bundle=None) -> list:
     pendentes_feats: list = []
     for i, (p, opp) in enumerate(pares):
         try:
-            feats = state_features(p, opp, nomes=nomes)
+            # `feats_prontas`: o chamador ja montou (mesma ordem de `pares`,
+            # mesmos nomes do bundle) -- evita recalcular (28/09, diagnostico).
+            feats = (feats_prontas[i] if feats_prontas is not None
+                     else state_features(p, opp, nomes=nomes))
         except Exception:
             continue
         if not check_dims(bundle, len(feats)):
