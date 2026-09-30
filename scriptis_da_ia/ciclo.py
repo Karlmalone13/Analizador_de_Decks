@@ -21,7 +21,9 @@ promove alguma coisa.** Se nada foi promovido, nao ha o que testar.
 
   1. GERA      -- partidas em auto-jogo, acumulando alvos Q (o professor
                   decide; ver `--q-out` em `gerar_selfplay_dataset.py`)
-  2. TREINA    -- o Q desafiante, validado POR LIDER
+  2. TREINA    -- a REGUA (rede de valor de estado) aprende de SI MESMA
+                  (bloco 917: TD pela regua do ciclo anterior + resultado
+                  real no fim) e, com ela, o Q desafiante, validado POR LIDER
   3. PORTAO    -- o Q desafiante contra a ARVORE: "o aluno ja bate o
                   professor?". Enquanto perder, o Q segue candidato e a
                   arvore segue decidindo em producao (medido no bloco 801:
@@ -286,6 +288,30 @@ def gera(n, seed, workers, n_ciclo=0) -> bool:
     return _rodar(cmd, 'geracao de partidas', env=env)
 
 
+REGUA = RAIZ / 'metrics' / 'value_net_aluno.joblib'
+
+
+def treina_regua() -> dict | None:
+    """A regua deixa de ser professor CONGELADO (bloco 917, decisao do
+    usuario 30/09): retreinada a CADA ciclo no auto-jogo, com o alvo vindo
+    DELA MESMA -- valor da posicao 2 turnos proprios depois pela regua do
+    ciclo anterior (congelada so durante este treino, a "target network"),
+    e o RESULTADO REAL quando a partida acaba no horizonte. E ela que da a
+    nota das candidatas no bootstrap da proxima geracao e o rotulo TD do Q
+    logo abaixo. Sobrescreve `value_net_aluno.joblib` (versionado: viaja
+    pelo git junto do `q_net.joblib`)."""
+    if not _rodar(['treinar_value.py', '--dataset', str(CORPUS), '--alvo', 'td',
+                   '--features', 'aluno', '--folds', '2',
+                   '--regua-anterior', str(REGUA), '--out', str(REGUA)],
+                  'treino da regua (TD proprio)'):
+        return None
+    try:
+        import joblib
+        return joblib.load(REGUA)
+    except Exception:
+        return None
+
+
 def treina() -> dict | None:
     if not _rodar(['treinar_q.py', '--dataset', str(Q_CORPUS),
                    '--out', str(Q_DESAFIANTE)], 'treino do Q'):
@@ -511,7 +537,16 @@ def main() -> int:
         _rodar(['porque_decisoes.py', '--dataset', str(Q_CORPUS),
                 '--gen', str(n_ciclo)], 'diagnostico das decisoes')
 
-        print('[2/5] TREINA o Q desafiante', flush=True)
+        print('[2/5] TREINA a regua e o Q desafiante', flush=True)
+        cron.inicia('treina_regua')
+        rg = treina_regua()
+        cron.fecha()
+        if rg is None:
+            break
+        _ct = rg.get('controle_td') or {}
+        print('      regua: AUC fora da amostra %.4f | separacao ganhas-perdidas %+.4f -> %+.4f'
+              % (rg.get('auc_fora_amostra', 0), _ct.get('separacao_antes', 0),
+                 _ct.get('separacao_depois', 0)), flush=True)
         cron.inicia('treina')
         b = treina()
         cron.fecha()
@@ -545,7 +580,9 @@ def main() -> int:
                      'rotulo_consequencia': b.get('rotulo_consequencia')},
             config={'ciclo': n_ciclo, 'partidas': args.partidas, 'seed_geracao': seed,
                     'workers': args.workers, 'mundos_bootstrap': _mundos(),
-                    'continuado_de': b.get('continuado_de')},
+                    'continuado_de': b.get('continuado_de'),
+                    'regua': {'alvo': rg.get('alvo'), 'auc_fora_amostra': rg.get('auc_fora_amostra'),
+                              'controle_td': rg.get('controle_td')}},
             treino={k: b.get(k) for k in ('erro_fora_amostra', 'concordancia_top1',
                                           'n_alvos', 'n_features', 'cobertura')},
             duelo=dict({k: d.get(k) for k in ('vitorias_desafiante', 'derrotas_desafiante',

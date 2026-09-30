@@ -55,7 +55,7 @@ from optcg_engine.value_net import (FEATURE_NAMES, FEATURE_NAMES_RICAS,
 DATASET_DEFAULT = 'metrics/selfplay_dataset.jsonl'
 
 
-def carregar(caminho: str):
+def carregar(caminho: str, meta=None):
     X, y, grupos, alvo = [], [], [], []
     with open(caminho, encoding='utf-8') as fh:
         for linha in fh:
@@ -72,7 +72,58 @@ def carregar(caminho: str):
             # proprio `win`, entao nada quebra.
             alvo.append(float(d.get('alvo', d['win'])))
             grupos.append(d.get('leader') or '?')
+            if meta is not None:
+                meta.append((d.get('gen') or 0, d.get('match'),
+                             d.get('side') or d.get('leader'), d.get('turn') or 0))
     return X, y, grupos, alvo
+
+
+def alvo_td_proprio(X, y, meta, nomes_ds, regua, n: int = 2):
+    """Rotulo TD pela PROPRIA regua (bloco 917, decisao do usuario 30/09).
+
+    Alvo de cada estado = valor da posicao `n` turnos PROPRIOS depois segundo
+    a regua do ciclo ANTERIOR (congelada so durante este ciclo -- a "target
+    network" do DQN, nunca por meses). Se a partida acabou dentro do
+    horizonte, o alvo e o RESULTADO REAL: e ele que corrige a regua e, ciclo
+    a ciclo, propaga pra tras. Sem regua anterior utilizavel, ou gen 0 (ids
+    de partida repetidos entre rodadas, sem trajetoria confiavel), o alvo e o
+    resultado real da partida (retorno Monte Carlo) -- nunca um avaliador
+    fixo de fora.
+    """
+    import numpy as np
+    alvo = y.astype(float).copy()
+    v_prev = None
+    if regua:
+        try:
+            idx = [nomes_ds.index(nm) for nm in regua['feature_names']]
+            m = regua['modelo']
+            Z = X[:, idx]
+            v_prev = (m.predict_proba(Z)[:, 1] if hasattr(m, 'predict_proba')
+                      else m.predict(Z))
+            v_prev = np.clip(np.asarray(v_prev, dtype=float), 0.0, 1.0)
+        except Exception as e:
+            print(f'  aviso: regua anterior inutilizavel ({e}); alvo = resultado real')
+            v_prev = None
+    traj = {}
+    for i, (gen, match, lado, turno) in enumerate(meta):
+        if gen and match is not None:
+            traj.setdefault((gen, match, lado), []).append((turno, i))
+    n_td = n_fim = 0
+    if v_prev is not None:
+        for t in traj.values():
+            t.sort()
+            ordem = [i for _, i in t]
+            for k, i in enumerate(ordem):
+                j = k + n
+                if j < len(ordem):
+                    alvo[i] = v_prev[ordem[j]]
+                    n_td += 1
+                else:
+                    n_fim += 1          # fim da partida no horizonte: resultado real
+    n_mc = len(alvo) - n_td - n_fim
+    print(f'  rotulo TD proprio (n={n}): {n_td} pela regua anterior | '
+          f'{n_fim} pelo fim da partida | {n_mc} pelo resultado (gen 0/sem trajetoria)')
+    return alvo, v_prev
 
 
 def main() -> None:
@@ -84,7 +135,7 @@ def main() -> None:
                     help='REPROVADO no bloco 793 (quantil de alvo binario = [0,1] sempre). '
                          'Mantido so pra reproduzir a medicao.')
     ap.add_argument('--out', default=MODEL_PATH)
-    ap.add_argument('--alvo', choices=('win', 'professor'), default='win',
+    ap.add_argument('--alvo', choices=('win', 'professor', 'td'), default='win',
                     help="win = o rotulo binario da partida (o de sempre). "
                          "professor = o alvo continuo de n passos gerado por "
                          "`rotulo_professor.py` (Fase 1, bloco 783). Medido: "
@@ -93,7 +144,17 @@ def main() -> None:
                          "partida levam a MESMA etiqueta, entao o modelo nao "
                          "tem como aprender qualidade de jogada. Com `professor` "
                          "a variancia dentro da partida vai a 0,0076 e os "
-                         "valores distintos de 2 pra 20. Treina REGRESSOR.")
+                         "valores distintos de 2 pra 20. Treina REGRESSOR. "
+                         "td (bloco 917) = a regua aprende de SI MESMA: valor "
+                         "da posicao 2 turnos proprios depois pela regua do "
+                         "ciclo anterior (--regua-anterior), resultado real no "
+                         "fim da partida. E o que o `ciclo.py` roda.")
+    ap.add_argument('--regua-anterior', dest='regua_anterior', default=None,
+                    help='(--alvo td) a regua do ciclo anterior, congelada '
+                         'durante este treino. Default: o proprio --out.')
+    ap.add_argument('--n-passos', dest='n_passos', type=int, default=2,
+                    help='(--alvo td) horizonte em turnos proprios. 2 = o mesmo '
+                         'do rotulo TD do Q (`treinar_q.py`).')
     ap.add_argument('--features', choices=('basicas', 'ricas', 'v3', 'aluno'), default='basicas',
                     help='basicas = as 32 originais (so contagens e agregados); '
                          'ricas = 32 + 17 de QUALIDADE do board (poder maximo, '
@@ -119,7 +180,8 @@ def main() -> None:
     from sklearn.metrics import roc_auc_score
     from sklearn.model_selection import GroupKFold
 
-    X, y, grupos, alvo = carregar(args.dataset)
+    meta = []
+    X, y, grupos, alvo = carregar(args.dataset, meta=meta)
     if not X:
         raise SystemExit(f'dataset vazio ou sem rotulo: {args.dataset}')
     X = np.array(X, dtype=float)
@@ -155,6 +217,15 @@ def main() -> None:
             f'ERRO: --features {args.features} exige {len(nomes)} colunas, mas o '
             f'dataset ({X.shape[1]}) nao tem {len(faltando)} delas '
             f'(ex: {faltando[:3]}). Re-gere com gerar_selfplay_dataset.py.')
+    regua_ant = v_ant = None
+    if args.alvo == 'td':
+        import joblib
+        try:
+            regua_ant = joblib.load(args.regua_anterior or args.out)
+        except Exception:
+            regua_ant = None
+        alvo, v_ant = alvo_td_proprio(X, y, meta, list(do_dataset), regua_ant,
+                                      n=args.n_passos)
     X = X[:, [do_dataset.index(n) for n in nomes]]
     print(f'[value] {len(X)} estados | {n_lideres} lideres | '
           f'{len(nomes)} features ({args.features}) | positivos {y.mean():.1%}')
@@ -175,7 +246,7 @@ def main() -> None:
             from sklearn.neural_network import MLPClassifier, MLPRegressor
             from sklearn.pipeline import make_pipeline
             from sklearn.preprocessing import StandardScaler
-            Cls = (MLPRegressor if args.alvo == 'professor' else MLPClassifier)
+            Cls = (MLPRegressor if args.alvo in ('professor', 'td') else MLPClassifier)
             return make_pipeline(
                 StandardScaler(),
                 Cls(hidden_layer_sizes=(64, 32), activation='relu',
@@ -196,7 +267,7 @@ def main() -> None:
         # de uma partida de self-play (as_is.py, bloco 21/09). Trade-off
         # aceito pelo usuario: 1% de AUC por mais velocidade, recuperavel
         # com mais volume de self-play (o proprio motivo da troca).
-        cls = (HistGradientBoostingRegressor if args.alvo == 'professor'
+        cls = (HistGradientBoostingRegressor if args.alvo in ('professor', 'td')
                else HistGradientBoostingClassifier)
         return cls(
             max_iter=200, learning_rate=0.02, max_depth=3,
@@ -245,7 +316,29 @@ def main() -> None:
               'com este modelo; gere mais partidas antes.')
 
     # ── Modelo final (treinado em tudo) ─────────────────────────────────
-    modelo = novo_modelo().fit(X, y)
+    # No ALVO escolhido (era `y` sempre -- com --alvo professor o regressor
+    # final aprendia o binario da partida, jogando o alvo fora).
+    modelo = novo_modelo().fit(X, alvo)
+
+    # CONTROLE QUE PODE FALHAR (bloco 917, item 5): se a regua aprende do
+    # resultado, estados de partidas GANHAS sobem e de PERDIDAS descem em
+    # relacao a regua anterior. Separacao igual (ou menor) = o laco nao fecha.
+    controle = None
+    if v_ant is not None:
+        v_novo = (modelo.predict_proba(X)[:, 1] if hasattr(modelo, 'predict_proba')
+                  else modelo.predict(X))
+        g, p_ = y == 1, y == 0
+        sep_ant = float(v_ant[g].mean() - v_ant[p_].mean())
+        sep_novo = float(np.mean(v_novo[g]) - np.mean(v_novo[p_]))
+        controle = {'ganhas_antes': float(v_ant[g].mean()), 'ganhas_depois': float(np.mean(v_novo[g])),
+                    'perdidas_antes': float(v_ant[p_].mean()), 'perdidas_depois': float(np.mean(v_novo[p_])),
+                    'separacao_antes': sep_ant, 'separacao_depois': sep_novo,
+                    'mudanca_media_abs': float(np.mean(np.abs(v_novo - v_ant)))}
+        print(f'\n  CONTROLE (regua anterior -> nova): ganhas {controle["ganhas_antes"]:.4f} -> '
+              f'{controle["ganhas_depois"]:.4f} | perdidas {controle["perdidas_antes"]:.4f} -> '
+              f'{controle["perdidas_depois"]:.4f} | separacao {sep_ant:+.4f} -> {sep_novo:+.4f}')
+        if controle['mudanca_media_abs'] < 1e-4:
+            print('  ATENCAO: a regua nova e IGUAL a anterior -- o laco nao fecha.')
 
     # ── INCERTEZA: duas cabecas de QUANTIL no MESMO modelo (bloco 793) ───
     # Pedido do usuario, depois de me ver comparar duas estimativas PONTUAIS
@@ -288,6 +381,8 @@ def main() -> None:
         'folds': folds,
         'lideres': sorted(set(grupos.tolist())),
         'dataset': args.dataset,
+        'alvo': args.alvo,
+        'controle_td': controle,
     }
     import joblib
     Path(args.out).parent.mkdir(parents=True, exist_ok=True)

@@ -1,5 +1,44 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-09-30 (918) - Implementado o bloco 917: a regua aprende de SI MESMA a cada ciclo (fim do professor congelado)
+
+**Forma escolhida (ponto 1 do 917)**: a nota das candidatas continua vindo de
+uma rede de VALOR DE ESTADO (`value_net_aluno.joblib`, o que
+`_coleta_bootstrap` e o rotulo TD do Q ja consomem) -- mas ela deixou de ser
+congelada. Nao virou `max Q(s',a)`: isso exigiria gerar as acoes legais em
+cada um dos ~50 estados simulados por decisao (13 candidatas x 4 mundos),
+multiplicando a geracao que ja esta em 630s. Nao e segundo decisor: o Q segue
+o unico que escolhe a acao de topo; a regua julga (actor-critic). Efeito
+colateral: os usos pre-existentes da regua em escolhas de sacrificio/alvo
+(`_modelo_sacrificio_ativo`) passam a usar a regua nova tambem.
+
+**O que mudou**:
+1. `treinar_value.py --alvo td [--regua-anterior X --n-passos 2]`: alvo de cada
+   estado de fim de turno do auto-jogo = valor da posicao 2 turnos proprios
+   depois SEGUNDO A REGUA DO CICLO ANTERIOR (congelada so neste treino =
+   target network); partida que acaba no horizonte = RESULTADO REAL; gen 0
+   (ids repetidos, sem trajetoria) = resultado real. Trajetoria por
+   (gen, match, side) -- espelho de lider nao colide. Grava `controle_td` no
+   bundle. **Bug corrigido de passagem**: o modelo FINAL era treinado em `y`
+   (binario) mesmo com `--alvo professor` -- agora no alvo escolhido.
+2. `ciclo.py` passo 2: `treina_regua()` antes do Q -- sobrescreve
+   `value_net_aluno.joblib` (versionado, viaja pelo git com o `q_net`). O Q
+   do mesmo ciclo usa a regua nova no rotulo TD; a proxima geracao usa-a no
+   bootstrap. Registro da geracao ganha `config.regua` (AUC + controle).
+3. `smoke_fast.py`: `test_regua_aprende_de_si_mesma_bloco_917` (controle: outra
+   regua anterior muda os alvos do meio; fim/gen 0 ficam no resultado).
+
+**Medido offline** (selfplay_v2, 56.157 estados; 19.384 pela regua, 7.360 pelo
+fim, 29.413 gen 0): iteracao 1 a partir da congelada: AUC fora da amostra
+0,7869, separacao ganhas-perdidas +0,2272 -> +0,2390; iteracao 2: +0,2387 ->
++0,2411 (AUC 0,7875). O laco se move e converge -- o controle do item 5 pode
+falhar e nao falhou. AUC da congelada (0,803) era de OUTRO corpus: nao comparar.
+
+**NAO MEDIDO**: ciclo real com a regua nova (portao/mapa). Esperado pelo
+usuario: primeiros ciclos podem jogar pior -- NAO reverter por isso.
+**Aberto lateral**: `treinar_q.carrega_trajetorias` chaveia por
+(gen, match, leader) -- em partida espelho os dois lados colidem.
+
 ## 2026-09-30 (917) - DECISAO DO USUARIO: tirar o professor CONGELADO -- o proprio modelo gera o rotulo e aprende com o resultado
 
 **Achado**: o "professor" (`metrics/value_net_aluno.joblib`, via

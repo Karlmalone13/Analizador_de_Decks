@@ -316,6 +316,9 @@ def main() -> int:
     if args.consequencia:
         _aval = None
         if args.rotulo == 'td':
+            # A regua do CICLO (bloco 917): o `ciclo.py` a retreina logo antes
+            # deste passo, com TD dela mesma + resultado real. Nao e mais um
+            # professor congelado.
             from optcg_engine.decision_engine import MODELO_ORDENA_PATH
             _aval = _vn.load_value_net(MODELO_ORDENA_PATH)
         traj = carrega_trajetorias(args.selfplay, avaliador=_aval)

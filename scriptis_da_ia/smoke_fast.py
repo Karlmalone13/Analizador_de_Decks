@@ -10717,6 +10717,7 @@ def main() -> int:
     test_decisao_e_busca_determinista_sem_monte_carlo_bloco_785()
     test_coleta_busca_roda_mesmo_com_q_decidindo_19_09()
     test_win_prob_lote_da_o_mesmo_que_uma_por_vez_bloco_787()
+    test_regua_aprende_de_si_mesma_bloco_917()
     test_delta_gastar_da_mao_lote_bate_com_uma_por_vez_21_09()
     test_delta_remover_lote_bate_com_uma_por_vez_21_09()
     test_forward_rapido_bate_com_predict_do_sklearn_21_09()
@@ -17006,6 +17007,35 @@ def test_combat_log_da_memoria_da_os_campos_exatos_28_09() -> None:
     assert eu2 == ele and ele2 == eu                                     # controle
     assert sb.campos_do_combat_log([], 'You', 'OP14-020', 'OP16-001') is None
 
+
+
+def test_regua_aprende_de_si_mesma_bloco_917() -> None:
+    """Bloco 917: a regua nao e mais professor congelado -- o alvo de cada
+    estado vem DELA MESMA (ciclo anterior) 2 turnos proprios depois, e o
+    resultado REAL quando a partida acaba no horizonte. Controle que pode
+    falhar: trocar a regua anterior tem que trocar os alvos do meio."""
+    print("\n=== regua TD pela propria regua (bloco 917) ===")
+    import numpy as np
+    from treinar_value import alvo_td_proprio
+
+    class _M:
+        def __init__(self, c): self.c = c
+        def predict(self, Z): return np.full(len(Z), self.c)
+    X = np.zeros((6, 2))
+    y = np.array([1, 1, 1, 1, 0, 0])
+    # gen 3, partida 0, lado A: 4 turnos; gen 0: 2 estados (sem trajetoria)
+    meta = [(3, 0, 'A', 1), (3, 0, 'A', 3), (3, 0, 'A', 5), (3, 0, 'A', 7),
+            (0, 0, 'B', 2), (0, 0, 'B', 4)]
+    a1, _ = alvo_td_proprio(X, y, meta, ['f0', 'f1'],
+                            {'feature_names': ['f0'], 'modelo': _M(0.3)})
+    a2, _ = alvo_td_proprio(X, y, meta, ['f0', 'f1'],
+                            {'feature_names': ['f0'], 'modelo': _M(0.8)})
+    check("meio da trajetoria = regua anterior 2 turnos depois",
+          list(a1[:2]) == [0.3, 0.3])
+    check("fim da partida no horizonte = resultado real", list(a1[2:4]) == [1.0, 1.0])
+    check("gen 0 (sem trajetoria) = resultado real", list(a1[4:]) == [0.0, 0.0])
+    check("CONTROLE: outra regua anterior muda os alvos do meio",
+          list(a2[:2]) == [0.8, 0.8] and list(a2[2:]) == list(a1[2:]))
 
 if __name__ == "__main__":
     raise SystemExit(main())
