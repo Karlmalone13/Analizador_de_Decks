@@ -1,6 +1,11 @@
 # TODO — Analisador de Decks OPTCG
 
-**Última atualização:** 30 de setembro de 2026 (bloco 918)
+**Última atualização:** 30 de setembro de 2026 (bloco 919)
+
+> **CICLO 18 (bloco 919)**: 2x27, nao promove (esperado). Regua nova fecha o
+> laco (separacao +0,227 -> +0,240). Mapa gen 18: 7,0% ruins, attack/play ~8,5%,
+> motivo principal = PODER. **Proximo: ler o ciclo 19** (1o com a regua nova
+> dando as notas) e comparar o mapa.
 
 > **FEITO (bloco 918)**: a regua `value_net_aluno.joblib` deixou de ser
 > professor congelado -- `ciclo.py` a retreina a CADA ciclo com TD dela mesma

@@ -1,5 +1,26 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-09-30 (919) - Ciclo 18 (1o com a regua que aprende de si mesma): 2x27, nao promove; regua fecha o laco
+
+Tempos: gera 339s | treina_regua 23s | treina Q 830s | portao 60s.
+**Regua** (TD proprio, bloco 918): separacao ganhas-perdidas +0,2270 -> +0,2402,
+AUC fora da amostra 0,7802 -- o controle do item 5 do 917 passa no ciclo real.
+**Q**: erro fora da amostra 0,0541. **Portao**: 2x27 (29 decididos, 31
+divididos), DESCARTA, `candidato_006` contra `generation_002`. Esperado nos
+primeiros ciclos -- nao reverter.
+
+**Mapa gen 18** (1a sem exploracao, 960 fora; julgada pela regua ANTIGA -- a
+nova so da notas a partir da gen 19): 7.487 decisoes, 7,0% ruins, regret medio
+0,0127. attack 8,7% | play 8,5% | attach_don 3,4% | activate 2,1% | pass 2,0%.
+Motivo principal passou de vida pra PODER (power/power_max). Por lider 3,9%
+(EB02-010) a 11,9% (OP16-079) -- geral. Nao comparavel direto com os 9,3% da
+gen 16 (que incluiam exploracao).
+
+**Proximo**: ciclo 19 (1o com a regua nova nas notas do bootstrap) -- disparado
+nesta sessao; comparar o mapa com a gen 18 e conferir o recorte DON por ataque.
+O aviso "CHECKPOINT HUMANO PENDENTE" no fim do log e herdado (flag antiga), nao
+deste ciclo.
+
 ## 2026-09-30 (918) - Implementado o bloco 917: a regua aprende de SI MESMA a cada ciclo (fim do professor congelado)
 
 **Forma escolhida (ponto 1 do 917)**: a nota das candidatas continua vindo de
