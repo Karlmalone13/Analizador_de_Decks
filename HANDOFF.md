@@ -17,6 +17,16 @@ Motivo "power" no ataque 229 (era 117). Por lider 5,3%-12,5%, geral.
 gen 19 = regua do ciclo 18). Comparacao controlada em andamento: mesmas 60
 partidas (seed 10818, mesmo campeao) julgadas pelas duas reguas.
 
+**RESULTADO da comparacao** (60 partidas, seed 10818, Q campeao, so a regua
+troca via `OPTCG_MODELO_ORDENA_PATH`; ~2% de decisoes diferem porque a regua
+tambem decide sacrificio/alvo): congelada **6,1%** ruins (regret 0,0124) x
+regua do ciclo 18 **8,2%** (0,0151). attack 7,7 -> 10,7 | activate 1,9 -> 8,8
+| attach_don 3,4 -> 6,7 | play 7,5 -> 6,8 | pass 2,0 -> 3,1. **A regua explica
+~2,1 dos 2,4pp** da piora 18 -> 19; o resto cabe na seed. O bot nao piorou: a
+regua que aprende do resultado acha MAIS erro em ataque e ativacao que a
+congelada via. Consequencia: taxa de ruins so e comparavel entre geracoes
+julgadas pela MESMA regua -- comparar mapas exige re-julgar com uma regua fixa.
+
 ## 2026-09-30 (919) - Ciclo 18 (1o com a regua que aprende de si mesma): 2x27, nao promove; regua fecha o laco
 
 Tempos: gera 339s | treina_regua 23s | treina Q 830s | portao 60s.
