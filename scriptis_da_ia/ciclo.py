@@ -291,7 +291,39 @@ def gera(n, seed, workers, n_ciclo=0) -> bool:
 REGUA = RAIZ / 'metrics' / 'value_net_aluno.joblib'
 
 
-def treina_regua() -> dict | None:
+def geracao_ja_no_corpus(n_ciclo) -> bool:
+    """RETOMADA (30/09/2026): o ciclo 20 morreu no treino do Q (a sessao que
+    o rodava fechou) com a geracao JA gravada no corpus. Rodar de novo
+    re-gerava a mesma seed e ANEXAVA tudo outra vez -- ~105 mil linhas
+    duplicadas sem erro nenhum (mesma armadilha da importacao de 18/09). As
+    linhas de uma geracao sao anexadas no FIM, entao basta olhar a ultima."""
+    try:
+        with open(CORPUS, 'rb') as fh:
+            fh.seek(0, 2)
+            fh.seek(max(0, fh.tell() - 65536))
+            ultima = fh.read().splitlines()[-1]
+        return json.loads(ultima).get('gen') == n_ciclo
+    except Exception:
+        return False
+
+
+def _regua_do_git() -> str | None:
+    """A regua commitada (fim do ciclo anterior) num arquivo temporario. Na
+    retomada a regua do disco pode JA ter sido retreinada com esta geracao;
+    usa-la como anterior seria uma iteracao TD a mais, nao a mesma."""
+    import tempfile
+    try:
+        r = subprocess.run(['git', 'show', 'HEAD:scriptis_da_ia/metrics/value_net_aluno.joblib'],
+                           cwd=str(RAIZ), capture_output=True, check=True)
+        f = tempfile.NamedTemporaryFile(suffix='.joblib', delete=False)
+        f.write(r.stdout)
+        f.close()
+        return f.name
+    except Exception:
+        return None
+
+
+def treina_regua(anterior=None) -> dict | None:
     """A regua deixa de ser professor CONGELADO (bloco 917, decisao do
     usuario 30/09): retreinada a CADA ciclo no auto-jogo, com o alvo vindo
     DELA MESMA -- valor da posicao 2 turnos proprios depois pela regua do
@@ -302,7 +334,7 @@ def treina_regua() -> dict | None:
     pelo git junto do `q_net.joblib`)."""
     if not _rodar(['treinar_value.py', '--dataset', str(CORPUS), '--alvo', 'td',
                    '--features', 'aluno', '--folds', '2',
-                   '--regua-anterior', str(REGUA), '--out', str(REGUA)],
+                   '--regua-anterior', str(anterior or REGUA), '--out', str(REGUA)],
                   'treino da regua (TD proprio)'):
         return None
     try:
@@ -527,11 +559,16 @@ def main() -> int:
         cron = Cronometro()
         print('[1/5] GERA %d partidas (acumulando alvos Q)' % args.partidas,
               flush=True)
-        cron.inicia('gera')
-        ok = gera(args.partidas, seed, args.workers, n_ciclo=n_ciclo)
-        cron.fecha()
-        if not ok:
-            break
+        retomando = geracao_ja_no_corpus(n_ciclo)
+        if retomando:
+            print('      RETOMADA: a geracao %d ja esta no corpus (ciclo anterior '
+                  'interrompido) -- NAO gera de novo' % n_ciclo, flush=True)
+        else:
+            cron.inicia('gera')
+            ok = gera(args.partidas, seed, args.workers, n_ciclo=n_ciclo)
+            cron.fecha()
+            if not ok:
+                break
         # POR QUE as decisoes desta geracao foram ruins (28/09/2026). So
         # relatorio: falhar aqui nao interrompe o ciclo.
         _rodar(['porque_decisoes.py', '--dataset', str(Q_CORPUS),
@@ -539,7 +576,7 @@ def main() -> int:
 
         print('[2/5] TREINA a regua e o Q desafiante', flush=True)
         cron.inicia('treina_regua')
-        rg = treina_regua()
+        rg = treina_regua(_regua_do_git() if retomando else None)
         cron.fecha()
         if rg is None:
             break
