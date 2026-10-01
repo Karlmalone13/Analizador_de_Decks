@@ -3,8 +3,9 @@
 **Última atualização:** 30 de setembro de 2026 (bloco 920)
 
 > **CICLO 19 (bloco 920)**: 3x23, nao promove. Mapa 7,0% -> 9,4% ruins, mas o
-> Q que jogou e o mesmo -- mudou a regua que julga. Comparacao das duas reguas
-> nas mesmas partidas em andamento.
+> Q que jogou e o mesmo -- mudou a regua que julga. Comparacao nas mesmas 60
+> partidas: congelada 6,1% x regua nova 8,2% -- a regua explica ~2,1 dos 2,4pp.
+> **Pendente**: comparar mapas entre geracoes exige re-julgar com UMA regua fixa.
 
 > **CICLO 18 (bloco 919)**: 2x27, nao promove (esperado). Regua nova fecha o
 > laco (separacao +0,227 -> +0,240). Mapa gen 18: 7,0% ruins, attack/play ~8,5%,
