@@ -1,5 +1,27 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-10-01 (926) - Ciclos 32-37 com o descarte no Q: nenhuma promocao; ciclos 34 e 35 chegaram a 47%
+
+Q so com consequencia real + descarte como familia. Corpus 3,2M -> 3,75M linhas;
+usadas 241k -> 301k; cobertura 'descarte' (linhas com consequencia) 779 -> 4.571.
+Erro Q 0,140-0,145 (estavel). Regua: separacao +0,245/0,246, AUC 0,79-0,805.
+
+| ciclo | portao (desafiante) | % | decididos / divididos |
+|---|---|---|---|
+| 32 | 11x27 | 29% | 38 / 82 |
+| 33 | 19x35 | 35% | 54 / 106 |
+| **34** | **60x68** | **47%** | 128 / 271 |
+| **35** | **63x71** | **47%** | 134 / 365 |
+| 36 | 20x34 | 37% | 54 / 106 |
+| 37 | 14x31 | 31% | 45 / 114 |
+
+Antes (ciclos 20-31, sem descarte/com consequencia): 26%-38%. Os ciclos 34 e 35
+foram os melhores da serie e SPRT nao parou cedo (mais pares decididos) -- mas
+36/37 voltaram a 31%-37%. NAO provado que e efeito do descarte: dois pontos,
+mesma seed por ciclo mudando, ruido do duelo e grande (o controle campeao x
+campeao so da 0x0 em pares divididos). Para separar: repetir o portao dos
+desafiantes dos ciclos 34/35 em outra seed.
+
 ## 2026-10-01 (925) - Etapa 2, passo 1: o DESCARTE da mao entra no Q (explora e grava consequencia)
 
 Pedido: exploracao NAO dirigida cobrindo todos os tipos de decisao (bloco 924).

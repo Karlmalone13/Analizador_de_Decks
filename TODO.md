@@ -1,6 +1,10 @@
 # TODO — Analisador de Decks OPTCG
 
-**Última atualização:** 1 de outubro de 2026 (bloco 925)
+**Última atualização:** 1 de outubro de 2026 (bloco 926)
+
+> **CICLOS 32-37 COM DESCARTE NO Q (bloco 926)**: sem promocao; ciclos 34 e 35
+> a 47% (melhores da serie), 36/37 de volta a 31%-37%. Pendente: repetir o
+> portao dos desafiantes de 34/35 em outra seed pra separar efeito de ruido.
 
 > **DESCARTE NO Q (bloco 925)**: 1o passo da etapa 2 feito -- o descarte da mao
 > explora e grava consequencia pelo ponto unico; smoke 1.881 OK. **Proximo:
