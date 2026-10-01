@@ -354,6 +354,10 @@ FEATURE_NAMES_ACAO = [
     # FIM de proposito -- as linhas antigas do corpus (so jogada principal)
     # ganham 0 aqui, que e o valor certo pra elas.
     'eh_bloqueio', 'eh_counter', 'eh_alvo_efeito', 'alvo_e_meu',
+    # Bloco 925: DESCARTE (qual carta da mao sai). O ator e a carta que sai.
+    # Colunas NOVAS entram sempre no FIM: modelo mais antigo ignora as que nao
+    # conhece (ver `q_valores`) e linha antiga do corpus ganha 0 (valor certo).
+    'eh_descarte',
 ]
 N_ACAO_ANTIGO = len(FEATURE_NAMES_ACAO) - 4
 
@@ -389,7 +393,8 @@ def acao_features(acao, opp=None) -> list:
     extra = [1.0 if fam.startswith('block') else 0.0,
              1.0 if fam.startswith('counter') else 0.0,
              1.0 if fam == 'target' else 0.0,
-             1.0 if (len(acao) > 6 and acao[6]) else 0.0]
+             1.0 if (len(acao) > 6 and acao[6]) else 0.0,
+             1.0 if fam == 'descarte' else 0.0]
     return um_de + [
         _prop(ator, 'cost'), ator_power / 1000.0, _prop(ator, 'counter') / 1000.0,
         1.0 if _prop(ator, 'has_blocker') else 0.0,
@@ -449,9 +454,11 @@ def q_valores(p, opp, acoes, bundle=None) -> list:
         base = state_features(p, opp, nomes=FEATURE_NAMES_ALUNO)
         linhas = [base + acao_features(a, opp) for a in acoes]
         esperado = getattr(modelo, 'n_features_in_', None)
-        if esperado is not None and len(linhas[0]) == esperado + 4:
-            # modelo anterior ao bloco 910: nao conhece as 4 colunas de
-            # defesa/alvo -- ve a acao como sempre viu.
+        if esperado is not None and len(linhas[0]) > esperado:
+            # modelo ANTERIOR as colunas mais novas (bloco 910: defesa/alvo;
+            # bloco 925: descarte). Elas entram sempre no FIM, entao cortar o
+            # excesso devolve exatamente o vetor que ele aprendeu -- ve a acao
+            # como sempre viu.
             linhas = [ln[:esperado] for ln in linhas]
         if esperado is not None and len(linhas[0]) != esperado:
             return [None] * n

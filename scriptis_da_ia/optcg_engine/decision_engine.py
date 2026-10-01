@@ -1340,6 +1340,7 @@ def _q_escolhe_familia(me, opp, familia: str, opcoes: list, padrao_idx: int) -> 
     m = _Q_CTX.get('match')
     _eps = float(getattr(m, '_explora_eps', 0.0) or 0.0) if m is not None else 0.0
     # Explora SO onde o modelo esta incerto (bloco 913, INSTRUCAO_MESTRA item 7).
+    _antes = idx
     if _eps and len(incertos) > 1 and random.random() < _eps:
         idx = incertos[random.randrange(len(incertos))]
     cap = getattr(m, '_q_captura', None) if m is not None else None
@@ -1357,6 +1358,10 @@ def _q_escolhe_familia(me, opp, familia: str, opcoes: list, padrao_idx: int) -> 
                 'vez': me is _Q_CTX.get('ativo'),
                 'modo': 'bootstrap',
             })
+            # Jogada de TESTE nao e erro do modelo (mesma marca do turno
+            # principal): `porque_decisoes.py` separa as duas.
+            if idx != _antes:
+                cap[-1]['explorada'] = True
         except Exception:
             pass
     return idx
@@ -7053,7 +7058,7 @@ class EffectExecutor:
                         filter_text=cost.get('filter_type', ''),
                     )
                     pior_char = min(chars, key=lambda c: c.board_value(), default=None)
-                    pior_mao = self._choose_to_trash(self.me.hand)
+                    pior_mao = self._choose_to_trash(self.me.hand, avaliando=True)
                     if pior_char is None and pior_mao is None:
                         return False
                     # Chars ATIVOS (podem atacar este turno) nunca são descartados
@@ -11764,8 +11769,13 @@ class EffectExecutor:
         """
         return min(hand, key=self._trash_value) if hand else None
 
-    def _choose_to_trash(self, hand: list) -> Optional[Card]:
-        """Escolhe a carta de menor valor situacional para descartar."""
+    def _choose_to_trash(self, hand: list, avaliando: bool = False) -> Optional[Card]:
+        """Escolhe a carta que sai da mao.
+
+        `avaliando=True`: so uma HIPOTESE ("existe carta barata o bastante pra
+        pagar este custo?") -- nada sai de fato, entao nao e decisao e nao
+        explora nem grava no corpus.
+        """
         if not hand:
             return None
         if _familia_aleatoria('descarte', self.me) and len(hand) > 1:
@@ -11775,9 +11785,18 @@ class EffectExecutor:
         # quando doi, entao o MAIOR valor e a menor perda).
         _pool = [c for c in hand if not _e_reserva_de_defesa(c)] or list(hand)
         _esc = _modelo_escolhe_carta(self.me, self.opp, _pool, 'delta_gastar_da_mao')
-        if _esc is not None:
-            return _esc
-        return self._carta_mais_barata_da_mao(hand)
+        _padrao = _esc if _esc is not None else self._carta_mais_barata_da_mao(hand)
+        # DESCARTE NO Q (bloco 925, pedido do usuario: a exploracao cobre TODOS
+        # os tipos de decisao). Vai pelo MESMO ponto de bloqueio/counter/alvo.
+        # So a mao PROPRIA e so quando a carta vai de fato sair: a mao do
+        # oponente nao e decisao nossa, e a avaliacao hipotetica nao acontece.
+        if (not avaliando and len(_pool) > 1 and _padrao in _pool
+                and all(any(c is x for x in self.me.hand) for c in _pool)):
+            _opcoes = [(0.0, 'descarte', c, None, None, 0, False) for c in _pool]
+            _i = _q_escolhe_familia(self.me, self.opp, 'descarte', _opcoes,
+                                    next(k for k, c in enumerate(_pool) if c is _padrao))
+            return _pool[_i]
+        return _padrao
 
     _SACRIFICE_COST_TYPES = {'trash_from_hand', 'trash_hand', 'trash_char_or_hand',
                              'trash_typed_hand_or_named_hand_field',

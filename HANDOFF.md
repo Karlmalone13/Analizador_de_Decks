@@ -1,5 +1,40 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-10-01 (925) - Etapa 2, passo 1: o DESCARTE da mao entra no Q (explora e grava consequencia)
+
+Pedido: exploracao NAO dirigida cobrindo todos os tipos de decisao (bloco 924).
+**Feito**: `EffectExecutor._choose_to_trash` passa a perguntar ao Q como familia
+`'descarte'` pelo MESMO ponto de bloqueio/counter/alvo (`_q_escolhe_familia`),
+sem funcao nova (REGRA_SEM_DUPLICACAO). Achado: o descarte NAO era regra pura --
+ja perguntava a uma rede de valor (`delta_gastar_da_mao`, a regua), mas essa nao
+explora nem grava consequencia; ela fica como o `padrao` ate o Q aprender.
+- So decisao real: mao PROPRIA, >= 2 cartas, e a carta vai sair. NAO conta:
+  hipotese de custo (`avaliando=True`, o chamador de `_pay_costs` L7056), mao do
+  OPONENTE (10305/10406), carta unica.
+- Vetor da acao ganhou 1 coluna no FIM (`eh_descarte`; 105 -> 106 colunas com o
+  estado). `q_valores` agora corta o EXCESSO pra qualquer modelo mais antigo
+  (era so "+4"), entao o campeao `generation_002` segue decidindo igual; o
+  `treinar_q` completa com zeros linhas antigas e o campeao na hora de continuar
+  o treino (generalizado: ate 8 colunas novas). `FAMILIAS_JOGO` ganhou 'descarte'.
+- Familia sem modelo = tudo "incerto": explora entre TODAS as cartas da mao com
+  prob. eps (como block/counter/target nasceram no 910). Custo conhecido: ~17%
+  dos descartes reais saem ao acaso ate o Q aprender a familia.
+- `_q_escolhe_familia` agora marca `explorada` (so o turno principal marcava).
+
+**Medido**: 12 partidas (seed 4343, eps 0,17): descarte 53 escolhidas / 5
+exploradas; counter 126/9; block 38/3; target 21/2. 6 partidas: 35 linhas de
+descarte (de ~18 chamadas/partida medidas no bloco 924, so ~6 sao decisao real).
+`smoke_fast` 1.881 OK, 0 falhas (+ teste novo com controles: hipotese, mao do
+oponente e carta unica NAO viram decisao; corrigido o teste de colunas que
+indexava pelo fim).
+
+**NAO feito ainda do grupo 1 (custos)**: `_pay_costs` tem outras escolhas (qual
+personagem/stage restar ou sacrificar como custo, decidir se paga) -- seguem
+por regra. Descarte "pro fundo do deck" (hand_to_deck) usa a mesma familia
+sem distinguir o destino. Proximo: custos; depois evento de counter; depois
+passos de efeito. Descarte so aprende de verdade depois que um ciclo treinar
+com essas linhas (cobertura 'descarte' no bundle).
+
 ## 2026-10-01 (924) - Ciclos 26-31 no modo novo (so consequencia): nenhuma promocao, placar sem tendencia; etapa 1 da cobertura de exploracao
 
 **Ciclos 26-31** (Q so com consequencia real, 172k -> ~230k linhas usadas,

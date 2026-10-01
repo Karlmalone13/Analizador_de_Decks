@@ -1,6 +1,11 @@
 # TODO — Analisador de Decks OPTCG
 
-**Última atualização:** 1 de outubro de 2026 (bloco 924)
+**Última atualização:** 1 de outubro de 2026 (bloco 925)
+
+> **DESCARTE NO Q (bloco 925)**: 1o passo da etapa 2 feito -- o descarte da mao
+> explora e grava consequencia pelo ponto unico; smoke 1.881 OK. **Proximo:
+> rodar ciclos pra o Q aprender 'descarte'; depois custos (`_pay_costs`),
+> evento de counter, passos de efeito.**
 
 > **EXPLORACAO EM TODOS OS TIPOS (bloco 924)**: etapa 1 feita -- Q decide ~51
 > decisoes/partida, ha ~100 chamadas de regra fixa fora dele (custos 25,

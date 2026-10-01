@@ -10990,6 +10990,7 @@ def main() -> int:
     test_select_grant_rush_piso_de_power_vale_pro_ramo_do_nome_26_09()
     test_treino_ignora_rotulo_busca_por_default_27_09()
     test_ml_aprende_todas_as_decisoes_pela_consequencia_27_09()
+    test_descarte_passa_pelo_q_bloco_925()
     test_explora_so_onde_o_modelo_esta_incerto_27_09()
     test_treino_continua_do_campeao_27_09()
     test_registro_de_geracoes_27_09()
@@ -15776,9 +15777,9 @@ def test_ml_aprende_todas_as_decisoes_pela_consequencia_27_09() -> None:
     check("acao_features tem a largura de FEATURE_NAMES_ACAO",
           len(f_b) == na and len(f_a) == na)
     check("bloqueio, counter e alvo marcados nas colunas novas",
-          f_b[-4] == 1.0 and f_c[-3] == 1.0 and f_c[-1] == 1.0 and f_t[-2] == 1.0)
-    check("CONTROLE: jogada principal tem as 4 colunas novas zeradas (igual ao corpus antigo)",
-          f_a[-4:] == [0.0, 0.0, 0.0, 0.0])
+          f_b[-5] == 1.0 and f_c[-4] == 1.0 and f_c[-2] == 1.0 and f_t[-3] == 1.0)
+    check("CONTROLE: jogada principal tem as 4 colunas de defesa/alvo zeradas (igual ao corpus antigo)",
+          f_a[-5:-1] == [0.0, 0.0, 0.0, 0.0])
     traj = {(9, 3, 'L1'): [(0, 0.0, 1, 0.40), (2, 1.0, 1, 0.55), (4, 2.0, 1, 0.70)]}
     esc = {'escolhida': True, 'decisao': 1, 'gen': 9, 'match': 3, 'leader': 'L1',
            'turn': 1, 'ld_agora': 0.0}
@@ -17036,6 +17037,39 @@ def test_regua_aprende_de_si_mesma_bloco_917() -> None:
     check("gen 0 (sem trajetoria) = resultado real", list(a1[4:]) == [0.0, 0.0])
     check("CONTROLE: outra regua anterior muda os alvos do meio",
           list(a2[:2]) == [0.8, 0.8] and list(a2[2:]) == list(a1[2:]))
+
+
+def test_descarte_passa_pelo_q_bloco_925() -> None:
+    """Bloco 925: o descarte entra no Q pelo ponto unico (`_q_escolhe_familia`),
+    mas SO quando a carta da mao PROPRIA vai de fato sair."""
+    from optcg_engine import decision_engine as de
+    from optcg_engine import value_net as vn
+    print("\n=== descarte pelo Q (bloco 925) ===")
+    a, b, c = mk("DSA", "A", cost=1), mk("DSB", "B", cost=5), mk("DSC", "C", cost=3)
+    f = vn.acao_features((0.0, 'descarte', a, None, None, 0, False), None)
+    check("descarte marcado na coluna nova; jogada principal fica 0",
+          f[-1] == 1.0 and vn.acao_features((0.0, 'attack', a, 'leader', None), None)[-1] == 0.0)
+    chamadas = []
+    orig = de._q_escolhe_familia
+    de._q_escolhe_familia = lambda me, opp, fam, ops, pad: (chamadas.append((fam, len(ops), pad)) or 1)
+    try:
+        me = GameState(leader=real_card("OP14-020")); opp = GameState(leader=real_card("OP16-001"))
+        me.hand = [a, b, c]
+        opp.hand = [mk("DSX", "X"), mk("DSY", "Y")]
+        ee = de.EffectExecutor(me, opp)
+        esc = ee._choose_to_trash(me.hand)
+        check("mao propria: pergunta ao Q como familia 'descarte' e devolve a carta ESCOLHIDA por ele",
+              chamadas and chamadas[0][0] == 'descarte' and chamadas[0][1] == 3 and esc is not None
+              and esc is [x for x in me.hand if not de._e_reserva_de_defesa(x)][1])
+        n = len(chamadas)
+        ee._choose_to_trash(me.hand, avaliando=True)
+        check("CONTROLE: hipotese (avaliando=True) NAO vira decisao", len(chamadas) == n)
+        ee._choose_to_trash(opp.hand)
+        check("CONTROLE: mao do OPONENTE nao e decisao nossa", len(chamadas) == n)
+        ee._choose_to_trash([a])
+        check("CONTROLE: uma carta so nao e escolha", len(chamadas) == n)
+    finally:
+        de._q_escolhe_familia = orig
 
 if __name__ == "__main__":
     raise SystemExit(main())
