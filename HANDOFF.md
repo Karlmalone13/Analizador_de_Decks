@@ -1,5 +1,28 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-10-01 (923) - Q passa a treinar SO com consequencia real (decisao do usuario); 1o teste = empate com o treino antigo (24x39 x 22x39)
+
+Pesquisa (Spinning Up/AlphaZero) + comparacao com o projeto: a forma e RL
+(Q + valor + auto-jogo + portao), mas ~90% das linhas do treino do Q eram a
+NOTA que a regua deu a alternativas nao jogadas -- o Q imitava a regua. Decisao
+do usuario: manter todo o corpus (nada apagado; filtro so na leitura) e treinar
+so com o que aconteceu. `treinar_q.py`: linha sem consequencia real (alternativas
+nao jogadas, gen 0) e pulada; ficam as jogadas ESCOLHIDAS (inclui exploracao)
+com desfecho (regua atual 2 turnos depois / resultado real). Sem knob pro modo
+antigo (regra do projeto).
+
+Medido (corpus inteiro, continua do campeao gen_002, seed do portao do ciclo 25):
+2.477.378 linhas lidas | 2.220.297 pulados | **161.799 usadas (6,5%)** | erro
+0,1597 (alvo = consequencia ruidosa, NAO comparavel ao 0,06 de antes) | portao
+**24x39** (63 decididos, llr -3,24, DESCARTA) x 22x39 do treino antigo. Empate
+dentro do ruido: com 6,5% dos dados rende o mesmo -- as linhas de consequencia
+carregam o sinal que as outras 93,5% so imitavam -- mas NAO bate o campeao.
+Concordancia top-1 sem amostra (so ha escolhidas; esperado).
+
+Proximo: ciclos no modo novo (cada ciclo gera mais consequencias reais);
+acompanhar se o placar sobe com mais gen. Suspeita (a) do campeao ter aprendido
+espiando segue aberta (so partida humana separa).
+
 ## 2026-10-01 (922) - Opcao A do 921 REPROVADA: desafiante so com gen >= 18 faz 7x26 (pior que os 22x39 do corpus inteiro)
 
 Isolado (script em scratch, nada em producao tocado): 831.429 linhas gen >= 18,

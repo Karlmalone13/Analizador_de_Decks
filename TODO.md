@@ -1,6 +1,10 @@
 # TODO — Analisador de Decks OPTCG
 
-**Última atualização:** 1 de outubro de 2026 (bloco 922)
+**Última atualização:** 1 de outubro de 2026 (bloco 923)
+
+> **Q SO COM CONSEQUENCIA REAL (bloco 923)**: padrao do `treinar_q.py` desde
+> hoje (corpus intacto, filtro na leitura). 1o teste: 161.799 linhas (6,5%),
+> portao 24x39 = empate com o treino antigo (22x39). Ciclos no modo novo rodando.
 
 > **REPROVADO (bloco 922)**: Q so com corpus gen >= 18 = 7x26 (pior que 22x39
 > do corpus inteiro). **Proximo: partidas do usuario contra o campeao**
