@@ -33,6 +33,22 @@ as entradas que dependiam dela saem ou vao pra "VALE RE-TESTAR" no TODO.
 
 ---
 
+## Treinar o Q so com o corpus do rotulo novo (gen >= 18) (bloco 922, 01/10/2026)
+
+Hipotese: o ~46% de corpus legado (gen 0, rotulo que espiava) puxa o treino
+pra tras -- erro do Q subindo 0,054 -> 0,065 nos ciclos 18-25. Isolado: mesma
+receita, continua do campeao `generation_002`, mesma seed do portao do ciclo 25
+(11538); so o corpus muda (831.429 linhas, gen >= 18).
+
+| corpus | erro fora da amostra | portao vs campeao |
+|---|---|---|
+| inteiro (ciclo 25) | 0,0650 | 22x39 (36%) |
+| **so gen >= 18** | 0,0582 | **7x26 (21%)**, llr -3,49 |
+
+Erro menor NAO virou jogo melhor (erros de corpora diferentes nao se
+comparam). Bate com o isolamento do bloco 916: menos dado piora, volume >
+recencia. **Nao repetir** sem mudar algo alem do recorte do corpus.
+
 ## Treinar o Q na VANTAGEM dentro da decisao (bloco 916, 30/09/2026)
 
 Motivacao: a "fraqueza n.1" do mapa (quanto DON no ataque) e, medido, a mesma

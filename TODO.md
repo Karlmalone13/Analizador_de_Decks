@@ -1,6 +1,10 @@
 # TODO — Analisador de Decks OPTCG
 
-**Última atualização:** 1 de outubro de 2026 (bloco 921)
+**Última atualização:** 1 de outubro de 2026 (bloco 922)
+
+> **REPROVADO (bloco 922)**: Q so com corpus gen >= 18 = 7x26 (pior que 22x39
+> do corpus inteiro). **Proximo: partidas do usuario contra o campeao**
+> (checkpoint humano) pra testar se o campeao so vence por ter aprendido espiando.
 
 > **CICLOS 20-25 (bloco 921)**: 6 ciclos, ZERO promocoes (13%-36% contra o
 > campeao). A regua calibrou (separacao parada em ~+0,243) e o Q nao passou;

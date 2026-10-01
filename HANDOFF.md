@@ -1,5 +1,17 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-10-01 (922) - Opcao A do 921 REPROVADA: desafiante so com gen >= 18 faz 7x26 (pior que os 22x39 do corpus inteiro)
+
+Isolado (script em scratch, nada em producao tocado): 831.429 linhas gen >= 18,
+treino continuado do campeao, portao seed 11538 (a do ciclo 25). Erro Q 0,0582,
+concordancia top-1 59,4%, portao 7x26 em 33 decididos, DESCARTA, llr -3,49.
+Ciclo 25 com o corpus inteiro: 22x39. Suspeita (b) do bloco 921 nao se
+sustenta -- o legado nao e o que trava. Entrada no REPROVADOS.
+
+**Resta a suspeita (a)**: o campeao `generation_002` aprendeu com rotulo que
+espiava, e o auto-jogo favorece quem viu mais; so partida contra humano separa.
+Checkpoint humano pendente.
+
 ## 2026-10-01 (921) - Ciclos 20-25 com a regua que aprende de si mesma: NENHUMA promocao; regua estabilizou, Q nao passa do campeao
 
 Pedido do usuario: "pode ir treinando ate nossa regua calibrar e conseguir
