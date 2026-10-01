@@ -1,6 +1,11 @@
 # TODO — Analisador de Decks OPTCG
 
-**Última atualização:** 30 de setembro de 2026 (bloco 920)
+**Última atualização:** 1 de outubro de 2026 (bloco 921)
+
+> **CICLOS 20-25 (bloco 921)**: 6 ciclos, ZERO promocoes (13%-36% contra o
+> campeao). A regua calibrou (separacao parada em ~+0,243) e o Q nao passou;
+> erro Q subindo 0,054 -> 0,065. **Proximo (decisao do usuario)**: testar
+> desafiante so com corpus gen >= 18, e/ou partidas contra humano.
 
 > **CICLO 19 (bloco 920)**: 3x23, nao promove. Mapa 7,0% -> 9,4% ruins, mas o
 > Q que jogou e o mesmo -- mudou a regua que julga. Comparacao nas mesmas 60

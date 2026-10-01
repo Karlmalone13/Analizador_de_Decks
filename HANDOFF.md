@@ -1,5 +1,35 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-10-01 (921) - Ciclos 20-25 com a regua que aprende de si mesma: NENHUMA promocao; regua estabilizou, Q nao passa do campeao
+
+Pedido do usuario: "pode ir treinando ate nossa regua calibrar e conseguir
+ganhar do bot que ja existe". Loop `metrics/_loop_ciclos.sh` (para na 1a
+promocao, max 6). Ciclo 20 foi RETOMADO (a sessao anterior morreu no treino do
+Q com a geracao ja no corpus) -- `ciclo.py` agora detecta geracao ja gravada e
+nao gera de novo (commit 65ea913), regua anterior vem do git.
+
+| ciclo | portao (desafiante) | % | erro Q | separacao regua | ruins |
+|---|---|---|---|---|---|
+| 20 | 3x20 | 13% | 0,0611 | +0,2400 -> +0,2405 | 8,5% |
+| 21 | 4x21 | 16% | 0,0597 | +0,2406 -> +0,2421 | 8,4% |
+| 22 | 4x28 | 13% | 0,0586 | +0,2423 -> +0,2429 | 7,7% |
+| 23 | 17x32 | 35% | 0,0619 | +0,2422 -> +0,2432 | 8,4% |
+| 24 | 8x27 | 23% | 0,0607 | +0,2431 -> +0,2422 | 7,7% |
+| 25 | 22x39 | 36% | 0,0650 | +0,2419 -> +0,2439 | 8,2% |
+
+Leitura: (1) a REGUA CALIBROU -- separacao parada em ~+0,242/0,244, AUC
+0,78-0,80; mais ciclos nao a movem. (2) O Q desafiante NAO passa do campeao
+`generation_002`: todos descartados; erro fora da amostra SUBINDO 0,054 ->
+0,065. (3) Ultimos ciclos perdem por menos (35%/36%), mas ainda bem abaixo de
+50%. (4) Mapa de ruins estavel 7,7-8,5% (regua quase fixa nesse trecho, entao
+aqui da pra comparar): o jogador nao mudou -- e o mesmo campeao.
+
+**Conclusao**: calibrar a regua nao bastou. As duas suspeitas do bloco 920
+seguem como proximo passo, decisao do usuario: (a) o campeao aprendeu com
+rotulo que espiava (portao nao valida Fase 0; juiz = partidas contra humano);
+(b) o treino do Q continua do campeao sobre corpus com ~46% legado gen 0 --
+testar desafiante so com gen >= 18 (rotulo novo). Erro Q subindo reforca (b).
+
 ## 2026-09-30 (920) - Ciclo 19 (1o com a regua nova dando as notas): 3x23, nao promove; mapa piora 7,0% -> 9,4% (regua diferente julgando)
 
 Tempos: gera 309s | treina_regua 20s | treina Q 669s | portao 92s.
