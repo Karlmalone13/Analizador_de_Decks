@@ -1,5 +1,32 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-10-01 (924) - Ciclos 26-31 no modo novo (so consequencia): nenhuma promocao, placar sem tendencia; etapa 1 da cobertura de exploracao
+
+**Ciclos 26-31** (Q so com consequencia real, 172k -> ~230k linhas usadas,
+treino ~125s): portao 19x34, 9x26, 15x32, 13x29, 14x31, 7x25 (26%-36%), erro Q
+0,144-0,154. Sem subida com o corpus. Campeao segue `generation_002`. Limite
+estrutural: o Q so ve o desfecho do que ele mesmo escolhe; alternativas so
+aparecem nas ~1.000 jogadas de exploracao por ciclo (17%, so entre opcoes que
+o modelo nao distingue -- margem 0,055).
+
+**Pedido do usuario**: exploracao NAO dirigida, cobrindo TODOS os tipos de
+decisao. Etapa 1 (so medir, `conta_decisoes.py` em scratch, 20 partidas, eps
+0,17, decisoes reais fora de simulacao):
+- Q decide ~51/partida: turno 40 (attack 19,2 | play 11,2 | pass 5,5 | activate
+  3,4 | attach_don 0,85) + counter 7,1 + block 1,9 + target 1,65. Exploram.
+- Regra fixa (CHAMADAS/partida, nao escolhas reais): `_execute_step` 45 |
+  `_pay_costs` 25 | `try_counter_event_power/debuff` 23 | `_de` (descarte) 18 |
+  `_carta_mais_barata_da_mao` 5 | `_pick_effect_target_inner` 3 |
+  `_place_start_stage` 2. Fora do quadro (analise, nao decisao): `_lethal_search`
+  252, `opp_combo_threat` 88, `_conditional_play_card_combo_value` 205.
+- Ressalva: chamada != escolha (pode ter 1 opcao ou varias escolhas). Mulligan
+  nao apareceu no inventario -- conferir onde e decidido.
+
+**Etapa 2 (proxima)**: levar os pontos fixos pro `_q_escolhe_familia`, do mais
+frequente: (1) custos/descarte, (2) evento de counter, (3) passos de efeito;
+conferindo antes quantas chamadas tem >= 2 opcoes. Cada familia nova comeca
+sem modelo (regra de hoje, mas ja explora e grava consequencia).
+
 ## 2026-10-01 (923) - Q passa a treinar SO com consequencia real (decisao do usuario); 1o teste = empate com o treino antigo (24x39 x 22x39)
 
 Pesquisa (Spinning Up/AlphaZero) + comparacao com o projeto: a forma e RL

@@ -1,6 +1,12 @@
 # TODO — Analisador de Decks OPTCG
 
-**Última atualização:** 1 de outubro de 2026 (bloco 923)
+**Última atualização:** 1 de outubro de 2026 (bloco 924)
+
+> **EXPLORACAO EM TODOS OS TIPOS (bloco 924)**: etapa 1 feita -- Q decide ~51
+> decisoes/partida, ha ~100 chamadas de regra fixa fora dele (custos 25,
+> descarte 18, counter 23, passos de efeito 45). **Proximo: etapa 2** --
+> levar esses pontos pro `_q_escolhe_familia`, comecando por custos/descarte.
+> Ciclos 26-31 no modo novo: sem promocao, 26%-36%.
 
 > **Q SO COM CONSEQUENCIA REAL (bloco 923)**: padrao do `treinar_q.py` desde
 > hoje (corpus intacto, filtro na leitura). 1o teste: 161.799 linhas (6,5%),
