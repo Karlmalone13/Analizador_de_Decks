@@ -308,7 +308,7 @@ def main() -> int:
     caminho = RAIZ / args.dataset
     X, y, grupos = [], [], []
     decisoes, escolhidas, familias = [], [], []
-    n_lidas = n_filtradas_modo = 0
+    n_lidas = n_filtradas_modo = n_sem_consequencia = 0
     from optcg_engine import value_net as _vn
     i_ld_q = list(_vn.FEATURE_NAMES_ALUNO).index('life_diff')
     n_cols = len(_vn.FEATURE_NAMES_ALUNO) + len(_vn.FEATURE_NAMES_ACAO)
@@ -346,10 +346,18 @@ def main() -> int:
             if traj:
                 d['ld_agora'] = feats[i_ld_q]
                 _c = alvo_consequencia(d, traj, modo=args.rotulo)
-                if _c is not None:
-                    alvo = _c
-                    if cob is not None:
-                        cob[2] += 1
+                if _c is None:
+                    # SO O QUE ACONTECEU ENSINA (decisao do usuario, 01/10/2026,
+                    # bloco 923): linha sem consequencia real -- as alternativas
+                    # que o bot NAO jogou e a gen 0 -- levava a NOTA que a regua
+                    # deu na epoca. Era ~90% do treino: o Q imitava uma regua em
+                    # vez de aprender com o resultado. Fica so a jogada
+                    # escolhida (inclusive a de exploracao) com o desfecho dela.
+                    n_sem_consequencia += 1
+                    continue
+                alvo = _c
+                if cob is not None:
+                    cob[2] += 1
             if alvo is None:
                 continue   # decisao de defesa/alvo sem continuacao registrada
             X.append(feats)
@@ -367,7 +375,8 @@ def main() -> int:
 
     print()
     print('  corpus: %d linhas lidas | %d descartadas pelo filtro --modo=%s '
-          '(%d restantes)' % (n_lidas, n_filtradas_modo, args.modo, len(X)))
+          '| %d sem consequencia real (nota da regua, fora) | %d usadas'
+          % (n_lidas, n_filtradas_modo, args.modo, n_sem_consequencia, len(X)))
     print()
     print('  O QUE O ML APRENDE, por decisao do jogo (bloco 910):')
     print('  %-11s %9s %10s %22s' % ('decisao', 'linhas', 'escolhidas', 'rotulo pela consequencia'))
