@@ -1,5 +1,33 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-10-02 (929) - PRIMEIRA PROMOCAO desde a gen 002: `generation_003` (ciclo 40), confirmada em 3 seeds novas
+
+Com a reamostragem pela VANTAGEM de cada jogada (bloco 928, item 2), o placar
+do desafiante subiu 3 ciclos seguidos: **ciclo 38 42x53 (44%) -> 39 67x74 (48%)
+-> 40 142x103 (58%, PROMOVE, 245 decididos)**. Antes (ciclos 20-37) ficava em
+26%-38%. Linhas usadas 313k -> 337k; erro Q 0,141-0,149; regua AUC 0,80,
+separacao +0,246/0,247. `generation_003` registrada contra `generation_002`,
+vira o campeao (`q_net.joblib`).
+
+**Confirmacao (a gen_002 tinha sido promovida em UMA seed so; nao repetir)**:
+`generation_003` x `generation_002` em seeds nunca usadas: 7101 **47x22 (68%)
+PROMOVE** | 7202 197x166 (54%) INCONCLUSIVO (teto de pares) | 7303 **141x103
+(58%) PROMOVE**. Total 385x291 = 57%. Real.
+
+**Ressalva**: a medida de qualidade (bloco 928) NAO mexeu -- ruins 26,6%-28,1% nas
+gens 38-40, igual a faixa de antes. O ganho no duelo nao aparece nela (pouco
+sensivel, ou o ganho e em outra coisa). Guarda-corpo desta promocao (so
+alarme): acerto_por_jogada 35,6% | play 28,9 | attack_quem 49,6 | activate 26,4
+| attach_don 17,8 | blocker 88,9 | counter 64,4.
+
+**Causa provavel (nao isolada)**: o unico ajuste entre os ciclos 37 e 38 foi a
+prioridade do replay (erro do campeao -> vantagem da jogada). Nao foi feito o
+controle (mesmo corpus/seed com a prioridade antiga) -- se for pedir, e barato.
+
+**Pendente**: checkpoint humano (o ciclo deixou `checkpoint_humano_pendente`);
+a vantagem ainda nao e gravada no corpus; custos e passos de efeito fora do Q;
+medida de qualidade estavel entre ciclos.
+
 ## 2026-10-02 (928) - QUALIDADE DE CADA JOGADA medida pelo que ela causou (`qualidade_jogadas.py`), no ciclo; achado: nada melhora desde a gen 17
 
 Pedido central do usuario (repetido): o bot analisa a qualidade/desempenho das

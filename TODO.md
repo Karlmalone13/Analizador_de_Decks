@@ -1,6 +1,12 @@
 # TODO — Analisador de Decks OPTCG
 
-**Última atualização:** 2 de outubro de 2026 (bloco 928)
+**Última atualização:** 2 de outubro de 2026 (bloco 929)
+
+> **PROMOCAO (bloco 929)**: `generation_003` (ciclo 40, 142x103) promovida e
+> CONFIRMADA em 3 seeds novas (68%/54%/58%, total 57%). Veio da reamostragem
+> pela vantagem de cada jogada. A medida de qualidade nao mexeu. **Proximo**:
+> seguir os ciclos a partir da gen 003; checkpoint humano pendente; custos e
+> passos de efeito no Q; guardar a vantagem no corpus.
 
 > **QUALIDADE DE CADA JOGADA (bloco 928)**: `qualidade_jogadas.py` (no ciclo).
 > Achado: a qualidade esta PLANA desde a gen 17 (27-28% ruins); pior em
