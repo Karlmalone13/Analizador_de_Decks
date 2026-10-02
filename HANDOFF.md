@@ -1,5 +1,45 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-10-02 (927) - Etapa 2, passo 2: o EVENTO de [Counter] entra no Q (usar qual / nao usar); + o que as medicoes dos ultimos dias fecharam
+
+**Feito**: `EffectExecutor._q_counter_evento` -- usar um evento `[Counter]` da
+mao (qual) ou NAO usar passa a ser decisao do Q pelo ponto unico
+(`_q_escolhe_familia`, familia `counter_evento`), nos dois mecanismos
+(`try_counter_event_power` e `try_counter_event_debuff`). Opcoes: "nao usar" +
+cada candidata; `padrao` = a regra de antes (menor excesso, depois menor custo).
+Em simulacao devolve a regra. Vetor da acao +1 coluna no fim
+(`eh_counter_evento`, 107 colunas); `treinar_q` aceita ate 16 colunas novas
+(era 8) e `FAMILIAS_JOGO` ganhou `counter_evento`. Medido: 12 partidas ->
+12,1 chamadas/partida de `try_counter_event_power`, mas so ~1,1 com >= 2
+eventos competindo e ~1,0 uso real; debuff nao ficou elegivel nenhuma vez.
+Geracao de 16 partidas: 21 escolhas `counter_evento` (2 exploradas),
+descarte 78 (15), counter 127 (9), block 42 (4), target 36 (1).
+`smoke_fast` 1.885+ OK (teste novo com controles; o controle de "dimensao
+incompativel" usava n_cols+7, que passou a caber no limite de 16 -> n_cols+40).
+
+**Resultados dos testes dos blocos 926-927 (todos contra `generation_002`,
+seeds 9101/9202/9303), pra nao repetir**:
+- mao escondida no duelo: placares IDENTICOS (a funcao muda de valor em 211 de
+  270 chamadas, mas nenhuma decisao do Q usa a mao real) -> hipotese "campeao
+  aprendeu espiando" CAIU.
+- desafiante com cobertura de defesa/descarte apagada: 34%/36%/47% (sem apagar
+  34%/36%/34%) -> nao explica.
+- receita antiga, corpus inteiro: V1 (do campeao) 35%/38%/43%; V2 (do zero, sem
+  PER) 32%/29%/43%. So gen <= 15 (era do campeao): 29%/24%/31%.
+- ciclos 32-37 (descarte no Q): 29%-37%, dois ciclos a 47% eram ruido (mesmo
+  desafiante em 3 seeds: 34%/36%/34%).
+Nenhuma variavel de receita/dado move o desafiante da faixa 29%-43%. Hipotese
+em aberto, NAO testada: o campeao e um treino de sorte (promovido em 1 seed,
+75x46) -- teste proposto: 4 treinos com seeds diferentes. O usuario nao quis
+seguir por ai: o pedido dele e (1) exploracao cobrindo TODOS os tipos de
+decisao e (2) a qualidade da jogada (ruim -> melhorar, boa -> manter)
+alimentar o treino. Esse e o rumo.
+
+**Faltam da etapa 2**: custos de `_pay_costs` (25 chamadas/partida: qual
+personagem/stage restar ou sacrificar, pagar ou nao) e passos de efeito
+(`_execute_step`, 45/partida). **E nao existe ainda**: jogada ruim virar sinal de
+correcao no treino (hoje `porque_decisoes.py` so relata).
+
 ## 2026-10-01 (926) - Ciclos 32-37 com o descarte no Q: nenhuma promocao; ciclos 34 e 35 chegaram a 47%
 
 Q so com consequencia real + descarte como familia. Corpus 3,2M -> 3,75M linhas;

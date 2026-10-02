@@ -10991,6 +10991,7 @@ def main() -> int:
     test_treino_ignora_rotulo_busca_por_default_27_09()
     test_ml_aprende_todas_as_decisoes_pela_consequencia_27_09()
     test_descarte_passa_pelo_q_bloco_925()
+    test_evento_de_counter_passa_pelo_q_bloco_927()
     test_explora_so_onde_o_modelo_esta_incerto_27_09()
     test_treino_continua_do_campeao_27_09()
     test_registro_de_geracoes_27_09()
@@ -15777,9 +15778,9 @@ def test_ml_aprende_todas_as_decisoes_pela_consequencia_27_09() -> None:
     check("acao_features tem a largura de FEATURE_NAMES_ACAO",
           len(f_b) == na and len(f_a) == na)
     check("bloqueio, counter e alvo marcados nas colunas novas",
-          f_b[-5] == 1.0 and f_c[-4] == 1.0 and f_c[-2] == 1.0 and f_t[-3] == 1.0)
+          f_b[-6] == 1.0 and f_c[-5] == 1.0 and f_c[-3] == 1.0 and f_t[-4] == 1.0)
     check("CONTROLE: jogada principal tem as 4 colunas de defesa/alvo zeradas (igual ao corpus antigo)",
-          f_a[-5:-1] == [0.0, 0.0, 0.0, 0.0])
+          f_a[-6:-2] == [0.0, 0.0, 0.0, 0.0])
     traj = {(9, 3, 'L1'): [(0, 0.0, 1, 0.40), (2, 1.0, 1, 0.55), (4, 2.0, 1, 0.70)]}
     esc = {'escolhida': True, 'decisao': 1, 'gen': 9, 'match': 3, 'leader': 'L1',
            'turn': 1, 'ld_agora': 0.0}
@@ -15968,7 +15969,7 @@ def test_treino_continua_do_campeao_27_09() -> None:
         check("CONTROLE: as colunas novas estao ligadas (valor nao-zero chega na rede)",
               exp.steps[-1][1].coefs_[0].shape[0] == n_cols)
     check("CONTROLE: dimensao incompativel -> nao continua (None)",
-          treinar_q.modelo_do_campeao(caminho, n_cols + 7) is None)
+          treinar_q.modelo_do_campeao(caminho, n_cols + 40) is None)
 
 
 def test_explora_so_onde_o_modelo_esta_incerto_27_09() -> None:
@@ -17048,7 +17049,7 @@ def test_descarte_passa_pelo_q_bloco_925() -> None:
     a, b, c = mk("DSA", "A", cost=1), mk("DSB", "B", cost=5), mk("DSC", "C", cost=3)
     f = vn.acao_features((0.0, 'descarte', a, None, None, 0, False), None)
     check("descarte marcado na coluna nova; jogada principal fica 0",
-          f[-1] == 1.0 and vn.acao_features((0.0, 'attack', a, 'leader', None), None)[-1] == 0.0)
+          f[-2] == 1.0 and vn.acao_features((0.0, 'attack', a, 'leader', None), None)[-2:] == [0.0, 0.0])
     chamadas = []
     orig = de._q_escolhe_familia
     de._q_escolhe_familia = lambda me, opp, fam, ops, pad: (chamadas.append((fam, len(ops), pad)) or 1)
@@ -17068,6 +17069,39 @@ def test_descarte_passa_pelo_q_bloco_925() -> None:
         check("CONTROLE: mao do OPONENTE nao e decisao nossa", len(chamadas) == n)
         ee._choose_to_trash([a])
         check("CONTROLE: uma carta so nao e escolha", len(chamadas) == n)
+    finally:
+        de._q_escolhe_familia = orig
+
+
+def test_evento_de_counter_passa_pelo_q_bloco_927() -> None:
+    """Bloco 927: usar (qual) ou NAO usar um evento [Counter] e decisao do Q."""
+    from optcg_engine import decision_engine as de
+    from optcg_engine import value_net as vn
+    print("\n=== evento de counter pelo Q (bloco 927) ===")
+    ev1, ev2 = mk("CE1", "E1", cost=1), mk("CE2", "E2", cost=2)
+    f = vn.acao_features((0.0, 'counter_evento', ev1, 'leader', None, None, True), None)
+    check("evento de counter marcado na coluna nova", f[-1] == 1.0 and f[-2] == 0.0)
+    me = GameState(leader=real_card("OP14-020")); opp = GameState(leader=real_card("OP16-001"))
+    ee = de.EffectExecutor(me, opp)
+    cands = [(500, 1, ev1, 2500, []), (0, 2, ev2, 2000, [])]     # a regra pega a do menor excesso (ev2)
+    chamadas = []
+    orig = de._q_escolhe_familia
+    try:
+        de._q_escolhe_familia = lambda m, o, fam, ops, pad: (chamadas.append((fam, len(ops), pad)) or pad)
+        r = ee._q_counter_evento(cands, me.leader, 'leader')
+        check("2 eventos: opcoes = nao usar + cada um; padrao = a regra (menor excesso)",
+              chamadas == [('counter_evento', 3, 2)] and r is cands[1])
+        de._q_escolhe_familia = lambda m, o, fam, ops, pad: 0
+        check("Q escolhe NAO usar -> None", ee._q_counter_evento(cands, me.leader, 'leader') is None)
+        de._q_escolhe_familia = lambda m, o, fam, ops, pad: 1
+        check("Q escolhe o outro evento", ee._q_counter_evento(cands, me.leader, 'leader') is cands[0])
+        n = len(chamadas)
+        de._EM_SIMULACAO['on'] = True
+        try:
+            r2 = ee._q_counter_evento(cands, me.leader, 'leader')
+        finally:
+            de._EM_SIMULACAO['on'] = False
+        check("CONTROLE: em simulacao nao vira decisao e devolve a regra", r2 is cands[1] and len(chamadas) == n)
     finally:
         de._q_escolhe_familia = orig
 

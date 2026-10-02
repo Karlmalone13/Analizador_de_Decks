@@ -5752,6 +5752,27 @@ class EffectExecutor:
             amount += bonus.get('amount', 0)
         return amount, extras
 
+    def _q_counter_evento(self, candidates: list, alvo, alvo_tipo: str):
+        """EVENTO [Counter]: usar um (qual) ou NAO usar -- decisao do Q pelo
+        ponto unico (bloco 927). `candidates` = tuplas
+        `(excesso, custo, evento, quanto, custos, ...)`; devolve a candidata
+        escolhida, ou None se o Q preferir nao usar. A regra de hoje (o de menor
+        excesso, depois menor custo) e o `padrao`. Em simulacao devolve a regra."""
+        _padrao = min(candidates, key=lambda it: (it[0], it[1]))
+        if _EM_SIMULACAO['on']:
+            return _padrao
+        from types import SimpleNamespace
+        _opcoes = [(0.0, 'counter_evento_none', None, alvo_tipo, alvo, None, True)]
+        for it in candidates:
+            _ev = it[2]
+            _opcoes.append((0.0, 'counter_evento',
+                            SimpleNamespace(cost=it[1], power=getattr(_ev, 'power', 0),
+                                            power_buff=0, counter=it[3]),
+                            alvo_tipo, alvo, None, True))
+        _i = _q_escolhe_familia(self.me, self.opp, 'counter_evento', _opcoes,
+                                1 + next(k for k, it in enumerate(candidates) if it is _padrao))
+        return None if _i == 0 else candidates[_i - 1]
+
     def try_counter_event_power(self, target: Card, target_type: str,
                                 needed: int) -> tuple[int, str] | None:
         """Usa um evento [Counter] simples se o buff de batalha impedir o hit."""
@@ -5776,7 +5797,10 @@ class EffectExecutor:
         if not candidates:
             return None
 
-        _, play_cost, event, amount, costs, extras = min(candidates, key=lambda item: (item[0], item[1]))
+        _esc = self._q_counter_evento(candidates, target, target_type)
+        if _esc is None:
+            return None
+        _, play_cost, event, amount, costs, extras = _esc
         cost_logs = self._pay_counter_event_costs(event, costs)
         if cost_logs is None:
             return None
@@ -5869,7 +5893,10 @@ class EffectExecutor:
         if not candidates:
             return None
 
-        _, play_cost, event, amount, costs = min(candidates, key=lambda item: (item[0], item[1]))
+        _esc = self._q_counter_evento(candidates, attacker, attacker_type)
+        if _esc is None:
+            return None
+        _, play_cost, event, amount, costs = _esc
         cost_logs = self._pay_counter_event_costs(event, costs)
         if cost_logs is None:
             return None

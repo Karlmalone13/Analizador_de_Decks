@@ -1,6 +1,12 @@
 # TODO — Analisador de Decks OPTCG
 
-**Última atualização:** 1 de outubro de 2026 (bloco 926)
+**Última atualização:** 2 de outubro de 2026 (bloco 927)
+
+> **EVENTO DE COUNTER NO Q (bloco 927)**: 2o passo da etapa 2 (descarte, evento
+> de counter feitos). **Proximo (pedido do usuario)**: custos de `_pay_costs` e
+> passos de efeito no Q; e a qualidade da jogada (ruim -> melhorar) entrar no
+> treino. Hipotese do campeao-de-sorte (4 treinos com seeds diferentes) fica
+> registrada, nao foi o rumo pedido.
 
 > **CICLOS 32-37 COM DESCARTE NO Q (bloco 926)**: sem promocao; ciclos 34 e 35
 > a 47% (melhores da serie), 36/37 de volta a 31%-37%. Pendente: repetir o

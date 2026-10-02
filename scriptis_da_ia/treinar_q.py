@@ -124,7 +124,7 @@ def passa_filtro_modo(linha: dict, modo: str = MODO_PADRAO) -> bool:
 # por familia sai em todo treino: familia com ZERO jogada rotulada pela
 # consequencia e familia que o ML NAO aprende -- o numero nao da pra fingir.
 FAMILIAS_JOGO = ('attack', 'play', 'pass', 'activate', 'attach_don',
-                 'block', 'counter', 'target', 'descarte')
+                 'block', 'counter', 'target', 'descarte', 'counter_evento')
 SELFPLAY = RAIZ / 'metrics' / 'selfplay_v2.jsonl'
 
 
@@ -145,7 +145,7 @@ def modelo_do_campeao(caminho, n_cols: int):
         sc, mlp = m.steps[0][1], m.steps[-1][1]
         n_in = mlp.coefs_[0].shape[0]
         k = n_cols - n_in          # colunas novas (sempre no FIM do vetor)
-        if 0 < k <= 8:
+        if 0 < k <= 16:
             mlp.coefs_[0] = np.vstack([mlp.coefs_[0], np.zeros((k, mlp.coefs_[0].shape[1]))])
             mlp.n_features_in_ = n_cols
             sc.mean_ = np.concatenate([sc.mean_, np.zeros(k)])
@@ -337,7 +337,7 @@ def main() -> int:
             feats, alvo = d.get('feats'), d.get('alvo')
             if not feats:
                 continue
-            if n_cols - 8 <= len(feats) < n_cols:
+            if n_cols - 16 <= len(feats) < n_cols:
                 # linha anterior as colunas mais novas (blocos 910/925): 0 e o
                 # valor certo -- aquela decisao nao existia quando foi gravada.
                 feats = feats + [0.0] * (n_cols - len(feats))

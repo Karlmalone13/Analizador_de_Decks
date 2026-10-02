@@ -358,6 +358,8 @@ FEATURE_NAMES_ACAO = [
     # Colunas NOVAS entram sempre no FIM: modelo mais antigo ignora as que nao
     # conhece (ver `q_valores`) e linha antiga do corpus ganha 0 (valor certo).
     'eh_descarte',
+    # Bloco 927: EVENTO [Counter] (usar um evento da mao, ou nao usar).
+    'eh_counter_evento',
 ]
 N_ACAO_ANTIGO = len(FEATURE_NAMES_ACAO) - 4
 
@@ -394,7 +396,8 @@ def acao_features(acao, opp=None) -> list:
              1.0 if fam.startswith('counter') else 0.0,
              1.0 if fam == 'target' else 0.0,
              1.0 if (len(acao) > 6 and acao[6]) else 0.0,
-             1.0 if fam == 'descarte' else 0.0]
+             1.0 if fam == 'descarte' else 0.0,
+             1.0 if fam in ('counter_evento', 'counter_evento_none') else 0.0]
     return um_de + [
         _prop(ator, 'cost'), ator_power / 1000.0, _prop(ator, 'counter') / 1000.0,
         1.0 if _prop(ator, 'has_blocker') else 0.0,
