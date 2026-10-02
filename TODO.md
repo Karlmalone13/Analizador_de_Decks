@@ -5,7 +5,10 @@
 > **QUALIDADE DE CADA JOGADA (bloco 928)**: `qualidade_jogadas.py` (no ciclo).
 > Achado: a qualidade esta PLANA desde a gen 17 (27-28% ruins); pior em
 > `activate` (42%) e `pass` (33%), e nos lideres OP12-061 (45%), OP11-001 (39%).
-> **Proximo**: atacar esses pontos usando essa medida como regua.
+> **Item 2 feito**: o treino reamostra pela VANTAGEM de cada jogada (ruim e boa
+> pesam mais). Ciclos rodando pra ver se a qualidade se mexe.
+> **Proximo**: atacar esses pontos usando essa medida como regua; cobertura de
+> custos e passos de efeito; guardar a vantagem no corpus.
 
 > **EVENTO DE COUNTER NO Q (bloco 927)**: 2o passo da etapa 2 (descarte, evento
 > de counter feitos). **Proximo (pedido do usuario)**: custos de `_pay_costs` e
