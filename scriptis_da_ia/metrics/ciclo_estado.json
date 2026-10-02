@@ -4593,6 +4593,121 @@
         "modelo_oponente_sem_observar": 25.2,
         "custo_incerteza": 0.0171
       }
+    },
+    {
+      "ciclo": 41,
+      "quando": "2026-10-02T19:18:38",
+      "partidas": 200,
+      "alvos_corpus": 4154600,
+      "erro_q": 0.14150340264030828,
+      "ganho_pct": 48.289300697584544,
+      "portao": {
+        "vitorias_desafiante": 16,
+        "derrotas_desafiante": 32,
+        "decididas": 48,
+        "pares_divididos": 132,
+        "veredito": "DESCARTA (equivalentes)",
+        "llr": -3.2045883067405136
+      },
+      "promovido": false,
+      "winrate": 0.3333333333333333,
+      "portao_por_lider": {
+        "OP16-001": {
+          "vit": 4,
+          "der": 3,
+          "div": 12
+        },
+        "EB02-010": {
+          "vit": 2,
+          "der": 3,
+          "div": 18
+        },
+        "OP14-041": {
+          "vit": 1,
+          "der": 3,
+          "div": 21
+        },
+        "OP16-060": {
+          "vit": 4,
+          "der": 7,
+          "div": 13
+        },
+        "OP15-002": {
+          "vit": 1,
+          "der": 6,
+          "div": 14
+        },
+        "OP16-080": {
+          "vit": 1,
+          "der": 2,
+          "div": 13
+        },
+        "OP14-020": {
+          "vit": 5,
+          "der": 7,
+          "div": 16
+        },
+        "OP16-079": {
+          "vit": 4,
+          "der": 1,
+          "div": 16
+        },
+        "OP15-098": {
+          "vit": 3,
+          "der": 3,
+          "div": 17
+        },
+        "OP11-001": {
+          "vit": 0,
+          "der": 5,
+          "div": 16
+        },
+        "OP12-061": {
+          "vit": 1,
+          "der": 3,
+          "div": 25
+        },
+        "OP11-041": {
+          "vit": 1,
+          "der": 3,
+          "div": 17
+        },
+        "OP16-022": {
+          "vit": 0,
+          "der": 3,
+          "div": 16
+        },
+        "OP13-001": {
+          "vit": 1,
+          "der": 6,
+          "div": 17
+        },
+        "OP13-002": {
+          "vit": 1,
+          "der": 5,
+          "div": 18
+        },
+        "OP15-058": {
+          "vit": 3,
+          "der": 4,
+          "div": 15
+        }
+      },
+      "tempo_s": {
+        "gera": 419.4,
+        "treina_regua": 54.4,
+        "treina": 309.7,
+        "portao": 339.7,
+        "auditoria": 13.0,
+        "ancora": 11.3
+      },
+      "tempo_total_s": 1147.5,
+      "guarda_corpo": {},
+      "ancora_humana": {
+        "modelo_oponente": 26.9,
+        "modelo_oponente_sem_observar": 25.2,
+        "custo_incerteza": 0.0215
+      }
     }
   ],
   "checkpoint_humano_pendente": true,

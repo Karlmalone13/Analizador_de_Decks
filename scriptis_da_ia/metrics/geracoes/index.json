@@ -3174,6 +3174,134 @@
       "motivo": "portao SPRT: PROMOVE (desafiante e melhor)",
       "id": "candidato_028",
       "virou": "generation_003"
+    },
+    {
+      "hash": "fbada9dcc31a",
+      "pai": "generation_003",
+      "data": "2026-10-02T19:18:14",
+      "commit": "5544f1a74370f2f9f7ab9ebd2cd5518f23bf97bf",
+      "dataset": {
+        "alvos": 4154600,
+        "fatias": [
+          "Arthur_PC_20260919T101141.jsonl.gz",
+          "Arthur_PC_20260921T073626.jsonl.gz",
+          "Arthur_PC_20260924T225940.jsonl.gz",
+          "Arthur_PC_20260925T083301.jsonl.gz",
+          "Arthur_PC_20260925T230516.jsonl.gz",
+          "Arthur_PC_20260926T092925.jsonl.gz",
+          "Arthur_PC_20260926T104213.jsonl.gz",
+          "Arthur_PC_20260926T150027.jsonl.gz",
+          "Arthur_PC_20260926T153452.jsonl.gz",
+          "Arthur_PC_20260926T220057.jsonl.gz",
+          "Arthur_PC_20260927T174543.jsonl.gz",
+          "Arthur_PC_20260928T144932.jsonl.gz",
+          "Arthur_PC_20260928T153835.jsonl.gz",
+          "Arthur_PC_20260930T151017.jsonl.gz",
+          "Arthur_PC_20260930T200828.jsonl.gz",
+          "Arthur_PC_20260930T205422.jsonl.gz",
+          "Arthur_PC_20261001T001037.jsonl.gz",
+          "Arthur_PC_20261001T135955.jsonl.gz",
+          "Arthur_PC_20261001T183603.jsonl.gz",
+          "Arthur_PC_20261002T184821.jsonl.gz",
+          "Arthur_Trabalho_20260918T113603_backfill.jsonl.gz",
+          "Arthur_Trabalho_20260918T170216.jsonl.gz",
+          "Arthur_Trabalho_20260924T180328.jsonl.gz"
+        ],
+        "modo": "bootstrap",
+        "rotulo_consequencia": "td"
+      },
+      "config": {
+        "ciclo": 41,
+        "partidas": 200,
+        "seed_geracao": 13141,
+        "workers": 4,
+        "mundos_bootstrap": 4,
+        "continuado_de": "C:\\Projetos_TI\\analidador_de_decks_optcg\\scriptis_da_ia\\metrics\\q_net.joblib",
+        "regua": {
+          "alvo": "td",
+          "auc_fora_amostra": 0.797314448009218,
+          "controle_td": {
+            "ganhas_antes": 0.6417751156718491,
+            "ganhas_depois": 0.6418552285901142,
+            "perdidas_antes": 0.39535730821635884,
+            "perdidas_depois": 0.3952744830209965,
+            "separacao_antes": 0.24641780745549025,
+            "separacao_depois": 0.24658074556911774,
+            "mudanca_media_abs": 0.005752437819605545
+          }
+        }
+      },
+      "treino": {
+        "erro_fora_amostra": 0.14150340264030828,
+        "concordancia_top1": null,
+        "n_alvos": 347796,
+        "n_features": 107,
+        "cobertura": {
+          "attack": {
+            "linhas": 2173159,
+            "escolhidas": 144102,
+            "consequencia": 130891
+          },
+          "play": {
+            "linhas": 613899,
+            "escolhidas": 80038,
+            "consequencia": 73124
+          },
+          "pass": {
+            "linhas": 280564,
+            "escolhidas": 49704,
+            "consequencia": 43003
+          },
+          "activate": {
+            "linhas": 132601,
+            "escolhidas": 25492,
+            "consequencia": 22223
+          },
+          "attach_don": {
+            "linhas": 225886,
+            "escolhidas": 8380,
+            "consequencia": 7047
+          },
+          "block": {
+            "linhas": 12579,
+            "escolhidas": 12579,
+            "consequencia": 11470
+          },
+          "counter": {
+            "linhas": 44482,
+            "escolhidas": 44482,
+            "consequencia": 42550
+          },
+          "target": {
+            "linhas": 9556,
+            "escolhidas": 9556,
+            "consequencia": 9085
+          },
+          "descarte": {
+            "linhas": 8106,
+            "escolhidas": 8106,
+            "consequencia": 7624
+          },
+          "counter_evento": {
+            "linhas": 813,
+            "escolhidas": 813,
+            "consequencia": 779
+          }
+        }
+      },
+      "duelo": {
+        "vitorias_desafiante": 16,
+        "derrotas_desafiante": 32,
+        "decididas": 48,
+        "pares_divididos": 132,
+        "veredito": "DESCARTA (equivalentes)",
+        "llr": -3.2045883067405136,
+        "contra": "generation_003",
+        "seed": 13154
+      },
+      "promovido": false,
+      "motivo": "portao SPRT: DESCARTA (equivalentes)",
+      "id": "candidato_029"
     }
   ]
 }
