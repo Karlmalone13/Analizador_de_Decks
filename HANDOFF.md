@@ -29,6 +29,16 @@ escolhida e treinada pela consequencia, e o `--priorizar` reamostra por erro do
 campeao sobre essa linha (surpresa ruim pesa mais). Faltava MEDIR e VER; agora
 existe. O que nao existe e o resultado: ela nao sobe desde a gen 17.
 
+**Item 2 FEITO (mesmo bloco)**: `treinar_q.py --priorizar` agora reamostra pela
+VANTAGEM de cada jogada (|consequencia - regua(estado antes)|, alpha 0,6) em vez
+do erro do campeao (que pesava erro em qualquer direcao contra modelo antigo --
+eu tinha dito "ja existia", exagero). Controle: com pesos uniformes o esperado
+seria ~63% de linhas unicas; deu 57% (34.100 de 59.683 no subconjunto gen >=
+33) -> concentrou nas jogadas extremas. NAO medido ainda se isso melhora a
+qualidade/placar. Ainda NAO guardada no corpus (a vantagem e calculada na hora)
+e ainda nao ha medida estavel entre CICLOS (a regua muda). Cobertura de custos e
+passos de efeito: pendente.
+
 **Proximo**: usar essa medida como regua do que melhora (em vez do portao contra
 o campeao, preso) e atacar onde a qualidade e pior: `activate` (42% ruins),
 `pass` (33%) e os lideres mais fracos; mais a cobertura de custos e passos de efeito.

@@ -262,11 +262,11 @@ def main() -> int:
                     default=True,
                     help='replay PRIORIZADO (21/09/2026, pesquisa externa: '
                          'Prioritized Experience Replay) -- reamostra o '
-                         'corpus com peso no ERRO do campeao atual, treinando '
-                         'mais nas linhas onde ele mais erra em vez de tratar '
-                         'todas com o mesmo peso. Default ligado; sem campeao '
-                         'compativel cai pra amostra uniforme (comportamento '
-                         'antigo), sem quebrar.')
+                         'corpus com peso na VANTAGEM de cada jogada (o que '
+                         'ela causou menos o valor da posicao antes dela, bloco '
+                         '928): jogada muito ruim ou muito boa pesa mais, a '
+                         'neutra menos. Default ligado; sem regua compativel '
+                         'cai pra amostra uniforme, sem quebrar.')
     ap.add_argument('--sem-priorizar', dest='priorizar', action='store_false',
                     help='desliga o replay priorizado (comportamento antigo, '
                          'amostra uniforme).')
@@ -582,18 +582,21 @@ def main() -> int:
     if args.priorizar:
         pesos = None
         try:
-            _cmodelo = campeao
-            if _cmodelo is None:
-                import joblib as _jl
-                _camp_path = RAIZ / 'metrics' / 'q_net.joblib'
-                if _camp_path.exists():
-                    _camp = _jl.load(_camp_path)
-                    _cmodelo = _camp.get('modelo') if isinstance(_camp, dict) else None
-            if (_cmodelo is not None
-                    and getattr(_cmodelo, 'n_features_in_', None) == X.shape[1]):
-                _pred_campeao = _cmodelo.predict(X)
-                erro = np.abs(_pred_campeao - y)
-                prio = (erro + 1e-3) ** args.priorizar_alpha
+            # PRIORIDADE = a VANTAGEM da propria jogada (bloco 928, pedido do
+            # usuario: jogada ruim pesa mais, a boa tambem e estudada pra ser
+            # mantida, a neutra pouco): |consequencia - valor da posicao ANTES
+            # da jogada|. Antes pesava pelo erro do campeao -- em qualquer
+            # direcao e medido contra um modelo antigo, nao pelo quao boa ou
+            # ruim a jogada foi.
+            _rg = _vn.load_value_net(
+                __import__('optcg_engine.decision_engine', fromlist=['x']).MODELO_ORDENA_PATH)
+            _n_est = len(_vn.FEATURE_NAMES_ALUNO)
+            if _rg and list(_rg.get('feature_names') or []) == list(_vn.FEATURE_NAMES_ALUNO):
+                _m = _rg['modelo']
+                _v = (_m.predict_proba(X[:, :_n_est])[:, 1] if hasattr(_m, 'predict_proba')
+                      else _m.predict(X[:, :_n_est]))
+                vantagem = y - np.asarray(_v, dtype=float)
+                prio = (np.abs(vantagem) + 1e-3) ** args.priorizar_alpha
                 pesos = prio / prio.sum()
         except Exception:
             pesos = None
@@ -602,13 +605,13 @@ def main() -> int:
                 len(X), size=len(X), replace=True, p=pesos)
             X_treino, y_treino = X[idx_prio], y[idx_prio]
             print()
-            print('  replay priorizado: reamostrado com peso no erro do '
-                  'campeao atual (alpha=%.2f, %d linhas unicas de %d)'
+            print('  replay priorizado: reamostrado com peso na VANTAGEM de cada '
+                  'jogada (alpha=%.2f, %d linhas unicas de %d)'
                   % (args.priorizar_alpha, len(set(idx_prio.tolist())), len(X)))
         else:
             print()
-            print('  replay priorizado pedido mas sem campeao compativel -- '
-                  'treinando com amostra uniforme (comportamento antigo)')
+            print('  replay priorizado pedido mas sem regua compativel -- '
+                  'treinando com amostra uniforme')
 
     if campeao is not None:
         # CONTINUA do promovido: mesma normalizacao do campeao (reajustar o
