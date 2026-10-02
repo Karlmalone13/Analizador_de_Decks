@@ -25,6 +25,17 @@ for _stream in (sys.stdout, sys.stderr):
 
 sys.path.insert(0, ".")
 
+# Os testes de REGRA (quando bloquear, quais cartas de counter, qual alvo...) nao
+# podem depender do campeao em producao. Achado 02/10/2026: ao promover a
+# `generation_003` (treinada com cobertura de bloqueio/counter/alvo) o Q passou
+# a DECIDIR essas familias no lugar da regra, e 22 testes de regra falharam --
+# com a `generation_002` (sem cobertura) passavam so porque a regra rodava.
+# Sem Q em producao, a regra e o que os testes enxergam; os testes do proprio Q
+# carregam o modelo por caminho explicito ou trocam a decisao por um stub.
+import os  # noqa: E402
+os.environ['OPTCG_Q_NET_PATH'] = os.path.join(
+    os.environ.get('TEMP') or os.environ.get('TMPDIR') or '/tmp', 'q_inexistente_smoke.joblib')
+
 from optcg_engine.decision_engine import (  # noqa: E402
     Card,
     CardData,

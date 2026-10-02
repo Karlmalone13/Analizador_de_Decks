@@ -1,5 +1,40 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-10-02 (930) - Por que o ciclo demora: o portao gastava 65% do tempo abrindo processos (AS-IS + correcao); e os testes de regra dependiam do campeao
+
+Pedido do usuario: suspender o loop (parado no ciclo 42, geracao 42 JA no corpus --
+retoma sozinho) e ver por que demora. **AS-IS (16 ciclos, 26-41)**: media por
+etapa: gera 282 s (38%) | portao 278 s (37%) | treino Q 154 s (21%) | regua 31 s
+(4%). Ciclos 26-37 ~10 min; 38-41 15-26 min, quase so pelo portao (pares
+decididos 100-200 -> 300-880 conforme o desafiante chega perto do campeao).
+- **Portao**: lote de 40 partidas = 26,1 s com 4 workers contra 9,2 s ideal (36,8 s
+  serial / 4): **16,9 s = 65% de sobrecarga** -- `_rodar_tasks` criava um
+  `ProcessPoolExecutor` NOVO por lote (cada processo reimporta motor + 2.839
+  cartas). **Corrigido**: pool persistente por portao (`_pool`/`_fecha_pool`,
+  atexit). Medido (portao de 100 pares, gen_002 x gen_003): seed 31 133,5 -> 79,0 s;
+  seed 47 132,6 -> 55,5 s. **Resultado IDENTICO** (8x20/72 divididos/llr -2,2997 e
+  20x9/71/1,3992 antes e depois). `_duelo` zera `_EM_SIMULACAO`/`_DEFESA` no inicio
+  (processo reaproveitado nao herda estado de partida que estourou).
+- **Gerar partidas** (5,6 s/partida/worker vs 0,5-0,9 s de jogar): nao e
+  desperdicio -- e o rotulo cego (13 candidatas x 4 mundos por decisao, exigencia
+  da INSTRUCAO_MESTRA itens 10/11). So muda com outro desenho.
+- **Treino do Q** (119 -> 310 s, cresce com o corpus): SUSPEITA, nao medida --
+  le as ~4M linhas do JSONL pra usar 8% (as com consequencia). Provavel parse.
+- Perfil de uma partida (`as_is.py`): 0,54 s; 51% na regua (arvores, 31 mil
+  consultas/partida), 36% outros.
+
+**Achado de processo**: a promocao da `generation_003` (bloco 929) deixou **22
+testes de regra do `smoke_fast` quebrando** e eu nao rodei o smoke depois dela.
+Causa (isolada: com gen_002 em `q_net.joblib` o teste passa, com gen_003 falha;
+a regua NAO e a causa): gen_003 foi treinada com cobertura de block/counter/
+target, entao o Q DECIDE essas familias no lugar da regra; gen_002 nao tinha
+cobertura e a regra rodava. Os testes conferem a REGRA, e nao podem depender do
+campeao em producao. **Corrigido**: `smoke_fast.py` aponta `OPTCG_Q_NET_PATH` pra
+um arquivo inexistente antes de importar o motor. 1.885 OK, 0 falhas.
+
+**Proximo**: retomar o loop de ciclos (ciclo 42, sem regerar); se quiser, medir/cortar
+a leitura do corpus no treino do Q (suspeita acima).
+
 ## 2026-10-02 (929) - PRIMEIRA PROMOCAO desde a gen 002: `generation_003` (ciclo 40), confirmada em 3 seeds novas
 
 Com a reamostragem pela VANTAGEM de cada jogada (bloco 928, item 2), o placar

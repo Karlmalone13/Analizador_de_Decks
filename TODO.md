@@ -1,6 +1,12 @@
 # TODO — Analisador de Decks OPTCG
 
-**Última atualização:** 2 de outubro de 2026 (bloco 929)
+**Última atualização:** 2 de outubro de 2026 (bloco 930)
+
+> **TEMPO DO CICLO (bloco 930)**: o portao gastava 65% do tempo abrindo processos
+> -- corrigido com pool persistente (-41% a -58%, resultado identico). Os testes
+> de regra do smoke dependiam do campeao em producao (22 falhas apos a promocao)
+> -- isolados. **Proximo**: retomar os ciclos (ciclo 42 retoma sem regerar);
+> suspeita aberta: o treino do Q gasta a maior parte lendo o corpus inteiro.
 
 > **PROMOCAO (bloco 929)**: `generation_003` (ciclo 40, 142x103) promovida e
 > CONFIRMADA em 3 seeds novas (68%/54%/58%, total 57%). Veio da reamostragem

@@ -123,6 +123,11 @@ def _duelo(task) -> dict:
         (i, seed, desafiante_e_A, peso_camp, peso_desaf) = task
         extras = None
     from gerar_selfplay_dataset import _load_deck_list
+    # Processo REAPROVEITADO entre lotes (pool persistente): uma partida que
+    # estourou no meio nao pode deixar a flag de simulacao ligada pra proxima.
+    from optcg_engine import decision_engine as _de_reset
+    _de_reset._EM_SIMULACAO['on'] = False
+    _de_reset._DEFESA['on'] = False
 
     deck_list = _load_deck_list()
     rng = random.Random(seed)
@@ -390,6 +395,7 @@ def duelar_sprt(workers: int, seed: int, peso_camp: float, peso_desaf: float,
             veredito = 'DESCARTA (equivalentes)'
             break
 
+    _fecha_pool()
     disc = vit + der
     return {
         'vitorias_desafiante': vit, 'derrotas_desafiante': der,
@@ -425,20 +431,51 @@ def _rodar_tasks(tasks: list, workers: int) -> list:
     if workers <= 1:
         return [_duelo(t) for t in tasks]
     try:
-        with ProcessPoolExecutor(max_workers=workers) as ex:
-            return list(ex.map(_duelo, tasks))
+        return list(_pool(workers).map(_duelo, tasks))
     except BrokenProcessPool:
+        _fecha_pool()
         meio = max(1, workers // 2)
         print('  [aviso] worker morreu (memoria?) -- refazendo o lote com %d '
               'worker(s)' % meio, flush=True)
     if meio > 1:
         try:
-            with ProcessPoolExecutor(max_workers=meio) as ex:
-                return list(ex.map(_duelo, tasks))
+            return list(_pool(meio).map(_duelo, tasks))
         except BrokenProcessPool:
+            _fecha_pool()
             print('  [aviso] caiu de novo -- refazendo o lote SEQUENCIAL',
                   flush=True)
     return [_duelo(t) for t in tasks]
+
+
+# POOL PERSISTENTE (bloco 930, AS-IS 02/10/2026). O portao roda lotes de 40
+# partidas e CRIAVA 4 processos novos a cada lote -- cada um reimportando o
+# motor e as 2.839 cartas. Medido: um lote levava 26 s contra 9 s do trabalho
+# util (65% de sobrecarga); no ciclo 40 (878 pares) isso foram ~9 dos 14
+# minutos do portao. Agora os processos nascem uma vez por portao e servem
+# todos os lotes. O duelo e determinista pela seed da tarefa (`_duelo` semeia
+# `random` por partida), entao o resultado nao muda.
+_POOL = {'ex': None, 'workers': 0}
+
+
+def _pool(workers: int):
+    if _POOL['ex'] is None or _POOL['workers'] != workers:
+        _fecha_pool()
+        _POOL['ex'] = ProcessPoolExecutor(max_workers=workers)
+        _POOL['workers'] = workers
+    return _POOL['ex']
+
+
+def _fecha_pool() -> None:
+    ex, _POOL['ex'], _POOL['workers'] = _POOL['ex'], None, 0
+    if ex is not None:
+        try:
+            ex.shutdown(wait=True, cancel_futures=True)
+        except Exception:
+            pass
+
+
+import atexit
+atexit.register(_fecha_pool)
 
 
 def _contar_solto(tasks: list, workers: int) -> dict:
