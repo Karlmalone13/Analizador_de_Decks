@@ -1,5 +1,38 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-10-02 (928) - QUALIDADE DE CADA JOGADA medida pelo que ela causou (`qualidade_jogadas.py`), no ciclo; achado: nada melhora desde a gen 17
+
+Pedido central do usuario (repetido): o bot analisa a qualidade/desempenho das
+jogadas; ruim -> melhora, boa -> mantem. **VANTAGEM = consequencia da jogada
+(a mesma do treino: posicao 2 turnos proprios depois / resultado real) - valor da
+posicao ANTES dela (regua no estado gravado na linha)**. Tudo com UMA regua
+(a atual) em TODAS as geracoes, entao as geracoes sao comparaveis (a taxa de
+"ruins" do `porque_decisoes.py` usa a regua de cada epoca e nao compara). Sem log
+novo: o estado antes da jogada ja estava em cada linha. `ciclo.py` roda o
+relatorio apos retreinar a regua (ultimas 10 geracoes).
+
+**Controle que pode falhar** (impresso sempre): vantagem media em partidas
+GANHAS +0,1755 x PERDIDAS -0,0418 -> separa.
+
+**Medido (308.943 jogadas escolhidas com consequencia, gens 5-37, limiar +-0,05)**:
+- por tipo (ruins%/boas%): attack 27,5/51,3 | play 24,7/48,2 | **pass 33,0/27,6**
+  | counter 23,6/58,4 | **activate 42,0/30,4** | block 25,7/58,5 | target
+  29,1/49,9 | attach_don 20,7/37,5 | descarte 25,7/54,6.
+- por geracao: gens 5-15 media +0,055/+0,058, ruins 28-30%; gens 17-37 media
+  +0,070/+0,075, ruins 27-28%, boas 47-48%. Subiu um degrau na gen 17 e **ficou
+  plano ate a 37** -- bate com o placar parado contra o campeao.
+- por lider: de 8,4% ruins (OP14-041) a 45,0% (OP12-061); OP11-001 38,7%,
+  EB02-010 37,7%, OP15-058 36,4%, OP16-060 36,4%. (inclui forca do deck/matchup.)
+
+**Correcao ao que eu disse antes**: a qualidade JA entra no treino -- a jogada
+escolhida e treinada pela consequencia, e o `--priorizar` reamostra por erro do
+campeao sobre essa linha (surpresa ruim pesa mais). Faltava MEDIR e VER; agora
+existe. O que nao existe e o resultado: ela nao sobe desde a gen 17.
+
+**Proximo**: usar essa medida como regua do que melhora (em vez do portao contra
+o campeao, preso) e atacar onde a qualidade e pior: `activate` (42% ruins),
+`pass` (33%) e os lideres mais fracos; mais a cobertura de custos e passos de efeito.
+
 ## 2026-10-02 (927) - Etapa 2, passo 2: o EVENTO de [Counter] entra no Q (usar qual / nao usar); + o que as medicoes dos ultimos dias fecharam
 
 **Feito**: `EffectExecutor._q_counter_evento` -- usar um evento `[Counter]` da

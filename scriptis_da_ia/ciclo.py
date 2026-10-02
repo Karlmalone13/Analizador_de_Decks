@@ -584,6 +584,11 @@ def main() -> int:
         print('      regua: AUC fora da amostra %.4f | separacao ganhas-perdidas %+.4f -> %+.4f'
               % (rg.get('auc_fora_amostra', 0), _ct.get('separacao_antes', 0),
                  _ct.get('separacao_depois', 0)), flush=True)
+        # QUALIDADE DE CADA JOGADA pelo que ela causou (bloco 928), com a regua
+        # que acabou de ser retreinada aplicada as ULTIMAS geracoes: comparavel
+        # entre elas. So relatorio -- falhar aqui nao interrompe o ciclo.
+        _rodar(['qualidade_jogadas.py', '--gen-min', str(max(1, n_ciclo - 9))],
+               'qualidade das jogadas')
         cron.inicia('treina')
         b = treina()
         cron.fecha()

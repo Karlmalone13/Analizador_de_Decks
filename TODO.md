@@ -1,6 +1,11 @@
 # TODO — Analisador de Decks OPTCG
 
-**Última atualização:** 2 de outubro de 2026 (bloco 927)
+**Última atualização:** 2 de outubro de 2026 (bloco 928)
+
+> **QUALIDADE DE CADA JOGADA (bloco 928)**: `qualidade_jogadas.py` (no ciclo).
+> Achado: a qualidade esta PLANA desde a gen 17 (27-28% ruins); pior em
+> `activate` (42%) e `pass` (33%), e nos lideres OP12-061 (45%), OP11-001 (39%).
+> **Proximo**: atacar esses pontos usando essa medida como regua.
 
 > **EVENTO DE COUNTER NO Q (bloco 927)**: 2o passo da etapa 2 (descarte, evento
 > de counter feitos). **Proximo (pedido do usuario)**: custos de `_pay_costs` e
