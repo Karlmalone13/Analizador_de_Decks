@@ -1,5 +1,35 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-10-03 (934) - Pool de decks do auto-jogo: de 16 para 51 decks (42 lideres) com a pasta de .deck do simulador
+
+Pedido do usuario (escolheu a B; o banco humano tem decks repetidos): ampliar os
+decks do auto-jogo. **Medido**: `decklists_raw.csv` = 184 decks mas so **16 lideres**
+distintos (limite real, nao filtro); a pasta de `.deck` do simulador = 36 lideres
+no indice (48 arquivos), **35 validos** (>= 40 cartas, `validar_deck`), 26 lideres
+que o CSV nao tem -> 42 lideres no total.
+**Feito**: `_load_deck_list` (gerador E portao usam) agora acrescenta 1 deck por
+lider da pasta do simulador, reaproveitando `sim_bridge.load_sim_deck` /
+`_leader_deck_index_build` (sem carregador novo); teto 24 -> 64 (o `--decks` nunca
+chegava ao carregador -- ambos chamam com o padrao). Sem a pasta (outra maquina)
+fica so o CSV. Resultado: **51 decks, 42 lideres** (as jogadas de 60 partidas cobrem
+39 lideres, eram 16). Mudou a distribuicao do treino: **o proximo ciclo mistura
+lideres que o corpus nunca viu**.
+**Efeito direto**: dos 51 decks, **6 tem cartas de "escolha um"** (OP16-080 Barba
+Negra BY, OP16-079 Yamato B, OP14-080 Moria BY, OP04-019, OP09-062, OP17-039) e a
+familia `opcao_efeito` PASSOU a aparecer: 3 decisoes em 60 partidas (era 0).
+Escolhidas em 60 partidas: descarte 240 | counter_evento 56 | custo_restar 10 |
+custo_sacrificar 11 | busca 95 | pagar_custo 204 | opcao_efeito 3. smoke 1.904 OK.
+
+**Erro meu corrigido**: o script que usei para dizer "0 de 16 decks tem as cartas"
+iterava a TUPLA `(lider, cartas, stage)` em vez das cartas; refeito certo, a
+conclusao (0 dos 16 do CSV) se mantem, e os 6 do simulador aparecem.
+
+**Pendente / decisao do usuario**: (a) a tabela `decks` do Supabase (decks salvos
+pelo front -- `src/app/deck/page.tsx`) como outra fonte: exige ler o banco de
+producao com a chave em `.env.local` e pode ter decks de outros usuarios; (b) o
+loop de ciclos segue PARADO (ciclo 42 retoma sem regerar, mas a geracao 42 e
+do pool antigo).
+
 ## 2026-10-03 (933) - "Escolha um" dentro de um efeito entra no Q (com codificacao das opcoes); achado: o auto-jogo so usa 16 decks e NENHUM tem essas cartas
 
 Pedido do usuario: fazer a codificacao das opcoes de "escolha um" (`_resolve_choice`).

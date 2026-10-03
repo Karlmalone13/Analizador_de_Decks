@@ -66,7 +66,7 @@ OUT_DEFAULT = 'metrics/selfplay_dataset.jsonl'
 _DECK_CACHE: list | None = None
 
 
-def _load_deck_list(limite: int = 24) -> list:
+def _load_deck_list(limite: int = 64) -> list:
     """Decks REAIS de torneio (`decklists_raw.csv`), mesma fonte de
     `audit_replay.py`. Variedade de lider importa aqui mais que em
     qualquer outro script: o objetivo registrado do projeto e jogar bem
@@ -98,6 +98,26 @@ def _load_deck_list(limite: int = 24) -> list:
         deck_list.append((code, (leader, cards, start_stage)))
         if len(deck_list) >= limite:
             break
+    # DECKS DO SIMULADOR (bloco 934, pedido do usuario): o arquivo de torneio so
+    # tem 16 LIDERES distintos (184 decks concentrados em poucos lideres), e o
+    # objetivo do projeto e jogar bem com QUALQUER deck. A pasta de `.deck` do
+    # simulador soma 26 lideres que o CSV nao tem (42 no total) e cartas que
+    # nenhum deck de torneio usa. Mesmo carregador e mesma validacao do resto
+    # (`sim_bridge.load_sim_deck`, `validar_deck`), 1 deck por lider.
+    try:
+        from optcg_engine import sim_bridge as _sb
+        for _code, _nome in sorted(_sb._leader_deck_index_build().items()):
+            if len(deck_list) >= limite:
+                break
+            try:
+                _leader, _cards, _stage = _sb.load_sim_deck(_nome)
+            except Exception:
+                continue
+            _ok, _erros = validar_deck(_leader, _cards, cards_db)
+            if _ok and len(_cards) >= 40:
+                deck_list.append((_code, (_leader, _cards, _stage)))
+    except Exception:
+        pass       # sem a pasta do simulador (outra maquina) fica so o CSV
     _DECK_CACHE = deck_list
     return deck_list
 

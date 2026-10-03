@@ -1,12 +1,15 @@
 # TODO — Analisador de Decks OPTCG
 
-**Última atualização:** 3 de outubro de 2026 (bloco 933)
+**Última atualização:** 3 de outubro de 2026 (bloco 934)
+
+> **POOL DE DECKS 16 -> 51 (bloco 934)**: o gerador e o portao agora usam tambem
+> os `.deck` do simulador (42 lideres). A familia `opcao_efeito` ja aparece (3 em
+> 60 partidas). **Pendente**: ler a tabela `decks` do Supabase como fonte extra
+> (decisao do usuario); retomar o loop de ciclos.
 
 > **"ESCOLHA UM" NO Q (bloco 933)**: opcoes codificadas por classe de passo
-> (26 de 26 cartas distinguiveis), ligado em `_resolve_choice`. **ACHADO**: o
-> auto-jogo so usa 16 decks e nenhum tem essas cartas -> a familia nunca e
-> exercitada. **Decisao do usuario**: ampliar o pool de decks do gerador
-> (banco humano 434 / pasta do simulador)? Muda a distribuicao do treino.
+> (26 de 26 cartas distinguiveis), ligado em `_resolve_choice`; resolvido pelo
+> pool de 51 decks do bloco 934.
 
 > **CUSTOS/BUSCA/PAGAR NO Q + VANTAGEM GRAVADA (bloco 932)**: familias
 > custo_restar, custo_sacrificar, busca e pagar_custo (so a recusa) no Q; a
