@@ -329,6 +329,16 @@ def _run_one_match(task) -> list:
             # `seed * 1_000_003 + i`, entao duas maquinas com a MESMA --seed
             # geram as MESMAS partidas. Concatenar ai nao soma dado, duplica.
             linha['origem'] = _org
+        # VANTAGEM de cada jogada escolhida, gravada na linha (bloco 932).
+        try:
+            import treinar_q as _tq
+            from optcg_engine import value_net as _vn
+            from optcg_engine.decision_engine import MODELO_ORDENA_PATH as _MOP
+            _rp = getattr(match.state_a, 'modelo_ordena_path', None) or _MOP
+            _tq.grava_vantagem(match._q_captura or [], amostras, _vn.load_value_net(_rp),
+                               _ger.hash_arquivo(_rp))
+        except Exception:
+            pass          # sem regua/trajetoria a linha segue sem os campos; nunca derruba a partida
         return amostras, list(getattr(match, '_q_captura', None) or [])
     return amostras, []
 

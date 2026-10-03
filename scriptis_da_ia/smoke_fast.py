@@ -11003,6 +11003,7 @@ def main() -> int:
     test_ml_aprende_todas_as_decisoes_pela_consequencia_27_09()
     test_descarte_passa_pelo_q_bloco_925()
     test_evento_de_counter_passa_pelo_q_bloco_927()
+    test_custos_busca_e_pagar_passam_pelo_q_bloco_932()
     test_explora_so_onde_o_modelo_esta_incerto_27_09()
     test_treino_continua_do_campeao_27_09()
     test_registro_de_geracoes_27_09()
@@ -15789,9 +15790,9 @@ def test_ml_aprende_todas_as_decisoes_pela_consequencia_27_09() -> None:
     check("acao_features tem a largura de FEATURE_NAMES_ACAO",
           len(f_b) == na and len(f_a) == na)
     check("bloqueio, counter e alvo marcados nas colunas novas",
-          f_b[-6] == 1.0 and f_c[-5] == 1.0 and f_c[-3] == 1.0 and f_t[-4] == 1.0)
+          f_b[-10] == 1.0 and f_c[-9] == 1.0 and f_c[-7] == 1.0 and f_t[-8] == 1.0)
     check("CONTROLE: jogada principal tem as 4 colunas de defesa/alvo zeradas (igual ao corpus antigo)",
-          f_a[-6:-2] == [0.0, 0.0, 0.0, 0.0])
+          f_a[-10:-6] == [0.0, 0.0, 0.0, 0.0])
     traj = {(9, 3, 'L1'): [(0, 0.0, 1, 0.40), (2, 1.0, 1, 0.55), (4, 2.0, 1, 0.70)]}
     esc = {'escolhida': True, 'decisao': 1, 'gen': 9, 'match': 3, 'leader': 'L1',
            'turn': 1, 'ld_agora': 0.0}
@@ -17060,7 +17061,7 @@ def test_descarte_passa_pelo_q_bloco_925() -> None:
     a, b, c = mk("DSA", "A", cost=1), mk("DSB", "B", cost=5), mk("DSC", "C", cost=3)
     f = vn.acao_features((0.0, 'descarte', a, None, None, 0, False), None)
     check("descarte marcado na coluna nova; jogada principal fica 0",
-          f[-2] == 1.0 and vn.acao_features((0.0, 'attack', a, 'leader', None), None)[-2:] == [0.0, 0.0])
+          f[-6] == 1.0 and vn.acao_features((0.0, 'attack', a, 'leader', None), None)[-6:] == [0.0] * 6)
     chamadas = []
     orig = de._q_escolhe_familia
     de._q_escolhe_familia = lambda me, opp, fam, ops, pad: (chamadas.append((fam, len(ops), pad)) or 1)
@@ -17091,7 +17092,7 @@ def test_evento_de_counter_passa_pelo_q_bloco_927() -> None:
     print("\n=== evento de counter pelo Q (bloco 927) ===")
     ev1, ev2 = mk("CE1", "E1", cost=1), mk("CE2", "E2", cost=2)
     f = vn.acao_features((0.0, 'counter_evento', ev1, 'leader', None, None, True), None)
-    check("evento de counter marcado na coluna nova", f[-1] == 1.0 and f[-2] == 0.0)
+    check("evento de counter marcado na coluna nova", f[-5] == 1.0 and f[-6] == 0.0)
     me = GameState(leader=real_card("OP14-020")); opp = GameState(leader=real_card("OP16-001"))
     ee = de.EffectExecutor(me, opp)
     cands = [(500, 1, ev1, 2500, []), (0, 2, ev2, 2000, [])]     # a regra pega a do menor excesso (ev2)
@@ -17113,6 +17114,57 @@ def test_evento_de_counter_passa_pelo_q_bloco_927() -> None:
         finally:
             de._EM_SIMULACAO['on'] = False
         check("CONTROLE: em simulacao nao vira decisao e devolve a regra", r2 is cands[1] and len(chamadas) == n)
+    finally:
+        de._q_escolhe_familia = orig
+
+
+def test_custos_busca_e_pagar_passam_pelo_q_bloco_932() -> None:
+    """Bloco 932: custos de sacrificio, busca e PAGAR o custo opcional passam pelo
+    ponto unico do Q; hipotese/simulacao/carta unica nao viram decisao."""
+    from optcg_engine import decision_engine as de
+    from optcg_engine import value_net as vn
+    print("\n=== custos, busca e pagar custo pelo Q (bloco 932) ===")
+    a, b, c = mk("QA", "A", cost=1), mk("QB", "B", cost=5), mk("QC", "C", cost=3)
+    for fam, col in (('custo_restar', -4), ('custo_sacrificar', -3), ('busca', -2), ('pagar_custo', -1)):
+        f = vn.acao_features((0.0, fam, a, None, None, 0, False), None)
+        check("familia %s marcada na sua coluna e nas outras 3 nao" % fam,
+              f[col] == 1.0 and sum(f[-4:]) == 1.0)
+    me = GameState(leader=real_card("OP14-020")); opp = GameState(leader=real_card("OP16-001"))
+    chamadas = []
+    orig = de._q_escolhe_familia
+    try:
+        de._q_escolhe_familia = lambda m, o, fam, ops, pad: (chamadas.append((fam, len(ops), pad)) or pad)
+        ee = de.EffectExecutor(me, opp)
+        r = ee._q_custo([a, b, c], 'custo_restar')
+        check("custo: opcoes = as 3 cartas; padrao = a de menor board_value",
+              chamadas and chamadas[0][:2] == ('custo_restar', 3) and r is min([a, b, c], key=lambda x: x.board_value()))
+        n = len(chamadas)
+        ee._q_custo([a], 'custo_restar')
+        check("CONTROLE: uma carta so nao e escolha", len(chamadas) == n)
+        de._EM_SIMULACAO['on'] = True
+        try:
+            ee._q_custo([a, b], 'custo_restar')
+        finally:
+            de._EM_SIMULACAO['on'] = False
+        check("CONTROLE: em simulacao nao vira decisao", len(chamadas) == n)
+        de._q_escolhe_familia = lambda m, o, fam, ops, pad: 1 if ops[0][1] == 'busca' else pad
+        check("busca: o Q escolhe a carta que a regra nao escolheu",
+              de._q_escolhe_carta(me, opp, 'busca', [a, b, c], a) is b)
+        # pagar custo opcional: so a RECUSA e do Q
+        orig_regra = de.EffectExecutor._vale_pagar_custos_regra
+        sac = [{'type': 'trash_from_hand', 'count': 1}]
+        try:
+            de._q_escolhe_familia = lambda m, o, fam, ops, pad: 0
+            de.EffectExecutor._vale_pagar_custos_regra = lambda self, costs, card, steps=None: True
+            check("pagar: regra diz sim + Q recusa -> nao paga", ee._worth_paying_optional_costs(sac, a) is False)
+            check("CONTROLE: custo so de recurso (sem sacrificio) o Q nao decide",
+                  ee._worth_paying_optional_costs([{'type': 'rest_self'}], a) is True)
+            de.EffectExecutor._vale_pagar_custos_regra = lambda self, costs, card, steps=None: False
+            de._q_escolhe_familia = lambda m, o, fam, ops, pad: 1
+            check("CONTROLE: regra diz nao -> o Q NAO forca pagar (pode ser impossivel)",
+                  ee._worth_paying_optional_costs(sac, a) is False)
+        finally:
+            de.EffectExecutor._vale_pagar_custos_regra = orig_regra
     finally:
         de._q_escolhe_familia = orig
 

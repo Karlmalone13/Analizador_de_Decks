@@ -1,6 +1,12 @@
 # TODO — Analisador de Decks OPTCG
 
-**Última atualização:** 2 de outubro de 2026 (bloco 931)
+**Última atualização:** 3 de outubro de 2026 (bloco 932)
+
+> **CUSTOS/BUSCA/PAGAR NO Q + VANTAGEM GRAVADA (bloco 932)**: familias
+> custo_restar, custo_sacrificar, busca e pagar_custo (so a recusa) no Q; a
+> vantagem de cada jogada e gravada no corpus. Fora do Q ainda: "Choose one"
+> (`_resolve_choice`), escolha char-ou-mao, DON dado a carta propria.
+> **Proximo**: retomar o loop de ciclos (ciclo 42).
 
 > **INDICE DAS ESCOLHIDAS (bloco 931)**: o ciclo nao relê mais os 3,2 GB do
 > corpus (treino do Q 273 -> 110 s, qualidade/diagnostico em segundos), com modelo

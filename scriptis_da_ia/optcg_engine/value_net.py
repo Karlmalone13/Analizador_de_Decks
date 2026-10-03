@@ -360,6 +360,9 @@ FEATURE_NAMES_ACAO = [
     'eh_descarte',
     # Bloco 927: EVENTO [Counter] (usar um evento da mao, ou nao usar).
     'eh_counter_evento',
+    # Bloco 932: CUSTOS (qual carta restar / sacrificar), BUSCA (qual carta
+    # pegar) e PAGAR o custo opcional (sim/nao).
+    'eh_custo_restar', 'eh_custo_sacrificar', 'eh_busca', 'eh_pagar_custo',
 ]
 N_ACAO_ANTIGO = len(FEATURE_NAMES_ACAO) - 4
 
@@ -397,7 +400,11 @@ def acao_features(acao, opp=None) -> list:
              1.0 if fam == 'target' else 0.0,
              1.0 if (len(acao) > 6 and acao[6]) else 0.0,
              1.0 if fam == 'descarte' else 0.0,
-             1.0 if fam in ('counter_evento', 'counter_evento_none') else 0.0]
+             1.0 if fam in ('counter_evento', 'counter_evento_none') else 0.0,
+             1.0 if fam == 'custo_restar' else 0.0,
+             1.0 if fam == 'custo_sacrificar' else 0.0,
+             1.0 if fam == 'busca' else 0.0,
+             1.0 if fam in ('pagar_custo', 'pagar_custo_nao') else 0.0]
     return um_de + [
         _prop(ator, 'cost'), ator_power / 1000.0, _prop(ator, 'counter') / 1000.0,
         1.0 if _prop(ator, 'has_blocker') else 0.0,

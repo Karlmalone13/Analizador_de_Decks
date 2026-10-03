@@ -127,7 +127,8 @@ def passa_filtro_modo(linha: dict, modo: str = MODO_PADRAO) -> bool:
 # por familia sai em todo treino: familia com ZERO jogada rotulada pela
 # consequencia e familia que o ML NAO aprende -- o numero nao da pra fingir.
 FAMILIAS_JOGO = ('attack', 'play', 'pass', 'activate', 'attach_don',
-                 'block', 'counter', 'target', 'descarte', 'counter_evento')
+                 'block', 'counter', 'target', 'descarte', 'counter_evento',
+                 'custo_restar', 'custo_sacrificar', 'busca', 'pagar_custo')
 SELFPLAY = RAIZ / 'metrics' / 'selfplay_v2.jsonl'
 
 
@@ -166,18 +167,27 @@ def carrega_trajetorias(caminho=SELFPLAY, avaliador=None) -> dict:
     """(gen, partida, lider) -> [(turno, life_diff no fim do turno, venceu,
     valor da posicao no fim do turno)]. `avaliador` (bundle de valor de
     posicao) preenche o 4o campo; sem ele fica None."""
-    import numpy as np
-    from optcg_engine import value_net as vn
-    i_ld = list(vn.FEATURE_NAMES_V3).index('life_diff')
-    traj, regs = {}, []
+    regs = []
     if not Path(caminho).exists():
-        return traj
+        return {}
     with open(caminho, encoding='utf-8') as fh:
         for linha in fh:
             d = json.loads(linha)
             if not d.get('gen'):
                 continue   # gen 0 junta rodadas antigas com ids repetidos
             regs.append(d)
+    return monta_trajetorias(regs, avaliador)
+
+
+def monta_trajetorias(regs: list, avaliador=None) -> dict:
+    """Mesma estrutura de `carrega_trajetorias`, a partir de registros ja em
+    memoria (estados de fim de turno com `gen`, `match`, `leader`, `turn`,
+    `feats` V3 e `win`). FONTE UNICA: o treino le do arquivo; o gerador de
+    partidas usa isto direto pra gravar a vantagem de cada jogada (bloco 932)."""
+    import numpy as np
+    from optcg_engine import value_net as vn
+    i_ld = list(vn.FEATURE_NAMES_V3).index('life_diff')
+    traj = {}
     vals = [None] * len(regs)
     if avaliador is not None and regs:
         try:
@@ -194,6 +204,53 @@ def carrega_trajetorias(caminho=SELFPLAY, avaliador=None) -> dict:
     for t in traj.values():
         t.sort(key=lambda r: r[0])
     return traj
+
+
+def grava_vantagem(linhas: list, amostras: list, regua, hash_regua=None) -> int:
+    """Grava em cada jogada ESCOLHIDA a sua VANTAGEM (bloco 932, pedido do
+    usuario: a qualidade de cada jogada fica no corpus, nao so calculada na
+    hora da analise):
+
+        consequencia = `alvo_consequencia` (o que a jogada causou)
+        v_antes      = regua(estado antes da jogada)
+        vantagem     = consequencia - v_antes   (>0: deixou o bot melhor)
+        regua        = hash da regua que julgou (a regua muda a cada ciclo)
+
+    Sao o julgamento DA EPOCA. O treino continua recalculando com a regua do
+    ciclo (nao usa estes valores -- seriam notas velhas); `qualidade_jogadas.py`
+    recalcula com UMA regua pra comparar geracoes. Uso aqui: serie historica e
+    auditoria. Devolve quantas linhas receberam."""
+    import numpy as np
+    from optcg_engine import value_net as vn
+    if not regua or not amostras:
+        return 0
+    traj = monta_trajetorias(amostras, regua)
+    i_ld = list(vn.FEATURE_NAMES_ALUNO).index('life_diff')
+    n_est = len(vn.FEATURE_NAMES_ALUNO)
+    alvo, cons = [], []
+    for d in linhas:
+        if not d.get('escolhida') or not d.get('feats'):
+            continue
+        d2 = dict(d)
+        d2['ld_agora'] = d['feats'][i_ld]
+        c = alvo_consequencia(d2, traj)
+        if c is None:
+            continue
+        alvo.append(d)
+        cons.append(float(c))
+    if not alvo:
+        return 0
+    m = regua['modelo']
+    X = np.asarray([d['feats'][:n_est] for d in alvo], dtype=float)
+    v = m.predict_proba(X)[:, 1] if hasattr(m, 'predict_proba') else m.predict(X)
+    for d, c, vv in zip(alvo, cons, v):
+        vv = float(vv)
+        d['consequencia'] = round(c, 4)
+        d['v_antes'] = round(vv, 4)
+        d['vantagem'] = round(c - vv, 4)
+        if hash_regua:
+            d['regua'] = hash_regua
+    return len(alvo)
 
 
 def alvo_consequencia(d: dict, traj: dict, n: int = 2, lam: float = 0.5,

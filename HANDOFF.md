@@ -1,5 +1,48 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-10-03 (932) - Custos, busca e "pagar o custo" entram no Q; a VANTAGEM de cada jogada passa a ser gravada no corpus
+
+Pedido do usuario: custos e passos de efeito fora do Q + vantagem gravada, e
+depois dizer se da pra reduzir o corpus sem perder dado.
+
+**1. Vantagem gravada** (`treinar_q.grava_vantagem`, chamada no fim de cada
+partida em `gerar_selfplay_dataset`): cada jogada ESCOLHIDA ganha
+`consequencia` (a mesma de `alvo_consequencia`), `v_antes` (regua no estado antes),
+`vantagem = consequencia - v_antes` e `regua` (hash de quem julgou). Sao o
+julgamento DA EPOCA -- o treino continua recalculando com a regua do ciclo (nota
+velha seria o defeito ja achado) e `qualidade_jogadas.py` recalcula com UMA regua
+pra comparar geracoes. `carrega_trajetorias` foi dividida em `monta_trajetorias`
+(fonte unica, usada pelo treino e pelo gerador). Medido: 98% das escolhidas
+recebem os campos; gravado x recalculo independente = diferenca max 5e-5
+(arredondamento de 4 casas).
+
+**2. Familias novas no Q** (todas pelo ponto unico `_q_escolhe_familia`; ajudante
+unico `_q_escolhe_carta`, que o descarte tambem usa): `custo_restar` e
+`custo_sacrificar` (6 pontos de `_pay_costs`: devolver pra mao, fundo do deck,
+restar aliado, restar carta propria, K.O. proprio x2 -- via `_q_custo`),
+`busca` (2 pontos de search: qual carta pegar) e `pagar_custo` (pagar o custo
+opcional, sim/nao). **`pagar_custo`: so a RECUSA e do Q** (regra diz pagar -> o Q
+pode recusar; regra diz nao -> o Q nao forca, pode ser impossivel de pagar).
+Vetor da acao +4 colunas no fim (111 colunas); `FAMILIAS_JOGO` ampliada.
+Medido em 24 partidas: escolhidas/exploradas -- descarte 104/8, counter_evento
+24/3, custo_restar 6/1, custo_sacrificar 1/0, busca 42/1, pagar_custo 108/11.
+`smoke_fast` 1.897 OK (teste novo com controles: carta unica, simulacao e custo
+so de recurso nao viram decisao; regra=nao nao e forcada).
+
+**NAO coberto ainda (honesto)**: `_resolve_choice` ("Choose one" dentro de um
+efeito) -- as opcoes sao grupos de passos sem carta, o Q nao tem como enxergar
+qual e qual sem desenhar uma codificacao de acao; escolha de carta pro
+custo "trash char ou mao" (comparacao binaria L7087), `return_trash_to_deck`,
+DON dado a carta propria, e o reviver (so existe em analise, nao em execucao).
+
+**3. Corpus: da pra reduzir sem perder dado?** Sim, e ja esta reduzido onde importa:
+completo 3,20 GB (4,25M linhas, local) | indice das escolhidas 0,33 GB (10,4%; o
+treino/qualidade/diagnostico so leem isto) | fatias no git 83 MB gz (guardam
+TUDO) | escolhidas comprimidas ~23 MB. As 90% restantes sao as ALTERNATIVAS com a
+nota da regua da epoca (hoje sem uso no treino). Nada precisa ser apagado.
+
+**Loop de ciclos PARADO** (ciclo 42 retoma sem regerar).
+
 ## 2026-10-02 (931) - Indice incremental das jogadas escolhidas: o ciclo deixa de reler 3,2 GB varias vezes
 
 Pedido do usuario: deixar mais rapido, reduzir o corpus mantendo a qualidade.

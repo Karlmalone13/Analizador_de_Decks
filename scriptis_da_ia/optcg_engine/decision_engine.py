@@ -1367,6 +1367,22 @@ def _q_escolhe_familia(me, opp, familia: str, opcoes: list, padrao_idx: int) -> 
     return idx
 
 
+def _q_escolhe_carta(me, opp, familia: str, cartas: list, padrao):
+    """Escolher UMA carta entre `cartas` e decisao do Q, pelo ponto unico
+    (`_q_escolhe_familia`) -- descarte, custos (restar/sacrificar) e busca
+    (bloco 932). `padrao` = o que a regra de hoje escolheria; fica como a
+    escolha enquanto o Q nao aprendeu a familia, e como referencia pra
+    exploracao. Em simulacao, ou com menos de 2 cartas, ou se o padrao nao esta
+    na lista, devolve o padrao: nao ha decisao real a registrar."""
+    if (_EM_SIMULACAO['on'] or padrao is None or len(cartas) < 2
+            or not any(c is padrao for c in cartas)):
+        return padrao
+    _opcoes = [(0.0, familia, c, None, None, 0, False) for c in cartas]
+    _i = _q_escolhe_familia(me, opp, familia, _opcoes,
+                            next(k for k, c in enumerate(cartas) if c is padrao))
+    return cartas[_i]
+
+
 def _e_reserva_de_defesa(card) -> bool:
     """Evento [Counter] na mao = defesa GUARDADA, nao recurso gasta-vel.
 
@@ -7199,7 +7215,7 @@ class EffectExecutor:
                     return False
                 returned = []
                 for _ in range(count):
-                    target = min(candidates, key=lambda c: c.board_value())
+                    target = self._q_custo(candidates, 'custo_sacrificar')
                     remove_character_from_field(self.me, target, 'hand')
                     remove_by_identity(candidates, target)
                     returned.append(target.name[:15])
@@ -7227,7 +7243,11 @@ class EffectExecutor:
                 # da dívida tecnica "in any order" exigem -- o mais FORTE
                 # dos sacrificados acabava mais fundo no deck, pior
                 # resultado possivel.
-                escolhidos = sorted(candidates, key=lambda c: c.board_value())[:count]
+                _pool_c, escolhidos = list(candidates), []
+                for _ in range(count):
+                    _t = self._q_custo(_pool_c, 'custo_sacrificar')
+                    remove_by_identity(_pool_c, _t)
+                    escolhidos.append(_t)
                 escolhidos.sort(key=lambda c: c.board_value(), reverse=True)
                 moved = []
                 for target in escolhidos:
@@ -7249,7 +7269,7 @@ class EffectExecutor:
                     return False
                 rested = []
                 for _ in range(count):
-                    target = min(candidates, key=lambda c: c.board_value())
+                    target = self._q_custo(candidates, 'custo_restar')
                     target.rested = True
                     remove_by_identity(candidates, target)
                     rested.append(target.name[:15])
@@ -7272,7 +7292,7 @@ class EffectExecutor:
                     return False
                 rested = []
                 for _ in range(count):
-                    target = min(candidates, key=lambda c: c.board_value())
+                    target = self._q_custo(candidates, 'custo_restar')
                     target.rested = True
                     remove_by_identity(candidates, target)
                     rested.append(target.name[:15])
@@ -7415,7 +7435,7 @@ class EffectExecutor:
                         break
                     # escolhe o de menor valor de board (sacrifica o menos util),
                     # reaproveitando a heuristica de _choose_to_trash.
-                    alvo = min(candidatos, key=lambda c: c.board_value())
+                    alvo = self._q_custo(candidatos, 'custo_sacrificar')
                     remove_by_identity(candidatos, alvo)
                     remove_character_from_field(self.me, alvo, 'trash')
                     koados.append(alvo.name[:15])
@@ -7454,7 +7474,7 @@ class EffectExecutor:
                 for _ in range(count):
                     if not candidatos:
                         break
-                    alvo = min(candidatos, key=lambda c: c.board_value())
+                    alvo = self._q_custo(candidatos, 'custo_sacrificar')
                     remove_by_identity(candidatos, alvo)
                     remove_character_from_field(self.me, alvo, 'trash')
                     trashed_own.append(alvo.name[:15])
@@ -8163,8 +8183,10 @@ class EffectExecutor:
             # (mill do trash_rest) — e OP13-082 nao e reanimavel (o
             # play_from_trash dela filtra power 5000; a copia milada morre).
             for _ in range(min(count, len(filtered))):
-                best = ((_modelo_escolhe_carta(self.me, self.opp, filtered, 'delta_ganhar_na_mao')
-                         or max(filtered, key=self._trash_value))
+                best = (_q_escolhe_carta(
+                            self.me, self.opp, 'busca', filtered,
+                            (_modelo_escolhe_carta(self.me, self.opp, filtered, 'delta_ganhar_na_mao')
+                             or max(filtered, key=self._trash_value)))
                         if filtered else None)
                 if best:
                     taken.append(best)
@@ -8241,8 +8263,10 @@ class EffectExecutor:
                 # familia que o usuario apontou e que nunca passou por
                 # modelo nenhum. Sem modelo compativel, a escolha anterior
                 # segue.
-                best = (_modelo_escolhe_carta(self.me, self.opp, candidates, 'delta_ganhar_na_mao')
-                        or max(candidates, key=self._trash_value))
+                best = _q_escolhe_carta(
+                    self.me, self.opp, 'busca', candidates,
+                    (_modelo_escolhe_carta(self.me, self.opp, candidates, 'delta_ganhar_na_mao')
+                     or max(candidates, key=self._trash_value)))
                 remove_by_identity(candidates, best)
                 # pop_by_identity, nao remove_by_identity -- ver docstring
                 # (respeita deepcopy-on-pop de _SimDeck, achado 03/08).
@@ -11817,13 +11841,17 @@ class EffectExecutor:
         # os tipos de decisao). Vai pelo MESMO ponto de bloqueio/counter/alvo.
         # So a mao PROPRIA e so quando a carta vai de fato sair: a mao do
         # oponente nao e decisao nossa, e a avaliacao hipotetica nao acontece.
-        if (not avaliando and len(_pool) > 1 and _padrao in _pool
-                and all(any(c is x for x in self.me.hand) for c in _pool)):
-            _opcoes = [(0.0, 'descarte', c, None, None, 0, False) for c in _pool]
-            _i = _q_escolhe_familia(self.me, self.opp, 'descarte', _opcoes,
-                                    next(k for k, c in enumerate(_pool) if c is _padrao))
-            return _pool[_i]
+        if (not avaliando and all(any(c is x for x in self.me.hand) for c in _pool)):
+            return _q_escolhe_carta(self.me, self.opp, 'descarte', _pool, _padrao)
         return _padrao
+
+    def _q_custo(self, candidatos: list, familia: str):
+        """CUSTO que sacrifica uma carta propria (restar / devolver / K.O.):
+        qual sai e decisao do Q (bloco 932). Padrao: a de menor `board_value`."""
+        if not candidatos:
+            return None
+        return _q_escolhe_carta(self.me, self.opp, familia, candidatos,
+                                min(candidatos, key=lambda c: c.board_value()))
 
     _SACRIFICE_COST_TYPES = {'trash_from_hand', 'trash_hand', 'trash_char_or_hand',
                              'trash_typed_hand_or_named_hand_field',
@@ -12000,6 +12028,24 @@ class EffectExecutor:
 
     def _worth_paying_optional_costs(self, costs: list, card: Card,
                                      steps: list | None = None) -> bool:
+        """PAGAR o custo opcional: sim ou nao, decisao do Q (bloco 932).
+
+        So quando ha custo de SACRIFICIO (o resto e recurso, sem julgamento) e a
+        regra diz que vale pagar: o Q pode RECUSAR. O caminho inverso (a regra
+        diz nao, o Q pagar) fica de fora de proposito: "nao vale" tambem cobre
+        custo que nao da pra pagar, e forcar o pagamento num caso impossivel
+        quebraria o efeito. Fonte unica: `execute()` e o caminho ao vivo
+        (`resolve_optional_effect`) passam por aqui."""
+        pagar = self._vale_pagar_custos_regra(costs, card, steps)
+        if (not pagar or _EM_SIMULACAO['on']
+                or not any(c.get('type') in self._SACRIFICE_COST_TYPES for c in costs)):
+            return pagar
+        _opcoes = [(0.0, 'pagar_custo_nao', None, None, None, 0, False),
+                   (0.0, 'pagar_custo', card, None, None, 0, False)]
+        return _q_escolhe_familia(self.me, self.opp, 'pagar_custo', _opcoes, 1) == 1
+
+    def _vale_pagar_custos_regra(self, costs: list, card: Card,
+                                 steps: list | None = None) -> bool:
         """
         Em OPTCG, um bloco de efeito com custo é sempre "you may pagar X: Y"
         -- decide se vale a pena. ÚNICA fonte de verdade pra essa pergunta,
