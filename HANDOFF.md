@@ -1,5 +1,40 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-10-03 (935) - Geracao mais barata (2 mundos) e exploracao GUIADA pela simulacao; ciclo 43 (12x33) com o pool de 51 decks
+
+**Ciclo 43** (1o com os 51 decks; ciclo rodado com `_loop_ciclos.sh 1`): 12x33 (27%)
+contra `generation_003`, nao promove. Tempo real **~19 min**: gera **846 s** (estimativa
+minha era 4-9 min: errada -- 51 decks mais pesados de simular + RAM quase cheia, so 0,4 GB
+livres de 11,9, Firefox ~3 GB) | regua 63 s | Q 123 s | portao 79 s | resto ~30 s. O
+loop agora recebe o N de ciclos por parametro (default 3; era 6 fixo, escolha minha).
+
+**AS-IS da geracao** (cProfile, 4 partidas): `_coleta_bootstrap` = **89%** do tempo
+(simula cada candidata, ~13 por decisao, em cada mundo, so pra anotar a nota das
+alternativas). Treino do Q (123 s): ler o indice 44 s | validacao (2 treinos) 52 s |
+resto 27 s. Maquina: i3-8130U, **2 nucleos fisicos** (4 workers ja saturam).
+Confianca do Q (337 decisoes): melhor isolada (> margem 0,055) so em **10%** das
+decisoes; em media 5 de 13 candidatas a < 0,055 da melhor; simular so top-k custaria
+top-2 15%, top-3 23%, top-4 30%, top-6 42% do custo de hoje.
+
+**Feito**: (1) `MUNDOS_BOOTSTRAP` 4 -> 2 (REPROVADOS/916: ruido entre mundos pequeno,
+erro padrao 0,0014 x diferenca tipica 0,013; a mao do oponente segue sorteada so do
+observavel em cada mundo): **40 partidas 151 s -> 95 s (-37%)**; projecao ~8 min por
+geracao de 200. (2) **Exploracao guiada pela simulacao** (`EXPLORA_GUIADA_FRAC`, 0,5,
+ponto de partida documentado, nao calibrado): quando o ciclo explora, em metade das
+vezes tenta, entre as jogadas que o Q nao distingue da melhor, a que a SIMULACAO acha
+melhor que a escolha do Q (onde Q e simulacao DISCORDAM); senao sorteio. A linha grava
+`explorada_como` ('simulacao'|'acaso'). smoke 1.908 OK (teste com 3 controles).
+Medido (409 jogadas exploradas): vantagem media -- jogada normal do Q +0,061 | guiada
++0,049 (+-0,021, n=140) | sorteada +0,057 (+-0,014, n=269): explorar nao piora o jogo e
+a guiada AINDA nao mostra ganho sobre o sorteio (amostra pequena).
+
+**Principios fixados com o usuario**: o bot nunca pode ficar estagnado sem aprender nem
+testar jogadas; a simulacao das alternativas deve servir a DESCOBERTA, nao so ao
+relatorio. Nao feito (decisao futura): simular so uma parte das alternativas (top-k +
+1 sorteada, piso de auditoria para decisoes "seguras" que sobe se as auditorias
+acharem erro, probabilidade de simulacao gravada na linha); medida de estagnacao que
+aumenta a exploracao sozinha.
+
 ## 2026-10-03 (934) - Pool de decks do auto-jogo: de 16 para 51 decks (42 lideres) com a pasta de .deck do simulador
 
 Pedido do usuario (escolheu a B; o banco humano tem decks repetidos): ampliar os

@@ -1248,7 +1248,17 @@ _Q_CTX = {'match': None, 'ativo': None}
 
 
 # Quantos mundos plausiveis por opcao no rotulo bootstrap (bloco 913).
-MUNDOS_BOOTSTRAP = max(1, int(os.environ.get('OPTCG_MUNDOS', '4') or 4))
+# MUNDOS por opcao no rotulo bootstrap: 4 -> 2 (bloco 935, AS-IS 03/10/2026). A
+# geracao de partidas gasta 89% do tempo simulando cada candidata em cada mundo
+# (14 min por ciclo). O ruido ENTRE mundos e pequeno (erro padrao 0,0014 contra
+# diferencas tipicas de 0,013 entre jogadas -- REPROVADOS.md, bloco 916), entao
+# metade dos mundos corta ~45% do custo quase sem mudar a nota. A mao do oponente
+# continua SORTEADA so do observavel em cada mundo (nao espia).
+# Fracao das jogadas de exploracao guiadas pela simulacao (o resto e sorteio).
+# 0,5 e ponto de partida DOCUMENTADO, nao calibrado: a medida de se a guiada
+# descobre mais que o sorteio sai do corpus (`explorada_como` + vantagem).
+EXPLORA_GUIADA_FRAC = float(os.environ.get('OPTCG_EXPLORA_GUIADA', '0.5') or 0.5)
+MUNDOS_BOOTSTRAP = max(1, int(os.environ.get('OPTCG_MUNDOS', '2') or 2))
 
 
 def _cega_copia(p2, o2, modelo_op) -> None:
@@ -19886,6 +19896,7 @@ class OPTCGMatch:
             linha['escolhida_por'] = 'q'
             if getattr(self, '_q_explorou', False):
                 linha['explorada'] = True
+                linha['explorada_como'] = getattr(self, '_q_explorou_como', 'acaso')
             self._q_explorou = False
             self._q_diagnostica(linha, list(pend.values()))
         self._q_pendentes = {}
@@ -22025,10 +22036,33 @@ class OPTCGMatch:
             incertos = [cv for cv in ordenados if ordenados[0][1] - cv[1] <= margem]
             if len(incertos) >= 2 and random.random() < eps:
                 self._explora_n = getattr(self, '_explora_n', 0) + 1
-                sorteada = incertos[random.randrange(len(incertos))]
+                sorteada, como = None, 'acaso'
+                # EXPLORACAO GUIADA PELA SIMULACAO (bloco 935, pedido do usuario:
+                # a simulacao das alternativas tem que ajudar o ML a DESCOBRIR
+                # jogadas, nao so alimentar um relatorio). Em parte das vezes,
+                # entre as jogadas que o Q nao distingue da melhor, tenta a que
+                # a SIMULACAO acha melhor que a escolha do Q -- onde o Q e a
+                # simulacao DISCORDAM. O resultado real da partida diz quem
+                # estava certo. A outra parte segue sorteada (a simulacao
+                # tambem erra: a regua acerta ~80%).
+                if random.random() < EXPLORA_GUIADA_FRAC:
+                    _pend = getattr(self, '_q_pendentes', None) or {}
+
+                    def _sim(cv):
+                        _l = _pend.get(id(cv[0]))
+                        return None if _l is None else _l.get('alvo')
+                    _topo = _sim(ordenados[0])
+                    _cand = [(cv, _sim(cv)) for cv in incertos[1:] if _sim(cv) is not None]
+                    if _topo is not None and _cand:
+                        _melhor, _v = max(_cand, key=lambda t: t[1])
+                        if _v > _topo:
+                            sorteada, como = _melhor, 'simulacao'
+                if sorteada is None:
+                    sorteada, como = incertos[random.randrange(len(incertos))], 'acaso'
                 # Marca pro diagnostico (28/09): jogada de TESTE nao e erro do
                 # modelo -- `porque_decisoes.py` separa as duas.
                 self._q_explorou = sorteada is not ordenados[0]
+                self._q_explorou_como = como
                 return sorteada
         self._explora_greedy_n = getattr(self, '_explora_greedy_n', 0) + 1
         return ordenados[0]

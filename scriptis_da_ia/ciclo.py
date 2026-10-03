@@ -220,7 +220,7 @@ def _atualiza_pool_adversarios() -> None:
 def _mundos() -> int:
     """Mundos plausiveis por opcao no rotulo bootstrap (bloco 913)."""
     import os
-    return max(1, int(os.environ.get('OPTCG_MUNDOS', '4') or 4))
+    return max(1, int(os.environ.get('OPTCG_MUNDOS', '2') or 2))
 
 
 def gera(n, seed, workers, n_ciclo=0) -> bool:

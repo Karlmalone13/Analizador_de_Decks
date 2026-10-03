@@ -11005,6 +11005,7 @@ def main() -> int:
     test_evento_de_counter_passa_pelo_q_bloco_927()
     test_custos_busca_e_pagar_passam_pelo_q_bloco_932()
     test_escolha_um_passa_pelo_q_bloco_933()
+    test_exploracao_guiada_pela_simulacao_bloco_935()
     test_explora_so_onde_o_modelo_esta_incerto_27_09()
     test_treino_continua_do_campeao_27_09()
     test_registro_de_geracoes_27_09()
@@ -17230,6 +17231,44 @@ def test_escolha_um_passa_pelo_q_bloco_933() -> None:
         check("CONTROLE: em simulacao nao vira decisao", len(chamadas) == n)
     finally:
         de._q_escolhe_familia = orig
+
+
+def test_exploracao_guiada_pela_simulacao_bloco_935() -> None:
+    """Bloco 935: parte da exploracao tenta a alternativa que a SIMULACAO acha
+    melhor que a escolha do Q (onde os dois discordam); o resto e sorteio."""
+    from optcg_engine import decision_engine as de
+    print("=== exploracao guiada pela simulacao (bloco 935) ===")
+    A, B, C = ('a',), ('b',), ('c',)
+    cand = [(A, 0.90), (B, 0.88), (C, 0.86)]          # o Q: A > B > C, todas dentro da margem
+    m = de.OPTCGMatch.__new__(de.OPTCGMatch)
+    m._explora_eps = 1.0
+
+    def com_sim(valores):
+        m._q_pendentes = {id(A): {'alvo': valores[0]}, id(B): {'alvo': valores[1]}, id(C): {'alvo': valores[2]}}
+    rnd0, frac0 = de.random.random, de.EXPLORA_GUIADA_FRAC
+    rr0 = de.random.randrange
+    try:
+        de.random.random = lambda: 0.0                 # explora, e cai no ramo guiado
+        de.random.randrange = lambda n: 1              # o sorteio pegaria o indice 1
+        com_sim((0.50, 0.70, 0.60))                    # a simulacao prefere B (0,70) a A (0,50)
+        r = m._explorar(cand, margem=0.10)
+        check("guiada: a simulacao acha B melhor que a escolha do Q -> tenta B",
+              r[0] is B and m._q_explorou_como == 'simulacao')
+        com_sim((0.50, 0.40, 0.45))                    # a simulacao NAO discorda (A e a melhor)
+        r = m._explorar(cand, margem=0.10)
+        check("CONTROLE: sem discordancia cai no sorteio ('acaso')",
+              m._q_explorou_como == 'acaso' and r[0] in (A, B, C))
+        de.EXPLORA_GUIADA_FRAC = 0.0
+        com_sim((0.50, 0.70, 0.60))
+        r = m._explorar(cand, margem=0.10)
+        check("CONTROLE: fracao guiada 0 -> nunca guia, mesmo com discordancia",
+              m._q_explorou_como == 'acaso' and r[0] is B)       # B vem do randrange(1), nao da simulacao
+        de.EXPLORA_GUIADA_FRAC = 1.0
+        m._q_pendentes = {}
+        r = m._explorar(cand, margem=0.10)
+        check("CONTROLE: sem notas de simulacao cai no sorteio", m._q_explorou_como == 'acaso')
+    finally:
+        de.random.random, de.random.randrange, de.EXPLORA_GUIADA_FRAC = rnd0, rr0, frac0
 
 if __name__ == "__main__":
     raise SystemExit(main())

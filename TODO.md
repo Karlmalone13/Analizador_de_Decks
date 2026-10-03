@@ -1,6 +1,12 @@
 # TODO — Analisador de Decks OPTCG
 
-**Última atualização:** 3 de outubro de 2026 (bloco 934)
+**Última atualização:** 3 de outubro de 2026 (bloco 935)
+
+> **GERACAO MAIS BARATA + EXPLORACAO GUIADA (bloco 935)**: 2 mundos (-37% na
+> geracao) e exploracao guiada pela simulacao (metade das jogadas de teste).
+> Ciclo 43 com os 51 decks: 12x33, ~19 min. **Proximo**: rodar 1-2 ciclos curtos e
+> medir se o bot descobre jogadas (portao/qualidade); medida de estagnacao que
+> sobe a exploracao; simular so parte das alternativas (com piso de auditoria).
 
 > **POOL DE DECKS 16 -> 51 (bloco 934)**: o gerador e o portao agora usam tambem
 > os `.deck` do simulador (42 lideres). A familia `opcao_efeito` ja aparece (3 em
