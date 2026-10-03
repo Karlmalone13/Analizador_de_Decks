@@ -140,6 +140,10 @@ scriptis_da_ia/metrics/q_alvos.jsonl
 # Livro local de quais fatias ja entraram neste .jsonl. E por MAQUINA: versionar
 # faria o estado de uma virar o da outra.
 scriptis_da_ia/metrics/q_alvos_fatias.json
+# INDICE das jogadas escolhidas (bloco 931): derivado e regeneravel do
+# q_alvos.jsonl (`python corpus_escolhidas.py --reconstroi`), por maquina.
+scriptis_da_ia/metrics/q_escolhidas.jsonl
+scriptis_da_ia/metrics/q_escolhidas_meta.json
 scriptis_da_ia/metrics/selfplay_v2.jsonl
 # O DESAFIANTE e regenerado a cada ciclo e so vira campeao se o portao
 # promover -- ai quem viaja pelo git e `q_net.joblib` (219 KB, versionado).

@@ -62,7 +62,11 @@ def main() -> int:
     modelo = regua['modelo']
 
     linhas = []        # (gen, familia, lider, consequencia, feats do estado, venceu)
-    with open(args.dataset, encoding='utf-8') as fh:
+    import corpus_escolhidas
+    dataset = Path(args.dataset)
+    if dataset.resolve() == corpus_escolhidas.ORIGEM.resolve():
+        dataset = corpus_escolhidas.atualiza()     # so as escolhidas (bloco 931)
+    with open(dataset, encoding='utf-8') as fh:
         for l in fh:
             d = json.loads(l)
             g = d.get('gen') or 0

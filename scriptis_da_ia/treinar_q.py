@@ -112,6 +112,9 @@ from collections import Counter
 from pathlib import Path
 
 RAIZ = Path(__file__).parent
+import sys  # noqa: E402
+sys.path.insert(0, str(RAIZ))
+import corpus_escolhidas  # noqa: E402
 MODO_PADRAO = 'bootstrap'
 
 
@@ -307,6 +310,12 @@ def main() -> int:
     from sklearn.model_selection import GroupKFold
 
     caminho = RAIZ / args.dataset
+    if args.consequencia and caminho.resolve() == corpus_escolhidas.ORIGEM.resolve():
+        # O treino so usa jogada com consequencia real (bloco 923), que e
+        # subconjunto das ESCOLHIDAS: le o indice delas (~10% do corpus, mesma
+        # ordem, mesmos bytes) em vez de reler os 3 GB (bloco 931). Com
+        # --sem-consequencia o treino usa as alternativas tambem -> corpus todo.
+        caminho = corpus_escolhidas.atualiza()
     X, y, grupos = [], [], []
     decisoes, escolhidas, familias = [], [], []
     n_lidas = n_filtradas_modo = n_sem_consequencia = 0

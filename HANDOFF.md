@@ -1,5 +1,36 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-10-02 (931) - Indice incremental das jogadas escolhidas: o ciclo deixa de reler 3,2 GB varias vezes
+
+Pedido do usuario: deixar mais rapido, reduzir o corpus mantendo a qualidade.
+**AS-IS**: `q_alvos.jsonl` = 3,2 GB / 4,3M linhas; parse completo ~74 us/linha =
+~5 min POR LEITURA; cada ciclo lia tudo no treino do Q, no relatorio de
+qualidade, no diagnostico e em 2 contagens de linhas (~10 min/ciclo; o ciclo
+41 levou ~29 min de relogio contra 19 min somando as etapas). O treino so usa
+~8% (as ESCOLHIDAS com consequencia, bloco 923).
+
+**Feito** (`corpus_escolhidas.py`, modulo compartilhado -- REGRA_SEM_DUPLICACAO):
+`metrics/q_escolhidas.jsonl` = linhas com `"escolhida": true`, mesma ordem, bytes
+copiados sem reinterpretar (derivado, gitignored; o corpus completo e a fonte de
+verdade e NAO foi tocado). Incremental: le so os bytes novos desde o `offset`
+(~0,2 s em dia); reconstroi sozinho (~14 s) se o inicio do corpus ou o trecho
+antes do offset mudou ou o arquivo ficou menor. Usado por `treinar_q.py` (so com
+consequencia ligada -- `--sem-consequencia` usa as alternativas e le o corpus
+todo), `qualidade_jogadas.py`, `porque_decisoes.py`; `ciclo.py` conta linhas pelo
+indice (`total_linhas`). Filtro por texto validado contra o JSON em 300k linhas
+(0 divergencias). Indice: 420.677 escolhidas de 4.252.798 (9,9%), 332 MB.
+
+**Controle (qualidade preservada)**: treino com os MESMOS argumentos, versao
+antiga (le o corpus inteiro) x nova (le o indice): 359.659 linhas usadas nas duas,
+erro 0,146599 x 0,146599, **diferenca maxima nas previsoes 0,000** (5000
+entradas); controle que pode falhar (gen_002): 2,16. Tempo do treino 273 -> 110 s
+(-60%); diagnostico 8 s; qualidade 34 s (era 3-5 min). smoke_fast 1.885 OK.
+
+Estimativa por ciclo (com o pool do portao, bloco 930): ~29 min -> ~12-15 min.
+O loop esta PARADO no ciclo 42 (geracao 42 ja no corpus; retoma sem regerar).
+Pendente: o `chega` de outra maquina nao precisa saber do indice (se reconstroi
+sozinho).
+
 ## 2026-10-02 (930) - Por que o ciclo demora: o portao gastava 65% do tempo abrindo processos (AS-IS + correcao); e os testes de regra dependiam do campeao
 
 Pedido do usuario: suspender o loop (parado no ciclo 42, geracao 42 JA no corpus --

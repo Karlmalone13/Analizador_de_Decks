@@ -1,6 +1,11 @@
 # TODO — Analisador de Decks OPTCG
 
-**Última atualização:** 2 de outubro de 2026 (bloco 930)
+**Última atualização:** 2 de outubro de 2026 (bloco 931)
+
+> **INDICE DAS ESCOLHIDAS (bloco 931)**: o ciclo nao relê mais os 3,2 GB do
+> corpus (treino do Q 273 -> 110 s, qualidade/diagnostico em segundos), com modelo
+> IDENTICO ao treino antigo (diferenca 0,000). Ciclo estimado ~12-15 min (era ~29).
+> **Proximo**: retomar o loop (ciclo 42 retoma sem regerar).
 
 > **TEMPO DO CICLO (bloco 930)**: o portao gastava 65% do tempo abrindo processos
 > -- corrigido com pool persistente (-41% a -58%, resultado identico). Os testes

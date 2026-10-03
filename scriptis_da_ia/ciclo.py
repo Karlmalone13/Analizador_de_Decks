@@ -81,6 +81,7 @@ if os.environ.get('PYTHONHASHSEED') != '0':
     # de minutos e precisa ser acompanhado.
     os.environ['PYTHONUNBUFFERED'] = '1'
     raise SystemExit(subprocess.call([sys.executable, '-u'] + sys.argv))
+import corpus_escolhidas  # noqa: E402
 from datetime import datetime
 from pathlib import Path
 
@@ -615,7 +616,7 @@ def main() -> int:
         _pai = geracoes.carrega().get('atual')
         ident = geracoes.registra_candidato(
             Q_DESAFIANTE,
-            dataset={'alvos': (sum(1 for _ in Q_CORPUS.open(encoding='utf-8'))
+            dataset={'alvos': (corpus_escolhidas.total_linhas()
                                if Q_CORPUS.exists() else 0),
                      'fatias': sorted(p.name for p in (RAIZ / 'metrics' / 'q_alvos').glob('*.jsonl.gz')),
                      'modo': 'bootstrap',
@@ -661,7 +662,7 @@ def main() -> int:
             'ciclo': n_ciclo,
             'quando': datetime.now().isoformat(timespec='seconds'),
             'partidas': args.partidas,
-            'alvos_corpus': sum(1 for _ in Q_CORPUS.open(encoding='utf-8'))
+            'alvos_corpus': corpus_escolhidas.total_linhas()
                             if Q_CORPUS.exists() else 0,
             'erro_q': b.get('erro_fora_amostra'),
             'ganho_pct': b.get('ganho_pct'),

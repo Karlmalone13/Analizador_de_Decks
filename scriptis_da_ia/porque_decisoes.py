@@ -25,6 +25,7 @@ import argparse
 import collections
 import json
 import os
+import sys
 
 DEFAULT = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'metrics', 'q_alvos.jsonl')
 
@@ -43,7 +44,12 @@ def main():
     args = ap.parse_args()
 
     por_gen = collections.defaultdict(list)
-    with open(args.dataset, encoding='utf-8') as fh:
+    sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+    import corpus_escolhidas
+    dataset = args.dataset
+    if os.path.abspath(dataset) == os.path.abspath(str(corpus_escolhidas.ORIGEM)):
+        dataset = str(corpus_escolhidas.atualiza())   # so as escolhidas tem `regret` (bloco 931)
+    with open(dataset, encoding='utf-8') as fh:
         for ln in fh:
             if '"regret"' not in ln:        # filtro barato: so diagnosticadas
                 continue
