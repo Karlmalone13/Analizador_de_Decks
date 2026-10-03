@@ -363,8 +363,76 @@ FEATURE_NAMES_ACAO = [
     # Bloco 932: CUSTOS (qual carta restar / sacrificar), BUSCA (qual carta
     # pegar) e PAGAR o custo opcional (sim/nao).
     'eh_custo_restar', 'eh_custo_sacrificar', 'eh_busca', 'eh_pagar_custo',
+    # Bloco 933: OPCAO de efeito ("escolha um"). Cada opcao e descrita pelo que
+    # FAZ (quantos passos de cada CLASSE), nunca pelo nome da carta.
+    'eh_opcao_efeito',
+    'opc_cartas', 'opc_vida_ganhar', 'opc_vida_espiar', 'opc_vida_outro', 'opc_dano', 'opc_ko',
+    'opc_devolver', 'opc_restar', 'opc_enfraquecer', 'opc_estado_defensivo',
+    'opc_estado_ofensivo', 'opc_estado_banir', 'opc_mao_oponente', 'opc_don', 'opc_jogar',
+    'opc_passos', 'opc_quantidade',
 ]
 N_ACAO_ANTIGO = len(FEATURE_NAMES_ACAO) - 4
+
+
+CLASSES_DE_PASSO = ('cartas', 'vida_ganhar', 'vida_espiar', 'vida_outro', 'dano', 'ko',
+                    'devolver', 'restar', 'enfraquecer', 'estado_defensivo',
+                    'estado_ofensivo', 'estado_banir', 'mao_oponente', 'don', 'jogar')
+
+
+def classe_de_passo(acao: str) -> str:
+    """A CLASSE do que um passo de efeito faz, pelo nome generico da acao do
+    banco (nunca por carta). Separa pelo EFEITO: remocao permanente (K.O.) x
+    temporaria (devolver) x tempo (restar); vida ganha x espiada/virada; estado
+    defensivo x ofensivo. Ordem importa: a primeira regra que casa vale."""
+    a = str(acao or '')
+    if a == 'attack_life' or 'damage' in a:
+        return 'dano'
+    if a.startswith('opp_') and 'hand' in a:
+        return 'mao_oponente'
+    if a in ('ko', 'trash_character') or a.startswith('ko_'):
+        return 'ko'
+    if a.startswith('rest_opp'):
+        return 'restar'
+    if (a == 'bounce' or 'bottom_deck' in a or a.startswith('place_opp')
+            or a.startswith('opp_place')):
+        return 'devolver'
+    if a == 'gain_life':
+        return 'vida_ganhar'
+    if 'peek' in a and 'life' in a:
+        return 'vida_espiar'
+    if 'life' in a:
+        return 'vida_outro'
+    if 'don' in a:
+        return 'don'
+    if a.startswith('play'):
+        return 'jogar'
+    if a == 'draw' or a.startswith('search') or a.startswith('add_') or 'reveal' in a:
+        return 'cartas'
+    if a.startswith('debuff') or a.startswith('lock') or a.startswith('negate'):
+        return 'enfraquecer'
+    if 'blocker' in a:
+        return 'estado_defensivo'
+    if 'banish' in a:
+        return 'estado_banir'
+    return 'estado_ofensivo'     # gain_double_attack/banish/buff...
+
+
+def descreve_opcao(passos: list) -> dict:
+    """Uma opcao de "escolha um" (lista de passos) -> contagem por classe,
+    numero de passos e quantidade total (soma de `count`/`amount` numericos)."""
+    d = {c: 0 for c in CLASSES_DE_PASSO}
+    qtd = 0.0
+    for s in (passos if isinstance(passos, list) else [passos]):
+        if not isinstance(s, dict):
+            continue
+        d[classe_de_passo(s.get('action'))] += 1
+        for k in ('count', 'amount'):
+            v = s.get(k)
+            if isinstance(v, (int, float)):
+                qtd += float(v)
+    d['passos'] = len([s for s in (passos if isinstance(passos, list) else [passos]) if isinstance(s, dict)])
+    d['quantidade'] = qtd
+    return d
 
 
 def _prop(c, attr, default=0.0) -> float:
@@ -404,7 +472,11 @@ def acao_features(acao, opp=None) -> list:
              1.0 if fam == 'custo_restar' else 0.0,
              1.0 if fam == 'custo_sacrificar' else 0.0,
              1.0 if fam == 'busca' else 0.0,
-             1.0 if fam in ('pagar_custo', 'pagar_custo_nao') else 0.0]
+             1.0 if fam in ('pagar_custo', 'pagar_custo_nao') else 0.0,
+             1.0 if fam == 'opcao_efeito' else 0.0]
+    opc = (getattr(ator, 'opc', None) or {}) if fam == 'opcao_efeito' else {}
+    extra += [float(opc.get(c, 0)) for c in CLASSES_DE_PASSO]
+    extra += [float(opc.get('passos', 0)), float(opc.get('quantidade', 0))]
     return um_de + [
         _prop(ator, 'cost'), ator_power / 1000.0, _prop(ator, 'counter') / 1000.0,
         1.0 if _prop(ator, 'has_blocker') else 0.0,

@@ -4127,7 +4127,8 @@ def resolve_choice_for_scoring(block: dict, card: 'Card', me: 'GameState', opp: 
     choice = block.get('choice')
     if not choice:
         return []
-    return EffectExecutor(me, opp)._resolve_choice(choice, card, block.get('choice_chooser', 'self'))
+    return EffectExecutor(me, opp)._resolve_choice(
+        choice, card, block.get('choice_chooser', 'self'), avaliando=True)
 
 
 def on_ko_value(code: str, opp: 'Optional[GameState]' = None,
@@ -5076,8 +5077,16 @@ class EffectExecutor:
         # gain_life do deck, etc) = sempre viável.
         return True
 
-    def _resolve_choice(self, options: list, card: Card, chooser: str = 'self') -> list:
-        """Escolhe a opcao viavel de maior valor heuristico."""
+    def _resolve_choice(self, options: list, card: Card, chooser: str = 'self',
+                        avaliando: bool = False) -> list:
+        """Escolhe a opcao viavel de maior valor heuristico.
+
+        "ESCOLHA UM" NO Q (bloco 933): quando QUEM escolhe e o proprio bot
+        (`chooser == 'self'`), ha 2+ opcoes viaveis e a escolha e REAL (nao
+        `avaliando`, nao simulacao), a decisao e do Q pelo ponto unico, com cada
+        opcao descrita pelo que FAZ (`value_net.descreve_opcao`). A regra de
+        hoje (maior soma de pesos) e o `padrao`. Quando quem escolhe e o
+        oponente, e ele que decide -- aqui so se simula o pior caso pra nos."""
         if not options:
             return []
 
@@ -5107,16 +5116,29 @@ class EffectExecutor:
 
         best_steps = []
         best_score = None
+        viaveis = []
         for option in options:
             steps = option if isinstance(option, list) else [option]
             viable = [s for s in steps if choice_step_viable(s)]
             if not viable:
                 continue
+            viaveis.append(steps)
             score = sum(weights.get(s.get('action', ''), 1) for s in viable)
             if best_score is None or (score > best_score if chooser != 'opponent' else score < best_score):
                 best_score = score
                 best_steps = steps
 
+        if (chooser != 'opponent' and not avaliando and len(viaveis) > 1
+                and not _EM_SIMULACAO['on']):
+            from types import SimpleNamespace
+            from optcg_engine import value_net as _vn
+            _opcoes = [(0.0, 'opcao_efeito',
+                        SimpleNamespace(opc=_vn.descreve_opcao(v), cost=getattr(card, 'cost', 0),
+                                        power=getattr(card, 'power', 0), power_buff=0, counter=0),
+                        None, None, 0, False) for v in viaveis]
+            _i = _q_escolhe_familia(self.me, self.opp, 'opcao_efeito', _opcoes,
+                                    next(k for k, v in enumerate(viaveis) if v is best_steps))
+            return viaveis[_i]
         return best_steps
 
     def _dispatch_don_given(self, target: Card) -> list[str]:

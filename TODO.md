@@ -1,6 +1,12 @@
 # TODO — Analisador de Decks OPTCG
 
-**Última atualização:** 3 de outubro de 2026 (bloco 932)
+**Última atualização:** 3 de outubro de 2026 (bloco 933)
+
+> **"ESCOLHA UM" NO Q (bloco 933)**: opcoes codificadas por classe de passo
+> (26 de 26 cartas distinguiveis), ligado em `_resolve_choice`. **ACHADO**: o
+> auto-jogo so usa 16 decks e nenhum tem essas cartas -> a familia nunca e
+> exercitada. **Decisao do usuario**: ampliar o pool de decks do gerador
+> (banco humano 434 / pasta do simulador)? Muda a distribuicao do treino.
 
 > **CUSTOS/BUSCA/PAGAR NO Q + VANTAGEM GRAVADA (bloco 932)**: familias
 > custo_restar, custo_sacrificar, busca e pagar_custo (so a recusa) no Q; a

@@ -11004,6 +11004,7 @@ def main() -> int:
     test_descarte_passa_pelo_q_bloco_925()
     test_evento_de_counter_passa_pelo_q_bloco_927()
     test_custos_busca_e_pagar_passam_pelo_q_bloco_932()
+    test_escolha_um_passa_pelo_q_bloco_933()
     test_explora_so_onde_o_modelo_esta_incerto_27_09()
     test_treino_continua_do_campeao_27_09()
     test_registro_de_geracoes_27_09()
@@ -15790,9 +15791,9 @@ def test_ml_aprende_todas_as_decisoes_pela_consequencia_27_09() -> None:
     check("acao_features tem a largura de FEATURE_NAMES_ACAO",
           len(f_b) == na and len(f_a) == na)
     check("bloqueio, counter e alvo marcados nas colunas novas",
-          f_b[-10] == 1.0 and f_c[-9] == 1.0 and f_c[-7] == 1.0 and f_t[-8] == 1.0)
+          (lambda ix: f_b[ix('eh_bloqueio')] == 1.0 and f_c[ix('eh_counter')] == 1.0 and f_c[ix('alvo_e_meu')] == 1.0 and f_t[ix('eh_alvo_efeito')] == 1.0)(vn.FEATURE_NAMES_ACAO.index))
     check("CONTROLE: jogada principal tem as 4 colunas de defesa/alvo zeradas (igual ao corpus antigo)",
-          f_a[-10:-6] == [0.0, 0.0, 0.0, 0.0])
+          [f_a[vn.FEATURE_NAMES_ACAO.index(c)] for c in ('eh_bloqueio', 'eh_counter', 'eh_alvo_efeito', 'alvo_e_meu')] == [0.0, 0.0, 0.0, 0.0])
     traj = {(9, 3, 'L1'): [(0, 0.0, 1, 0.40), (2, 1.0, 1, 0.55), (4, 2.0, 1, 0.70)]}
     esc = {'escolhida': True, 'decisao': 1, 'gen': 9, 'match': 3, 'leader': 'L1',
            'turn': 1, 'ld_agora': 0.0}
@@ -17061,7 +17062,7 @@ def test_descarte_passa_pelo_q_bloco_925() -> None:
     a, b, c = mk("DSA", "A", cost=1), mk("DSB", "B", cost=5), mk("DSC", "C", cost=3)
     f = vn.acao_features((0.0, 'descarte', a, None, None, 0, False), None)
     check("descarte marcado na coluna nova; jogada principal fica 0",
-          f[-6] == 1.0 and vn.acao_features((0.0, 'attack', a, 'leader', None), None)[-6:] == [0.0] * 6)
+          f[vn.FEATURE_NAMES_ACAO.index('eh_descarte')] == 1.0 and vn.acao_features((0.0, 'attack', a, 'leader', None), None)[vn.FEATURE_NAMES_ACAO.index('eh_descarte'):] == [0.0] * (len(vn.FEATURE_NAMES_ACAO) - vn.FEATURE_NAMES_ACAO.index('eh_descarte')))
     chamadas = []
     orig = de._q_escolhe_familia
     de._q_escolhe_familia = lambda me, opp, fam, ops, pad: (chamadas.append((fam, len(ops), pad)) or 1)
@@ -17092,7 +17093,8 @@ def test_evento_de_counter_passa_pelo_q_bloco_927() -> None:
     print("\n=== evento de counter pelo Q (bloco 927) ===")
     ev1, ev2 = mk("CE1", "E1", cost=1), mk("CE2", "E2", cost=2)
     f = vn.acao_features((0.0, 'counter_evento', ev1, 'leader', None, None, True), None)
-    check("evento de counter marcado na coluna nova", f[-5] == 1.0 and f[-6] == 0.0)
+    check("evento de counter marcado na coluna nova",
+          f[vn.FEATURE_NAMES_ACAO.index('eh_counter_evento')] == 1.0 and f[vn.FEATURE_NAMES_ACAO.index('eh_descarte')] == 0.0)
     me = GameState(leader=real_card("OP14-020")); opp = GameState(leader=real_card("OP16-001"))
     ee = de.EffectExecutor(me, opp)
     cands = [(500, 1, ev1, 2500, []), (0, 2, ev2, 2000, [])]     # a regra pega a do menor excesso (ev2)
@@ -17125,10 +17127,11 @@ def test_custos_busca_e_pagar_passam_pelo_q_bloco_932() -> None:
     from optcg_engine import value_net as vn
     print("\n=== custos, busca e pagar custo pelo Q (bloco 932) ===")
     a, b, c = mk("QA", "A", cost=1), mk("QB", "B", cost=5), mk("QC", "C", cost=3)
-    for fam, col in (('custo_restar', -4), ('custo_sacrificar', -3), ('busca', -2), ('pagar_custo', -1)):
+    _cols4 = [vn.FEATURE_NAMES_ACAO.index(n) for n in ('eh_custo_restar', 'eh_custo_sacrificar', 'eh_busca', 'eh_pagar_custo')]
+    for fam, col in zip(('custo_restar', 'custo_sacrificar', 'busca', 'pagar_custo'), _cols4):
         f = vn.acao_features((0.0, fam, a, None, None, 0, False), None)
         check("familia %s marcada na sua coluna e nas outras 3 nao" % fam,
-              f[col] == 1.0 and sum(f[-4:]) == 1.0)
+              f[col] == 1.0 and sum(f[c] for c in _cols4) == 1.0)
     me = GameState(leader=real_card("OP14-020")); opp = GameState(leader=real_card("OP16-001"))
     chamadas = []
     orig = de._q_escolhe_familia
@@ -17165,6 +17168,66 @@ def test_custos_busca_e_pagar_passam_pelo_q_bloco_932() -> None:
                   ee._worth_paying_optional_costs(sac, a) is False)
         finally:
             de.EffectExecutor._vale_pagar_custos_regra = orig_regra
+    finally:
+        de._q_escolhe_familia = orig
+
+
+def test_escolha_um_passa_pelo_q_bloco_933() -> None:
+    """Bloco 933: "escolha um" dentro de um efeito e decisao do Q quando QUEM
+    escolhe e o bot; cada opcao e descrita pelo que FAZ (classes de passo)."""
+    import json
+    from types import SimpleNamespace
+    from optcg_engine import decision_engine as de
+    from optcg_engine import value_net as vn
+    print("=== escolha um pelo Q (bloco 933) ===")
+    # 1) a codificacao distingue as opcoes das 26 cartas reais (controle: sem ela, todas iguais)
+    db = json.load(open('card_effects_db.json', encoding='utf-8'))
+    blocos = []
+
+    def varre(o):
+        if isinstance(o, dict):
+            if isinstance(o.get('choice'), list) and o['choice']:
+                blocos.append(o['choice'])
+            for v in o.values():
+                varre(v)
+        elif isinstance(o, list):
+            for v in o:
+                varre(v)
+    varre(db)
+
+    def vec(op, com):
+        st = op if isinstance(op, list) else [op]
+        ator = SimpleNamespace(opc=vn.descreve_opcao(st) if com else {}, cost=0, power=0, power_buff=0, counter=0)
+        return tuple(vn.acao_features((0.0, 'opcao_efeito', ator, None, None, 0, False), None))
+    check("bloco 'escolha um' existe no banco (>= 20)", len(blocos) >= 20)
+    check("opcoes de CADA bloco real geram vetores DIFERENTES",
+          all(len({vec(op, True) for op in ch}) == len(ch) for ch in blocos))
+    check("CONTROLE: sem descrever as opcoes, todo bloco fica indistinguivel",
+          all(len({vec(op, False) for op in ch}) < len(ch) for ch in blocos))
+    # 2) a escolha
+    me = GameState(leader=real_card("OP14-020")); opp = GameState(leader=real_card("OP16-001"))
+    ee = de.EffectExecutor(me, opp)
+    card = mk("OC1", "Fonte")
+    opcoes = [[{'action': 'draw', 'count': 1}], [{'action': 'gain_life', 'count': 1, 'source': 'hand'}]]
+    me.hand = [mk("OH1", "H")]
+    chamadas = []
+    orig = de._q_escolhe_familia
+    try:
+        de._q_escolhe_familia = lambda m, o, fam, ops, pad: (chamadas.append((fam, len(ops), pad)) or 1)
+        r = ee._resolve_choice(opcoes, card, 'self')
+        check("2 opcoes viaveis: pergunta ao Q como 'opcao_efeito' e devolve a ESCOLHIDA por ele",
+              chamadas and chamadas[0][:2] == ('opcao_efeito', 2) and r is opcoes[1])
+        n = len(chamadas)
+        ee._resolve_choice(opcoes, card, 'self', avaliando=True)
+        check("CONTROLE: avaliando (so pontuar) NAO vira decisao", len(chamadas) == n)
+        ee._resolve_choice(opcoes, card, 'opponent')
+        check("CONTROLE: quando o OPONENTE escolhe, nao e decisao nossa", len(chamadas) == n)
+        de._EM_SIMULACAO['on'] = True
+        try:
+            ee._resolve_choice(opcoes, card, 'self')
+        finally:
+            de._EM_SIMULACAO['on'] = False
+        check("CONTROLE: em simulacao nao vira decisao", len(chamadas) == n)
     finally:
         de._q_escolhe_familia = orig
 

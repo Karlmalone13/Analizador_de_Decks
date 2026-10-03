@@ -1,5 +1,40 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-10-03 (933) - "Escolha um" dentro de um efeito entra no Q (com codificacao das opcoes); achado: o auto-jogo so usa 16 decks e NENHUM tem essas cartas
+
+Pedido do usuario: fazer a codificacao das opcoes de "escolha um" (`_resolve_choice`).
+**Dados**: so 26 cartas do banco (de 2.839) tem bloco `choice`, 24 com 2 opcoes e 2
+com 3; 21 escolhem "self", 5 "opponent".
+**Codificacao** (`value_net.classe_de_passo` / `descreve_opcao`; nunca por nome de
+carta): cada opcao vira contagem de passos por CLASSE (15: cartas, vida_ganhar,
+vida_espiar, vida_outro, dano, ko, devolver, restar, enfraquecer, estado_defensivo,
+estado_ofensivo, estado_banir, mao_oponente, don, jogar) + n de passos + quantidade
+total. Separa pelo EFEITO (remocao permanente x temporaria x tempo; vida ganha x
+espiada; defensivo x ofensivo). +17 colunas no fim do vetor (129 no total);
+`treinar_q` aceita ate 40 colunas novas ao continuar do campeao.
+**Controle que decide se serve**: nas 26 cartas reais, opcoes distinguiveis no
+vetor: 19 -> 24 -> **26 de 26** apos refinar as classes; sem a descricao, 26 de 26
+indistinguiveis (o instrumento detecta). Ordem das colunas == ordem das classes
+(assert).
+**Ligacao**: `_resolve_choice(options, card, chooser, avaliando=False)`: so quando
+QUEM escolhe e o bot (`chooser != 'opponent'`), ha >= 2 opcoes viaveis, nao e
+avaliacao (`resolve_choice_for_scoring` passa `avaliando=True`) nem simulacao.
+Padrao = a regra de hoje (maior soma de pesos). NAO mexi em
+`sim_bridge.escolher_opcao_de_efeito` (prompt de TEXTO ao vivo, outro mecanismo).
+`smoke_fast` 1.904 OK (testes de largura agora acham a coluna PELO NOME).
+
+**ACHADO**: em 60 partidas, `opcao_efeito` = 0 decisoes. Causa verificada: o
+gerador usa `decklists_raw.csv`, 1 deck por lider valido -> **so 16 decks** (o
+`--decks 24` pede 24, ha 16), e **0 dos 16 tem alguma das 26 cartas**. A familia
+esta ligada e testada por unidade, mas o auto-jogo atual nunca a exercita (nem
+aprende). Tambem e um limite do objetivo "QUALQUER deck". Opcoes (decisao do
+usuario, muda a distribuicao do treino): decks do banco humano (`logs/decks`, 434)
+ou da pasta do simulador (92% de cobertura).
+
+**Resumo das familias no Q apos blocos 925-933** (escolhidas em 60 partidas):
+descarte 231 | counter_evento 65 | custo_restar 19 | custo_sacrificar 15 | busca
+111 | pagar_custo 266 | opcao_efeito 0. Loop de ciclos PARADO (ciclo 42 retoma).
+
 ## 2026-10-03 (932) - Custos, busca e "pagar o custo" entram no Q; a VANTAGEM de cada jogada passa a ser gravada no corpus
 
 Pedido do usuario: custos e passos de efeito fora do Q + vantagem gravada, e
