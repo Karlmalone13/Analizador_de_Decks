@@ -1,6 +1,10 @@
 # TODO — Analisador de Decks OPTCG
 
-**Última atualização:** 3 de outubro de 2026 (bloco 935)
+**Última atualização:** 4 de outubro de 2026 (bloco 936)
+
+> **CICLO 44 + DECISAO (bloco 936)**: 20x35, ~12,5 min. Exploracao guiada promissora
+> (+0,063 x +0,035 sorteada; 51,4% x 47,0% vitorias). Decidido com o usuario: a
+> simulacao das alternativas vira ENSINO do Q. **Proximo**: implementar e medir no portao.
 
 > **GERACAO MAIS BARATA + EXPLORACAO GUIADA (bloco 935)**: 2 mundos (-37% na
 > geracao) e exploracao guiada pela simulacao (metade das jogadas de teste).

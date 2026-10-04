@@ -1,5 +1,27 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-10-04 (936) - Ciclo 44 (20x35, ~12,5 min); exploracao guiada promissora; decidido: simulacao das alternativas vira ENSINO
+
+**Ciclo 44** (1o com 2 mundos + exploracao guiada + 51 decks): 20x35 (36%) contra
+`generation_003`, nao promove. Tempo: gera 406 s (era 846) | regua 58 s | Q 126 s |
+portao 122 s | auditoria 17 s | ancora 13 s = **~12,5 min** (era ~19).
+
+**Exploracao guiada x sorteada (gen 44, espelhos excluidos)**: vantagem media -- normal
+do Q +0,052 (n=7034) | guiada **+0,063** +-0,012 (n=354) | sorteada +0,035 +-0,008
+(n=740). % de partidas ganhas que contem a jogada: 49,6% | **51,4%** | 47,0%. Guiada >
+sorteada nos dois (~2 e ~1,4 desvios). Ressalva: a vantagem usa a mesma regua da
+simulacao (parcialmente circular); o resultado real e independente e aponta igual, fraco.
+
+**Decisao do usuario (04/10)**: o resultado da simulacao das alternativas passa a ser
+ENSINO do Q (nao so guia da exploracao). Risco discutido (herdar erro da regua); o
+usuario aceitou: a exploracao + o treino pela consequencia real corrigem o que for
+herdado. Proximo passo: implementar e medir no portao.
+
+**Lacunas estruturais levantadas**: (1) faltava o passo que MELHORA a decisao (agora
+decidido acima); (2) pouco dado novo por geracao; (3) portao com ~55 pares e sem medida
+de qualidade estavel entre ciclos (curva da ancora por geracao); (4) conferir se o
+auto-jogo ainda espia algo + teste contra humano pendente.
+
 ## 2026-10-03 (935) - Geracao mais barata (2 mundos) e exploracao GUIADA pela simulacao; ciclo 43 (12x33) com o pool de 51 decks
 
 **Ciclo 43** (1o com os 51 decks; ciclo rodado com `_loop_ciclos.sh 1`): 12x33 (27%)
