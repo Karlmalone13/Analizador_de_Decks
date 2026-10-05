@@ -1,6 +1,11 @@
 # TODO — Analisador de Decks OPTCG
 
-**Última atualização:** 4 de outubro de 2026 (bloco 936)
+**Última atualização:** 5 de outubro de 2026 (blocos 937-938)
+
+> **REVISAO DA DERROTA (938)**: o perdedor volta ao turno do erro, joga diferente e segue
+> ate o fim (resultado real). Ciclos 47-50: 28/31/42/33%. Simulacao como ensino
+> REPROVADA (937, 7x24 e 6x26), desligada. **Proximo**: nao simular situacoes ja
+> conhecidas (velocidade), com auditoria sorteada.
 
 > **CICLO 44 + DECISAO (bloco 936)**: 20x35, ~12,5 min. Exploracao guiada promissora
 > (+0,063 x +0,035 sorteada; 51,4% x 47,0% vitorias). Decidido com o usuario: a

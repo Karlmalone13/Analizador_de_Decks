@@ -3740,6 +3740,942 @@
       "promovido": false,
       "motivo": "portao SPRT: DESCARTA (equivalentes)",
       "id": "candidato_032"
+    },
+    {
+      "hash": "49074866c06c",
+      "pai": "generation_003",
+      "data": "2026-10-04T02:02:59",
+      "commit": "acc21263f7183f0039e9e82eec7d249697db2298",
+      "dataset": {
+        "alvos": 4533762,
+        "fatias": [
+          "Arthur_PC_20260919T101141.jsonl.gz",
+          "Arthur_PC_20260921T073626.jsonl.gz",
+          "Arthur_PC_20260924T225940.jsonl.gz",
+          "Arthur_PC_20260925T083301.jsonl.gz",
+          "Arthur_PC_20260925T230516.jsonl.gz",
+          "Arthur_PC_20260926T092925.jsonl.gz",
+          "Arthur_PC_20260926T104213.jsonl.gz",
+          "Arthur_PC_20260926T150027.jsonl.gz",
+          "Arthur_PC_20260926T153452.jsonl.gz",
+          "Arthur_PC_20260926T220057.jsonl.gz",
+          "Arthur_PC_20260927T174543.jsonl.gz",
+          "Arthur_PC_20260928T144932.jsonl.gz",
+          "Arthur_PC_20260928T153835.jsonl.gz",
+          "Arthur_PC_20260930T151017.jsonl.gz",
+          "Arthur_PC_20260930T200828.jsonl.gz",
+          "Arthur_PC_20260930T205422.jsonl.gz",
+          "Arthur_PC_20261001T001037.jsonl.gz",
+          "Arthur_PC_20261001T135955.jsonl.gz",
+          "Arthur_PC_20261001T183603.jsonl.gz",
+          "Arthur_PC_20261002T184821.jsonl.gz",
+          "Arthur_PC_20261002T204633.jsonl.gz",
+          "Arthur_PC_20261003T094249.jsonl.gz",
+          "Arthur_PC_20261003T121020.jsonl.gz",
+          "Arthur_Trabalho_20260918T113603_backfill.jsonl.gz",
+          "Arthur_Trabalho_20260918T170216.jsonl.gz",
+          "Arthur_Trabalho_20260924T180328.jsonl.gz"
+        ],
+        "modo": "bootstrap",
+        "rotulo_consequencia": "td"
+      },
+      "config": {
+        "ciclo": 45,
+        "partidas": 200,
+        "seed_geracao": 13545,
+        "workers": 4,
+        "mundos_bootstrap": 2,
+        "continuado_de": "C:\\Projetos_TI\\analidador_de_decks_optcg\\scriptis_da_ia\\metrics\\q_net.joblib",
+        "regua": {
+          "alvo": "td",
+          "auc_fora_amostra": 0.7981345293612516,
+          "controle_td": {
+            "ganhas_antes": 0.6402081939599187,
+            "ganhas_depois": 0.6401789652026073,
+            "perdidas_antes": 0.39660140198682214,
+            "perdidas_depois": 0.3957962475531384,
+            "separacao_antes": 0.24360679197309654,
+            "separacao_depois": 0.2443827176494689,
+            "mudanca_media_abs": 0.004467822482123993
+          }
+        }
+      },
+      "treino": {
+        "erro_fora_amostra": 0.1487325132346593,
+        "concordancia_top1": null,
+        "n_alvos": 395288,
+        "n_features": 129,
+        "cobertura": {
+          "attack": {
+            "linhas": 158804,
+            "escolhidas": 158804,
+            "consequencia": 145593
+          },
+          "play": {
+            "linhas": 88405,
+            "escolhidas": 88405,
+            "consequencia": 81491
+          },
+          "pass": {
+            "linhas": 53579,
+            "escolhidas": 53579,
+            "consequencia": 46878
+          },
+          "activate": {
+            "linhas": 28275,
+            "escolhidas": 28275,
+            "consequencia": 25006
+          },
+          "attach_don": {
+            "linhas": 11002,
+            "escolhidas": 11002,
+            "consequencia": 9669
+          },
+          "block": {
+            "linhas": 14384,
+            "escolhidas": 14384,
+            "consequencia": 13101
+          },
+          "counter": {
+            "linhas": 50810,
+            "escolhidas": 50810,
+            "consequencia": 48491
+          },
+          "target": {
+            "linhas": 10605,
+            "escolhidas": 10605,
+            "consequencia": 10081
+          },
+          "descarte": {
+            "linhas": 11212,
+            "escolhidas": 11212,
+            "consequencia": 10614
+          },
+          "counter_evento": {
+            "linhas": 1678,
+            "escolhidas": 1678,
+            "consequencia": 1575
+          },
+          "custo_restar": {
+            "linhas": 64,
+            "escolhidas": 64,
+            "consequencia": 64
+          },
+          "custo_sacrificar": {
+            "linhas": 108,
+            "escolhidas": 108,
+            "consequencia": 108
+          },
+          "busca": {
+            "linhas": 946,
+            "escolhidas": 946,
+            "consequencia": 936
+          },
+          "pagar_custo": {
+            "linhas": 1810,
+            "escolhidas": 1810,
+            "consequencia": 1663
+          },
+          "opcao_efeito": {
+            "linhas": 18,
+            "escolhidas": 18,
+            "consequencia": 18
+          }
+        }
+      },
+      "duelo": {
+        "vitorias_desafiante": 7,
+        "derrotas_desafiante": 24,
+        "decididas": 31,
+        "pares_divididos": 89,
+        "veredito": "DESCARTA (equivalentes)",
+        "llr": -3.1455412556467515,
+        "contra": "generation_003",
+        "seed": 13558
+      },
+      "promovido": false,
+      "motivo": "portao SPRT: DESCARTA (equivalentes)",
+      "id": "candidato_033"
+    },
+    {
+      "hash": "98f6c98c5ee1",
+      "pai": "generation_003",
+      "data": "2026-10-05T11:42:07",
+      "commit": "acc21263f7183f0039e9e82eec7d249697db2298",
+      "dataset": {
+        "alvos": 4626465,
+        "fatias": [
+          "Arthur_PC_20260919T101141.jsonl.gz",
+          "Arthur_PC_20260921T073626.jsonl.gz",
+          "Arthur_PC_20260924T225940.jsonl.gz",
+          "Arthur_PC_20260925T083301.jsonl.gz",
+          "Arthur_PC_20260925T230516.jsonl.gz",
+          "Arthur_PC_20260926T092925.jsonl.gz",
+          "Arthur_PC_20260926T104213.jsonl.gz",
+          "Arthur_PC_20260926T150027.jsonl.gz",
+          "Arthur_PC_20260926T153452.jsonl.gz",
+          "Arthur_PC_20260926T220057.jsonl.gz",
+          "Arthur_PC_20260927T174543.jsonl.gz",
+          "Arthur_PC_20260928T144932.jsonl.gz",
+          "Arthur_PC_20260928T153835.jsonl.gz",
+          "Arthur_PC_20260930T151017.jsonl.gz",
+          "Arthur_PC_20260930T200828.jsonl.gz",
+          "Arthur_PC_20260930T205422.jsonl.gz",
+          "Arthur_PC_20261001T001037.jsonl.gz",
+          "Arthur_PC_20261001T135955.jsonl.gz",
+          "Arthur_PC_20261001T183603.jsonl.gz",
+          "Arthur_PC_20261002T184821.jsonl.gz",
+          "Arthur_PC_20261002T204633.jsonl.gz",
+          "Arthur_PC_20261003T094249.jsonl.gz",
+          "Arthur_PC_20261003T121020.jsonl.gz",
+          "Arthur_Trabalho_20260918T113603_backfill.jsonl.gz",
+          "Arthur_Trabalho_20260918T170216.jsonl.gz",
+          "Arthur_Trabalho_20260924T180328.jsonl.gz"
+        ],
+        "modo": "bootstrap",
+        "rotulo_consequencia": "td"
+      },
+      "config": {
+        "ciclo": 46,
+        "partidas": 200,
+        "seed_geracao": 13646,
+        "workers": 4,
+        "mundos_bootstrap": 2,
+        "continuado_de": "C:\\Projetos_TI\\analidador_de_decks_optcg\\scriptis_da_ia\\metrics\\q_net.joblib",
+        "regua": {
+          "alvo": "td",
+          "auc_fora_amostra": 0.8000069526739766,
+          "controle_td": {
+            "ganhas_antes": 0.6393098854137209,
+            "ganhas_depois": 0.6395523976704609,
+            "perdidas_antes": 0.3966351855218388,
+            "perdidas_depois": 0.39666110807235394,
+            "separacao_antes": 0.24267469989188212,
+            "separacao_depois": 0.24289128959810696,
+            "mudanca_media_abs": 0.004989761083522654
+          }
+        }
+      },
+      "treino": {
+        "erro_fora_amostra": 0.15006202458360263,
+        "concordancia_top1": null,
+        "n_alvos": 407210,
+        "n_features": 129,
+        "cobertura": {
+          "attack": {
+            "linhas": 162412,
+            "escolhidas": 162412,
+            "consequencia": 149201
+          },
+          "play": {
+            "linhas": 90420,
+            "escolhidas": 90420,
+            "consequencia": 83506
+          },
+          "pass": {
+            "linhas": 54481,
+            "escolhidas": 54481,
+            "consequencia": 47780
+          },
+          "activate": {
+            "linhas": 28867,
+            "escolhidas": 28867,
+            "consequencia": 25598
+          },
+          "attach_don": {
+            "linhas": 11734,
+            "escolhidas": 11734,
+            "consequencia": 10401
+          },
+          "block": {
+            "linhas": 14804,
+            "escolhidas": 14804,
+            "consequencia": 13482
+          },
+          "counter": {
+            "linhas": 52366,
+            "escolhidas": 52366,
+            "consequencia": 49948
+          },
+          "target": {
+            "linhas": 10947,
+            "escolhidas": 10947,
+            "consequencia": 10393
+          },
+          "descarte": {
+            "linhas": 11990,
+            "escolhidas": 11990,
+            "consequencia": 11356
+          },
+          "counter_evento": {
+            "linhas": 1903,
+            "escolhidas": 1903,
+            "consequencia": 1770
+          },
+          "custo_restar": {
+            "linhas": 86,
+            "escolhidas": 86,
+            "consequencia": 86
+          },
+          "custo_sacrificar": {
+            "linhas": 148,
+            "escolhidas": 148,
+            "consequencia": 148
+          },
+          "busca": {
+            "linhas": 1271,
+            "escolhidas": 1271,
+            "consequencia": 1258
+          },
+          "pagar_custo": {
+            "linhas": 2453,
+            "escolhidas": 2453,
+            "consequencia": 2259
+          },
+          "opcao_efeito": {
+            "linhas": 24,
+            "escolhidas": 24,
+            "consequencia": 24
+          }
+        }
+      },
+      "duelo": {
+        "vitorias_desafiante": 6,
+        "derrotas_desafiante": 26,
+        "decididas": 32,
+        "pares_divididos": 108,
+        "veredito": "DESCARTA (equivalentes)",
+        "llr": -3.6426680350545797,
+        "contra": "generation_003",
+        "seed": 13659
+      },
+      "promovido": false,
+      "motivo": "portao SPRT: DESCARTA (equivalentes)",
+      "id": "candidato_034"
+    },
+    {
+      "hash": "e54eeedea242",
+      "pai": "generation_003",
+      "data": "2026-10-05T12:03:24",
+      "commit": "acc21263f7183f0039e9e82eec7d249697db2298",
+      "dataset": {
+        "alvos": 4797872,
+        "fatias": [
+          "Arthur_PC_20260919T101141.jsonl.gz",
+          "Arthur_PC_20260921T073626.jsonl.gz",
+          "Arthur_PC_20260924T225940.jsonl.gz",
+          "Arthur_PC_20260925T083301.jsonl.gz",
+          "Arthur_PC_20260925T230516.jsonl.gz",
+          "Arthur_PC_20260926T092925.jsonl.gz",
+          "Arthur_PC_20260926T104213.jsonl.gz",
+          "Arthur_PC_20260926T150027.jsonl.gz",
+          "Arthur_PC_20260926T153452.jsonl.gz",
+          "Arthur_PC_20260926T220057.jsonl.gz",
+          "Arthur_PC_20260927T174543.jsonl.gz",
+          "Arthur_PC_20260928T144932.jsonl.gz",
+          "Arthur_PC_20260928T153835.jsonl.gz",
+          "Arthur_PC_20260930T151017.jsonl.gz",
+          "Arthur_PC_20260930T200828.jsonl.gz",
+          "Arthur_PC_20260930T205422.jsonl.gz",
+          "Arthur_PC_20261001T001037.jsonl.gz",
+          "Arthur_PC_20261001T135955.jsonl.gz",
+          "Arthur_PC_20261001T183603.jsonl.gz",
+          "Arthur_PC_20261002T184821.jsonl.gz",
+          "Arthur_PC_20261002T204633.jsonl.gz",
+          "Arthur_PC_20261003T094249.jsonl.gz",
+          "Arthur_PC_20261003T121020.jsonl.gz",
+          "Arthur_Trabalho_20260918T113603_backfill.jsonl.gz",
+          "Arthur_Trabalho_20260918T170216.jsonl.gz",
+          "Arthur_Trabalho_20260924T180328.jsonl.gz"
+        ],
+        "modo": "bootstrap",
+        "rotulo_consequencia": "td"
+      },
+      "config": {
+        "ciclo": 47,
+        "partidas": 200,
+        "seed_geracao": 13747,
+        "workers": 4,
+        "mundos_bootstrap": 2,
+        "continuado_de": "C:\\Projetos_TI\\analidador_de_decks_optcg\\scriptis_da_ia\\metrics\\q_net.joblib",
+        "regua": {
+          "alvo": "td",
+          "auc_fora_amostra": 0.7905169417533839,
+          "controle_td": {
+            "ganhas_antes": 0.6394562994100821,
+            "ganhas_depois": 0.6392388401149625,
+            "perdidas_antes": 0.39729266024956356,
+            "perdidas_depois": 0.3966511803386356,
+            "separacao_antes": 0.24216363916051853,
+            "separacao_depois": 0.24258765977632685,
+            "mudanca_media_abs": 0.004982728090145295
+          }
+        }
+      },
+      "treino": {
+        "erro_fora_amostra": 0.1485896421430309,
+        "concordancia_top1": null,
+        "n_alvos": 422864,
+        "n_features": 129,
+        "cobertura": {
+          "attack": {
+            "linhas": 168849,
+            "escolhidas": 168849,
+            "consequencia": 153890
+          },
+          "play": {
+            "linhas": 93756,
+            "escolhidas": 93756,
+            "consequencia": 86178
+          },
+          "pass": {
+            "linhas": 55949,
+            "escolhidas": 55949,
+            "consequencia": 48961
+          },
+          "activate": {
+            "linhas": 29944,
+            "escolhidas": 29944,
+            "consequencia": 26468
+          },
+          "attach_don": {
+            "linhas": 12859,
+            "escolhidas": 12859,
+            "consequencia": 11286
+          },
+          "block": {
+            "linhas": 15591,
+            "escolhidas": 15591,
+            "consequencia": 13955
+          },
+          "counter": {
+            "linhas": 55179,
+            "escolhidas": 55179,
+            "consequencia": 51961
+          },
+          "target": {
+            "linhas": 11499,
+            "escolhidas": 11499,
+            "consequencia": 10731
+          },
+          "descarte": {
+            "linhas": 13393,
+            "escolhidas": 13393,
+            "consequencia": 12348
+          },
+          "counter_evento": {
+            "linhas": 2260,
+            "escolhidas": 2260,
+            "consequencia": 1999
+          },
+          "custo_restar": {
+            "linhas": 126,
+            "escolhidas": 126,
+            "consequencia": 118
+          },
+          "custo_sacrificar": {
+            "linhas": 202,
+            "escolhidas": 202,
+            "consequencia": 188
+          },
+          "busca": {
+            "linhas": 1780,
+            "escolhidas": 1780,
+            "consequencia": 1656
+          },
+          "pagar_custo": {
+            "linhas": 3684,
+            "escolhidas": 3684,
+            "consequencia": 3085
+          },
+          "opcao_efeito": {
+            "linhas": 46,
+            "escolhidas": 46,
+            "consequencia": 40
+          }
+        }
+      },
+      "duelo": {
+        "vitorias_desafiante": 11,
+        "derrotas_desafiante": 28,
+        "decididas": 39,
+        "pares_divididos": 101,
+        "veredito": "DESCARTA (equivalentes)",
+        "llr": -3.2492747837527696,
+        "contra": "generation_003",
+        "seed": 13760
+      },
+      "promovido": false,
+      "motivo": "portao SPRT: DESCARTA (equivalentes)",
+      "id": "candidato_035"
+    },
+    {
+      "hash": "831169a202c8",
+      "pai": "generation_003",
+      "data": "2026-10-05T19:03:45",
+      "commit": "acc21263f7183f0039e9e82eec7d249697db2298",
+      "dataset": {
+        "alvos": 4963138,
+        "fatias": [
+          "Arthur_PC_20260919T101141.jsonl.gz",
+          "Arthur_PC_20260921T073626.jsonl.gz",
+          "Arthur_PC_20260924T225940.jsonl.gz",
+          "Arthur_PC_20260925T083301.jsonl.gz",
+          "Arthur_PC_20260925T230516.jsonl.gz",
+          "Arthur_PC_20260926T092925.jsonl.gz",
+          "Arthur_PC_20260926T104213.jsonl.gz",
+          "Arthur_PC_20260926T150027.jsonl.gz",
+          "Arthur_PC_20260926T153452.jsonl.gz",
+          "Arthur_PC_20260926T220057.jsonl.gz",
+          "Arthur_PC_20260927T174543.jsonl.gz",
+          "Arthur_PC_20260928T144932.jsonl.gz",
+          "Arthur_PC_20260928T153835.jsonl.gz",
+          "Arthur_PC_20260930T151017.jsonl.gz",
+          "Arthur_PC_20260930T200828.jsonl.gz",
+          "Arthur_PC_20260930T205422.jsonl.gz",
+          "Arthur_PC_20261001T001037.jsonl.gz",
+          "Arthur_PC_20261001T135955.jsonl.gz",
+          "Arthur_PC_20261001T183603.jsonl.gz",
+          "Arthur_PC_20261002T184821.jsonl.gz",
+          "Arthur_PC_20261002T204633.jsonl.gz",
+          "Arthur_PC_20261003T094249.jsonl.gz",
+          "Arthur_PC_20261003T121020.jsonl.gz",
+          "Arthur_Trabalho_20260918T113603_backfill.jsonl.gz",
+          "Arthur_Trabalho_20260918T170216.jsonl.gz",
+          "Arthur_Trabalho_20260924T180328.jsonl.gz"
+        ],
+        "modo": "bootstrap",
+        "rotulo_consequencia": "td"
+      },
+      "config": {
+        "ciclo": 48,
+        "partidas": 200,
+        "seed_geracao": 13848,
+        "workers": 4,
+        "mundos_bootstrap": 2,
+        "continuado_de": "C:\\Projetos_TI\\analidador_de_decks_optcg\\scriptis_da_ia\\metrics\\q_net.joblib",
+        "regua": {
+          "alvo": "td",
+          "auc_fora_amostra": 0.793983756948889,
+          "controle_td": {
+            "ganhas_antes": 0.6391430485241915,
+            "ganhas_depois": 0.6392384094483642,
+            "perdidas_antes": 0.39714038424921594,
+            "perdidas_depois": 0.3970628888510064,
+            "separacao_antes": 0.24200266427497552,
+            "separacao_depois": 0.2421755205973578,
+            "mudanca_media_abs": 0.00575551875430407
+          }
+        }
+      },
+      "treino": {
+        "erro_fora_amostra": 0.15284794328085047,
+        "concordancia_top1": null,
+        "n_alvos": 437675,
+        "n_features": 129,
+        "cobertura": {
+          "attack": {
+            "linhas": 175249,
+            "escolhidas": 175249,
+            "consequencia": 158480
+          },
+          "play": {
+            "linhas": 97056,
+            "escolhidas": 97056,
+            "consequencia": 88804
+          },
+          "pass": {
+            "linhas": 57314,
+            "escolhidas": 57314,
+            "consequencia": 50098
+          },
+          "activate": {
+            "linhas": 30968,
+            "escolhidas": 30968,
+            "consequencia": 27266
+          },
+          "attach_don": {
+            "linhas": 13917,
+            "escolhidas": 13917,
+            "consequencia": 12123
+          },
+          "block": {
+            "linhas": 16349,
+            "escolhidas": 16349,
+            "consequencia": 14388
+          },
+          "counter": {
+            "linhas": 57835,
+            "escolhidas": 57835,
+            "consequencia": 53809
+          },
+          "target": {
+            "linhas": 12020,
+            "escolhidas": 12020,
+            "consequencia": 11051
+          },
+          "descarte": {
+            "linhas": 14603,
+            "escolhidas": 14603,
+            "consequencia": 13180
+          },
+          "counter_evento": {
+            "linhas": 2618,
+            "escolhidas": 2618,
+            "consequencia": 2224
+          },
+          "custo_restar": {
+            "linhas": 170,
+            "escolhidas": 170,
+            "consequencia": 150
+          },
+          "custo_sacrificar": {
+            "linhas": 254,
+            "escolhidas": 254,
+            "consequencia": 227
+          },
+          "busca": {
+            "linhas": 2294,
+            "escolhidas": 2294,
+            "consequencia": 2059
+          },
+          "pagar_custo": {
+            "linhas": 4756,
+            "escolhidas": 4756,
+            "consequencia": 3765
+          },
+          "opcao_efeito": {
+            "linhas": 64,
+            "escolhidas": 64,
+            "consequencia": 51
+          }
+        }
+      },
+      "duelo": {
+        "vitorias_desafiante": 15,
+        "derrotas_desafiante": 34,
+        "decididas": 49,
+        "pares_divididos": 111,
+        "veredito": "DESCARTA (equivalentes)",
+        "llr": -3.701715086148342,
+        "contra": "generation_003",
+        "seed": 13861
+      },
+      "promovido": false,
+      "motivo": "portao SPRT: DESCARTA (equivalentes)",
+      "id": "candidato_036"
+    },
+    {
+      "hash": "9bd62dd26dfa",
+      "pai": "generation_003",
+      "data": "2026-10-05T19:15:46",
+      "commit": "acc21263f7183f0039e9e82eec7d249697db2298",
+      "dataset": {
+        "alvos": 5136328,
+        "fatias": [
+          "Arthur_PC_20260919T101141.jsonl.gz",
+          "Arthur_PC_20260921T073626.jsonl.gz",
+          "Arthur_PC_20260924T225940.jsonl.gz",
+          "Arthur_PC_20260925T083301.jsonl.gz",
+          "Arthur_PC_20260925T230516.jsonl.gz",
+          "Arthur_PC_20260926T092925.jsonl.gz",
+          "Arthur_PC_20260926T104213.jsonl.gz",
+          "Arthur_PC_20260926T150027.jsonl.gz",
+          "Arthur_PC_20260926T153452.jsonl.gz",
+          "Arthur_PC_20260926T220057.jsonl.gz",
+          "Arthur_PC_20260927T174543.jsonl.gz",
+          "Arthur_PC_20260928T144932.jsonl.gz",
+          "Arthur_PC_20260928T153835.jsonl.gz",
+          "Arthur_PC_20260930T151017.jsonl.gz",
+          "Arthur_PC_20260930T200828.jsonl.gz",
+          "Arthur_PC_20260930T205422.jsonl.gz",
+          "Arthur_PC_20261001T001037.jsonl.gz",
+          "Arthur_PC_20261001T135955.jsonl.gz",
+          "Arthur_PC_20261001T183603.jsonl.gz",
+          "Arthur_PC_20261002T184821.jsonl.gz",
+          "Arthur_PC_20261002T204633.jsonl.gz",
+          "Arthur_PC_20261003T094249.jsonl.gz",
+          "Arthur_PC_20261003T121020.jsonl.gz",
+          "Arthur_Trabalho_20260918T113603_backfill.jsonl.gz",
+          "Arthur_Trabalho_20260918T170216.jsonl.gz",
+          "Arthur_Trabalho_20260924T180328.jsonl.gz"
+        ],
+        "modo": "bootstrap",
+        "rotulo_consequencia": "td"
+      },
+      "config": {
+        "ciclo": 49,
+        "partidas": 200,
+        "seed_geracao": 13949,
+        "workers": 4,
+        "mundos_bootstrap": 2,
+        "continuado_de": "C:\\Projetos_TI\\analidador_de_decks_optcg\\scriptis_da_ia\\metrics\\q_net.joblib",
+        "regua": {
+          "alvo": "td",
+          "auc_fora_amostra": 0.7921178668920409,
+          "controle_td": {
+            "ganhas_antes": 0.6392525602628407,
+            "ganhas_depois": 0.6400921376870438,
+            "perdidas_antes": 0.39734869657349814,
+            "perdidas_depois": 0.3970449756776035,
+            "separacao_antes": 0.24190386368934258,
+            "separacao_depois": 0.24304716200944027,
+            "mudanca_media_abs": 0.005388971387642808
+          }
+        }
+      },
+      "treino": {
+        "erro_fora_amostra": 0.15278524770678292,
+        "concordancia_top1": null,
+        "n_alvos": 453363,
+        "n_features": 129,
+        "cobertura": {
+          "attack": {
+            "linhas": 181821,
+            "escolhidas": 181821,
+            "consequencia": 163299
+          },
+          "play": {
+            "linhas": 100471,
+            "escolhidas": 100471,
+            "consequencia": 91535
+          },
+          "pass": {
+            "linhas": 58749,
+            "escolhidas": 58749,
+            "consequencia": 51282
+          },
+          "activate": {
+            "linhas": 32022,
+            "escolhidas": 32022,
+            "consequencia": 28101
+          },
+          "attach_don": {
+            "linhas": 14973,
+            "escolhidas": 14973,
+            "consequencia": 12961
+          },
+          "block": {
+            "linhas": 17175,
+            "escolhidas": 17175,
+            "consequencia": 14867
+          },
+          "counter": {
+            "linhas": 60601,
+            "escolhidas": 60601,
+            "consequencia": 55772
+          },
+          "target": {
+            "linhas": 12587,
+            "escolhidas": 12587,
+            "consequencia": 11427
+          },
+          "descarte": {
+            "linhas": 15937,
+            "escolhidas": 15937,
+            "consequencia": 14146
+          },
+          "counter_evento": {
+            "linhas": 3022,
+            "escolhidas": 3022,
+            "consequencia": 2479
+          },
+          "custo_restar": {
+            "linhas": 228,
+            "escolhidas": 228,
+            "consequencia": 193
+          },
+          "custo_sacrificar": {
+            "linhas": 299,
+            "escolhidas": 299,
+            "consequencia": 263
+          },
+          "busca": {
+            "linhas": 2806,
+            "escolhidas": 2806,
+            "consequencia": 2468
+          },
+          "pagar_custo": {
+            "linhas": 5875,
+            "escolhidas": 5875,
+            "consequencia": 4516
+          },
+          "opcao_efeito": {
+            "linhas": 69,
+            "escolhidas": 69,
+            "consequencia": 54
+          }
+        }
+      },
+      "duelo": {
+        "vitorias_desafiante": 34,
+        "derrotas_desafiante": 47,
+        "decididas": 81,
+        "pares_divididos": 199,
+        "veredito": "DESCARTA (equivalentes)",
+        "llr": -3.14832902178326,
+        "contra": "generation_003",
+        "seed": 13962
+      },
+      "promovido": false,
+      "motivo": "portao SPRT: DESCARTA (equivalentes)",
+      "id": "candidato_037"
+    },
+    {
+      "hash": "8338691ada6c",
+      "pai": "generation_003",
+      "data": "2026-10-05T19:26:57",
+      "commit": "acc21263f7183f0039e9e82eec7d249697db2298",
+      "dataset": {
+        "alvos": 5305553,
+        "fatias": [
+          "Arthur_PC_20260919T101141.jsonl.gz",
+          "Arthur_PC_20260921T073626.jsonl.gz",
+          "Arthur_PC_20260924T225940.jsonl.gz",
+          "Arthur_PC_20260925T083301.jsonl.gz",
+          "Arthur_PC_20260925T230516.jsonl.gz",
+          "Arthur_PC_20260926T092925.jsonl.gz",
+          "Arthur_PC_20260926T104213.jsonl.gz",
+          "Arthur_PC_20260926T150027.jsonl.gz",
+          "Arthur_PC_20260926T153452.jsonl.gz",
+          "Arthur_PC_20260926T220057.jsonl.gz",
+          "Arthur_PC_20260927T174543.jsonl.gz",
+          "Arthur_PC_20260928T144932.jsonl.gz",
+          "Arthur_PC_20260928T153835.jsonl.gz",
+          "Arthur_PC_20260930T151017.jsonl.gz",
+          "Arthur_PC_20260930T200828.jsonl.gz",
+          "Arthur_PC_20260930T205422.jsonl.gz",
+          "Arthur_PC_20261001T001037.jsonl.gz",
+          "Arthur_PC_20261001T135955.jsonl.gz",
+          "Arthur_PC_20261001T183603.jsonl.gz",
+          "Arthur_PC_20261002T184821.jsonl.gz",
+          "Arthur_PC_20261002T204633.jsonl.gz",
+          "Arthur_PC_20261003T094249.jsonl.gz",
+          "Arthur_PC_20261003T121020.jsonl.gz",
+          "Arthur_Trabalho_20260918T113603_backfill.jsonl.gz",
+          "Arthur_Trabalho_20260918T170216.jsonl.gz",
+          "Arthur_Trabalho_20260924T180328.jsonl.gz"
+        ],
+        "modo": "bootstrap",
+        "rotulo_consequencia": "td"
+      },
+      "config": {
+        "ciclo": 50,
+        "partidas": 200,
+        "seed_geracao": 14050,
+        "workers": 4,
+        "mundos_bootstrap": 2,
+        "continuado_de": "C:\\Projetos_TI\\analidador_de_decks_optcg\\scriptis_da_ia\\metrics\\q_net.joblib",
+        "regua": {
+          "alvo": "td",
+          "auc_fora_amostra": 0.8004619873748968,
+          "controle_td": {
+            "ganhas_antes": 0.6404173394290041,
+            "ganhas_depois": 0.6406629015509654,
+            "perdidas_antes": 0.3970748406425455,
+            "perdidas_depois": 0.39634939547543807,
+            "separacao_antes": 0.24334249878645864,
+            "separacao_depois": 0.24431350607552732,
+            "mudanca_media_abs": 0.004953020868609769
+          }
+        }
+      },
+      "treino": {
+        "erro_fora_amostra": 0.1572888203905246,
+        "concordancia_top1": null,
+        "n_alvos": 469351,
+        "n_features": 129,
+        "cobertura": {
+          "attack": {
+            "linhas": 188400,
+            "escolhidas": 188400,
+            "consequencia": 168162
+          },
+          "play": {
+            "linhas": 103912,
+            "escolhidas": 103912,
+            "consequencia": 94348
+          },
+          "pass": {
+            "linhas": 60223,
+            "escolhidas": 60223,
+            "consequencia": 52529
+          },
+          "activate": {
+            "linhas": 33082,
+            "escolhidas": 33082,
+            "consequencia": 28952
+          },
+          "attach_don": {
+            "linhas": 16121,
+            "escolhidas": 16121,
+            "consequencia": 13905
+          },
+          "block": {
+            "linhas": 17991,
+            "escolhidas": 17991,
+            "consequencia": 15370
+          },
+          "counter": {
+            "linhas": 63440,
+            "escolhidas": 63440,
+            "consequencia": 57778
+          },
+          "target": {
+            "linhas": 13068,
+            "escolhidas": 13068,
+            "consequencia": 11744
+          },
+          "descarte": {
+            "linhas": 17210,
+            "escolhidas": 17210,
+            "consequencia": 15107
+          },
+          "counter_evento": {
+            "linhas": 3373,
+            "escolhidas": 3373,
+            "consequencia": 2718
+          },
+          "custo_restar": {
+            "linhas": 255,
+            "escolhidas": 255,
+            "consequencia": 214
+          },
+          "custo_sacrificar": {
+            "linhas": 357,
+            "escolhidas": 357,
+            "consequencia": 307
+          },
+          "busca": {
+            "linhas": 3360,
+            "escolhidas": 3360,
+            "consequencia": 2905
+          },
+          "pagar_custo": {
+            "linhas": 6943,
+            "escolhidas": 6943,
+            "consequencia": 5249
+          },
+          "opcao_efeito": {
+            "linhas": 83,
+            "escolhidas": 83,
+            "consequencia": 63
+          }
+        }
+      },
+      "duelo": {
+        "vitorias_desafiante": 14,
+        "derrotas_desafiante": 29,
+        "decididas": 43,
+        "pares_divididos": 97,
+        "veredito": "DESCARTA (equivalentes)",
+        "llr": -2.9783681555427273,
+        "contra": "generation_003",
+        "seed": 14063
+      },
+      "promovido": false,
+      "motivo": "portao SPRT: DESCARTA (equivalentes)",
+      "id": "candidato_038"
     }
   ]
 }

@@ -144,6 +144,7 @@ scriptis_da_ia/metrics/q_alvos_fatias.json
 # q_alvos.jsonl (`python corpus_escolhidas.py --reconstroi`), por maquina.
 scriptis_da_ia/metrics/q_escolhidas.jsonl
 scriptis_da_ia/metrics/q_escolhidas_meta.json
+scriptis_da_ia/metrics/q_alternativas.jsonl
 scriptis_da_ia/metrics/selfplay_v2.jsonl
 # O DESAFIANTE e regenerado a cada ciclo e so vira campeao se o portao
 # promover -- ai quem viaja pelo git e `q_net.joblib` (219 KB, versionado).

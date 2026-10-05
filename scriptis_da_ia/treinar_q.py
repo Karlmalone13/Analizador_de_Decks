@@ -357,6 +357,12 @@ def main() -> int:
                     help='desliga o rotulo pela consequencia (bloco 910) e volta '
                          'a usar so o bootstrap do juiz fixo. Default LIGADO: o '
                          'ML tem que aprender com o que as jogadas causaram.')
+    ap.add_argument('--peso-alternativas', dest='peso_alternativas', type=float,
+                    default=0.0,
+                    help='DESLIGADO (bloco 937: ciclos 45/46 deram 7x24 e 6x26, '
+                         'contra 8-20 vitorias sem). simulacao como ensino (bloco 937): jogadas NAO feitas '
+                         'das ultimas geracoes entram com a nota da simulacao, ate '
+                         'N x as linhas reais. 0 desliga.')
     args = ap.parse_args()
 
     import numpy as np
@@ -390,6 +396,7 @@ def main() -> int:
             _aval = _vn.load_value_net(MODELO_ORDENA_PATH)
         traj = carrega_trajetorias(args.selfplay, avaliador=_aval)
     cobertura = {f: [0, 0, 0] for f in FAMILIAS_JOGO}   # linhas, escolhidas, consequencia
+    ancora = {}
     with caminho.open(encoding='utf-8') as fh:
         for linha in fh:
             linha = linha.strip()
@@ -424,6 +431,11 @@ def main() -> int:
                     # escolhida (inclusive a de exploracao) com o desfecho dela.
                     n_sem_consequencia += 1
                     continue
+                if d.get('escolhida') and alvo is not None:
+                    # ancora das alternativas da MESMA decisao (bloco 937b):
+                    # nota da simulacao da escolhida e a consequencia real dela
+                    ancora[(d.get('gen'), d.get('match'), d.get('leader'),
+                            d.get('decisao'))] = (float(alvo), float(_c))
                 alvo = _c
                 if cob is not None:
                     cob[2] += 1
@@ -679,6 +691,60 @@ def main() -> int:
             print('  replay priorizado pedido mas sem regua compativel -- '
                   'treinando com amostra uniforme')
 
+    # SIMULACAO COMO ENSINO (bloco 937, decisao do usuario 04/10/2026): as
+    # jogadas que o bot NAO fez entram com a nota que a simulacao deu a elas
+    # (valor do estado que cada uma produz, media dos mundos cegos). Antes so a
+    # escolhida ensinava, e o Q so aprendia o valor do que ja costumava fazer.
+    # So as ultimas geracoes (`corpus_escolhidas.GERACOES_ALT`): a nota vem da
+    # regua da epoca. Peso MENOR que o resultado real: no maximo
+    # `--peso-alternativas` x o numero de linhas reais (ponto de partida, nao
+    # calibrado). Se a regua errar, a exploracao + a consequencia real corrigem.
+    # So no modelo final -- a validacao acima continua medindo so o real.
+    n_alt = 0
+    if args.peso_alternativas > 0 and traj and corpus_escolhidas.ALTERNATIVAS.exists():
+        Xa, ya = [], []
+        with corpus_escolhidas.ALTERNATIVAS.open(encoding='utf-8') as fh:
+            for linha in fh:
+                d = json.loads(linha)
+                f, a = d.get('feats'), d.get('alvo')
+                if not f or a is None or d.get('acao') not in FAMILIAS_JOGO:
+                    continue
+                # MESMA REGUA da escolhida (bloco 937b): a nota crua da
+                # simulacao e o valor LOGO apos a jogada, sem a resposta do
+                # oponente; a escolhida aprende o valor 2 turnos depois. Misturar
+                # as duas ensinava 'jogada nao feita parece melhor' (ciclo 45,
+                # 7x24). Agora a simulacao entra so como DIFERENCA dentro da
+                # decisao: consequencia real da escolhida + (sim desta - sim da
+                # escolhida). Sem escolhida com consequencia, a linha nao entra.
+                anc = ancora.get((d.get('gen'), d.get('match'), d.get('leader'),
+                                  d.get('decisao')))
+                if anc is None:
+                    continue
+                a = anc[1] + (float(a) - anc[0])
+                if not passa_filtro_modo(d, args.modo):
+                    continue
+                if n_cols - 40 <= len(f) < n_cols:
+                    f = f + [0.0] * (n_cols - len(f))
+                if len(f) != X.shape[1]:
+                    continue
+                Xa.append(f)
+                ya.append(float(a))
+        teto = int(args.peso_alternativas * len(X_treino))
+        if Xa:
+            Xa, ya = np.asarray(Xa, dtype=float), np.asarray(ya, dtype=float)
+            if len(Xa) > teto:
+                ia = np.random.RandomState(2).choice(len(Xa), size=teto, replace=False)
+                Xa, ya = Xa[ia], ya[ia]
+            n_alt = len(Xa)
+            X_treino = np.vstack([X_treino, Xa])
+            y_treino = np.concatenate([y_treino, ya])
+            ordem = np.random.RandomState(3).permutation(len(X_treino))
+            X_treino, y_treino = X_treino[ordem], y_treino[ordem]
+        print()
+        print('  simulacao como ensino: +%d jogadas NAO feitas com a nota da '
+              'simulacao (teto %.2f x %d reais)' % (n_alt, args.peso_alternativas,
+                                                    len(X)))
+
     if campeao is not None:
         # CONTINUA do promovido: mesma normalizacao do campeao (reajustar o
         # scaler tiraria o sentido dos pesos) e o treino da rede segue dos
@@ -715,6 +781,7 @@ def main() -> int:
         'dataset': args.dataset,
         'lideres': sorted(set(grupos.tolist())),
         'replay_priorizado': bool(args.priorizar and X_treino is not X),
+        'alternativas_simulacao': int(n_alt),
         'cobertura': {f: {'linhas': v[0], 'escolhidas': v[1], 'consequencia': v[2]}
                       for f, v in cobertura.items()},
         'rotulo_consequencia': (args.rotulo if traj else None),

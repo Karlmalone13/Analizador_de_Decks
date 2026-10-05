@@ -27,6 +27,7 @@ Uso:
 from __future__ import annotations
 
 import hashlib
+import re
 import json
 import sys
 from pathlib import Path
@@ -35,6 +36,13 @@ RAIZ = Path(__file__).resolve().parent
 ORIGEM = RAIZ / 'metrics' / 'q_alvos.jsonl'
 INDICE = RAIZ / 'metrics' / 'q_escolhidas.jsonl'
 META = RAIZ / 'metrics' / 'q_escolhidas_meta.json'
+# ALTERNATIVAS das geracoes RECENTES (bloco 937, decisao do usuario 04/10): a
+# nota que a simulacao deu a cada jogada NAO jogada vira ensino do Q. So as
+# ultimas GERACOES_ALT geracoes: a nota foi dada pela regua da epoca, e regua
+# velha e nota velha. Derivado e gitignored, como o indice das escolhidas.
+ALTERNATIVAS = RAIZ / 'metrics' / 'q_alternativas.jsonl'
+GERACOES_ALT = 3
+_GEN = re.compile(rb'"gen": (\d+)')
 
 _MARCA = b'"escolhida": true'
 _CABECA = 1 << 20          # impressao do inicio do corpus
@@ -75,11 +83,22 @@ def atualiza(origem: Path = ORIGEM, indice: Path = INDICE, reconstroi: bool = Fa
             indice.unlink()
         m = {'offset': 0, 'linhas': 0, 'escolhidas': 0}
         recomecou = True
+        if ALTERNATIVAS.exists():
+            ALTERNATIVAS.unlink()
     else:
         recomecou = False
     offset, linhas, escolhidas = int(m['offset']), int(m['linhas']), int(m['escolhidas'])
     novas = 0
-    with open(origem, 'rb') as fi, open(indice, 'ab') as fo:
+    gen_max = int(m.get('gen_max', 0))
+    # reconstrucao: so as ultimas geracoes interessam -- descobre a maior
+    # olhando o fim do arquivo (o corpus e append, a ultima linha e a mais nova)
+    if recomecou and origem.exists():
+        with open(origem, 'rb') as fh:
+            fh.seek(max(0, origem.stat().st_size - (1 << 16)))
+            gs = [int(g) for g in _GEN.findall(fh.read())]
+        gen_max = max(gs) if gs else 0
+    corte = gen_max - GERACOES_ALT + 1
+    with open(origem, 'rb') as fi, open(indice, 'ab') as fo, open(ALTERNATIVAS, 'ab') as fa:
         fi.seek(offset)
         for ln in fi:
             if not ln.endswith(b'\n'):
@@ -90,8 +109,15 @@ def atualiza(origem: Path = ORIGEM, indice: Path = INDICE, reconstroi: bool = Fa
                 fo.write(ln)
                 escolhidas += 1
                 novas += 1
+            elif b'"decisao": ' in ln:
+                g = _GEN.search(ln)
+                g = int(g.group(1)) if g else 0
+                if g >= corte:
+                    fa.write(ln)
+                    gen_max = max(gen_max, g)
+    _poda_alternativas(gen_max - GERACOES_ALT + 1)
     META.write_text(json.dumps({
-        'offset': offset, 'linhas': linhas, 'escolhidas': escolhidas,
+        'offset': offset, 'linhas': linhas, 'escolhidas': escolhidas, 'gen_max': gen_max,
         'cabeca': _hash(origem, 0, _CABECA), 'elo': _hash(origem, offset - _ELO, min(_ELO, offset)),
     }), encoding='utf-8')
     if recomecou or novas:
@@ -99,6 +125,24 @@ def atualiza(origem: Path = ORIGEM, indice: Path = INDICE, reconstroi: bool = Fa
               % ('RECONSTRUIDO:' if recomecou else '+%d novas ->' % novas,
                  escolhidas, linhas, 100.0 * escolhidas / max(1, linhas)), flush=True)
     return indice
+
+
+def _poda_alternativas(corte: int) -> None:
+    """Tira do arquivo de alternativas as geracoes que sairam da janela."""
+    if not ALTERNATIVAS.exists():
+        return
+    with open(ALTERNATIVAS, 'rb') as fh:
+        primeira = fh.readline()
+    g = _GEN.search(primeira)
+    if not g or int(g.group(1)) >= corte:
+        return                                # nada velho (arquivo em ordem de geracao)
+    tmp = ALTERNATIVAS.with_suffix('.tmp')
+    with open(ALTERNATIVAS, 'rb') as fi, open(tmp, 'wb') as fo:
+        for ln in fi:
+            g = _GEN.search(ln)
+            if g and int(g.group(1)) >= corte:
+                fo.write(ln)
+    tmp.replace(ALTERNATIVAS)
 
 
 def total_linhas() -> int:

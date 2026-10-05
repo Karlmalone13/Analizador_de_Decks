@@ -1,5 +1,28 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-10-05 (937-938) - Simulacao como ensino REPROVADA (7x24, 6x26); REVISAO DA DERROTA implementada (ciclos 47-50: 28/31/42/33%)
+
+**937 -- simulacao como ensino (reprovado)**: `treinar_q.py --peso-alternativas` (jogadas NAO
+feitas das ultimas 3 geracoes com a nota da simulacao; indice derivado
+`metrics/q_alternativas.jsonl` em `corpus_escolhidas.py`, gitignored). Ciclo 45 (nota crua):
+7x24. Ciclo 46 (nota ancorada: consequencia real da escolhida + diferenca da simulacao):
+6x26. Faixa sem a mudanca: 25-36%. Hipotese (nao testada): a simulacao enxerga so o
+instante apos a jogada e o Q copia esse olhar curto. **Default agora 0.0 (desligado)**;
+codigo mantido so como flag de experimento. Entrada em REPROVADOS pendente.
+
+**938 -- revisao da derrota** (pedido do usuario): `gerar_selfplay_dataset.py` guarda uma
+copia do jogo no inicio de cada turno (`_foto`); ao fim, acha o turno do PERDEDOR com a
+maior queda da regua ate o turno seguinte dele (`_turno_do_erro`), rejoga aquele turno com
+exploracao 0,5 (`EPS_REVISAO`, ponto de partida) e segue ATE O FIM (`_revisa`). Resultado
+real; entra no corpus como partida a mais (`match` = i + 1.000.000, campo `revisao`).
+`OPTCG_REVISOES` (default 1; 0 desliga). Teste 8 partidas: 8/8 revistas, **2/8 o perdedor
+virou o jogo**, partidas originais identicas com e sem revisao, +17% de tempo.
+Ciclos: 47 11x28 | 48 15x34 | 49 **34x47** | 50 14x29 (media ~34% x ~30% antes; dentro do
+ruido). ~10 min/ciclo. smoke_fast NAO rodado nesta mudanca (so gerador/treino).
+
+**Proximo**: passo 3 combinado com o usuario -- nao simular situacoes ja conhecidas (Q
+certo), com auditoria sorteada que sobe se achar erro.
+
 ## 2026-10-04 (936) - Ciclo 44 (20x35, ~12,5 min); exploracao guiada promissora; decidido: simulacao das alternativas vira ENSINO
 
 **Ciclo 44** (1o com 2 mundos + exploracao guiada + 51 decks): 20x35 (36%) contra

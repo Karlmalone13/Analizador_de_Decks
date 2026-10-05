@@ -122,6 +122,128 @@ def _load_deck_list(limite: int = 64) -> list:
     return deck_list
 
 
+def _quem_joga(match, turn_num):
+    p = (match.state_a if match.state_a.is_first else match.state_b) \
+        if turn_num % 2 == 0 \
+        else (match.state_b if match.state_a.is_first else match.state_a)
+    return p, (match.state_b if p is match.state_a else match.state_a)
+
+
+def _foto(match):
+    """Copia do jogo inteiro no inicio de um turno, SEM as capturas (as listas
+    crescem e nao pertencem ao ramo da revisao)."""
+    from copy import deepcopy
+    guarda = {k: getattr(match, k) for k in ('_q_captura', '_ml_captura')
+              if hasattr(match, k)}
+    for k in guarda:
+        setattr(match, k, None)
+    try:
+        return deepcopy(match)
+    finally:
+        for k, v in guarda.items():
+            setattr(match, k, v)
+
+
+def _joga(match, inicio, i, code_a, code_b, geracao, guardar=False):
+    """Joga do turno `inicio` ate o fim. Devolve (amostras, vencedor, fotos);
+    amostras None se a partida estourou. `fotos[t]` = copia no inicio do turno t."""
+    amostras, winner, fotos = [], None, {}
+    for turn_num in range(inicio, match.MAX_TURNS * 2):
+        p, opp = _quem_joga(match, turn_num)
+        if guardar:
+            try:
+                fotos[turn_num] = _foto(match)
+            except Exception:
+                guardar, fotos = False, {}
+        try:
+            result = match.play_turn(p, opp)
+        except Exception:
+            # Partida que estoura no meio ainda tem estados validos ate
+            # aqui, mas NAO tem rotulo confiavel -- descarta inteira.
+            return None, None, None
+        # Estado no FIM do meu turno: o ponto que a regua julga.
+        lado = 'A' if p is match.state_a else 'B'
+        amostras.append({
+            'match': i, 'side': lado,
+            'leader': code_a if lado == 'A' else code_b,
+            'turn': turn_num,
+            # `gen` = qual geracao do modelo jogou esta partida.
+            'gen': geracao,
+            # SUPERCONJUNTO rico; o treino escolhe o subconjunto (bloco 764).
+            'feats': value_net.state_features(p, opp, nomes=value_net.FEATURE_NAMES_V3),
+        })
+        if result:
+            winner = result
+            break
+    return amostras, winner, fotos
+
+
+def _turno_do_erro(fotos, perdedor, match):
+    """Turno do PERDEDOR em que a posicao dele mais caiu ate o turno seguinte
+    dele (regua do ciclo, antes x depois, ja com a resposta do oponente)."""
+    try:
+        from optcg_engine.decision_engine import MODELO_ORDENA_PATH as _MOP
+        rg = value_net.load_value_net(
+            getattr(match.state_a, 'modelo_ordena_path', None) or _MOP)
+        if not rg:
+            return None
+        mod = rg['modelo']
+        meus, linhas = [], []
+        for t in sorted(fotos):
+            f = fotos[t]
+            p, opp = _quem_joga(f, t)
+            if ('A' if p is f.state_a else 'B') != perdedor:
+                continue
+            meus.append(t)
+            linhas.append(value_net.state_features(p, opp, nomes=value_net.FEATURE_NAMES_ALUNO))
+        if len(meus) < 2:
+            return None
+        import numpy as np
+        X = np.asarray(linhas, dtype=float)
+        v = mod.predict_proba(X)[:, 1] if hasattr(mod, 'predict_proba') else mod.predict(X)
+        quedas = [v[k] - v[k + 1] for k in range(len(v) - 1)]
+        k = max(range(len(quedas)), key=lambda j: quedas[j])
+        return meus[k] if quedas[k] > 0 else None
+    except Exception:
+        return None
+
+
+EPS_REVISAO = 0.5   # exploracao no turno revisto (ponto de partida, nao calibrado)
+
+
+def _revisa(foto, t_erro, id_rev, code_a, code_b, geracao, eps, seed):
+    """Rejoga a partida a partir do turno do erro tentando outras jogadas
+    naquele turno, e segue ate o fim. Devolve (amostras, linhas Q, vencedor)."""
+    from copy import deepcopy
+    try:
+        m = deepcopy(foto)
+    except Exception:
+        return None
+    random.seed(seed)
+    m._q_captura = []
+    if hasattr(m, '_ml_captura'):
+        m._ml_captura = []
+    m._explora_eps = max(eps or 0.0, EPS_REVISAO)
+    p, opp = _quem_joga(m, t_erro)
+    try:
+        r = m.play_turn(p, opp)
+    except Exception:
+        return None
+    m._explora_eps = eps
+    lado = 'A' if p is m.state_a else 'B'
+    am = [{'match': id_rev, 'side': lado, 'leader': code_a if lado == 'A' else code_b,
+           'turn': t_erro, 'gen': geracao,
+           'feats': value_net.state_features(p, opp, nomes=value_net.FEATURE_NAMES_V3)}]
+    if r:
+        w = r
+    else:
+        resto, w, _ = _joga(m, t_erro + 1, id_rev, code_a, code_b, geracao)
+        if resto is None or w is None:
+            return None
+        am += resto
+    return am, list(m._q_captura or []), w
+
+
 def _run_one_match(task) -> list:
     """Roda 1 partida de auto-jogo e devolve as amostras dela.
 
@@ -260,47 +382,11 @@ def _run_one_match(task) -> list:
         # nao ha mais nada pra desligar aqui.
         match._q_captura = []
 
-    amostras = []
-    winner = None
-    for turn_num in range(match.MAX_TURNS * 2):
-        p = (match.state_a if match.state_a.is_first else match.state_b) \
-            if turn_num % 2 == 0 \
-            else (match.state_b if match.state_a.is_first else match.state_a)
-        opp = match.state_b if p is match.state_a else match.state_a
-        try:
-            result = match.play_turn(p, opp)
-        except Exception:
-            # Partida que estoura no meio ainda tem estados validos ate
-            # aqui, mas NAO tem rotulo confiavel -- descarta inteira.
-            return []
-
-        # Estado no FIM do meu turno: exatamente o ponto que
-        # `_evaluate_state_v2` julga numa linha simulada. Treinar no mesmo
-        # ponto em que o modelo vai ser consultado e o que mantem treino e
-        # uso na MESMA distribuicao.
-        lado = 'A' if p is match.state_a else 'B'
-        amostras.append({
-            'match': i,
-            'side': lado,
-            'leader': code_a if lado == 'A' else code_b,
-            'turn': turn_num,
-            # `gen` = qual geracao do modelo jogou esta partida. Fica no
-            # dado (nao so no log) porque o treino pode querer pesar as
-            # geracoes recentes, e porque sem isso e impossivel saber
-            # depois de que politica veio cada estado.
-            'gen': geracao,
-            # Grava o SUPERCONJUNTO rico (49). O treino escolhe o
-            # subconjunto -- assim o mesmo corpus serve pros dois modelos do
-            # A/B e a comparacao isola a VISAO, nao o volume de dado
-            # (bloco 764).
-            'feats': value_net.state_features(
-                p, opp, nomes=value_net.FEATURE_NAMES_V3),
-        })
-
-        if result:
-            winner = result
-            break
-
+    revisoes = int(os.environ.get('OPTCG_REVISOES', '1') or 0) if q_out else 0
+    amostras, winner, fotos = _joga(match, 0, i, code_a, code_b, geracao,
+                                    guardar=bool(revisoes))
+    if amostras is None:
+        return []
     if winner is None:
         # Sem desfecho (estourou MAX_TURNS) -- sem rotulo, fora do dataset.
         # Contado no resumo pra a taxa ficar visivel, nao escondida.
@@ -317,6 +403,36 @@ def _run_one_match(task) -> list:
     for a in amostras:
         a['win'] = 1 if a['side'] == winner else 0
     if q_out:
+        for linha in (getattr(match, '_q_captura', None) or []):
+            linha['match'] = i
+        # REVISAO DA DERROTA (bloco 938, pedido do usuario 05/10/2026): "ao
+        # perder, o bot reve onde errou ou tomou desvantagem e tenta entender
+        # se outra coisa teria sido melhor". Volta ao turno do perdedor em que
+        # a posicao dele mais caiu, joga aquele turno tentando OUTRAS jogadas
+        # (exploracao alta so naquele turno) e deixa a partida seguir ate o FIM
+        # de verdade. O que acontecer e resultado REAL (nao nota da regua):
+        # entra no corpus como uma partida a mais, com as consequencias reais
+        # das jogadas diferentes tentadas no ponto do erro.
+        extra_q = []
+        if revisoes and fotos:
+            perdedor = 'B' if winner == 'A' else 'A'
+            t_erro = _turno_do_erro(fotos, perdedor, match)
+            for k in range(revisoes if t_erro is not None else 0):
+                id_rev = i + 1_000_000 * (k + 1)
+                rev = _revisa(fotos[t_erro], t_erro, id_rev, code_a, code_b,
+                              geracao, eps, match_seed * 7 + k)
+                if rev is None:
+                    continue
+                am_r, q_r, w_r = rev
+                for x in am_r:
+                    x['win'] = 1 if x['side'] == w_r else 0
+                    x['revisao'] = True
+                for linha in q_r:
+                    linha['match'] = id_rev
+                    linha['revisao'] = t_erro
+                amostras = amostras + am_r
+                extra_q.extend(q_r)
+        match._q_captura = list(getattr(match, '_q_captura', None) or []) + extra_q
         # Uma vez por PARTIDA, nao por linha. Vem do ambiente/hostname em vez
         # de viajar na task: a tupla e checada por TAMANHO (`len(task) == 9`) e
         # estender isso quebraria o outro caminho em silencio. Workers sao
@@ -332,7 +448,6 @@ def _run_one_match(task) -> list:
             _hash_lider.setdefault(getattr(_st.leader, 'code', None),
                                    _ger.hash_arquivo(getattr(_st, 'q_net_path', None) or _QP))
         for linha in (getattr(match, '_q_captura', None) or []):
-            linha['match'] = i
             linha['gen'] = geracao
             linha['modelo'] = _hash_lider.get(linha.get('leader'))
             # DE QUAL MAQUINA veio esta linha (bloco 820, pedido do usuario ao
