@@ -357,6 +357,10 @@ def main() -> int:
                     help='desliga o rotulo pela consequencia (bloco 910) e volta '
                          'a usar so o bootstrap do juiz fixo. Default LIGADO: o '
                          'ML tem que aprender com o que as jogadas causaram.')
+    ap.add_argument('--peso-revisao', dest='peso_revisao', type=float, default=2.0,
+                    help='peso das jogadas das partidas de revisao da derrota (bloco 940).')
+    ap.add_argument('--gen-min', dest='gen_min', type=int, default=0,
+                    help='so linhas desta geracao em diante (experimento, bloco 940).')
     ap.add_argument('--peso-alternativas', dest='peso_alternativas', type=float,
                     default=0.0,
                     help='DESLIGADO (bloco 937: ciclos 45/46 deram 7x24 e 6x26, '
@@ -381,6 +385,7 @@ def main() -> int:
         caminho = corpus_escolhidas.atualiza()
     X, y, grupos = [], [], []
     decisoes, escolhidas, familias = [], [], []
+    revisao = []
     n_lidas = n_filtradas_modo = n_sem_consequencia = 0
     from optcg_engine import value_net as _vn
     i_ld_q = list(_vn.FEATURE_NAMES_ALUNO).index('life_diff')
@@ -406,6 +411,8 @@ def main() -> int:
             n_lidas += 1
             if not passa_filtro_modo(d, args.modo):
                 n_filtradas_modo += 1
+                continue
+            if args.gen_min and (d.get('gen') or 0) < args.gen_min:
                 continue
             feats, alvo = d.get('feats'), d.get('alvo')
             if not feats:
@@ -453,6 +460,7 @@ def main() -> int:
             decisoes.append(('%s:%s' % (d.get('gen'), d.get('match')), d.get('decisao')))
             escolhidas.append(bool(d.get('escolhida')))
             familias.append(d.get('acao') or '?')
+            revisao.append(d.get('revisao') is not None)
 
     print()
     print('  corpus: %d linhas lidas | %d descartadas pelo filtro --modo=%s '
@@ -691,6 +699,21 @@ def main() -> int:
             print('  replay priorizado pedido mas sem regua compativel -- '
                   'treinando com amostra uniforme')
 
+    # PESO DA REVISAO DA DERROTA (bloco 940, pedido do usuario): as jogadas
+    # das partidas rejogadas a partir do turno do erro sao o sinal de "joguei
+    # diferente e o resultado mudou". Entram com peso extra (copias a mais) --
+    # `--peso-revisao` 2 = o dobro de uma jogada comum (ponto de partida).
+    _rev = np.asarray(revisao, dtype=bool)
+    n_rev = int(_rev.sum())
+    if n_rev and args.peso_revisao > 1:
+        _extra = int(round(args.peso_revisao)) - 1
+        X_treino = np.vstack([X_treino] + [X[_rev]] * _extra)
+        y_treino = np.concatenate([y_treino] + [y[_rev]] * _extra)
+        _o = np.random.RandomState(4).permutation(len(X_treino))
+        X_treino, y_treino = X_treino[_o], y_treino[_o]
+    print()
+    print('  revisao da derrota: %d jogadas, peso %.0fx' % (n_rev, args.peso_revisao))
+
     # SIMULACAO COMO ENSINO (bloco 937, decisao do usuario 04/10/2026): as
     # jogadas que o bot NAO fez entram com a nota que a simulacao deu a elas
     # (valor do estado que cada uma produz, media dos mundos cegos). Antes so a
@@ -782,6 +805,7 @@ def main() -> int:
         'lideres': sorted(set(grupos.tolist())),
         'replay_priorizado': bool(args.priorizar and X_treino is not X),
         'alternativas_simulacao': int(n_alt),
+        'revisao_linhas': n_rev, 'peso_revisao': args.peso_revisao,
         'cobertura': {f: {'linhas': v[0], 'escolhidas': v[1], 'consequencia': v[2]}
                       for f, v in cobertura.items()},
         'rotulo_consequencia': (args.rotulo if traj else None),

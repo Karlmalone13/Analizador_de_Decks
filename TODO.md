@@ -1,6 +1,8 @@
 # TODO — Analisador de Decks OPTCG
 
-**Última atualização:** 5 de outubro de 2026 (blocos 937-939)
+**Última atualização:** 6 de outubro de 2026 (bloco 940)
+
+> **940**: 3 revisoes por derrota, peso 2x no treino; ciclos 51-56 ~40% (ciclo 54 89x94, quase empate). Corpus antigo ajuda (teste: so recentes 30%, tudo 48%). Proximo: rede maior.
 
 > **939**: decisoes "conhecidas" pulam a simulacao (auditoria 10% adaptativa); quase nenhuma e conhecida (~10%). Portao segue 58% por escolha do usuario.
 

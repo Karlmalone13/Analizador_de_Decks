@@ -1,5 +1,22 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-10-06 (940) - Diagnostico do portao + 3 revisoes por derrota com peso 2x; ciclos 51-56 (~40%, ciclo 54 89x94)
+
+**Diagnostico**: (a) vies de parada do SPRT simulado (20k portoes): desafiante real 50%
+aparece com ~47% ao reprovar -- os ~33% dos ciclos NAO eram ilusao. (b) Mesmo portao
+(seed 94000): desafiante treinado SO com gens >= 46 -> 13x30 (30%); com o corpus TODO ->
+**70x77 (48%)**. Os dados antigos AJUDAM; o treino nao estraga o modelo; o placar varia
+muito com o sorteio do portao. Conclusao: o desafiante sai ~igual ao campeao, falta
+sinal novo. `treinar_q.py --gen-min` (so experimento).
+
+**Feito (pedido do usuario)**: `OPTCG_REVISOES` default 1 -> **3** (cada derrota rejogada 3x
+a partir do turno do erro, seeds diferentes); `treinar_q.py --peso-revisao` default **2**
+(linhas com `revisao` duplicadas no treino final). Ciclos: 51 16x31 | 52 35x47 | 53 28x42
+| 54 **89x94** | 55 37x52 | 56 17x32 -> media ~40% (era ~34% com 1 revisao, ~30% antes).
+Ainda dentro do ruido; nenhuma promocao. ~11-17 min/ciclo.
+
+**Proximo (proposto)**: rede maior (64x32 -> 128x64).
+
 ## 2026-10-05 (939) - Pular a simulacao das decisoes "conhecidas" (com auditoria adaptativa); medido: quase nenhuma decisao e conhecida
 
 `_coleta_bootstrap`: se o Q separa a melhor das outras por mais que `erro_fora_amostra`,

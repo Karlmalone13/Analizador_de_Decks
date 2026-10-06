@@ -382,7 +382,7 @@ def _run_one_match(task) -> list:
         # nao ha mais nada pra desligar aqui.
         match._q_captura = []
 
-    revisoes = int(os.environ.get('OPTCG_REVISOES', '1') or 0) if q_out else 0
+    revisoes = int(os.environ.get('OPTCG_REVISOES', '3') or 0) if q_out else 0
     amostras, winner, fotos = _joga(match, 0, i, code_a, code_b, geracao,
                                     guardar=bool(revisoes))
     if amostras is None:
