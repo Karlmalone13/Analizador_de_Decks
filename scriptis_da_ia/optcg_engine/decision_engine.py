@@ -1302,6 +1302,21 @@ def _descreve_acao(a) -> str:
         return str(a[1]) if len(a) > 1 else '?'
 
 
+# AUDITORIA das decisoes "conhecidas" (bloco 939). Taxa minima 10% (ponto de
+# partida, nao calibrado); sobe com a taxa de discordancia achada: 2x a taxa de
+# erro (+ o piso), ate 100%. Por processo; sorteio com RNG proprio pra nao
+# mexer no aleatorio da partida.
+_AUDITORIA = {'n': 0, 'erros': 0, 'puladas': 0}
+AUDITORIA_MIN = float(os.environ.get('OPTCG_AUDITORIA_MIN', '0.1'))
+_RNG_AUDITORIA = random.Random(939)
+
+
+def _taxa_auditoria() -> float:
+    n = _AUDITORIA['n']
+    erro = (_AUDITORIA['erros'] / n) if n >= 20 else 0.0
+    return min(1.0, AUDITORIA_MIN + 2.0 * erro)
+
+
 def _margem_incerteza(p=None, bundle=None) -> float:
     """Ate onde o modelo NAO distingue duas opcoes: o erro fora da amostra que
     ele mediu no treino (bloco 913). Sem modelo, nada e distinguivel (inf)."""
@@ -19970,6 +19985,39 @@ class OPTCGMatch:
 
         from copy import deepcopy
         _dec = self._q_nova_decisao()
+        # SO SIMULA O QUE O BOT AINDA NAO SABE (bloco 939, pedido do usuario
+        # 05/10/2026: "situacoes ja mapeadas nao precisam ser simuladas toda
+        # hora"). Se o Q ja separa a melhor jogada das outras por mais que o
+        # proprio erro medido, a decisao e "conhecida": a exploracao nem atua
+        # ali (so explora entre incertas) e a nota da simulacao nao ensina mais
+        # nada desde o bloco 937. Ela so e simulada numa AUDITORIA sorteada; se
+        # a auditoria achar a simulacao discordando do Q, a taxa de auditoria
+        # SOBE sozinha (o que ele "sabe" deixou de valer).
+        _auditoria = False
+        try:
+            from optcg_engine import value_net as _vnc
+            _qc = _vnc.load_value_net(getattr(p, 'q_net_path', None) or Q_NET_PATH)
+            if _qc and _qc.get('tipo') == 'q':
+                _qv = [v for v in _vnc.q_valores(p, opp, candidatas, bundle=_qc)]
+                _ok = sorted((v for v in _qv if v is not None), reverse=True)
+                if len(_ok) >= 2 and _ok[0] - _ok[1] > _margem_incerteza(p, _qc):
+                    if _RNG_AUDITORIA.random() >= _taxa_auditoria():
+                        lider = getattr(getattr(p, 'leader', None), 'code', None)
+                        turno = int(getattr(p, 'turn', 0) or 0)
+                        for a in candidatas:
+                            cap.append({'feats': base + _vn.acao_features(a, opp),
+                                        'alvo': None, 'escolhida': False,
+                                        'decisao': _dec,
+                                        'acao': a[1] if len(a) > 1 else None,
+                                        'leader': lider, 'turn': turno,
+                                        'mundos': 0, 'modo': 'conhecida'})
+                            self._q_registra(a, cap[-1])
+                        self._q_depois = {'bundle': _b, 'feats': {}, 'descr': {}}
+                        _AUDITORIA['puladas'] += 1
+                        return
+                    _auditoria = max(range(len(_qv)), key=lambda k: -1e9 if _qv[k] is None else _qv[k])
+        except Exception:
+            _auditoria = False
         _sim = _EM_SIMULACAO['on']
         _EM_SIMULACAO['on'] = True
         # CEGO (bloco 913, INSTRUCAO_MESTRA itens 10/11, Fase 0): cada opcao e
@@ -20063,6 +20111,19 @@ class OPTCGMatch:
             self._q_depois['feats'][id(cap[-1])] = (
                 depois.get(i) if i in depois else 'vence_a_partida')
             self._q_depois['descr'][id(cap[-1])] = _descreve_acao(a)
+        if _auditoria is not False:
+            # A simulacao concorda com o Q nesta decisao "conhecida"? Discorda
+            # quando outra jogada sai melhor que a do Q por mais que a margem.
+            try:
+                notas = {i: soma[i] / cont[i] for i in cont if cont.get(i)}
+                if _auditoria in notas and len(notas) >= 2:
+                    _AUDITORIA['n'] += 1
+                    if max(notas.values()) - notas[_auditoria] > _margem_incerteza(p):
+                        _AUDITORIA['erros'] += 1
+                    for l in cap[-len(acoes):]:
+                        l['modo'] = 'auditoria'
+            except Exception:
+                pass
 
     def _candidatas_para_decidir(self, p, actions, top_k, priority,
                                  cheap_values=None, ordenada_pelo_modelo=False):

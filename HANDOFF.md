@@ -1,5 +1,17 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-10-05 (939) - Pular a simulacao das decisoes "conhecidas" (com auditoria adaptativa); medido: quase nenhuma decisao e conhecida
+
+`_coleta_bootstrap`: se o Q separa a melhor das outras por mais que `erro_fora_amostra`,
+nao simula (linhas gravadas com `alvo` None, `modo: 'conhecida'`), exceto numa auditoria
+sorteada (`OPTCG_AUDITORIA_MIN`, 0,1; sobe 2x a taxa de discordancia, RNG proprio, nao
+mexe no aleatorio da partida). Teste 8 partidas: ~10% das decisoes puladas, ~8% de tempo.
+**Medido (gen 50, 13.702 decisoes)**: mesmo com folga do Q > 0,05, a simulacao discorda
+(outra jogada > 0,01 melhor) em ~22%; nao ha folga em que o Q fique "certo" pela
+simulacao. Proposta (simular so quando for explorar + auditoria; ~2-3x mais rapido) e
+portao a 55%: o usuario preferiu **deixar como esta** (portao segue p1=0,58).
+smoke_fast 1.908 OK.
+
 ## 2026-10-05 (937-938) - Simulacao como ensino REPROVADA (7x24, 6x26); REVISAO DA DERROTA implementada (ciclos 47-50: 28/31/42/33%)
 
 **937 -- simulacao como ensino (reprovado)**: `treinar_q.py --peso-alternativas` (jogadas NAO

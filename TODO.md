@@ -1,6 +1,8 @@
 # TODO — Analisador de Decks OPTCG
 
-**Última atualização:** 5 de outubro de 2026 (blocos 937-938)
+**Última atualização:** 5 de outubro de 2026 (blocos 937-939)
+
+> **939**: decisoes "conhecidas" pulam a simulacao (auditoria 10% adaptativa); quase nenhuma e conhecida (~10%). Portao segue 58% por escolha do usuario.
 
 > **REVISAO DA DERROTA (938)**: o perdedor volta ao turno do erro, joga diferente e segue
 > ate o fim (resultado real). Ciclos 47-50: 28/31/42/33%. Simulacao como ensino
