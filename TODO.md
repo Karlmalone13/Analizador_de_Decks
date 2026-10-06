@@ -1,6 +1,8 @@
 # TODO — Analisador de Decks OPTCG
 
-**Última atualização:** 6 de outubro de 2026 (bloco 940)
+**Última atualização:** 6 de outubro de 2026 (blocos 941-942)
+
+> **PROMOCAO generation_004 (942)**: ciclo 57, 90x56 (62%), com revisoes ampliadas (2 piores turnos do perdedor + pior do vencedor, peso 3x quando muda o resultado), exploracao 0,30 e simulacao so ao explorar. **Pendente: confirmar com outros seeds** e teste contra humano. Rede maior reprovada (941).
 
 > **940**: 3 revisoes por derrota, peso 2x no treino; ciclos 51-56 ~40% (ciclo 54 89x94, quase empate). Corpus antigo ajuda (teste: so recentes 30%, tudo 48%). Proximo: rede maior.
 

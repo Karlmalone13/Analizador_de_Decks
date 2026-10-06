@@ -287,6 +287,58 @@ def alvo_consequencia(d: dict, traj: dict, n: int = 2, lam: float = 0.5,
     return (1 - lam) / (1 + math.exp(-vant)) + lam * float(t[j][2])
 
 
+CAMADAS = (64, 32)
+
+
+def alarga_rede(pipe, camadas, X_amostra):
+    """Copia o MLP do campeao numa rede de camadas maiores sem mudar o que ela
+    calcula (pesos novos de saida = 0). Devolve um pipeline novo pronto pra
+    `warm_start`."""
+    import copy
+    import numpy as np
+    from sklearn.neural_network import MLPRegressor
+    sc, velho = pipe.steps[0][1], pipe.steps[-1][1]
+    if any(n < v for n, v in zip(camadas, velho.hidden_layer_sizes))             or len(camadas) != len(velho.hidden_layer_sizes):
+        raise ValueError('so alarga (mesmo numero de camadas, cada uma >=)')
+    novo = MLPRegressor(hidden_layer_sizes=camadas, activation=velho.activation,
+                        solver='adam', learning_rate_init=velho.learning_rate_init,
+                        max_iter=1, random_state=0)
+    Xs = sc.transform(X_amostra)
+    import warnings
+    with warnings.catch_warnings():
+        warnings.simplefilter('ignore')
+        novo.fit(Xs, velho.predict(Xs))       # so pra criar os atributos
+    rng = np.random.RandomState(0)
+    for k, (W, b) in enumerate(zip(velho.coefs_, velho.intercepts_)):
+        Wn, bn = novo.coefs_[k], novo.intercepts_[k]
+        Wn[:] = 0.0
+        bn[:] = 0.0
+        Wn[:W.shape[0], :W.shape[1]] = W
+        bn[:b.shape[0]] = b
+        if k < len(velho.coefs_) - 1:
+            # entrada dos neuronios NOVOS: pequena e aleatoria (pra poderem
+            # aprender); a SAIDA deles para a proxima camada fica 0 abaixo
+            Wn[:W.shape[0], W.shape[1]:] = rng.normal(0, 0.01, (W.shape[0], Wn.shape[1] - W.shape[1]))
+    # linhas dos neuronios novos na camada seguinte = 0 (ja zeradas): a rede
+    # calcula o mesmo que o campeao
+    novo.set_params(max_iter=velho.max_iter, early_stopping=velho.early_stopping,
+                    n_iter_no_change=velho.n_iter_no_change)
+    if hasattr(novo, '_optimizer'):
+        del novo._optimizer
+    novo.n_iter_ = 0
+    novo._no_improvement_count = 0
+    novo.loss_curve_ = []
+    novo.best_loss_ = np.inf
+    novo.validation_scores_ = [] if velho.early_stopping else None
+    novo.best_validation_score_ = -np.inf if velho.early_stopping else None
+    out = copy.deepcopy(pipe)
+    out.steps[-1] = (out.steps[-1][0], novo)
+    d = float(np.max(np.abs(novo.predict(Xs) - velho.predict(Xs))))
+    print('  alargada: diferenca maxima pro campeao na amostra = %.2e' % d)
+    return out
+
+
+
 def main() -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument('--dataset', default='metrics/q_alvos.jsonl')
@@ -357,6 +409,10 @@ def main() -> int:
                     help='desliga o rotulo pela consequencia (bloco 910) e volta '
                          'a usar so o bootstrap do juiz fixo. Default LIGADO: o '
                          'ML tem que aprender com o que as jogadas causaram.')
+    ap.add_argument('--camadas', default='64,32',
+                    help='tamanho das camadas da rede (bloco 941: 128,64 do zero perdeu 5x23).')
+    ap.add_argument('--peso-mudou', dest='peso_mudou', type=float, default=3.0,
+                    help='peso das jogadas cuja revisao mudou o resultado (bloco 942).')
     ap.add_argument('--peso-revisao', dest='peso_revisao', type=float, default=2.0,
                     help='peso das jogadas das partidas de revisao da derrota (bloco 940).')
     ap.add_argument('--gen-min', dest='gen_min', type=int, default=0,
@@ -368,6 +424,8 @@ def main() -> int:
                          'das ultimas geracoes entram com a nota da simulacao, ate '
                          'N x as linhas reais. 0 desliga.')
     args = ap.parse_args()
+    global CAMADAS
+    CAMADAS = tuple(int(x) for x in args.camadas.split(','))
 
     import numpy as np
     from sklearn.ensemble import HistGradientBoostingRegressor
@@ -386,6 +444,7 @@ def main() -> int:
     X, y, grupos = [], [], []
     decisoes, escolhidas, familias = [], [], []
     revisao = []
+    mudou = []
     n_lidas = n_filtradas_modo = n_sem_consequencia = 0
     from optcg_engine import value_net as _vn
     i_ld_q = list(_vn.FEATURE_NAMES_ALUNO).index('life_diff')
@@ -461,6 +520,7 @@ def main() -> int:
             escolhidas.append(bool(d.get('escolhida')))
             familias.append(d.get('acao') or '?')
             revisao.append(d.get('revisao') is not None)
+            mudou.append(bool(d.get('mudou')))
 
     print()
     print('  corpus: %d linhas lidas | %d descartadas pelo filtro --modo=%s '
@@ -523,7 +583,7 @@ def main() -> int:
                 validation_fraction=0.15, l2_regularization=1.0, random_state=0)
         return make_pipeline(
             StandardScaler(),
-            MLPRegressor(hidden_layer_sizes=(64, 32), activation='relu',
+            MLPRegressor(hidden_layer_sizes=CAMADAS, activation='relu',
                          solver='adam', learning_rate_init=3e-3, max_iter=60,
                          early_stopping=True, n_iter_no_change=5,
                          random_state=0))
@@ -713,6 +773,17 @@ def main() -> int:
         X_treino, y_treino = X_treino[_o], y_treino[_o]
     print()
     print('  revisao da derrota: %d jogadas, peso %.0fx' % (n_rev, args.peso_revisao))
+    # MUDOU O RESULTADO (bloco 942): mesmo ponto, jogada diferente, resultado
+    # real diferente -- peso `--peso-mudou` (3 = ponto de partida).
+    _mud = np.asarray(mudou, dtype=bool)
+    n_mud = int(_mud.sum())
+    if n_mud and args.peso_mudou > 1:
+        _extra = int(round(args.peso_mudou)) - 1
+        X_treino = np.vstack([X_treino] + [X[_mud]] * _extra)
+        y_treino = np.concatenate([y_treino] + [y[_mud]] * _extra)
+        _o = np.random.RandomState(5).permutation(len(X_treino))
+        X_treino, y_treino = X_treino[_o], y_treino[_o]
+    print('  jogadas em que a revisao MUDOU o resultado: %d, peso %.0fx' % (n_mud, args.peso_mudou))
 
     # SIMULACAO COMO ENSINO (bloco 937, decisao do usuario 04/10/2026): as
     # jogadas que o bot NAO fez entram com a nota que a simulacao deu a elas
@@ -768,6 +839,16 @@ def main() -> int:
               'simulacao (teto %.2f x %d reais)' % (n_alt, args.peso_alternativas,
                                                     len(X)))
 
+    if campeao is not None and tuple(campeao.steps[-1][1].hidden_layer_sizes) != CAMADAS:
+        # REDE MAIOR QUE O PROMOVIDO (bloco 941): ALARGA o campeao em vez de
+        # treinar do zero (do zero perdeu 5x23 -- jogava sem o acumulo de
+        # treinos do campeao). Os pesos dele sao copiados; os neuronios novos
+        # entram com saida ZERO, entao a rede nova comeca calculando EXATAMENTE
+        # o mesmo que o campeao, e o treino continua dali.
+        _antes = tuple(campeao.steps[-1][1].hidden_layer_sizes)
+        campeao = alarga_rede(campeao, CAMADAS, X_treino[:256])
+        print()
+        print('  rede alargada do promovido: %s -> %s' % (_antes, CAMADAS))
     if campeao is not None:
         # CONTINUA do promovido: mesma normalizacao do campeao (reajustar o
         # scaler tiraria o sentido dos pesos) e o treino da rede segue dos

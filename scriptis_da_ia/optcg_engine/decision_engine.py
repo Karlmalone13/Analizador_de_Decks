@@ -1312,9 +1312,10 @@ _RNG_AUDITORIA = random.Random(939)
 
 
 def _taxa_auditoria() -> float:
-    n = _AUDITORIA['n']
-    erro = (_AUDITORIA['erros'] / n) if n >= 20 else 0.0
-    return min(1.0, AUDITORIA_MIN + 2.0 * erro)
+    # FIXA desde o bloco 942: a auditoria so MEDE (a nota da simulacao nao
+    # ensina), e Q x simulacao ja discordam ~20-30% -- subir sozinha comeria o
+    # ganho de velocidade pra medir o que ja se sabe.
+    return AUDITORIA_MIN
 
 
 def _margem_incerteza(p=None, bundle=None) -> float:
@@ -19985,37 +19986,45 @@ class OPTCGMatch:
 
         from copy import deepcopy
         _dec = self._q_nova_decisao()
-        # SO SIMULA O QUE O BOT AINDA NAO SABE (bloco 939, pedido do usuario
-        # 05/10/2026: "situacoes ja mapeadas nao precisam ser simuladas toda
-        # hora"). Se o Q ja separa a melhor jogada das outras por mais que o
-        # proprio erro medido, a decisao e "conhecida": a exploracao nem atua
-        # ali (so explora entre incertas) e a nota da simulacao nao ensina mais
-        # nada desde o bloco 937. Ela so e simulada numa AUDITORIA sorteada; se
-        # a auditoria achar a simulacao discordando do Q, a taxa de auditoria
-        # SOBE sozinha (o que ele "sabe" deixou de valer).
+        # SO SIMULA QUANDO VAI EXPLORAR (bloco 942, pedido do usuario). A nota
+        # da simulacao nao ensina o Q (bloco 937) e a jogada normal e do Q; ela
+        # so serve a EXPLORACAO GUIADA. Entao o sorteio "vai explorar?" sai
+        # AQUI, antes (e `_explorar` usa este mesmo sorteio), e so simula se
+        # for explorar -- ou numa AUDITORIA fixa (`AUDITORIA_MIN`, 10%) que so
+        # MEDE a concordancia Q x simulacao. Bloco 939 (pular so as
+        # "conhecidas") pulava ~10%: quase nenhuma decisao e conhecida.
         _auditoria = False
+        self._explora_pre = None
         try:
             from optcg_engine import value_net as _vnc
             _qc = _vnc.load_value_net(getattr(p, 'q_net_path', None) or Q_NET_PATH)
             if _qc and _qc.get('tipo') == 'q':
-                _qv = [v for v in _vnc.q_valores(p, opp, candidatas, bundle=_qc)]
-                _ok = sorted((v for v in _qv if v is not None), reverse=True)
-                if len(_ok) >= 2 and _ok[0] - _ok[1] > _margem_incerteza(p, _qc):
-                    if _RNG_AUDITORIA.random() >= _taxa_auditoria():
-                        lider = getattr(getattr(p, 'leader', None), 'code', None)
-                        turno = int(getattr(p, 'turn', 0) or 0)
-                        for a in candidatas:
-                            cap.append({'feats': base + _vn.acao_features(a, opp),
-                                        'alvo': None, 'escolhida': False,
-                                        'decisao': _dec,
-                                        'acao': a[1] if len(a) > 1 else None,
-                                        'leader': lider, 'turn': turno,
-                                        'mundos': 0, 'modo': 'conhecida'})
-                            self._q_registra(a, cap[-1])
-                        self._q_depois = {'bundle': _b, 'feats': {}, 'descr': {}}
-                        _AUDITORIA['puladas'] += 1
-                        return
-                    _auditoria = max(range(len(_qv)), key=lambda k: -1e9 if _qv[k] is None else _qv[k])
+                _qv = list(_vnc.q_valores(p, opp, candidatas, bundle=_qc))
+                _ok = [v for v in _qv if v is not None]
+                if len(_ok) >= 2:
+                    _top = max(_ok)
+                    _marg = _margem_incerteza(p, _qc)
+                    _n_inc = sum(1 for v in _ok if _top - v <= _marg)
+                    _eps = float(getattr(self, '_explora_eps', 0.0) or 0.0)
+                    _vai = bool(_eps > 0 and _n_inc >= 2 and random.random() < _eps)
+                    self._explora_pre = _vai
+                    if not _vai:
+                        if _RNG_AUDITORIA.random() >= _taxa_auditoria():
+                            lider = getattr(getattr(p, 'leader', None), 'code', None)
+                            turno = int(getattr(p, 'turn', 0) or 0)
+                            for a in candidatas:
+                                cap.append({'feats': base + _vn.acao_features(a, opp),
+                                            'alvo': None, 'escolhida': False,
+                                            'decisao': _dec,
+                                            'acao': a[1] if len(a) > 1 else None,
+                                            'leader': lider, 'turn': turno,
+                                            'mundos': 0, 'modo': 'sem_simulacao'})
+                                self._q_registra(a, cap[-1])
+                            self._q_depois = {'bundle': _b, 'feats': {}, 'descr': {}}
+                            _AUDITORIA['puladas'] += 1
+                            return
+                        _auditoria = max(range(len(_qv)),
+                                         key=lambda k: -1e9 if _qv[k] is None else _qv[k])
         except Exception:
             _auditoria = False
         _sim = _EM_SIMULACAO['on']
@@ -22095,7 +22104,11 @@ class OPTCGMatch:
             if margem is None:
                 margem = _margem_incerteza(getattr(self, '_explora_dono', None))
             incertos = [cv for cv in ordenados if ordenados[0][1] - cv[1] <= margem]
-            if len(incertos) >= 2 and random.random() < eps:
+            _pre = getattr(self, '_explora_pre', None)
+            self._explora_pre = None
+            # o sorteio ja foi feito na coleta (bloco 942) -- mesmo sorteio,
+            # senao "simulou porque ia explorar" e "explorou" divergiriam
+            if len(incertos) >= 2 and (_pre if _pre is not None else random.random() < eps):
                 self._explora_n = getattr(self, '_explora_n', 0) + 1
                 sorteada, como = None, 'acaso'
                 # EXPLORACAO GUIADA PELA SIMULACAO (bloco 935, pedido do usuario:

@@ -148,8 +148,10 @@ def _joga(match, inicio, i, code_a, code_b, geracao, guardar=False):
     """Joga do turno `inicio` ate o fim. Devolve (amostras, vencedor, fotos);
     amostras None se a partida estourou. `fotos[t]` = copia no inicio do turno t."""
     amostras, winner, fotos = [], None, {}
+    match._ini_turno = {}
     for turn_num in range(inicio, match.MAX_TURNS * 2):
         p, opp = _quem_joga(match, turn_num)
+        match._ini_turno[turn_num] = len(getattr(match, '_q_captura', None) or [])
         if guardar:
             try:
                 fotos[turn_num] = _foto(match)
@@ -178,34 +180,34 @@ def _joga(match, inicio, i, code_a, code_b, geracao, guardar=False):
     return amostras, winner, fotos
 
 
-def _turno_do_erro(fotos, perdedor, match):
-    """Turno do PERDEDOR em que a posicao dele mais caiu ate o turno seguinte
-    dele (regua do ciclo, antes x depois, ja com a resposta do oponente)."""
+def _turnos_do_erro(fotos, lado, match, k=1):
+    """Os `k` turnos do `lado` em que a posicao dele mais caiu ate o turno
+    seguinte dele (regua do ciclo, ja com a resposta do oponente). So quedas
+    positivas; maior queda primeiro."""
     try:
         from optcg_engine.decision_engine import MODELO_ORDENA_PATH as _MOP
         rg = value_net.load_value_net(
             getattr(match.state_a, 'modelo_ordena_path', None) or _MOP)
         if not rg:
-            return None
+            return []
         mod = rg['modelo']
         meus, linhas = [], []
         for t in sorted(fotos):
             f = fotos[t]
             p, opp = _quem_joga(f, t)
-            if ('A' if p is f.state_a else 'B') != perdedor:
+            if ('A' if p is f.state_a else 'B') != lado:
                 continue
             meus.append(t)
             linhas.append(value_net.state_features(p, opp, nomes=value_net.FEATURE_NAMES_ALUNO))
         if len(meus) < 2:
-            return None
+            return []
         import numpy as np
         X = np.asarray(linhas, dtype=float)
         v = mod.predict_proba(X)[:, 1] if hasattr(mod, 'predict_proba') else mod.predict(X)
-        quedas = [v[k] - v[k + 1] for k in range(len(v) - 1)]
-        k = max(range(len(quedas)), key=lambda j: quedas[j])
-        return meus[k] if quedas[k] > 0 else None
+        quedas = sorted(((v[j] - v[j + 1], meus[j]) for j in range(len(v) - 1)), reverse=True)
+        return [t for q, t in quedas[:k] if q > 0]
     except Exception:
-        return None
+        return []
 
 
 EPS_REVISAO = 0.5   # exploracao no turno revisto (ponto de partida, nao calibrado)
@@ -229,6 +231,7 @@ def _revisa(foto, t_erro, id_rev, code_a, code_b, geracao, eps, seed):
         r = m.play_turn(p, opp)
     except Exception:
         return None
+    n_turno = len(m._q_captura or [])
     m._explora_eps = eps
     lado = 'A' if p is m.state_a else 'B'
     am = [{'match': id_rev, 'side': lado, 'leader': code_a if lado == 'A' else code_b,
@@ -241,7 +244,7 @@ def _revisa(foto, t_erro, id_rev, code_a, code_b, geracao, eps, seed):
         if resto is None or w is None:
             return None
         am += resto
-    return am, list(m._q_captura or []), w
+    return am, list(m._q_captura or []), w, n_turno
 
 
 def _run_one_match(task) -> list:
@@ -382,7 +385,7 @@ def _run_one_match(task) -> list:
         # nao ha mais nada pra desligar aqui.
         match._q_captura = []
 
-    revisoes = int(os.environ.get('OPTCG_REVISOES', '3') or 0) if q_out else 0
+    revisoes = int(os.environ.get('OPTCG_REVISOES', '2') or 0) if q_out else 0
     amostras, winner, fotos = _joga(match, 0, i, code_a, code_b, geracao,
                                     guardar=bool(revisoes))
     if amostras is None:
@@ -413,25 +416,54 @@ def _run_one_match(task) -> list:
         # de verdade. O que acontecer e resultado REAL (nao nota da regua):
         # entra no corpus como uma partida a mais, com as consequencias reais
         # das jogadas diferentes tentadas no ponto do erro.
+        # REVISOES (bloco 942, pedido do usuario): os 2 piores turnos do
+        # PERDEDOR e o pior do VENCEDOR (ganhou, mas onde jogou pior?), cada um
+        # rejogado `OPTCG_REVISOES` vezes ate o fim. MUDOU: quando a revisao
+        # termina com resultado diferente da partida original PARA QUEM foi
+        # revisto, as jogadas daquele turno -- a original e a nova -- sao o
+        # sinal mais direto que existe ("mesmo ponto, jogada diferente,
+        # resultado real diferente") e ganham `mudou` (peso maior no treino).
         extra_q = []
+        orig = list(getattr(match, '_q_captura', None) or [])
+        ini_t = getattr(match, '_ini_turno', {}) or {}
         if revisoes and fotos:
             perdedor = 'B' if winner == 'A' else 'A'
-            t_erro = _turno_do_erro(fotos, perdedor, match)
-            for k in range(revisoes if t_erro is not None else 0):
-                id_rev = i + 1_000_000 * (k + 1)
-                rev = _revisa(fotos[t_erro], t_erro, id_rev, code_a, code_b,
-                              geracao, eps, match_seed * 7 + k)
-                if rev is None:
-                    continue
-                am_r, q_r, w_r = rev
-                for x in am_r:
-                    x['win'] = 1 if x['side'] == w_r else 0
-                    x['revisao'] = True
-                for linha in q_r:
-                    linha['match'] = id_rev
-                    linha['revisao'] = t_erro
-                amostras = amostras + am_r
-                extra_q.extend(q_r)
+            # SO O LADO QUE ESTA SENDO TREINADO (pedido do usuario): nas partidas
+            # contra um adversario do POOL (geracao antiga, `q_net_path` proprio),
+            # o lado antigo nao e revisto -- os erros dele nao sao do modelo atual.
+            def _treinado(lado):
+                st = match.state_a if lado == 'A' else match.state_b
+                return not getattr(st, 'q_net_path', None)
+            alvos = ([(t, perdedor) for t in _turnos_do_erro(fotos, perdedor, match, k=2)
+                      if _treinado(perdedor)]
+                     + [(t, winner) for t in _turnos_do_erro(fotos, winner, match, k=1)
+                        if _treinado(winner)])
+            n_ramo = 0
+            for t_erro, lado_rev in alvos:
+                for k in range(revisoes):
+                    n_ramo += 1
+                    id_rev = i + 1_000_000 * n_ramo
+                    rev = _revisa(fotos[t_erro], t_erro, id_rev, code_a, code_b,
+                                  geracao, eps, match_seed * 7 + n_ramo)
+                    if rev is None:
+                        continue
+                    am_r, q_r, w_r, n_turno = rev
+                    for x in am_r:
+                        x['win'] = 1 if x['side'] == w_r else 0
+                        x['revisao'] = True
+                    for linha in q_r:
+                        linha['match'] = id_rev
+                        linha['revisao'] = t_erro
+                    if (w_r == lado_rev) != (winner == lado_rev):
+                        for linha in q_r[:n_turno]:
+                            linha['mudou'] = True
+                        a0 = ini_t.get(t_erro)
+                        a1 = ini_t.get(t_erro + 1, len(orig))
+                        if a0 is not None:
+                            for linha in orig[a0:a1]:
+                                linha['mudou'] = True
+                    amostras = amostras + am_r
+                    extra_q.extend(q_r)
         match._q_captura = list(getattr(match, '_q_captura', None) or []) + extra_q
         # Uma vez por PARTIDA, nao por linha. Vem do ambiente/hostname em vez
         # de viajar na task: a tupla e checada por TAMANHO (`len(task) == 9`) e
@@ -531,7 +563,7 @@ def main() -> None:
     # 0.17 (pedido do usuario, 19/09/2026). Desde o bloco 913 so explora onde
     # o modelo esta INCERTO (INSTRUCAO_MESTRA_ML item 7): a geracao nao pode
     # ser um bot pior -- ver `_explorar` em decision_engine.py.
-    ap.add_argument('--explorar', type=float, default=0.17,
+    ap.add_argument('--explorar', type=float, default=0.30,
                     help='epsilon de EXPLORACAO: em epsilon das decisoes sorteia '
                          'SO entre as candidatas que o modelo nao distingue da '
                          'melhor (dentro do erro fora da amostra dele). Onde ele '

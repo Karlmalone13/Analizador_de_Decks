@@ -1,5 +1,31 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-10-06 (941-942) - PROMOCAO: generation_004 (ciclo 57, 90x56 = 62%) com revisoes ampliadas; rede maior reprovada
+
+**941 -- rede maior (reprovada)**: `treinar_q.py --camadas` (default segue 64,32) e
+`alarga_rede` (copia o campeao numa rede maior com saida dos neuronios novos = 0; controle:
+diferenca 0,0 antes de treinar e os neuronios novos mudam depois). Mesmo portao (seed 94000):
+128x64 do zero 5x23; 128x64 ALARGADA 6x25; 64x32 continuada 86x92. Hipotese (nao testada): o
+otimizador recomeca (Adam sem historico) e desfaz o herdado. Entrada em REPROVADOS pendente.
+
+**942 -- o que mudou (pedidos do usuario)**:
+- `_coleta_bootstrap`: o sorteio "vai explorar?" sai ANTES (`_explora_pre`, usado pelo
+  `_explorar`) e so simula se for explorar, + auditoria FIXA de 10% (`_taxa_auditoria`
+  nao sobe mais). Linhas sem simulacao: `modo: 'sem_simulacao'`, `alvo` None.
+  12 partidas: 90 s -> 61 s (-32%; estimativa minha de 2-3x era otimista).
+- Exploracao 0,17 -> **0,30** (`--explorar`).
+- Revisoes: 2 piores turnos do PERDEDOR + pior do VENCEDOR, `OPTCG_REVISOES`=2 cada, so o
+  lado do modelo TREINADO (nao o adversario do pool). `mudou` = revisao terminou com
+  resultado diferente da original para quem foi revisto -> marca as jogadas daquele turno
+  (original e nova); `treinar_q.py --peso-mudou` 3. AS-IS: revisoes custam 21 s -> 48 s
+  em 12 partidas (custo da copia por turno nao separado).
+- smoke_fast 1.908 OK.
+
+**Ciclo 57: 90x56 em 146 pares -> PROMOVE, generation_004** (1a desde a gen_003).
+Revisao: 97.923 jogadas (peso 2x), 981 com MUDOU (peso 3x). Guarda-corpo: acerto_por_jogada
+41,0% (play 32,3, attack 49,1, blocker 87,7, counter 59,0). **Pendente: confirmar a gen_004
+com outros seeds do portao** (falso positivo ja ocorreu, bloco 762) e o teste contra humano.
+
 ## 2026-10-06 (940) - Diagnostico do portao + 3 revisoes por derrota com peso 2x; ciclos 51-56 (~40%, ciclo 54 89x94)
 
 **Diagnostico**: (a) vies de parada do SPRT simulado (20k portoes): desafiante real 50%
