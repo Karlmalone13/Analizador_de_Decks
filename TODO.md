@@ -1,6 +1,8 @@
 # TODO — Analisador de Decks OPTCG
 
-**Última atualização:** 6 de outubro de 2026 (blocos 941-942)
+**Última atualização:** 8 de outubro de 2026 (bloco 943)
+
+> **943**: gen_004 confirmada so em 52% (445x410). 1a partida humano x gen_004: bot perdeu o ritmo no fim (turnos 12 e 14 montando mesa, 1 ataque no lider). Pendente: features de corrida/letal; `audit_real_losses.py` assume bot em p1.
 
 > **PROMOCAO generation_004 (942)**: ciclo 57, 90x56 (62%), com revisoes ampliadas (2 piores turnos do perdedor + pior do vencedor, peso 3x quando muda o resultado), exploracao 0,30 e simulacao so ao explorar. **Pendente: confirmar com outros seeds** e teste contra humano. Rede maior reprovada (941).
 

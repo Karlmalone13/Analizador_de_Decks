@@ -7759,5 +7759,38 @@
       "Opponent": "decks_full/Portgas.D.Ace-R_2026-09-28T15.08.47.json"
     },
     "decision_log_file": "decisions/decisions_2026-09-28T15.08.47.jsonl"
+  },
+  {
+    "id": "2026-10-07T19.17.41",
+    "impressao": "5357e867e9b561a2bd6a93c03107c2d2",
+    "friendly_name": "Rocks.D.Xebec-B_x_Portgas.D.Ace-R",
+    "date": "2026-10-07",
+    "p1": {
+      "name": "You",
+      "leader_code": "OP17-039",
+      "leader_name": "Rocks D. Xebec",
+      "slug": "Rocks.D.Xebec-B"
+    },
+    "p2": {
+      "name": "Opponent",
+      "leader_code": "OP16-001",
+      "leader_name": "Portgas D. Ace",
+      "slug": "Portgas.D.Ace-R"
+    },
+    "turns": 15,
+    "winner": "p1",
+    "bot_side": "p2",
+    "tipo": "com_bot",
+    "log_file": "raw/Rocks.D.Xebec-B_x_Portgas.D.Ace-R_2026-10-07T19.17.41.log",
+    "parsed_file": "parsed/Rocks.D.Xebec-B_x_Portgas.D.Ace-R_2026-10-07T19.17.41.json",
+    "deck_files": {
+      "You": "decks/Rocks.D.Xebec-B_2026-10-07T19.17.41.json",
+      "Opponent": "decks/Portgas.D.Ace-R_2026-10-07T19.17.41.json"
+    },
+    "deck_full_files": {
+      "You": "decks_full/Rocks.D.Xebec-B_2026-10-07T19.17.41.json",
+      "Opponent": "decks_full/Portgas.D.Ace-R_2026-10-07T19.17.41.json"
+    },
+    "decision_log_file": "decisions/decisions_2026-10-07T19.17.41.jsonl"
   }
 ]

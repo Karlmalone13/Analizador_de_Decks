@@ -1,5 +1,25 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-10-08 (943) - Confirmacao da gen_004 (52%) e 1a partida contra humano: bot perde o ritmo no fim
+
+**Confirmacao gen_004 x gen_003** (3 seeds novos, 8101/8202/8303): 223x184 (inconclusivo,
+teto) | 54x65 | 168x161 -> **445x410 = 52%** em 855 decididos. O 62% do ciclo 57 foi em
+boa parte sorte do sorteio; gen_004 nao e pior e provavelmente e um pouco melhor. Mantida.
+
+**Partida humano x gen_004** (`logs/parsed/Rocks.D.Xebec-B_x_Portgas.D.Ace-R_2026-10-07T19.17.41.json`,
+bot = Ace OP16-001, lado p2/cima; humano Xebec OP17-039 venceu em 15 turnos).
+Telemetria: q_fallback 0 (modelo decidiu tudo); efeitos todos concluidos; 1 alerta FORTE
+(ataque com 7 DON, retorno zero no horizonte, turno 7 do bot). Leitura do usuario: "jogou
+muito bem mas perdeu vantagem nos ultimos turnos". Confirmado no log: turnos 4-10 com 1-3
+ataques no lider por turno; **turno 12: desenvolveu mesa (Marco, Garp, Moby Dick, Uta) e
+atacou o lider 1x; turno 14: 1 ataque no lider + Marco em personagem**; humano fechou com
+4 ataques/turno nos turnos 13 e 15. Padrao: no fim do jogo o bot nao muda pra corrida.
+**Ferramenta**: `audit_real_losses.py` auditou os turnos do HUMANO (assume bot em p1; aqui
+o bot era p2) -- segunda opiniao invalida nesta partida, corrigir.
+Diagnostico de representacao: as 77 features do estado nao tem "relogio de corrida"
+(quantos atacantes cada lado tem capazes de tirar vida, dano potencial no proximo turno,
+risco de letal) -- o modelo so pode inferir isso indiretamente.
+
 ## 2026-10-06 (941-942) - PROMOCAO: generation_004 (ciclo 57, 90x56 = 62%) com revisoes ampliadas; rede maior reprovada
 
 **941 -- rede maior (reprovada)**: `treinar_q.py --camadas` (default segue 64,32) e
