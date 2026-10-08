@@ -315,6 +315,12 @@ def state_features(p, opp, nomes=None) -> list:
     if nomes is None or list(nomes) == FEATURE_NAMES:
         return [por_nome[n] for n in FEATURE_NAMES]
     por_nome.update(valores)
+    if nomes is not None and any(n == 'corr_presente' or n.startswith('corr_') for n in nomes):
+        # RELOGIO DA CORRIDA tambem pra REGUA (bloco 947). `corr_presente` = 1
+        # separa estes estados dos antigos do corpus, gravados sem a corrida
+        # (la ele vale 0 e as colunas de corrida tambem).
+        por_nome['corr_presente'] = 1.0
+        por_nome.update(zip(FEATURE_NAMES_CORRIDA, corrida_features(p, opp)))
     # Nome desconhecido vira 0.0 em vez de estourar: modelo antigo/novo nunca
     # derruba o motor por causa de feature (mesmo principio do `win_prob`,
     # que degrada pra None quando o bundle nao bate).
@@ -391,6 +397,31 @@ FEATURE_NAMES_CORRIDA = [
     'corr_relogio_opp',
     'corr_relogio_diff',        # relogio dele - o meu (>0: eu fecho antes)
 ]
+
+
+# A REGUA (bloco 947) passa a ver a corrida: o alvo do Q e a regua 2 turnos
+# depois -- se ela e cega pra corrida, o Q herda o ponto cego.
+FEATURE_NAMES_V4 = FEATURE_NAMES_V3 + ['corr_presente'] + FEATURE_NAMES_CORRIDA
+FEATURE_NAMES_REGUA = FEATURE_NAMES_ALUNO + ['corr_presente'] + FEATURE_NAMES_CORRIDA
+
+
+def regua_x_de_selfplay(feats, nomes) -> list:
+    """Vetor da regua (`nomes`) a partir de um estado do selfplay -- antigo
+    (V3, sem corrida: zeros e corr_presente 0) ou novo (V4)."""
+    base = FEATURE_NAMES_V4 if len(feats) == len(FEATURE_NAMES_V4) else FEATURE_NAMES_V3
+    d = dict(zip(base, feats))
+    return [float(d.get(n, 0.0)) for n in nomes]
+
+
+def regua_x_de_q(feats_q, nomes) -> list:
+    """Vetor da regua (`nomes`) a partir de uma linha do corpus do Q
+    (ALUNO + ACAO [+ CORRIDA no fim, desde o bloco 944])."""
+    na, nc = len(FEATURE_NAMES_ALUNO), len(FEATURE_NAMES_CORRIDA)
+    d = dict(zip(FEATURE_NAMES_ALUNO, feats_q[:na]))
+    if len(feats_q) >= na + len(FEATURE_NAMES_ACAO) + nc:
+        d['corr_presente'] = 1.0
+        d.update(zip(FEATURE_NAMES_CORRIDA, feats_q[-nc:]))
+    return [float(d.get(n, 0.0)) for n in nomes]
 
 
 def _poder(c) -> float:

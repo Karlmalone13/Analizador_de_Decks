@@ -1,5 +1,20 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-10-08 (947) - Relogio da corrida tambem na REGUA; ciclos 70-72 sem efeito (~41%)
+
+`value_net`: `FEATURE_NAMES_V4` (V3 + `corr_presente` + corrida, gravado pelo gerador) e
+`FEATURE_NAMES_REGUA` (aluno + `corr_presente` + corrida, 87); `state_features` calcula a
+corrida quando pedida; `regua_x_de_selfplay`/`regua_x_de_q` montam o vetor da regua de estados
+antigos (V3: corrida 0, presente 0) e de linhas do Q. `treinar_value --features regua` (ciclo),
+completa linhas V3; `treinar_q` (trajetorias, vantagem, prioridade), `qualidade_jogadas` e
+`_turnos_do_erro` usam os nomes da regua. Conferido: os 3 caminhos dao o mesmo vetor.
+smoke 1.911 OK. Regua: 354k estados, AUC fora da amostra 0,822-0,828 (antes 0,823).
+Ciclos: 70 61x73 | 71 22x36 | 72 27x41 -> **~41%, igual**. 15 ciclos (58-72) sem passar a
+gen_004. Treino ficou mais lento (200 -> 300-410 s). Hipotese seguinte (nao testada): o
+desafiante sai sistematicamente ABAIXO de 50% (~41%), entao o proprio passo de treino
+(warm start, 60 iteracoes, Adam lr 3e-3 no corpus inteiro) pode estar piorando um pouco o
+campeao a cada ciclo -- testar passos menores no mesmo portao.
+
 ## 2026-10-08 (946) - Peso de `mudou` so na queda grande; ciclos 64-69 estacionados em ~41%
 
 Ciclos 64-66 (geracao ~275 s, ciclo ~10 min): 89x93 | 28x42 | 18x33. `treinar_q.py

@@ -202,8 +202,7 @@ def monta_trajetorias(regs: list, avaliador=None) -> dict:
     if avaliador is not None and regs:
         try:
             nomes = avaliador['feature_names']
-            idx = [list(vn.FEATURE_NAMES_V3).index(nm) for nm in nomes]
-            X = np.asarray([[d['feats'][i] for i in idx] for d in regs], dtype=float)
+            X = np.asarray([vn.regua_x_de_selfplay(d['feats'], nomes) for d in regs], dtype=float)
             m = avaliador['modelo']
             vals = list(m.predict_proba(X)[:, 1] if hasattr(m, 'predict_proba') else m.predict(X))
         except Exception:
@@ -251,7 +250,8 @@ def grava_vantagem(linhas: list, amostras: list, regua, hash_regua=None) -> int:
     if not alvo:
         return 0
     m = regua['modelo']
-    X = np.asarray([d['feats'][:n_est] for d in alvo], dtype=float)
+    _nr = regua.get('feature_names') or vn.FEATURE_NAMES_ALUNO
+    X = np.asarray([vn.regua_x_de_q(d['feats'], _nr) for d in alvo], dtype=float)
     v = m.predict_proba(X)[:, 1] if hasattr(m, 'predict_proba') else m.predict(X)
     for d, c, vv in zip(alvo, cons, v):
         vv = float(vv)
@@ -752,11 +752,11 @@ def main() -> int:
             # ruim a jogada foi.
             _rg = _vn.load_value_net(
                 __import__('optcg_engine.decision_engine', fromlist=['x']).MODELO_ORDENA_PATH)
-            _n_est = len(_vn.FEATURE_NAMES_ALUNO)
-            if _rg and list(_rg.get('feature_names') or []) == list(_vn.FEATURE_NAMES_ALUNO):
+            if _rg and _rg.get('feature_names'):
                 _m = _rg['modelo']
-                _v = (_m.predict_proba(X[:, :_n_est])[:, 1] if hasattr(_m, 'predict_proba')
-                      else _m.predict(X[:, :_n_est]))
+                _Xr = np.asarray([_vn.regua_x_de_q(list(r), _rg['feature_names']) for r in X])
+                _v = (_m.predict_proba(_Xr)[:, 1] if hasattr(_m, 'predict_proba')
+                      else _m.predict(_Xr))
                 vantagem = y - np.asarray(_v, dtype=float)
                 prio = (np.abs(vantagem) + 1e-3) ** args.priorizar_alpha
                 pesos = prio / prio.sum()

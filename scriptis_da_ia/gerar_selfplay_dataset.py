@@ -172,7 +172,7 @@ def _joga(match, inicio, i, code_a, code_b, geracao, guardar=False):
             # `gen` = qual geracao do modelo jogou esta partida.
             'gen': geracao,
             # SUPERCONJUNTO rico; o treino escolhe o subconjunto (bloco 764).
-            'feats': value_net.state_features(p, opp, nomes=value_net.FEATURE_NAMES_V3),
+            'feats': value_net.state_features(p, opp, nomes=value_net.FEATURE_NAMES_V4),
         })
         if result:
             winner = result
@@ -198,7 +198,7 @@ def _turnos_do_erro(fotos, lado, match, k=1):
             if ('A' if p is f.state_a else 'B') != lado:
                 continue
             meus.append(t)
-            linhas.append(value_net.state_features(p, opp, nomes=value_net.FEATURE_NAMES_ALUNO))
+            linhas.append(value_net.state_features(p, opp, nomes=rg['feature_names']))
         if len(meus) < 2:
             return []
         import numpy as np
@@ -244,7 +244,7 @@ def _revisa(foto, t_erro, id_rev, code_a, code_b, geracao, eps, seed):
     lado = 'A' if p is m.state_a else 'B'
     am = [{'match': id_rev, 'side': lado, 'leader': code_a if lado == 'A' else code_b,
            'turn': t_erro, 'gen': geracao,
-           'feats': value_net.state_features(p, opp, nomes=value_net.FEATURE_NAMES_V3)}]
+           'feats': value_net.state_features(p, opp, nomes=value_net.FEATURE_NAMES_V4)}]
     if r:
         w = r
     else:

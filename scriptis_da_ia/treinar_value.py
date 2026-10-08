@@ -155,7 +155,7 @@ def main() -> None:
     ap.add_argument('--n-passos', dest='n_passos', type=int, default=2,
                     help='(--alvo td) horizonte em turnos proprios. 2 = o mesmo '
                          'do rotulo TD do Q (`treinar_q.py`).')
-    ap.add_argument('--features', choices=('basicas', 'ricas', 'v3', 'aluno'), default='basicas',
+    ap.add_argument('--features', choices=('basicas', 'ricas', 'v3', 'aluno', 'regua'), default='basicas',
                     help='basicas = as 32 originais (so contagens e agregados); '
                          'ricas = 32 + 17 de QUALIDADE do board (poder maximo, '
                          'DON anexado, rush/double/unblockable/banish, quantos '
@@ -184,6 +184,12 @@ def main() -> None:
     X, y, grupos, alvo = carregar(args.dataset, meta=meta)
     if not X:
         raise SystemExit(f'dataset vazio ou sem rotulo: {args.dataset}')
+    from optcg_engine import value_net as _vn
+    if any(len(r) == len(_vn.FEATURE_NAMES_V4) for r in X):
+        # corpus misto (bloco 947): estados antigos V3 completados como V4 com
+        # a corrida zerada e corr_presente 0
+        X = [r if len(r) == len(_vn.FEATURE_NAMES_V4)
+             else _vn.regua_x_de_selfplay(r, _vn.FEATURE_NAMES_V4) for r in X]
     X = np.array(X, dtype=float)
     y = np.array(y, dtype=int)
     grupos = np.array(grupos)
@@ -199,14 +205,17 @@ def main() -> None:
              # unica das 78 que exige ver a MAO do oponente. Treinado com
              # ela, o modelo aprende padroes ancorados num numero que nao
              # existe na hora de jogar.
-             'aluno': FEATURE_NAMES_ALUNO}[args.features]
+             'aluno': FEATURE_NAMES_ALUNO,
+             # `regua` (bloco 947): aluno + relogio da corrida
+             'regua': _vn.FEATURE_NAMES_REGUA}[args.features]
     # O dataset grava o SUPERCONJUNTO mais recente; aqui se recorta o que o
     # modelo vai enxergar. Assim o MESMO corpus treina todos os lados do A/B
     # e a comparacao isola a VISAO, nao o volume (bloco 764/766).
     larguras = {len(FEATURE_NAMES): FEATURE_NAMES,
                 len(FEATURE_NAMES_RICAS): FEATURE_NAMES_RICAS,
                 len(FEATURE_NAMES_V3): FEATURE_NAMES_V3,
-                len(FEATURE_NAMES_ALUNO): FEATURE_NAMES_ALUNO}
+                len(FEATURE_NAMES_ALUNO): FEATURE_NAMES_ALUNO,
+                len(_vn.FEATURE_NAMES_V4): _vn.FEATURE_NAMES_V4}
     if X.shape[1] not in larguras:
         raise SystemExit(f'ERRO: dataset tem {X.shape[1]} features; esperado '
                          f'{sorted(larguras)}. Re-gere.')

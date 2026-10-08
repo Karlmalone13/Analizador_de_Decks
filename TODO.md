@@ -1,6 +1,8 @@
 # TODO — Analisador de Decks OPTCG
 
-**Última atualização:** 8 de outubro de 2026 (blocos 943-946)
+**Última atualização:** 8 de outubro de 2026 (blocos 943-947)
+
+> **947**: corrida tambem na regua -- sem efeito (ciclos 70-72 ~41%). Proximo: testar passo de treino menor (o desafiante sai sistematicamente abaixo de 50%).
 
 > **946**: peso de `mudou` so na queda >= 0,25 -- sem efeito; ciclos 58-69 estacionados em ~41% contra a gen_004. Proximo proposto: relogio da corrida tambem na regua.
 

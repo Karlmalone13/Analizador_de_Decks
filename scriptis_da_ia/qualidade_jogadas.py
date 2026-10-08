@@ -78,7 +78,8 @@ def main() -> int:
                 continue
             t = traj.get((g, d.get('match'), d.get('leader')))
             linhas.append((g, d.get('acao') or '?', d.get('leader') or '?', float(c),
-                           d['feats'][:n_est], bool(t and t[-1][2])))
+                           vn.regua_x_de_q(d['feats'], regua.get('feature_names') or vn.FEATURE_NAMES_ALUNO),
+                           bool(t and t[-1][2])))
     if not linhas:
         raise SystemExit('nenhuma jogada com consequencia')
 

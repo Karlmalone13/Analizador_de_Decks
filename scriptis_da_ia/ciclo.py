@@ -334,7 +334,7 @@ def treina_regua(anterior=None) -> dict | None:
     logo abaixo. Sobrescreve `value_net_aluno.joblib` (versionado: viaja
     pelo git junto do `q_net.joblib`)."""
     if not _rodar(['treinar_value.py', '--dataset', str(CORPUS), '--alvo', 'td',
-                   '--features', 'aluno', '--folds', '2',
+                   '--features', 'regua', '--folds', '2',
                    '--regua-anterior', str(anterior or REGUA), '--out', str(REGUA)],
                   'treino da regua (TD proprio)'):
         return None
