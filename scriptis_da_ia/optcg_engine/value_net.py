@@ -1087,6 +1087,70 @@ def limpar_cache_win_prob() -> None:
     _WP_CACHE.clear()
 
 
+def _arvores_planas(modelo):
+    """As arvores do HistGradientBoostingRegressor achatadas em arrays numpy
+    (cache no proprio objeto). None se o modelo tiver algo fora do caso
+    coberto (categorica, multi-saida) -- o chamador cai no `.predict()`."""
+    import numpy as np
+    plano = getattr(modelo, '_plano_rapido', None)
+    if plano is not None:
+        return plano
+    preds = modelo._predictors
+    if any(len(it) != 1 for it in preds):
+        return None
+    arvs = [it[0].nodes for it in preds]
+    if any(bool(np.any(n['is_categorical'])) for n in arvs):
+        return None
+    offs = np.cumsum([0] + [len(n) for n in arvs[:-1]])
+    nodes = np.concatenate(arvs)
+    rep = np.repeat(offs, [len(n) for n in arvs])
+    plano = {
+        'raiz': offs.astype(np.int64),
+        'feat': nodes['feature_idx'].astype(np.int64),
+        'thr': nodes['num_threshold'].astype(float),
+        'mgl': nodes['missing_go_to_left'].astype(bool),
+        'esq': (nodes['left'].astype(np.int64) + rep),
+        'dir': (nodes['right'].astype(np.int64) + rep),
+        'folha': nodes['is_leaf'].astype(bool),
+        'valor': nodes['value'].astype(float),
+        'prof': int(nodes['depth'].max()) + 1,
+        'base': float(np.ravel(modelo._baseline_prediction)[0]),
+    }
+    try:
+        modelo._plano_rapido = plano
+    except Exception:
+        pass
+    return plano
+
+
+def _arvores_rapido(modelo, X):
+    """Mesma conta do `HistGradientBoostingRegressor.predict` (soma das folhas +
+    baseline), percorrendo TODAS as arvores ao mesmo tempo em numpy -- sem o
+    custo fixo por chamada do sklearn (~10% do tempo da geracao, perfil do bloco
+    945). Equivalencia conferida no `smoke_fast.py`."""
+    import numpy as np
+    pl = _arvores_planas(modelo)
+    if pl is None:
+        return None
+    if type(modelo).__name__ != 'HistGradientBoostingRegressor':
+        return None
+    X = np.asarray(X, dtype=float)
+    if X.ndim == 1:
+        X = X[None, :]
+    n = X.shape[0]
+    idx = np.broadcast_to(pl['raiz'], (n, len(pl['raiz']))).copy()
+    linhas = np.arange(n)[:, None]
+    for _ in range(pl['prof']):
+        folha = pl['folha'][idx]
+        if folha.all():
+            break
+        x = X[linhas, pl['feat'][idx]]
+        vai_esq = (x <= pl['thr'][idx]) | (np.isnan(x) & pl['mgl'][idx])
+        prox = np.where(vai_esq, pl['esq'][idx], pl['dir'][idx])
+        idx = np.where(folha, idx, prox)
+    return pl['valor'][idx].sum(axis=1) + pl['base']
+
+
 def _forward_rapido(modelo, X):
     """Forward manual em numpy pra Pipeline(StandardScaler, MLPRegressor).
 
@@ -1109,6 +1173,8 @@ def _forward_rapido(modelo, X):
     """
     try:
         import numpy as np
+        if getattr(modelo, '_predictors', None) is not None:
+            return _arvores_rapido(modelo, X)
         steps = getattr(modelo, 'steps', None)
         if not steps or len(steps) != 2:
             return None

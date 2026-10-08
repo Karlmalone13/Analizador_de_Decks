@@ -11006,6 +11006,7 @@ def main() -> int:
     test_custos_busca_e_pagar_passam_pelo_q_bloco_932()
     test_escolha_um_passa_pelo_q_bloco_933()
     test_exploracao_guiada_pela_simulacao_bloco_935()
+    test_regua_rapida_igual_ao_sklearn_bloco945()
     test_explora_so_onde_o_modelo_esta_incerto_27_09()
     test_treino_continua_do_campeao_27_09()
     test_registro_de_geracoes_27_09()
@@ -15985,6 +15986,32 @@ def test_treino_continua_do_campeao_27_09() -> None:
               exp.steps[-1][1].coefs_[0].shape[0] == n_cols)
     check("CONTROLE: dimensao incompativel -> nao continua (None)",
           treinar_q.modelo_do_campeao(caminho, n_cols + 40) is None)
+
+
+def test_regua_rapida_igual_ao_sklearn_bloco945() -> None:
+    """Bloco 945: a regua (HistGradientBoostingRegressor) percorrida em numpy
+    tem que dar EXATAMENTE o que o `.predict()` do sklearn da -- inclusive com
+    valor ausente (NaN) e lote de 1 linha."""
+    import numpy as np, joblib
+    from optcg_engine import value_net as vn
+    from pathlib import Path
+    c = Path(__file__).resolve().parent / 'metrics' / 'value_net_aluno.joblib'
+    if not c.exists():
+        check("regua rapida: sem value_net_aluno.joblib (pulado)", True)
+        return
+    m = joblib.load(c)['modelo']
+    if type(m).__name__ != 'HistGradientBoostingRegressor':
+        check("regua rapida: modelo nao e HistGB (pulado)", True)
+        return
+    X = np.random.RandomState(7).normal(0, 3, size=(500, m.n_features_in_))
+    X[::7, 2] = np.nan
+    a, b = m.predict(X), vn._arvores_rapido(m, X)
+    check("regua rapida responde IGUAL ao sklearn (500 linhas, com NaN)",
+          b is not None and float(np.max(np.abs(a - b))) < 1e-9)
+    check("regua rapida: lote de 1 linha igual",
+          abs(float(m.predict(X[:1])[0]) - float(vn._arvores_rapido(m, X[:1])[0])) < 1e-9)
+    check("CONTROLE: com o baseline errado a resposta MUDA (o teste enxerga diferenca)",
+          float(np.max(np.abs(a - (b + 0.01)))) > 1e-3)
 
 
 def test_explora_so_onde_o_modelo_esta_incerto_27_09() -> None:

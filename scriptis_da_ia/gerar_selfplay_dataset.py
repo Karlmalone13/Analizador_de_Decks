@@ -205,11 +205,15 @@ def _turnos_do_erro(fotos, lado, match, k=1):
         X = np.asarray(linhas, dtype=float)
         v = mod.predict_proba(X)[:, 1] if hasattr(mod, 'predict_proba') else mod.predict(X)
         quedas = sorted(((v[j] - v[j + 1], meus[j]) for j in range(len(v) - 1)), reverse=True)
-        return [t for q, t in quedas[:k] if q > 0]
+        # CORTE MEDIDO (bloco 945, controle de sorte em 358 revisoes): abaixo de
+        # 0,10 de queda, jogar diferente vira o resultado 25,7% das vezes e
+        # rejogar IGUAL vira 29,7% -- e so sorte, a revisao nao ensina nada.
+        return [(t, float(q)) for q, t in quedas if q >= QUEDA_MIN][:k]
     except Exception:
         return []
 
 
+QUEDA_MIN = float(os.environ.get('OPTCG_QUEDA_MIN', '0.10'))
 EPS_REVISAO = 0.5   # exploracao no turno revisto (ponto de partida, nao calibrado)
 
 
@@ -225,7 +229,11 @@ def _revisa(foto, t_erro, id_rev, code_a, code_b, geracao, eps, seed):
     m._q_captura = []
     if hasattr(m, '_ml_captura'):
         m._ml_captura = []
-    m._explora_eps = max(eps or 0.0, EPS_REVISAO)
+    _eps_rev = os.environ.get('OPTCG_REVISAO_EPS')
+    # CONTROLE DE SORTE (bloco 945): OPTCG_REVISAO_EPS=0 rejoga o turno com a
+    # MESMA politica (sem explorar) -- a virada que sobrar e so sorte.
+    m._explora_eps = (float(_eps_rev) if _eps_rev is not None
+                      else max(eps or 0.0, EPS_REVISAO))
     p, opp = _quem_joga(m, t_erro)
     try:
         r = m.play_turn(p, opp)
@@ -434,12 +442,12 @@ def _run_one_match(task) -> list:
             def _treinado(lado):
                 st = match.state_a if lado == 'A' else match.state_b
                 return not getattr(st, 'q_net_path', None)
-            alvos = ([(t, perdedor) for t in _turnos_do_erro(fotos, perdedor, match, k=2)
+            alvos = ([(t, perdedor, q) for t, q in _turnos_do_erro(fotos, perdedor, match, k=2)
                       if _treinado(perdedor)]
-                     + [(t, winner) for t in _turnos_do_erro(fotos, winner, match, k=1)
+                     + [(t, winner, q) for t, q in _turnos_do_erro(fotos, winner, match, k=1)
                         if _treinado(winner)])
             n_ramo = 0
-            for t_erro, lado_rev in alvos:
+            for t_erro, lado_rev, queda in alvos:
                 for k in range(revisoes):
                     n_ramo += 1
                     id_rev = i + 1_000_000 * n_ramo
@@ -454,6 +462,11 @@ def _run_one_match(task) -> list:
                     for linha in q_r:
                         linha['match'] = id_rev
                         linha['revisao'] = t_erro
+                        # queda da regua no turno revisto (bloco 945): mede
+                        # "queda x virada" pro corte das revisoes
+                        linha['queda'] = round(queda, 4)
+                        linha['lado_revisto_venceu'] = (w_r == lado_rev)
+                        linha['lado_revisto_venceu_orig'] = (winner == lado_rev)
                     if (w_r == lado_rev) != (winner == lado_rev):
                         for linha in q_r[:n_turno]:
                             linha['mudou'] = True

@@ -1,6 +1,8 @@
 # TODO — Analisador de Decks OPTCG
 
-**Última atualização:** 8 de outubro de 2026 (blocos 943-944)
+**Última atualização:** 8 de outubro de 2026 (blocos 943-945)
+
+> **945**: geracao 78 s -> 33 s (regua rapida em numpy, identica; corte das revisoes em queda 0,10 medido com controle de sorte). Sorte sozinha vira ~26% das revisoes: o peso 3x de `mudou` e quase todo ruido -- revisitar.
 
 > **944**: relogio da corrida (9 features) no Q; auditoria de derrota usa o lado do bot; BUG corrigido: o treino descartava as jogadas sem simulacao (ate 126k/ciclo). Ciclos 58-60: 17/41/45%.
 

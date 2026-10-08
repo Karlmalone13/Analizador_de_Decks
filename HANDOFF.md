@@ -1,5 +1,29 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-10-08 (945) - Perfil da geracao, controle de sorte nas revisoes, corte em 0,10 e regua rapida (78 s -> 33 s)
+
+Ciclos 61-63 (com o filtro corrigido: descartadas 126k -> 8k, usadas 692k -> 882k):
+48x61 | 17x32 | **119x119** (44/35/50%). Nenhuma promocao.
+
+**Perfil (cProfile em processo, 6 partidas, 93 s)**: revisoes (`_revisa`) 74% | simulacao das
+alternativas (`_coleta_bootstrap`) 60% | `_apply_action` 41% | `state_features` 16% |
+`deepcopy` total 10% | copia por turno (`_foto`) **0,1%** | regua HistGB ~10%. -> copia
+customizada NAO vale (descartada).
+
+**Queda x virada com CONTROLE DE SORTE** (`OPTCG_REVISAO_EPS=0`: rejoga o turno com a mesma
+politica; 358 revisoes cada, seed 6262): virada explorando / controle -- queda <0,10: 25,7% /
+**29,7%** | 0,10-0,15: 37,8 / 26,5 | 0,15-0,25: 30,8 / 23,0 | >0,25: 47,4 / 26,3 | total
+33,2 / 25,7. **So a sorte vira ~26%**; abaixo de 0,10 jogar diferente nao ajuda. Corte:
+`QUEDA_MIN` 0,10 (`OPTCG_QUEDA_MIN`). Achado: a marca `mudou` (peso 3x) e majoritariamente
+sorte (~26 de ~33 pontos) -- revisitar o peso. Linhas de revisao gravam `queda`,
+`lado_revisto_venceu`, `lado_revisto_venceu_orig`.
+
+**Regua rapida**: `value_net._arvores_rapido` percorre todas as arvores do
+HistGradientBoostingRegressor de uma vez em numpy (via `_forward_rapido`); diferenca maxima
+1,6e-15 em 5.000 posicoes reais; 27x (lote 1), 13x (8), 4,6x (64). Teste permanente no
+smoke (com controle) -> 1.911 OK. **AS-IS 12 partidas: 78 s -> 33 s** (33.581 linhas; menos
+revisoes pelo corte).
+
 ## 2026-10-08 (944) - Relogio da corrida no Q; auditoria pelo lado certo; BUG: treino descartava as jogadas sem simulacao
 
 **Relogio da corrida** (achado da partida humana, bloco 943): `value_net.FEATURE_NAMES_CORRIDA`
