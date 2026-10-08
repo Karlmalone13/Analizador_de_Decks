@@ -1,6 +1,8 @@
 # TODO — Analisador de Decks OPTCG
 
-**Última atualização:** 8 de outubro de 2026 (bloco 943)
+**Última atualização:** 8 de outubro de 2026 (blocos 943-944)
+
+> **944**: relogio da corrida (9 features) no Q; auditoria de derrota usa o lado do bot; BUG corrigido: o treino descartava as jogadas sem simulacao (ate 126k/ciclo). Ciclos 58-60: 17/41/45%.
 
 > **943**: gen_004 confirmada so em 52% (445x410). 1a partida humano x gen_004: bot perdeu o ritmo no fim (turnos 12 e 14 montando mesa, 1 ataque no lider). Pendente: features de corrida/letal; `audit_real_losses.py` assume bot em p1.
 

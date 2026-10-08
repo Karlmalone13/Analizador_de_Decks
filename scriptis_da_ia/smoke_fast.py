@@ -15969,7 +15969,8 @@ def test_treino_continua_do_campeao_27_09() -> None:
     caminho = Path(__file__).resolve().parent / 'metrics' / 'q_net.joblib'
     orig = joblib.load(caminho)['modelo']
     n_orig = orig.n_features_in_
-    n_cols = len(vn.FEATURE_NAMES_ALUNO) + len(vn.FEATURE_NAMES_ACAO)
+    n_cols = (len(vn.FEATURE_NAMES_ALUNO) + len(vn.FEATURE_NAMES_ACAO)
+              + len(vn.FEATURE_NAMES_CORRIDA))
     exp = treinar_q.modelo_do_campeao(caminho, n_cols)
     check("campeao carregado pra continuar o treino", exp is not None)
     if exp is None:

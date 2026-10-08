@@ -119,8 +119,18 @@ MODO_PADRAO = 'bootstrap'
 
 
 def passa_filtro_modo(linha: dict, modo: str = MODO_PADRAO) -> bool:
-    """Linha sem o campo `modo` e bootstrap (bloco 877)."""
-    return modo == 'todos' or (linha.get('modo') or 'bootstrap') == modo
+    """Linha sem o campo `modo` e bootstrap (bloco 877).
+
+    BUG CORRIGIDO (bloco 944): desde os blocos 939/942 a coleta grava linhas
+    do MESMO modo bootstrap so que sem simular ('sem_simulacao'), auditadas
+    ('auditoria') ou puladas ('conhecida'). Este filtro as tratava como outro
+    modo e DESCARTAVA do treino -- ~30 mil jogadas escolhidas por ciclo (37k ->
+    126k descartadas nos ciclos 57-60). O rotulo delas e a consequencia real,
+    igual as outras; so faltava a nota da simulacao, que nao ensina mais."""
+    m = linha.get('modo') or 'bootstrap'
+    if m in ('sem_simulacao', 'auditoria', 'conhecida'):
+        m = 'bootstrap'
+    return modo == 'todos' or m == modo
 
 
 # TODAS as decisoes do jogo que o ML tem que aprender (bloco 910). A cobertura
@@ -448,7 +458,7 @@ def main() -> int:
     n_lidas = n_filtradas_modo = n_sem_consequencia = 0
     from optcg_engine import value_net as _vn
     i_ld_q = list(_vn.FEATURE_NAMES_ALUNO).index('life_diff')
-    n_cols = len(_vn.FEATURE_NAMES_ALUNO) + len(_vn.FEATURE_NAMES_ACAO)
+    n_cols = len(_vn.FEATURE_NAMES_ALUNO) + len(_vn.FEATURE_NAMES_ACAO) + len(_vn.FEATURE_NAMES_CORRIDA)
     traj = {}
     if args.consequencia:
         _aval = None

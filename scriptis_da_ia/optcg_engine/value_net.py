@@ -373,6 +373,54 @@ FEATURE_NAMES_ACAO = [
 ]
 N_ACAO_ANTIGO = len(FEATURE_NAMES_ACAO) - 4
 
+# RELOGIO DA CORRIDA (bloco 944). Achado na 1a partida contra humano (bloco
+# 943): no fim do jogo o bot seguia montando mesa enquanto o humano fechava. As
+# 77 features do estado nao dizem QUEM GANHA A CORRIDA -- so contagens soltas.
+# Estas sao contas que qualquer jogador faz olhando a mesa (tudo observavel; a
+# mao do oponente NAO entra). Nao e regra: e informacao pro modelo aprender
+# quando correr e quando montar. Entram no FIM do vetor Q (depois da acao):
+# linhas antigas do corpus e modelos antigos ganham 0 / ignoram, como as
+# colunas novas de sempre.
+FEATURE_NAMES_CORRIDA = [
+    'corr_atac_mine',           # meus atacantes ATIVOS agora que passam o lider dele
+    'corr_atac_opp_prox',       # atacantes dele no proximo turno que passam o meu lider
+    'corr_bloq_opp_ativos', 'corr_bloq_mine_ativos',
+    'corr_margem_letal_mine',   # atacantes - bloqueadores - (vida dele + 1)
+    'corr_margem_letal_opp',
+    'corr_relogio_mine',        # turnos que eu preciso pra fechar (vida+1)/atacantes
+    'corr_relogio_opp',
+    'corr_relogio_diff',        # relogio dele - o meu (>0: eu fecho antes)
+]
+
+
+def _poder(c) -> float:
+    return _prop(c, 'power') + _prop(c, 'power_buff') + 1000.0 * _prop(c, 'don_attached')
+
+
+def corrida_features(p, opp) -> list:
+    """Ver `FEATURE_NAMES_CORRIDA`. Nunca derruba o motor: falha -> zeros."""
+    try:
+        lid_m, lid_o = getattr(p, 'leader', None), getattr(opp, 'leader', None)
+        pw_lm, pw_lo = _poder(lid_m), _poder(lid_o)
+        ch_m, ch_o = _chars(p), _chars(opp)
+        vida_m, vida_o = _num(p.life_count), _num(opp.life_count)
+        ativos_m = [c for c in ch_m if not getattr(c, 'rested', False)]
+        atac_m = sum(1 for c in ativos_m if _poder(c) >= pw_lo)
+        if lid_m is not None and not getattr(lid_m, 'rested', False) and pw_lm >= pw_lo:
+            atac_m += 1
+        # no proximo turno dele tudo desvira: conta o campo inteiro + lider
+        atac_o = sum(1 for c in ch_o if _poder(c) >= pw_lm) + (1 if (lid_o is not None and pw_lo >= pw_lm) else 0)
+        bloq_o = sum(1 for c in ch_o if _prop(c, 'has_blocker') and not getattr(c, 'rested', False))
+        bloq_m = sum(1 for c in ch_m if _prop(c, 'has_blocker'))
+        tot_m = sum(1 for c in ch_m if _poder(c) >= pw_lo) + (1 if (lid_m is not None and pw_lm >= pw_lo) else 0)
+        rel_m = (vida_o + 1.0) / max(1.0, float(tot_m))
+        rel_o = (vida_m + 1.0) / max(1.0, float(atac_o))
+        return [float(atac_m), float(atac_o), float(bloq_o), float(bloq_m),
+                atac_m - bloq_o - (vida_o + 1.0), atac_o - bloq_m - (vida_m + 1.0),
+                rel_m, rel_o, rel_o - rel_m]
+    except Exception:
+        return [0.0] * len(FEATURE_NAMES_CORRIDA)
+
 
 CLASSES_DE_PASSO = ('cartas', 'vida_ganhar', 'vida_espiar', 'vida_outro', 'dano', 'ko',
                     'devolver', 'restar', 'enfraquecer', 'estado_defensivo',
@@ -505,7 +553,7 @@ def q_features(p, opp, acao, nomes=None) -> list:
     nascido enxergando menos que o modelo que ele vem substituir.
     """
     return (state_features(p, opp, nomes=nomes or FEATURE_NAMES_ALUNO)
-            + acao_features(acao, opp))
+            + acao_features(acao, opp) + corrida_features(p, opp))
 
 
 def q_valores(p, opp, acoes, bundle=None) -> list:
@@ -534,7 +582,8 @@ def q_valores(p, opp, acoes, bundle=None) -> list:
         return [None] * n
     try:
         base = state_features(p, opp, nomes=FEATURE_NAMES_ALUNO)
-        linhas = [base + acao_features(a, opp) for a in acoes]
+        corr = corrida_features(p, opp)
+        linhas = [base + acao_features(a, opp) + corr for a in acoes]
         esperado = getattr(modelo, 'n_features_in_', None)
         if esperado is not None and len(linhas[0]) > esperado:
             # modelo ANTERIOR as colunas mais novas (bloco 910: defesa/alvo;

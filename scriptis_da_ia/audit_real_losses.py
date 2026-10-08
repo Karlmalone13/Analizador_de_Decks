@@ -81,11 +81,33 @@ def find_real_bot_losses():
         pf = e.get('parsed_file')
         if not pf:
             continue
+        bs = e.get('bot_side')
+        if bs in ('p1', 'p2'):
+            # O INDICE diz qual lado o bot jogou (bloco 944): Shift+P troca o
+            # lado, e assumir 'You' auditava os turnos do HUMANO (bloco 943).
+            if winner and winner != bs:
+                out.append((pf, e[bs].get('name', 'You')))
+            continue
         if n1 == 'You' and n2 == 'Opponent' and winner == 'p2':
             out.append((pf, 'You'))
         elif n2 == 'You' and n1 == 'Opponent' and winner == 'p1':
             out.append((pf, 'You'))
     return out
+
+
+def lado_do_bot(parsed_path):
+    """Nome do jogador que o bot controlou nesse log, pelo indice; 'You' se o
+    indice nao disser (convencao antiga)."""
+    try:
+        nome = os.path.basename(str(parsed_path))
+        for e in json.load(open(INDEX_PATH, encoding='utf-8')):
+            if os.path.basename(e.get('parsed_file') or '') == nome:
+                bs = e.get('bot_side')
+                if bs in ('p1', 'p2'):
+                    return e[bs].get('name', 'You')
+    except Exception:
+        pass
+    return 'You'
 
 
 def _cards_from_codes(codes, cards_db, rested_map=None):
@@ -1100,7 +1122,7 @@ def main():
     urls = df_raw.groupby('deck_url')['deck_name'].first()
 
     if args.log:
-        jobs = [(args.log, 'You')]
+        jobs = [(args.log, lado_do_bot(args.log))]
     else:
         jobs = find_real_bot_losses()
         if args.limit:

@@ -1375,7 +1375,8 @@ def _q_escolhe_familia(me, opp, familia: str, opcoes: list, padrao_idx: int) -> 
             from optcg_engine import value_net as _vn
             cap.append({
                 'feats': (_vn.state_features(me, opp, nomes=_vn.FEATURE_NAMES_ALUNO)
-                          + _vn.acao_features(opcoes[idx], opp)),
+                          + _vn.acao_features(opcoes[idx], opp)
+                          + _vn.corrida_features(me, opp)),
                 'alvo': None, 'escolhida': True,
                 'decisao': m._q_nova_decisao(),
                 'acao': familia,
@@ -19981,6 +19982,7 @@ class OPTCGMatch:
             if not _b:
                 return
             base = _vn.state_features(p, opp, nomes=_vn.FEATURE_NAMES_ALUNO)
+            _corr = _vn.corrida_features(p, opp)
         except Exception:
             return
 
@@ -20013,7 +20015,7 @@ class OPTCGMatch:
                             lider = getattr(getattr(p, 'leader', None), 'code', None)
                             turno = int(getattr(p, 'turn', 0) or 0)
                             for a in candidatas:
-                                cap.append({'feats': base + _vn.acao_features(a, opp),
+                                cap.append({'feats': base + _vn.acao_features(a, opp) + _corr,
                                             'alvo': None, 'escolhida': False,
                                             'decisao': _dec,
                                             'acao': a[1] if len(a) > 1 else None,
@@ -20108,7 +20110,7 @@ class OPTCGMatch:
         for i, a in enumerate(acoes):
             if not cont.get(i):
                 continue
-            cap.append({'feats': base + _vn2.acao_features(a, opp),
+            cap.append({'feats': base + _vn2.acao_features(a, opp) + _corr,
                         'alvo': soma[i] / cont[i], 'escolhida': False,
                         'decisao': _dec,
                         'acao': a[1] if len(a) > 1 else None,

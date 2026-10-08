@@ -1,5 +1,30 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-10-08 (944) - Relogio da corrida no Q; auditoria pelo lado certo; BUG: treino descartava as jogadas sem simulacao
+
+**Relogio da corrida** (achado da partida humana, bloco 943): `value_net.FEATURE_NAMES_CORRIDA`
+(9: atacantes que passam o lider de cada lado, bloqueadores ativos, margem de letal dos dois,
+relogio de cada um e a diferenca) + `corrida_features(p, opp)`, so observavel, no FIM do vetor
+Q (estado + acao + corrida) em `q_features`, `q_valores` e nas capturas do
+`decision_engine` (familias e `_coleta_bootstrap`). `treinar_q` n_cols inclui; campeao
+expandido com peso 0 (`modelo_do_campeao`). smoke_fast ajustado (largura) -> 1.908 OK.
+Ciclos: 58 5x24 | 59 28x41 | 60 51x62 (17 -> 41 -> 45%, adaptacao das colunas novas).
+
+**`audit_real_losses.py`**: usa `bot_side` do indice (`lado_do_bot`, e na busca de derrotas).
+Partida do bloco 943 re-auditada pelo lado do bot: nos turnos 10/12/14 o motor de hoje mandaria
+Newgate/Marco no LIDER em vez de Shiki/Barbell (com a ressalva de sempre: a auditoria ve a mao
+do humano).
+
+**BUG (corrigido)**: `treinar_q.passa_filtro_modo` so aceitava `modo == 'bootstrap'`; desde os
+blocos 939/942 as linhas da mesma coleta sem simulacao ('sem_simulacao', 'auditoria',
+'conhecida') eram DESCARTADAS do treino -- 37k/67k/97k/126k linhas nos ciclos 57-60, a maioria
+das decisoes de topo. Agora contam como bootstrap ('busca' segue fora; controle conferido).
+
+**Lentidao (AS-IS 12 partidas, seed 4242)**: 61 s -> 78 s; volume +11% (39.935 -> 44.201
+linhas), +15% por linha (provavel `corrida_features` em toda decisao; medicao isolada travou).
+Os picos dos ciclos 58/59 (919/851 s) nao se reproduziram (ciclo 60: 508 s) -- provavel maquina
+ocupada, nao confirmado.
+
 ## 2026-10-08 (943) - Confirmacao da gen_004 (52%) e 1a partida contra humano: bot perde o ritmo no fim
 
 **Confirmacao gen_004 x gen_003** (3 seeds novos, 8101/8202/8303): 223x184 (inconclusivo,
