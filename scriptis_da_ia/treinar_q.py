@@ -421,6 +421,8 @@ def main() -> int:
                          'ML tem que aprender com o que as jogadas causaram.')
     ap.add_argument('--camadas', default='64,32',
                     help='tamanho das camadas da rede (bloco 941: 128,64 do zero perdeu 5x23).')
+    ap.add_argument('--queda-forte', dest='queda_forte', type=float, default=0.25,
+                    help='so jogadas MUDOU de revisoes com queda >= isto ganham peso (bloco 946).')
     ap.add_argument('--peso-mudou', dest='peso_mudou', type=float, default=3.0,
                     help='peso das jogadas cuja revisao mudou o resultado (bloco 942).')
     ap.add_argument('--peso-revisao', dest='peso_revisao', type=float, default=2.0,
@@ -530,7 +532,11 @@ def main() -> int:
             escolhidas.append(bool(d.get('escolhida')))
             familias.append(d.get('acao') or '?')
             revisao.append(d.get('revisao') is not None)
-            mudou.append(bool(d.get('mudou')))
+            # PESO EXTRA SO NA QUEDA GRANDE (bloco 946): com controle de sorte,
+            # a virada so supera a sorte de verdade acima de 0,25 de queda
+            # (47% x 26%); abaixo disso `mudou` e quase todo sorte. Linha antiga
+            # sem `queda` nao ganha peso extra.
+            mudou.append(bool(d.get('mudou')) and (d.get('queda') or 0.0) >= args.queda_forte)
 
     print()
     print('  corpus: %d linhas lidas | %d descartadas pelo filtro --modo=%s '

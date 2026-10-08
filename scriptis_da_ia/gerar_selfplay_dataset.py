@@ -475,6 +475,7 @@ def _run_one_match(task) -> list:
                         if a0 is not None:
                             for linha in orig[a0:a1]:
                                 linha['mudou'] = True
+                                linha['queda'] = round(queda, 4)
                     amostras = amostras + am_r
                     extra_q.extend(q_r)
         match._q_captura = list(getattr(match, '_q_captura', None) or []) + extra_q

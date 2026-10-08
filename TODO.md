@@ -1,6 +1,8 @@
 # TODO — Analisador de Decks OPTCG
 
-**Última atualização:** 8 de outubro de 2026 (blocos 943-945)
+**Última atualização:** 8 de outubro de 2026 (blocos 943-946)
+
+> **946**: peso de `mudou` so na queda >= 0,25 -- sem efeito; ciclos 58-69 estacionados em ~41% contra a gen_004. Proximo proposto: relogio da corrida tambem na regua.
 
 > **945**: geracao 78 s -> 33 s (regua rapida em numpy, identica; corte das revisoes em queda 0,10 medido com controle de sorte). Sorte sozinha vira ~26% das revisoes: o peso 3x de `mudou` e quase todo ruido -- revisitar.
 

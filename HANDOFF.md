@@ -1,5 +1,15 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-10-08 (946) - Peso de `mudou` so na queda grande; ciclos 64-69 estacionados em ~41%
+
+Ciclos 64-66 (geracao ~275 s, ciclo ~10 min): 89x93 | 28x42 | 18x33. `treinar_q.py
+--queda-forte` 0,25: so linhas `mudou` com `queda` >= 0,25 ganham o peso 3x (as originais
+marcadas tambem gravam `queda`); linha antiga sem `queda` fica peso 1. Ciclos 67-69: 39x51 |
+23x40 | 32x45 (639 linhas com peso extra). **Sem efeito: ~41% nas duas fases.** 12 ciclos
+seguidos (58-69) sem passar a gen_004. Hipotese principal (nao testada): a REGUA (alvo do Q,
+TD 2 turnos) nao tem o relogio da corrida -- o Q herda o ponto cego dela. Proposta: dar
+`corrida_features` tambem a regua. Treino do Q agora e a etapa mais longa (~200 s).
+
 ## 2026-10-08 (945) - Perfil da geracao, controle de sorte nas revisoes, corte em 0,10 e regua rapida (78 s -> 33 s)
 
 Ciclos 61-63 (com o filtro corrigido: descartadas 126k -> 8k, usadas 692k -> 882k):
