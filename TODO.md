@@ -1,6 +1,8 @@
 # TODO — Analisador de Decks OPTCG
 
-**Última atualização:** 8 de outubro de 2026 (blocos 943-947)
+**Última atualização:** 8 de outubro de 2026 (blocos 943-948)
+
+> **PROMOCAO generation_005 (948)**: o passo de treino (lr 3e-3, Adam recriado a cada ciclo) desfazia o campeao; com lr 3e-4 o desafiante ganhou da gen_004 em 3 seeds (246x157 = 61%). `--lr` default 3e-4. Pendente: teste contra humano.
 
 > **947**: corrida tambem na regua -- sem efeito (ciclos 70-72 ~41%). Proximo: testar passo de treino menor (o desafiante sai sistematicamente abaixo de 50%).
 

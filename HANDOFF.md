@@ -1,5 +1,19 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-10-08 (948) - ACHADO: o passo de treino desfazia o campeao. lr 3e-4 -> generation_005 (61% em 3 seeds)
+
+Diagnostico: 15 ciclos (58-72) com o desafiante SISTEMATICAMENTE abaixo de 50% (~41%). O `fit`
+do sklearn, mesmo com `warm_start`, RECRIA o Adam a cada chamada -- todo ciclo recomecava com o
+passo cheio (lr 3e-3, ate 60 iteracoes) sobre um campeao ja treinado. Experimento no MESMO
+portao (seed 94800), mesmos dados: normal 36x49 (42%) | **lr 3e-4: 63x36 (64%, PROMOVE)** |
+lr 1e-3 + 10 iteracoes: 182x139 (57%, teto). Confirmacao do lr 3e-4 contra a gen_004 em seeds
+novos: 9101 **87x57** PROMOVE | 9202 **96x64** PROMOVE. Total **246x157 = 61%** em 403 decididos.
+Promovido manualmente via `geracoes.registra_candidato` -> **generation_005** (= `q_net.joblib`).
+`treinar_q.py --lr` (default **3e-4**) e `--max-iter` aplicados ao treino continuado.
+Licao: o platô nao era falta de sinal -- o sinal existia e o passo grande o apagava. Os
+ajustes dos blocos 946/947 (peso de `mudou`, corrida na regua) foram medidos COM o passo
+grande; podem ter efeito que nao apareceu -- nao descartar por aqueles numeros.
+
 ## 2026-10-08 (947) - Relogio da corrida tambem na REGUA; ciclos 70-72 sem efeito (~41%)
 
 `value_net`: `FEATURE_NAMES_V4` (V3 + `corr_presente` + corrida, gravado pelo gerador) e

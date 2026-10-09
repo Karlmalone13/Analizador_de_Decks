@@ -421,6 +421,13 @@ def main() -> int:
                          'ML tem que aprender com o que as jogadas causaram.')
     ap.add_argument('--camadas', default='64,32',
                     help='tamanho das camadas da rede (bloco 941: 128,64 do zero perdeu 5x23).')
+    ap.add_argument('--lr', type=float, default=3e-4,
+                    help='taxa de aprendizado do treino CONTINUADO (bloco 948): 3e-4. '
+                         'Com 3e-3 (o da rede nova) o desafiante saia ~41%% em 15 '
+                         'ciclos; 3e-4 promoveu em 3 seeds (246x157). O `fit` recria o '
+                         'Adam a cada ciclo -- passo cheio desfazia o que o campeao sabia.')
+    ap.add_argument('--max-iter', dest='max_iter', type=int, default=None,
+                    help='iteracoes do treino continuado (bloco 948).')
     ap.add_argument('--queda-forte', dest='queda_forte', type=float, default=0.25,
                     help='so jogadas MUDOU de revisoes com queda >= isto ganham peso (bloco 946).')
     ap.add_argument('--peso-mudou', dest='peso_mudou', type=float, default=3.0,
@@ -871,6 +878,13 @@ def main() -> int:
         # pesos dele (warm_start).
         _sc, _mlp = campeao.steps[0][1], campeao.steps[-1][1]
         _mlp.set_params(warm_start=True)
+        # TAMANHO DO PASSO do treino continuado (bloco 948, experimento): o
+        # `fit` do sklearn recria o Adam a cada chamada, entao cada ciclo
+        # recomeca com o passo cheio sobre um campeao ja treinado.
+        if args.lr:
+            _mlp.set_params(learning_rate_init=args.lr)
+        if args.max_iter:
+            _mlp.set_params(max_iter=args.max_iter)
         _mlp.fit(_sc.transform(X_treino), y_treino)
         modelo = campeao
         print()

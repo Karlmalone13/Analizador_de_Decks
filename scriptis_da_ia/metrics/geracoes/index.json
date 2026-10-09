@@ -1,5 +1,5 @@
 {
-  "atual": "generation_004",
+  "atual": "generation_005",
   "geracoes": [
     {
       "id": "generation_001",
@@ -348,6 +348,45 @@
       "id": "generation_004",
       "candidato": "candidato_045",
       "arquivo": "metrics/geracoes/generation_004.joblib"
+    },
+    {
+      "hash": "1d68c3fba6d0",
+      "pai": "generation_004",
+      "data": "2026-10-08T22:51:34",
+      "commit": "20be6da8d884ce7a51d398bc64b33c5471ea19e1",
+      "dataset": {
+        "alvos": 1171824,
+        "modo": "bootstrap",
+        "rotulo_consequencia": "td"
+      },
+      "config": {
+        "experimento": "bloco 948: treino continuado com lr 3e-4 (era 3e-3)",
+        "lr": 0.0003,
+        "continuado_de": "C:\\Projetos_TI\\analidador_de_decks_optcg\\scriptis_da_ia\\metrics\\q_net.joblib"
+      },
+      "treino": {
+        "erro_fora_amostra": 0.18609710763345333,
+        "concordancia_top1": null,
+        "n_alvos": 1171824,
+        "n_features": 138
+      },
+      "duelo": {
+        "vitorias_desafiante": 246,
+        "derrotas_desafiante": 157,
+        "decididas": 403,
+        "por_seed": {
+          "94800": "63x36",
+          "9101": "87x57",
+          "9202": "96x64"
+        },
+        "veredito": "PROMOVE nos 3 seeds",
+        "contra": "generation_004"
+      },
+      "promovido": true,
+      "motivo": "portao SPRT promoveu em 3 seeds independentes (246x157 = 61%)",
+      "id": "generation_005",
+      "candidato": "candidato_061",
+      "arquivo": "metrics/geracoes/generation_005.joblib"
     }
   ],
   "candidatos": [
@@ -8361,6 +8400,44 @@
       "promovido": false,
       "motivo": "portao SPRT: DESCARTA (equivalentes)",
       "id": "candidato_060"
+    },
+    {
+      "hash": "1d68c3fba6d0",
+      "pai": "generation_004",
+      "data": "2026-10-08T22:51:34",
+      "commit": "20be6da8d884ce7a51d398bc64b33c5471ea19e1",
+      "dataset": {
+        "alvos": 1171824,
+        "modo": "bootstrap",
+        "rotulo_consequencia": "td"
+      },
+      "config": {
+        "experimento": "bloco 948: treino continuado com lr 3e-4 (era 3e-3)",
+        "lr": 0.0003,
+        "continuado_de": "C:\\Projetos_TI\\analidador_de_decks_optcg\\scriptis_da_ia\\metrics\\q_net.joblib"
+      },
+      "treino": {
+        "erro_fora_amostra": 0.18609710763345333,
+        "concordancia_top1": null,
+        "n_alvos": 1171824,
+        "n_features": 138
+      },
+      "duelo": {
+        "vitorias_desafiante": 246,
+        "derrotas_desafiante": 157,
+        "decididas": 403,
+        "por_seed": {
+          "94800": "63x36",
+          "9101": "87x57",
+          "9202": "96x64"
+        },
+        "veredito": "PROMOVE nos 3 seeds",
+        "contra": "generation_004"
+      },
+      "promovido": true,
+      "motivo": "portao SPRT promoveu em 3 seeds independentes (246x157 = 61%)",
+      "id": "candidato_061",
+      "virou": "generation_005"
     }
   ]
 }
