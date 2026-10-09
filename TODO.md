@@ -1,6 +1,8 @@
 # TODO — Analisador de Decks OPTCG
 
-**Última atualização:** 9 de outubro de 2026 (blocos 943-949)
+**Última atualização:** 9 de outubro de 2026 (blocos 943-950)
+
+> **950**: telemetria agora sai em toda partida da sessao (id `_pN`). "71 triggers recusados" era erro da auditoria (69 sem [Trigger]; as 2 recusas reais estavam certas). Proximo: Mihawk DON no lider; counters recusados.
 
 > **949**: ao vivo, a carta que sai da mao e o custo de restar/sacrificar carta propria eram regra fixa (no treino era o Q) -- agora usam a mesma funcao do auto-jogo. Achado na partida humano x gen_005 (descartou evento [Counter] de custo 0).
 

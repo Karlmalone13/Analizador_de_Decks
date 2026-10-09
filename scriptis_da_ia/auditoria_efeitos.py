@@ -631,6 +631,13 @@ def analisar(regs: list[dict], db: dict, filtro: str = "",
         # opcoes REAIS (fora as de recusar): sao o que estava disponivel
         reais = [o for o in opts
                  if o.get("type") not in ("no_counter", "no_blocker", "decline")]
+        # ERRO DE MEDICAO CORRIGIDO (09/10/2026, bloco 950): o jogo pergunta
+        # `trigger` pra TODA carta que sai da vida, e o `accept` vem sempre na
+        # lista. Contado como "opcao", deu 71 recusas -- 69 eram cartas SEM
+        # [Trigger] (nao ha o que aceitar). So existe opcao se a carta TEM o
+        # bloco trigger no banco de efeitos.
+        if fase_ == "trigger" and "trigger" not in _gatilhos(db, r.get("actor_code") or ""):
+            reais = []
         cartas = sorted({o.get("card_code") for o in reais if o.get("card_code")})
 
         if aceito:

@@ -1,0 +1,66 @@
+{
+  "cards": [
+    {
+      "code": "OP06-033",
+      "name": "OP06-033",
+      "count": 3
+    },
+    {
+      "code": "OP12-034",
+      "name": "Perona",
+      "count": 3
+    },
+    {
+      "code": "OP12-023",
+      "name": "OP12-023",
+      "count": 2
+    },
+    {
+      "code": "OP17-022",
+      "name": "Shanks",
+      "count": 2
+    },
+    {
+      "code": "ST32-001",
+      "name": "ST32-001",
+      "count": 2
+    },
+    {
+      "code": "OP14-023",
+      "name": "OP14-023",
+      "count": 1
+    },
+    {
+      "code": "OP14-039",
+      "name": "Coffin Boat",
+      "count": 1
+    },
+    {
+      "code": "ST32-003",
+      "name": "Dracule Mihawk",
+      "count": 1
+    },
+    {
+      "code": "OP08-036",
+      "name": "OP08-036",
+      "count": 1
+    },
+    {
+      "code": "OP13-031",
+      "name": "OP13-031",
+      "count": 1
+    },
+    {
+      "code": "ST32-002",
+      "name": "ST32-002",
+      "count": 1
+    },
+    {
+      "code": "OP17-031",
+      "name": "OP17-031",
+      "count": 1
+    }
+  ],
+  "total_seen": 19,
+  "leader": "OP14-020"
+}

@@ -134,17 +134,30 @@ def _wait_stable(path: Path, attempts: int = 12, interval: float = 1.0) -> None:
     raise TimeoutError(f"combat log ainda esta sendo gravado: {path}")
 
 
+def _id_da_partida_nova(combat_log: Path) -> str:
+    """O arquivo do jogo ACUMULA as partidas da sessao (medido 09/10/2026: 9
+    partidas CPU x CPU seguidas, cada arquivo com todas as anteriores). O
+    parser corta por "Version is" e a partida NOVA e o ultimo pedaco, que
+    `split_multigame_log` nomeia `<stem>_p<N>`. Procurar o stem cru dava
+    "parser terminou sem registrar" em 9 de 10 partidas e a telemetria
+    delas nao era gerada."""
+    texto = combat_log.read_text(encoding="utf-8", errors="replace").splitlines()
+    n = sum(1 for linha in texto if linha.strip().startswith("Version is"))
+    return combat_log.stem if n <= 1 else f"{combat_log.stem}_p{n}"
+
+
 def _validate_bank_entry(combat_log: Path, index: list, db_root: Path = DB_ROOT) -> tuple[dict, str]:
-    entry = next((item for item in reversed(index) if item.get("id") == combat_log.stem), None)
+    alvo = _id_da_partida_nova(combat_log)
+    entry = next((item for item in reversed(index) if item.get("id") == alvo), None)
     if entry is None:
-        raise RuntimeError(f"parser terminou sem registrar id={combat_log.stem} no index")
+        raise RuntimeError(f"parser terminou sem registrar id={alvo} no index")
     required = [entry.get("log_file"), entry.get("parsed_file")]
     required.extend((entry.get("deck_files") or {}).values())
     missing = [rel for rel in required if not rel or not (db_root / rel).is_file()]
     if missing:
         raise RuntimeError(f"entrada existe, mas artefatos do banco estao ausentes: {missing}")
     canonical_stem = Path(entry["log_file"]).stem
-    if "_x_" not in canonical_stem or not canonical_stem.endswith(f"_{combat_log.stem}"):
+    if "_x_" not in canonical_stem or not canonical_stem.endswith(f"_{alvo}"):
         raise RuntimeError(f"nome fora do padrao Lider-Cores_x_Lider-Cores_timestamp: {canonical_stem}")
     return entry, canonical_stem
 

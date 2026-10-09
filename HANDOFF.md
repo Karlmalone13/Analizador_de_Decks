@@ -1,5 +1,27 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-10-09 (950) - 10 partidas CPU x CPU (gen_005); telemetria das partidas 2+ e contagem de trigger
+
+10 partidas Mihawk (p1) x Luffy & Ace (p2), Shift+C, no banco como `cpu_vs_cpu` (Luffy & Ace 9x1).
+Efeitos: 163 disparos, so OP01-055 cancelado pelo jogo (2x); q_fallback 0.
+
+**Telemetria so saia na 1a partida da sessao.** O arquivo do jogo ACUMULA as partidas; o parser corta
+por "Version is" e banca a nova como `<stem>_p<N>`, mas `collect_latest_match._validate_bank_entry`
+procurava o stem cru -> "parser terminou sem registrar" em 9 de 10, sem recibo/resumo. Agora
+`_id_da_partida_nova` conta os cabecalhos e procura `<stem>_p<N>`. Testado nos logs de hoje. Caso
+residual: o id do banco as vezes sai 1 s diferente do arquivo (09.52.58 -> 09.52.59_p10).
+Recibos/resumos das 9 refeitos a mao (`receipt_*_backfill.json`, `decisions_summary_*_backfill.txt`).
+Duas entradas duplicadas (09.56.26_p3/_p8, criadas ao bancar a mao o arquivo acumulado) removidas.
+
+**"71 triggers recusados" era ERRO DE MEDICAO** (`auditoria_efeitos.py`): o jogo pergunta `trigger`
+pra toda carta que sai da vida e o `accept` vem sempre listado. 69 das 73 eram cartas SEM [Trigger].
+As 4 reais: 2 aceitas (OP04-016, OP01-030) e 2 recusadas CORRETAMENTE -- OP06-038 (KO custo<=3
+deitado; oponente so tinha custo 4/5) e OP08-036 (deitar 1; o unico personagem ja estava deitado).
+Corrigido: sem bloco trigger no banco de efeitos = "sem opcao". smoke_fast 1911 OK.
+
+Pendente (pedido do usuario, nesta ordem): (1) Mihawk carregando DON no lider em vez de baixar
+personagem -- visto em 1 partida, conferir nas 10; (2) counters: 129 recusas tendo opcao.
+
 ## 2026-10-09 (949) - Partida ao vivo x gen_005: ao vivo o descarte/custo era REGRA FIXA, no treino era o Q
 
 Jogo atualizou e apagou o BepInEx -> `BOT/setup_bepinex.ps1` (0 erros). Servidor reiniciado com a

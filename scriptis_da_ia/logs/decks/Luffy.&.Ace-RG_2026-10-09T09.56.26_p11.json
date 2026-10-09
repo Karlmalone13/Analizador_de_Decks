@@ -1,0 +1,51 @@
+{
+  "cards": [
+    {
+      "code": "EB04-002",
+      "name": "Jewelry Bonney",
+      "count": 3
+    },
+    {
+      "code": "ST31-005",
+      "name": "ST31-005",
+      "count": 2
+    },
+    {
+      "code": "ST21-014",
+      "name": "Monkey D. Luffy",
+      "count": 2
+    },
+    {
+      "code": "OP12-037",
+      "name": "OP12-037",
+      "count": 1
+    },
+    {
+      "code": "OP04-016",
+      "name": "OP04-016",
+      "count": 1
+    },
+    {
+      "code": "OP12-015",
+      "name": "Monkey D. Luffy",
+      "count": 1
+    },
+    {
+      "code": "OP01-030",
+      "name": "OP01-030",
+      "count": 1
+    },
+    {
+      "code": "ST31-001",
+      "name": "ST31-001",
+      "count": 1
+    },
+    {
+      "code": "OP01-016",
+      "name": "OP01-016",
+      "count": 1
+    }
+  ],
+  "total_seen": 13,
+  "leader": "ST30-001"
+}
