@@ -1,6 +1,8 @@
 # TODO — Analisador de Decks OPTCG
 
-**Última atualização:** 8 de outubro de 2026 (blocos 943-948)
+**Última atualização:** 9 de outubro de 2026 (blocos 943-949)
+
+> **949**: ao vivo, a carta que sai da mao e o custo de restar/sacrificar carta propria eram regra fixa (no treino era o Q) -- agora usam a mesma funcao do auto-jogo. Achado na partida humano x gen_005 (descartou evento [Counter] de custo 0).
 
 > **PROMOCAO generation_005 (948)**: o passo de treino (lr 3e-3, Adam recriado a cada ciclo) desfazia o campeao; com lr 3e-4 o desafiante ganhou da gen_004 em 3 seeds (246x157 = 61%). `--lr` default 3e-4. Pendente: teste contra humano.
 

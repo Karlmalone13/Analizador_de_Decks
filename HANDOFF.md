@@ -1,5 +1,23 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-10-09 (949) - Partida ao vivo x gen_005: ao vivo o descarte/custo era REGRA FIXA, no treino era o Q
+
+Jogo atualizou e apagou o BepInEx -> `BOT/setup_bepinex.ps1` (0 erros). Servidor reiniciado com a
+gen_005. Partida `logs/parsed/Rocks.D.Xebec-B_x_Monkey.D.Luffy-B_2026-10-08T23.39.54.json`: bot =
+Xebec (p1), perdeu em 8 turnos; q_fallback 0; efeitos todos concluidos. Usuario: "descartou evento
+custo 0 sem motivo". Telemetria: custo do lider Xebec (trash 1 da mao) ordenou a mao por
+`rank_key [1.0, _trash_value]` -- o evento [Counter] OP17-055 tinha o menor valor (103,75) e saiu.
+**Causa**: `sim_bridge.order_target_candidates` (caminho AO VIVO de /choose_target) decidia a carta
+que sai da mao por `_trash_value` e o custo de restar/sacrificar carta propria por board_value/
+char_value_score; no AUTO-JOGO essas decisoes sao do Q (`_choose_to_trash` com reserva de
+[Counter]; `_q_custo`). Duas funcoes pra mesma decisao (REGRA_SEM_DUPLICACAO) e o aprendido nao
+chegava ao jogo contra o humano. **Fix**: own_hand -> ordem de `_choose_to_trash` repetido;
+custo em own_board (e stage/lider quando o custo e restar) -> `_q_custo` repetido
+('custo_restar'/'custo_sacrificar'). Alvo no campo adversario ja ia pelo motor
+(`motor_pick_effect_target`). smoke: teste do Shiryu/Devon (que cobrava a ordem da regra fixa)
+virou teste de PARIDADE com `_choose_to_trash`; novo teste do [Counter] ao vivo com controle;
+controle de dimensao do campeao +41 (o campeao ja tem as colunas novas) -> **1.911 OK**.
+
 ## 2026-10-08 (948) - ACHADO: o passo de treino desfazia o campeao. lr 3e-4 -> generation_005 (61% em 3 seeds)
 
 Diagnostico: 15 ciclos (58-72) com o desafiante SISTEMATICAMENTE abaixo de 50% (~41%). O `fit`

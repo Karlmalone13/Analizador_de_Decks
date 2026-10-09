@@ -1,0 +1,56 @@
+{
+  "cards": [
+    {
+      "code": "OP17-086",
+      "name": "OP17-086",
+      "count": 3
+    },
+    {
+      "code": "OP15-088",
+      "name": "OP15-088",
+      "count": 2
+    },
+    {
+      "code": "OP17-091",
+      "name": "OP17-091",
+      "count": 2
+    },
+    {
+      "code": "OP17-095",
+      "name": "OP17-095",
+      "count": 2
+    },
+    {
+      "code": "OP17-093",
+      "name": "OP17-093",
+      "count": 1
+    },
+    {
+      "code": "OP17-096",
+      "name": "OP17-096",
+      "count": 1
+    },
+    {
+      "code": "OP17-080",
+      "name": "Usopp",
+      "count": 1
+    },
+    {
+      "code": "OP17-089",
+      "name": "Jaguar D. Saul",
+      "count": 1
+    },
+    {
+      "code": "OP17-119",
+      "name": "Loki",
+      "count": 1
+    },
+    {
+      "code": "OP17-087",
+      "name": "OP17-087",
+      "count": 1
+    }
+  ],
+  "total_seen": 15,
+  "leader": "OP17-079"
+}

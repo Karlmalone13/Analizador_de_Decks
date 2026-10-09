@@ -3198,6 +3198,9 @@ def order_target_candidates(gs: GameState, opp_gs: GameState,
             cost_lte = gs.don_available + gs.don_rested
         return cost_lte is None or card.cost <= cost_lte
 
+    _ordem_descarte = {'ordem': None}
+    _ordem_custo = {'ordem': None}
+
     def sort_key(cand: dict):
         card = card_of(cand)
         zone = cand.get('zone', '')
@@ -3205,12 +3208,40 @@ def order_target_candidates(gs: GameState, opp_gs: GameState,
         # menor board_value entre personagem/Stage/lider). Aqui o Stage caia
         # no tier generico e o personagem era sempre restado -- divergia da
         # simulacao e custava um atacante (achado 26/09, Mihawk).
-        if (purpose == 'cost' and actor_rest_card_cost
-                and zone in ('own_board', 'own_stage', 'own_leader')):
+        if (purpose == 'cost'
+                and zone in (('own_board', 'own_stage', 'own_leader') if actor_rest_card_cost
+                             else ('own_board',))):
+            # CUSTO que restar/sacrifica carta PROPRIA (bloco 949): a MESMA
+            # decisao do auto-jogo (`EffectExecutor._q_custo` -- o Q escolhe,
+            # padrao menor board_value), nao uma regra so do caminho ao vivo.
+            # Ordem = `_q_custo` repetido, tirando a escolhida a cada passo.
             viva = (gs.leader if zone == 'own_leader'
                     else gs.field_stage if zone == 'own_stage' else card)
             if viva is not None:
-                return (3, viva.board_value())
+                if _ordem_custo['ordem'] is None:
+                    _vivas = []
+                    for c in candidates:
+                        z = c.get('zone')
+                        if z == 'own_leader' and actor_rest_card_cost:
+                            v = gs.leader
+                        elif z == 'own_stage' and actor_rest_card_cost:
+                            v = gs.field_stage
+                        elif z == 'own_board':
+                            v = card_of(c)
+                        else:
+                            v = None
+                        if v is not None and not any(v is x for x in _vivas):
+                            _vivas.append(v)
+                    _fam = 'custo_restar' if actor_rest_card_cost else 'custo_sacrificar'
+                    _ee = EffectExecutor(gs, opp_gs)
+                    _ord, _pool = [], list(_vivas)
+                    while _pool:
+                        _c = _ee._q_custo(_pool, _fam) or _pool[0]
+                        _ord.append(_c)
+                        _pool = [x for x in _pool if x is not _c]
+                    _ordem_custo['ordem'] = _ord
+                _o = _ordem_custo['ordem']
+                return (3, next((k for k, x in enumerate(_o) if x is viva), len(_o)))
         # Zonas de DON -- candidatas pra custo "DON!! -N" (don_minus) e pra
         # efeitos que miram DON adversario (Krieg). Achado real 21/07 (partida
         # ao vivo): qualquer carta com custo DON!! -N (Katakuri, Mamaragan
@@ -3446,8 +3477,27 @@ def order_target_candidates(gs: GameState, opp_gs: GameState,
             # proprio custo do lider, porque avaliar_carta(Five Elders)=45
             # < avaliar_carta(qualquer carta barata) -- o usuario NUNCA
             # trashava Five Elders pelo lider em nenhuma partida real.
-            ee_tmp = EffectExecutor(gs, opp_gs)
-            return (1, ee_tmp._trash_value(card) if card else 0)
+            # MESMA DECISAO DO TREINO (bloco 949, partida ao vivo 08/10: o bot
+            # descartou o evento [Counter] de custo 0 pelo lider Xebec). Aqui a
+            # ordem saia de `_trash_value` -- regra fixa -- enquanto no auto-jogo
+            # quem escolhe a carta que sai da mao e o Q (`_choose_to_trash`:
+            # protege evento [Counter], decide pelo modelo). Duas funcoes pra
+            # mesma decisao (REGRA_SEM_DUPLICACAO). Agora a ordem e a do
+            # proprio `_choose_to_trash`, chamado de novo a cada carta tirada.
+            if card is None:
+                return (1, 0)
+            if _ordem_descarte['ordem'] is None:
+                _mao = [card_of(c) for c in candidates
+                        if c.get('zone') == 'own_hand' and card_of(c) is not None]
+                _ee = EffectExecutor(gs, opp_gs)
+                _ord, _pool = [], list(_mao)
+                while _pool:
+                    _c = _ee._choose_to_trash(_pool) or _pool[0]
+                    _ord.append(_c)
+                    _pool = [x for x in _pool if x is not _c]
+                _ordem_descarte['ordem'] = _ord
+            _o = _ordem_descarte['ordem']
+            return (1, next((k for k, x in enumerate(_o) if x is card), len(_o)))
         if zone == 'own_trash':
             return (2, -(engine.avaliar_carta(card) if card else 0))
         if zone == 'own_board':

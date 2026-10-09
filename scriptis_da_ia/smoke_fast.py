@@ -11007,6 +11007,7 @@ def main() -> int:
     test_escolha_um_passa_pelo_q_bloco_933()
     test_exploracao_guiada_pela_simulacao_bloco_935()
     test_regua_rapida_igual_ao_sklearn_bloco945()
+    test_descarte_ao_vivo_protege_counter_bloco949()
     test_explora_so_onde_o_modelo_esta_incerto_27_09()
     test_treino_continua_do_campeao_27_09()
     test_registro_de_geracoes_27_09()
@@ -13980,10 +13981,12 @@ def test_order_target_candidates_actor_battlefield_only_com_custo_de_mao() -> No
         me, opp, cands, attacker_power=7000, actor_code="OP06-115")
     check("actor_battlefield_only com custo de mao NAO esvazia own_hand (paga o custo)",
           set(order) & {330, 100, 230, 280} == {330, 100, 230, 280})
-    check("Shiryu (bomba, custo 6/8000 poder) NAO e a primeira carta oferecida pro descarte",
-          order[0] != 330)
-    check("Devon (mais fraca/barata da mao) e a primeira oferecida pro descarte",
-          order[0] == 230)
+    # Bloco 949: a ordem ao vivo da carta que sai da mao e a MESMA decisao do
+    # auto-jogo (`_choose_to_trash`: modelo + reserva de [Counter]), nao mais
+    # a regra fixa `_trash_value`. O teste passa a cobrar a PARIDADE.
+    _esc = de_mod.EffectExecutor(me, opp)._choose_to_trash(list(me.hand))
+    check("ao vivo, a 1a carta oferecida pro descarte e a que o motor do auto-jogo escolhe",
+          order[0] == getattr(_esc, '_deck_uid', None))
 
     # _trash_value isolado: confirma a generalizacao (cost>=7 OR power>=7000),
     # nao um numero magico so pro Shiryu.
@@ -15985,7 +15988,33 @@ def test_treino_continua_do_campeao_27_09() -> None:
         check("CONTROLE: as colunas novas estao ligadas (valor nao-zero chega na rede)",
               exp.steps[-1][1].coefs_[0].shape[0] == n_cols)
     check("CONTROLE: dimensao incompativel -> nao continua (None)",
-          treinar_q.modelo_do_campeao(caminho, n_cols + 40) is None)
+          treinar_q.modelo_do_campeao(caminho, orig.n_features_in_ + 41) is None)
+
+
+def test_descarte_ao_vivo_protege_counter_bloco949() -> None:
+    """Partida ao vivo 08/10 (Xebec): o custo do lider (descarta 1 da mao) jogou
+    fora o evento [Counter] de custo 0 OP17-055, porque o caminho ao vivo
+    ordenava pela regra fixa `_trash_value`. Agora usa `_choose_to_trash`."""
+    ev = real_card("OP17-055"); a = real_card("OP17-045"); b = real_card("OP17-054")
+    for c, uid in ((ev, 420), (a, 90), (b, 130)):
+        c._deck_uid = uid
+    me = GameState(leader=real_card("OP17-039")); me.hand = [ev, a, b]
+    opp = GameState(leader=real_card("OP16-001"))
+    cands = [{"id": 420, "zone": "own_hand", "code": "OP17-055"},
+             {"id": 90, "zone": "own_hand", "code": "OP17-045"},
+             {"id": 130, "zone": "own_hand", "code": "OP17-054"}]
+    order = sim_bridge.order_target_candidates(me, opp, cands, actor_code="OP17-039", purpose="cost")
+    check("ao vivo: evento [Counter] NAO e a 1a carta oferecida pro descarte (havendo outras)",
+          bool(order) and order[0] != 420)
+    check("CONTROLE: com SO o evento na mao, ele e oferecido (a reserva nao trava o custo)",
+          sim_bridge.order_target_candidates(
+              GameState(leader=real_card("OP17-039"), hand=[ev]) if False else _so_ev(ev), opp,
+              cands[:1], actor_code="OP17-039", purpose="cost")[:1] == [420])
+
+
+def _so_ev(ev):
+    g = GameState(leader=real_card("OP17-039")); g.hand = [ev]
+    return g
 
 
 def test_regua_rapida_igual_ao_sklearn_bloco945() -> None:
