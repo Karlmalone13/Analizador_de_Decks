@@ -1,0 +1,24 @@
+posicoes com o padrao: 19
+posicoes com o padrao: 19
+posicoes com o padrao: 19
+posicoes com o padrao: 19
+controle eps=0 | DON no lider, sem personagem             40/72   =  55.6%
+controle eps=0 | baixou personagem                         4/4    = 100.0%
+explorando | DON no lider, sem personagem                 72/127  =  56.7%
+explorando | baixou personagem                            36/66   =  54.5%
+explorando | outro                                        20/35   =  57.1%
+controle eps=0 | DON no lider, sem personagem             40/72   =  55.6%
+controle eps=0 | baixou personagem                         4/4    = 100.0%
+explorando | DON no lider, sem personagem                 72/127  =  56.7%
+explorando | baixou personagem                            36/66   =  54.5%
+explorando | outro                                        20/35   =  57.1%
+controle eps=0 | DON no lider, sem personagem             40/72   =  55.6%
+controle eps=0 | baixou personagem                         4/4    = 100.0%
+explorando | DON no lider, sem personagem                 72/127  =  56.7%
+explorando | baixou personagem                            36/66   =  54.5%
+explorando | outro                                        20/35   =  57.1%
+controle eps=0 | DON no lider, sem personagem             40/72   =  55.6%
+controle eps=0 | baixou personagem                         4/4    = 100.0%
+explorando | DON no lider, sem personagem                 72/127  =  56.7%
+explorando | baixou personagem                            36/66   =  54.5%
+explorando | outro                                        20/35   =  57.1%

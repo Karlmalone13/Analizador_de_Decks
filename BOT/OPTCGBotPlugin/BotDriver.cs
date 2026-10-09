@@ -73,6 +73,7 @@ namespace OPTCGBotPlugin
         private int   _consecutiveFails;
         private string _lastActionKey = "";
         private int    _sameActionCount;
+        private string _lastActionState = "";
         private float _heartbeat;
         private string _lastHeartbeatMsg = "";
         private string _lastUnhandledDialogKey = "";
@@ -796,9 +797,17 @@ namespace OPTCGBotPlugin
 
             // Mesma acao repetida = o jogo esta recusando silenciosamente
             // (ex: ataque invalido que nao muda o estado) — corta o loop
+            // So e repeticao se o ESTADO tambem nao mudou (bloco 951): anexar
+            // DON ao mesmo lider 4x seguidas e legitimo -- cada vez o jogo
+            // aceita e o estado muda --, mas a chave igual disparava o corte
+            // e encerrava o turno ANTES do ataque (Mihawk com 5 DON no lider
+            // passando o turno, partida CPU x CPU 09/10/2026).
             string key = $"{action.type}:{action.cardId}:{action.targetId}";
-            _sameActionCount = (key == _lastActionKey) ? _sameActionCount + 1 : 0;
+            string estado = JsonConvert.SerializeObject(dto);
+            _sameActionCount = (key == _lastActionKey && estado == _lastActionState)
+                ? _sameActionCount + 1 : 0;
             _lastActionKey = key;
+            _lastActionState = estado;
             if (_sameActionCount >= 3)
             {
                 Plugin.Log.LogWarning($"[Bot] acao {key} repetida {_sameActionCount}x sem efeito — end turn");

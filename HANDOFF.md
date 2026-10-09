@@ -1,5 +1,26 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-10-09 (951) - Mihawk: DON no lider nao e erro; trava do plugin encerrava o turno antes do ataque; counter
+
+**DON no lider em vez de baixar personagem** (`mede_don_no_lider.py`, 24 partidas, 19 posicoes, 16 ramos
+cada, mesma foto rejogada ate o fim): padrao 72/127 = 56,7% x baixou personagem 36/66 = 54,5%. Sem
+diferenca -- nao e erro (ressalva do usuario: abrir mao de board pra bater forte com o lider).
+
+**Auto-jogo x jogo real**: o MESMO modelo e decks dao Mihawk 19/25 (76%) comecando no motor e 1/10 no
+OPTCGSim. Descartado: aura do lider Luffy & Ace (o jogo tambem NAO buffa o lider: 22 defesas a 6000;
+personagens +3000 batem). Achado: `BotDriver.cs` cortava o turno por "acao repetida 3x" olhando so
+tipo:carta:alvo -- anexar DON 4x seguidas ao lider (cada uma aceita, estado mudando) disparava o corte e
+o turno acabava SEM o ataque (Mihawk com 5 DON no lider passando; 2 de 19 turnos com >=2 DON). Agora so
+conta repeticao se o estado serializado tambem nao mudou (o mesmo criterio que o plugin ja usa pra
+confirmar execucao); MaxActionsPerTurn=25 segue de rede. **Precisa `BOT/setup_bepinex.ps1` com o jogo
+fechado.** Nao explica sozinho 76% x 10% -- a diferenca continua aberta.
+
+**Counter**: 129 recusas = 14 ja defendido + 10 personagem + 105 lider perdendo. Empate (atk==def) e
+derrota do defensor, entao usar counter em empate esta certo (41 casos). 28 recusas com o calculo
+antigo (`_should_use_counter_inner`, value net) mandando usar -- mas quem decide desde o bloco 910 e o Q
+(`_q_escolhe_familia('counter')`); o calculo antigo so vira o palpite. **Telemetria engana**: o `trace`
+gravado e o do calculo antigo, nao os valores do Q. Pendente: gravar as opcoes/valores do Q no trace.
+
 ## 2026-10-09 (950) - 10 partidas CPU x CPU (gen_005); telemetria das partidas 2+ e contagem de trigger
 
 10 partidas Mihawk (p1) x Luffy & Ace (p2), Shift+C, no banco como `cpu_vs_cpu` (Luffy & Ace 9x1).

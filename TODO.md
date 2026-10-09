@@ -1,6 +1,8 @@
 # TODO — Analisador de Decks OPTCG
 
-**Última atualização:** 9 de outubro de 2026 (blocos 943-950)
+**Última atualização:** 9 de outubro de 2026 (blocos 943-951)
+
+> **951**: DON no lider = sem diferenca medida (56,7 x 54,5%). Plugin encerrava o turno ao anexar DON 4x seguidas (trava de repeticao sem olhar estado) -- corrigido, falta rebuild com jogo fechado. Mihawk 76% no motor x 10% no jogo: causa ainda aberta. Counter: trace mostra calculo antigo, quem decide e o Q.
 
 > **950**: telemetria agora sai em toda partida da sessao (id `_pN`). "71 triggers recusados" era erro da auditoria (69 sem [Trigger]; as 2 recusas reais estavam certas). Proximo: Mihawk DON no lider; counters recusados.
 
