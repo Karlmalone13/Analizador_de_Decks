@@ -1,0 +1,36 @@
+{
+  "cards": [
+    {
+      "code": "OP01-057",
+      "name": "OP01-057",
+      "count": 3
+    },
+    {
+      "code": "OP12-015",
+      "name": "Monkey D. Luffy",
+      "count": 3
+    },
+    {
+      "code": "OP01-030",
+      "name": "OP01-030",
+      "count": 2
+    },
+    {
+      "code": "ST21-014",
+      "name": "Monkey D. Luffy",
+      "count": 1
+    },
+    {
+      "code": "OP13-040",
+      "name": "OP13-040",
+      "count": 1
+    },
+    {
+      "code": "OP17-017",
+      "name": "OP17-017",
+      "count": 1
+    }
+  ],
+  "total_seen": 11,
+  "leader": "ST30-001"
+}

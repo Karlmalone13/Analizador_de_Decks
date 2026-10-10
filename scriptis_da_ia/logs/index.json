@@ -8278,5 +8278,329 @@
       "Opponent": "decks_full/Rocks.D.Xebec-B_2026-10-10T10.26.44.json"
     },
     "decision_log_file": "decisions/decisions_2026-10-10T10.26.44.jsonl"
+  },
+  {
+    "id": "2026-10-10T16.41.32",
+    "impressao": "17c22024251ef8ba060f82d6fe2ca23c",
+    "friendly_name": "Dracule.Mihawk-G_x_Luffy.&.Ace-RG",
+    "date": "2026-10-10",
+    "p1": {
+      "name": "You",
+      "leader_code": "OP14-020",
+      "leader_name": "Dracule Mihawk",
+      "slug": "Dracule.Mihawk-G"
+    },
+    "p2": {
+      "name": "Opponent",
+      "leader_code": "ST30-001",
+      "leader_name": "Luffy & Ace",
+      "slug": "Luffy.&.Ace-RG"
+    },
+    "turns": 12,
+    "winner": "p2",
+    "bot_side": null,
+    "tipo": "cpu_vs_cpu",
+    "log_file": "raw/Dracule.Mihawk-G_x_Luffy.&.Ace-RG_2026-10-10T16.41.32.log",
+    "parsed_file": "parsed/Dracule.Mihawk-G_x_Luffy.&.Ace-RG_2026-10-10T16.41.32.json",
+    "deck_files": {
+      "You": "decks/Dracule.Mihawk-G_2026-10-10T16.41.32.json",
+      "Opponent": "decks/Luffy.&.Ace-RG_2026-10-10T16.41.32.json"
+    },
+    "deck_full_files": {
+      "You": "decks_full/Dracule.Mihawk-G_2026-10-10T16.41.32.json",
+      "Opponent": "decks_full/Luffy.&.Ace-RG_2026-10-10T16.41.32.json"
+    },
+    "decision_log_file": "decisions/decisions_2026-10-10T16.41.32.jsonl"
+  },
+  {
+    "id": "2026-10-10T16.45.59_p2",
+    "impressao": "c454ff90cfca32a8bccb4e067e7c16a7",
+    "friendly_name": "Dracule.Mihawk-G_x_Luffy.&.Ace-RG",
+    "date": "2026-10-10",
+    "p1": {
+      "name": "You",
+      "leader_code": "OP14-020",
+      "leader_name": "Dracule Mihawk",
+      "slug": "Dracule.Mihawk-G"
+    },
+    "p2": {
+      "name": "Opponent",
+      "leader_code": "ST30-001",
+      "leader_name": "Luffy & Ace",
+      "slug": "Luffy.&.Ace-RG"
+    },
+    "turns": 14,
+    "winner": "p2",
+    "bot_side": null,
+    "tipo": "cpu_vs_cpu",
+    "log_file": "raw/Dracule.Mihawk-G_x_Luffy.&.Ace-RG_2026-10-10T16.45.59_p2.log",
+    "parsed_file": "parsed/Dracule.Mihawk-G_x_Luffy.&.Ace-RG_2026-10-10T16.45.59_p2.json",
+    "deck_files": {
+      "You": "decks/Dracule.Mihawk-G_2026-10-10T16.45.59_p2.json",
+      "Opponent": "decks/Luffy.&.Ace-RG_2026-10-10T16.45.59_p2.json"
+    },
+    "deck_full_files": {
+      "You": "decks_full/Dracule.Mihawk-G_2026-10-10T16.45.59_p2.json",
+      "Opponent": "decks_full/Luffy.&.Ace-RG_2026-10-10T16.45.59_p2.json"
+    }
+  },
+  {
+    "id": "2026-10-10T16.50.03_p3",
+    "impressao": "620bafffab3892e570bbc2ccebb77413",
+    "friendly_name": "Dracule.Mihawk-G_x_Luffy.&.Ace-RG",
+    "date": "2026-10-10",
+    "p1": {
+      "name": "You",
+      "leader_code": "OP14-020",
+      "leader_name": "Dracule Mihawk",
+      "slug": "Dracule.Mihawk-G"
+    },
+    "p2": {
+      "name": "Opponent",
+      "leader_code": "ST30-001",
+      "leader_name": "Luffy & Ace",
+      "slug": "Luffy.&.Ace-RG"
+    },
+    "turns": 12,
+    "winner": "p2",
+    "bot_side": null,
+    "tipo": "cpu_vs_cpu",
+    "log_file": "raw/Dracule.Mihawk-G_x_Luffy.&.Ace-RG_2026-10-10T16.50.03_p3.log",
+    "parsed_file": "parsed/Dracule.Mihawk-G_x_Luffy.&.Ace-RG_2026-10-10T16.50.03_p3.json",
+    "deck_files": {
+      "You": "decks/Dracule.Mihawk-G_2026-10-10T16.50.03_p3.json",
+      "Opponent": "decks/Luffy.&.Ace-RG_2026-10-10T16.50.03_p3.json"
+    },
+    "deck_full_files": {
+      "You": "decks_full/Dracule.Mihawk-G_2026-10-10T16.50.03_p3.json",
+      "Opponent": "decks_full/Luffy.&.Ace-RG_2026-10-10T16.50.03_p3.json"
+    }
+  },
+  {
+    "id": "2026-10-10T16.55.01_p4",
+    "impressao": "a40bc1cb8b5a6f1018c991baebbaabac",
+    "friendly_name": "Dracule.Mihawk-G_x_Luffy.&.Ace-RG",
+    "date": "2026-10-10",
+    "p1": {
+      "name": "You",
+      "leader_code": "OP14-020",
+      "leader_name": "Dracule Mihawk",
+      "slug": "Dracule.Mihawk-G"
+    },
+    "p2": {
+      "name": "Opponent",
+      "leader_code": "ST30-001",
+      "leader_name": "Luffy & Ace",
+      "slug": "Luffy.&.Ace-RG"
+    },
+    "turns": 14,
+    "winner": "p2",
+    "bot_side": null,
+    "tipo": "cpu_vs_cpu",
+    "log_file": "raw/Dracule.Mihawk-G_x_Luffy.&.Ace-RG_2026-10-10T16.55.01_p4.log",
+    "parsed_file": "parsed/Dracule.Mihawk-G_x_Luffy.&.Ace-RG_2026-10-10T16.55.01_p4.json",
+    "deck_files": {
+      "You": "decks/Dracule.Mihawk-G_2026-10-10T16.55.01_p4.json",
+      "Opponent": "decks/Luffy.&.Ace-RG_2026-10-10T16.55.01_p4.json"
+    },
+    "deck_full_files": {
+      "You": "decks_full/Dracule.Mihawk-G_2026-10-10T16.55.01_p4.json",
+      "Opponent": "decks_full/Luffy.&.Ace-RG_2026-10-10T16.55.01_p4.json"
+    }
+  },
+  {
+    "id": "2026-10-10T16.58.06_p5",
+    "impressao": "9e428e6d5f78b68c4ff5dc25dd8a1db6",
+    "friendly_name": "Dracule.Mihawk-G_x_Luffy.&.Ace-RG",
+    "date": "2026-10-10",
+    "p1": {
+      "name": "You",
+      "leader_code": "OP14-020",
+      "leader_name": "Dracule Mihawk",
+      "slug": "Dracule.Mihawk-G"
+    },
+    "p2": {
+      "name": "Opponent",
+      "leader_code": "ST30-001",
+      "leader_name": "Luffy & Ace",
+      "slug": "Luffy.&.Ace-RG"
+    },
+    "turns": 10,
+    "winner": "p2",
+    "bot_side": null,
+    "tipo": "cpu_vs_cpu",
+    "log_file": "raw/Dracule.Mihawk-G_x_Luffy.&.Ace-RG_2026-10-10T16.58.06_p5.log",
+    "parsed_file": "parsed/Dracule.Mihawk-G_x_Luffy.&.Ace-RG_2026-10-10T16.58.06_p5.json",
+    "deck_files": {
+      "You": "decks/Dracule.Mihawk-G_2026-10-10T16.58.06_p5.json",
+      "Opponent": "decks/Luffy.&.Ace-RG_2026-10-10T16.58.06_p5.json"
+    },
+    "deck_full_files": {
+      "You": "decks_full/Dracule.Mihawk-G_2026-10-10T16.58.06_p5.json",
+      "Opponent": "decks_full/Luffy.&.Ace-RG_2026-10-10T16.58.06_p5.json"
+    }
+  },
+  {
+    "id": "2026-10-10T17.01.42_p6",
+    "impressao": "cbaa29340809a87979d320a6216ef9d3",
+    "friendly_name": "Dracule.Mihawk-G_x_Luffy.&.Ace-RG",
+    "date": "2026-10-10",
+    "p1": {
+      "name": "You",
+      "leader_code": "OP14-020",
+      "leader_name": "Dracule Mihawk",
+      "slug": "Dracule.Mihawk-G"
+    },
+    "p2": {
+      "name": "Opponent",
+      "leader_code": "ST30-001",
+      "leader_name": "Luffy & Ace",
+      "slug": "Luffy.&.Ace-RG"
+    },
+    "turns": 12,
+    "winner": "p2",
+    "bot_side": null,
+    "tipo": "cpu_vs_cpu",
+    "log_file": "raw/Dracule.Mihawk-G_x_Luffy.&.Ace-RG_2026-10-10T17.01.42_p6.log",
+    "parsed_file": "parsed/Dracule.Mihawk-G_x_Luffy.&.Ace-RG_2026-10-10T17.01.42_p6.json",
+    "deck_files": {
+      "You": "decks/Dracule.Mihawk-G_2026-10-10T17.01.42_p6.json",
+      "Opponent": "decks/Luffy.&.Ace-RG_2026-10-10T17.01.42_p6.json"
+    },
+    "deck_full_files": {
+      "You": "decks_full/Dracule.Mihawk-G_2026-10-10T17.01.42_p6.json",
+      "Opponent": "decks_full/Luffy.&.Ace-RG_2026-10-10T17.01.42_p6.json"
+    }
+  },
+  {
+    "id": "2026-10-10T17.04.26_p7",
+    "impressao": "ba7b76daeb07e86cff1c4b9f625c3e8f",
+    "friendly_name": "Dracule.Mihawk-G_x_Luffy.&.Ace-RG",
+    "date": "2026-10-10",
+    "p1": {
+      "name": "You",
+      "leader_code": "OP14-020",
+      "leader_name": "Dracule Mihawk",
+      "slug": "Dracule.Mihawk-G"
+    },
+    "p2": {
+      "name": "Opponent",
+      "leader_code": "ST30-001",
+      "leader_name": "Luffy & Ace",
+      "slug": "Luffy.&.Ace-RG"
+    },
+    "turns": 14,
+    "winner": "p2",
+    "bot_side": null,
+    "tipo": "cpu_vs_cpu",
+    "log_file": "raw/Dracule.Mihawk-G_x_Luffy.&.Ace-RG_2026-10-10T17.04.26_p7.log",
+    "parsed_file": "parsed/Dracule.Mihawk-G_x_Luffy.&.Ace-RG_2026-10-10T17.04.26_p7.json",
+    "deck_files": {
+      "You": "decks/Dracule.Mihawk-G_2026-10-10T17.04.26_p7.json",
+      "Opponent": "decks/Luffy.&.Ace-RG_2026-10-10T17.04.26_p7.json"
+    },
+    "deck_full_files": {
+      "You": "decks_full/Dracule.Mihawk-G_2026-10-10T17.04.26_p7.json",
+      "Opponent": "decks_full/Luffy.&.Ace-RG_2026-10-10T17.04.26_p7.json"
+    }
+  },
+  {
+    "id": "2026-10-10T17.44.21",
+    "impressao": "32ae6e3a0369724e980ef329bfd3d922",
+    "friendly_name": "Dracule.Mihawk-G_x_Luffy.&.Ace-RG",
+    "date": "2026-10-10",
+    "p1": {
+      "name": "You",
+      "leader_code": "OP14-020",
+      "leader_name": "Dracule Mihawk",
+      "slug": "Dracule.Mihawk-G"
+    },
+    "p2": {
+      "name": "Opponent",
+      "leader_code": "ST30-001",
+      "leader_name": "Luffy & Ace",
+      "slug": "Luffy.&.Ace-RG"
+    },
+    "turns": 12,
+    "winner": "p2",
+    "bot_side": null,
+    "tipo": "cpu_vs_cpu",
+    "log_file": "raw/Dracule.Mihawk-G_x_Luffy.&.Ace-RG_2026-10-10T17.44.21.log",
+    "parsed_file": "parsed/Dracule.Mihawk-G_x_Luffy.&.Ace-RG_2026-10-10T17.44.21.json",
+    "deck_files": {
+      "You": "decks/Dracule.Mihawk-G_2026-10-10T17.44.21.json",
+      "Opponent": "decks/Luffy.&.Ace-RG_2026-10-10T17.44.21.json"
+    },
+    "deck_full_files": {
+      "You": "decks_full/Dracule.Mihawk-G_2026-10-10T17.44.21.json",
+      "Opponent": "decks_full/Luffy.&.Ace-RG_2026-10-10T17.44.21.json"
+    },
+    "decision_log_file": "decisions/decisions_2026-10-10T17.44.21.jsonl"
+  },
+  {
+    "id": "2026-10-10T17.47.28_p2",
+    "impressao": "84183651a190621be42ec44ab3665bea",
+    "friendly_name": "Dracule.Mihawk-G_x_Luffy.&.Ace-RG",
+    "date": "2026-10-10",
+    "p1": {
+      "name": "You",
+      "leader_code": "OP14-020",
+      "leader_name": "Dracule Mihawk",
+      "slug": "Dracule.Mihawk-G"
+    },
+    "p2": {
+      "name": "Opponent",
+      "leader_code": "ST30-001",
+      "leader_name": "Luffy & Ace",
+      "slug": "Luffy.&.Ace-RG"
+    },
+    "turns": 12,
+    "winner": "p2",
+    "bot_side": null,
+    "tipo": "cpu_vs_cpu",
+    "log_file": "raw/Dracule.Mihawk-G_x_Luffy.&.Ace-RG_2026-10-10T17.47.28_p2.log",
+    "parsed_file": "parsed/Dracule.Mihawk-G_x_Luffy.&.Ace-RG_2026-10-10T17.47.28_p2.json",
+    "deck_files": {
+      "You": "decks/Dracule.Mihawk-G_2026-10-10T17.47.28_p2.json",
+      "Opponent": "decks/Luffy.&.Ace-RG_2026-10-10T17.47.28_p2.json"
+    },
+    "deck_full_files": {
+      "You": "decks_full/Dracule.Mihawk-G_2026-10-10T17.47.28_p2.json",
+      "Opponent": "decks_full/Luffy.&.Ace-RG_2026-10-10T17.47.28_p2.json"
+    },
+    "decision_log_file": "decisions/decisions_2026-10-10T17.47.28_p2.jsonl"
+  },
+  {
+    "id": "2026-10-10T17.51.30_p3",
+    "impressao": "3ce026571c3d8f4b47dde72c832098dc",
+    "friendly_name": "Dracule.Mihawk-G_x_Luffy.&.Ace-RG",
+    "date": "2026-10-10",
+    "p1": {
+      "name": "You",
+      "leader_code": "OP14-020",
+      "leader_name": "Dracule Mihawk",
+      "slug": "Dracule.Mihawk-G"
+    },
+    "p2": {
+      "name": "Opponent",
+      "leader_code": "ST30-001",
+      "leader_name": "Luffy & Ace",
+      "slug": "Luffy.&.Ace-RG"
+    },
+    "turns": 12,
+    "winner": "p2",
+    "bot_side": null,
+    "tipo": "cpu_vs_cpu",
+    "log_file": "raw/Dracule.Mihawk-G_x_Luffy.&.Ace-RG_2026-10-10T17.51.30_p3.log",
+    "parsed_file": "parsed/Dracule.Mihawk-G_x_Luffy.&.Ace-RG_2026-10-10T17.51.30_p3.json",
+    "deck_files": {
+      "You": "decks/Dracule.Mihawk-G_2026-10-10T17.51.30_p3.json",
+      "Opponent": "decks/Luffy.&.Ace-RG_2026-10-10T17.51.30_p3.json"
+    },
+    "deck_full_files": {
+      "You": "decks_full/Dracule.Mihawk-G_2026-10-10T17.51.30_p3.json",
+      "Opponent": "decks_full/Luffy.&.Ace-RG_2026-10-10T17.51.30_p3.json"
+    },
+    "decision_log_file": "decisions/decisions_2026-10-10T17.51.30_p3.jsonl"
   }
 ]

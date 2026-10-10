@@ -41,6 +41,7 @@ def _motor(seed):
             if tg in ('OP14-020', 'ST30-001'):
                 st[(who, 'ataques_lider')] += 1
                 st[(who, 'poder_atk_lider')] += ev.get('attack_power', 0)
+            st[(who, 'don_anexado_no_ataque')] += ev.get('attached_don', 0) or 0
         elif tp == 'play_card':
             st[(who, 'jogou:' + (ev.get('card') or {}).get('code', '?'))] += 1
     st[('Mihawk', 'counter_poder')] = m.state_a.counters_used
@@ -51,7 +52,7 @@ def _motor(seed):
 
 def _jogo():
     out = []
-    for f in sorted(glob.glob('logs/raw/*Mihawk*Luffy.&.Ace*2026-10-09T09*.log')):
+    for f in sorted(glob.glob(os.environ.get('MEDE_GLOB', 'logs/raw/*Mihawk*Luffy.&.Ace*2026-10-09T09*.log'))):
         t = re.sub(r'<[^>]*>', '', open(f, encoding='utf-8', errors='ignore').read())
         st = collections.Counter()
         for l in t.splitlines():
@@ -65,6 +66,9 @@ def _jogo():
             if m:
                 who = 'Mihawk' if m.group(3) == 'ST30-001' else 'Luffy'
                 st[(who, 'poder_atk_lider')] += int(m.group(2))
+            m = re.match(r'^\[(You|Opponent)\] Attach (\d+) Don', l)
+            if m:
+                st[(LADO[m.group(1)], 'don_anexado_no_ataque')] += int(m.group(2))
             m = re.match(r'^\[(You|Opponent)\] Deploy .+?\["?([A-Z0-9]+-\d+)', l)
             if m:
                 st[(LADO[m.group(1)], 'jogou:' + m.group(2))] += 1

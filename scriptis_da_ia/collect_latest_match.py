@@ -146,8 +146,13 @@ def _id_da_partida_nova(combat_log: Path) -> str:
     return combat_log.stem if n <= 1 else f"{combat_log.stem}_p{n}"
 
 
-def _validate_bank_entry(combat_log: Path, index: list, db_root: Path = DB_ROOT) -> tuple[dict, str]:
-    alvo = _id_da_partida_nova(combat_log)
+def _validate_bank_entry(combat_log: Path, index: list, db_root: Path = DB_ROOT,
+                         alvo: str | None = None) -> tuple[dict, str]:
+    # `alvo` tem que ser medido ANTES do parser (bloco 957): `split_multigame_log`
+    # REESCREVE o arquivo base so com a 1a partida, entao contar depois sempre
+    # dava 1 cabecalho e procurava o id sem `_pN` -- o conserto do bloco 950
+    # nunca funcionou ao vivo (falhou nas partidas 2-7 de 10/10).
+    alvo = alvo or _id_da_partida_nova(combat_log)
     entry = next((item for item in reversed(index) if item.get("id") == alvo), None)
     if entry is None:
         raise RuntimeError(f"parser terminou sem registrar id={alvo} no index")
@@ -279,6 +284,7 @@ def collect_latest(decision_log: Path, autosaved_dir: Path = DEFAULT_AUTOSAVED,
     report_cmd = [sys.executable, str(ROOT / "bot_efficiency_report.py"),
                   "--decision-log", str(decision_log),
                   "--json", str(report_path)]
+    alvo_id = _id_da_partida_nova(combat_log)   # ANTES do parser -- ver _validate_bank_entry
     parsed = subprocess.run(parse_cmd, cwd=ROOT, text=True, capture_output=True)
     if parsed.returncode:
         raise RuntimeError(f"parse_combat_log falhou: {parsed.stderr or parsed.stdout}")
@@ -286,7 +292,7 @@ def collect_latest(decision_log: Path, autosaved_dir: Path = DEFAULT_AUTOSAVED,
     # Nao confia apenas no exit code: confirma a entrada e todos os artefatos
     # usando o schema/nome oficial produzido por parse_combat_log.add_to_db.
     index = json.loads(DB_INDEX.read_text(encoding="utf-8")) if DB_INDEX.exists() else []
-    bank_entry, canonical_stem = _validate_bank_entry(combat_log, index)
+    bank_entry, canonical_stem = _validate_bank_entry(combat_log, index, alvo=alvo_id)
 
     # O banco precisa preservar tambem o decision_log que produziu os
     # relatorios. O combat log/parse explica o que o jogo fez; a auditoria de

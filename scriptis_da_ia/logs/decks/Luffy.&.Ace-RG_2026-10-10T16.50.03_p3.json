@@ -1,0 +1,61 @@
+{
+  "cards": [
+    {
+      "code": "OP12-015",
+      "name": "Monkey D. Luffy",
+      "count": 3
+    },
+    {
+      "code": "ST31-005",
+      "name": "ST31-005",
+      "count": 3
+    },
+    {
+      "code": "EB02-017",
+      "name": "Nami",
+      "count": 1
+    },
+    {
+      "code": "ST21-014",
+      "name": "Monkey D. Luffy",
+      "count": 1
+    },
+    {
+      "code": "OP15-032",
+      "name": "OP15-032",
+      "count": 1
+    },
+    {
+      "code": "OP01-030",
+      "name": "OP01-030",
+      "count": 1
+    },
+    {
+      "code": "OP01-016",
+      "name": "OP01-016",
+      "count": 1
+    },
+    {
+      "code": "OP17-017",
+      "name": "OP17-017",
+      "count": 1
+    },
+    {
+      "code": "EB04-002",
+      "name": "EB04-002",
+      "count": 1
+    },
+    {
+      "code": "OP01-057",
+      "name": "OP01-057",
+      "count": 1
+    },
+    {
+      "code": "ST30-012",
+      "name": "Monkey D. Luffy",
+      "count": 1
+    }
+  ],
+  "total_seen": 15,
+  "leader": "ST30-001"
+}

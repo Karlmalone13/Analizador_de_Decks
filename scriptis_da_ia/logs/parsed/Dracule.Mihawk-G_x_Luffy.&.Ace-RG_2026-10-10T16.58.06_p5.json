@@ -1,0 +1,1307 @@
+{
+  "meta": {
+    "players": {
+      "p1": {
+        "name": "You",
+        "leader": {
+          "name": "Dracule Mihawk",
+          "code": "OP14-020"
+        }
+      },
+      "p2": {
+        "name": "Opponent",
+        "leader": {
+          "name": "Luffy & Ace",
+          "code": "ST30-001"
+        }
+      }
+    },
+    "goes_first": null
+  },
+  "total_turns": 10,
+  "turns": [
+    {
+      "turn": 1,
+      "player": "You",
+      "card_drawn": null,
+      "don_drawn": 1,
+      "actions": [
+        {
+          "type": "play",
+          "card": "ST32-001",
+          "card_name": "Kin'emon",
+          "effects": [
+            "Rest Dracule Mihawk [\"OP14-020\">OP14-020]",
+            "Draw 2 Card",
+            "Trash Trafalgar Law [\"OP13-031\">OP13-031]"
+          ]
+        }
+      ],
+      "snapshot": {
+        "You": {
+          "hand": [
+            "OP12-023",
+            "OP06-033",
+            "OP13-031",
+            "OP17-031",
+            "OP12-023"
+          ],
+          "board": [
+            "ST32-001"
+          ],
+          "trash": [
+            "OP13-031"
+          ],
+          "life": 5,
+          "life_cards": [
+            "OP06-038",
+            "OP06-038",
+            "OP07-022",
+            "OP12-034",
+            "OP12-034"
+          ],
+          "don_cost": [
+            "Don"
+          ],
+          "rested_rz1": {
+            "don_cost": [
+              "Don"
+            ]
+          },
+          "rested": {
+            "ST32-001": 1
+          }
+        },
+        "Opponent": {
+          "hand": [
+            "EB04-002",
+            "EB04-002",
+            "OP04-016",
+            "OP01-030",
+            "OP12-037"
+          ],
+          "trash": [],
+          "board": [],
+          "life": 4,
+          "deck": [
+            "EB02-017",
+            "OP01-016",
+            "OP12-015",
+            "OP13-040",
+            "OP15-032",
+            "OP17-017",
+            "ST21-014",
+            "ST30-012",
+            "ST31-005"
+          ],
+          "life_cards": [
+            "EB04-002",
+            "OP01-030",
+            "OP01-057",
+            "ST31-001"
+          ]
+        }
+      }
+    },
+    {
+      "turn": 2,
+      "player": "Opponent",
+      "card_drawn": null,
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "play",
+          "card": "EB04-002",
+          "card_name": "Jewelry Bonney",
+          "effects": [
+            "<b>Reveal and Draw Monkey D. Luffy [\"ST21-014\">ST21-014]</b>"
+          ]
+        }
+      ],
+      "snapshot": {
+        "Opponent": {
+          "hand": [
+            "EB04-002",
+            "OP04-016",
+            "OP01-030",
+            "OP12-037",
+            "OP12-015",
+            "ST21-014"
+          ],
+          "board": [
+            "EB04-002"
+          ],
+          "trash": [],
+          "life": 4,
+          "deck": [
+            "EB02-017",
+            "OP01-016",
+            "OP13-040",
+            "OP15-032",
+            "OP17-017",
+            "ST30-012",
+            "ST31-005"
+          ],
+          "life_cards": [
+            "EB04-002",
+            "OP01-030",
+            "OP01-057",
+            "ST31-001"
+          ],
+          "don_cost": [
+            "Don",
+            "Don"
+          ],
+          "rested_rz1": {
+            "don_cost": [
+              "Don"
+            ]
+          },
+          "rested": {
+            "EB04-002": 1
+          }
+        },
+        "You": {
+          "hand": [
+            "OP12-023",
+            "OP06-033",
+            "OP13-031",
+            "OP17-031",
+            "OP12-023"
+          ],
+          "trash": [
+            "OP13-031"
+          ],
+          "board": [
+            "ST32-001"
+          ],
+          "life": 5,
+          "life_cards": [
+            "OP06-038",
+            "OP06-038",
+            "OP07-022",
+            "OP12-034",
+            "OP12-034"
+          ],
+          "don_cost": [
+            "Don"
+          ],
+          "rested_rz1": {
+            "don_cost": [
+              "Don"
+            ]
+          },
+          "rested": {
+            "ST32-001": 1
+          }
+        }
+      }
+    },
+    {
+      "turn": 3,
+      "player": "You",
+      "card_drawn": null,
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP14-020",
+          "to_name": "Dracule Mihawk",
+          "total": 1
+        },
+        {
+          "type": "attach_don",
+          "amount": 2,
+          "to": "OP14-020",
+          "to_name": "Dracule Mihawk",
+          "total": 3
+        },
+        {
+          "type": "attack",
+          "attacker": "Dracule Mihawk",
+          "attacker_code": "OP14-020",
+          "target": "Luffy & Ace [\"ST30-001\">ST30-001]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        }
+      ],
+      "snapshot": {
+        "You": {
+          "hand": [
+            "OP12-023",
+            "OP06-033",
+            "OP13-031",
+            "OP17-031",
+            "OP12-023",
+            "OP17-031"
+          ],
+          "board": [
+            "ST32-001"
+          ],
+          "trash": [
+            "OP13-031"
+          ],
+          "life": 5,
+          "life_cards": [
+            "OP06-038",
+            "OP06-038",
+            "OP07-022",
+            "OP12-034",
+            "OP12-034"
+          ],
+          "attached_don": [
+            "Don",
+            "Don",
+            "Don"
+          ]
+        },
+        "Opponent": {
+          "hand": [
+            "EB04-002",
+            "OP04-016",
+            "OP01-030",
+            "OP12-037",
+            "OP12-015",
+            "ST21-014",
+            "OP01-057"
+          ],
+          "trash": [],
+          "board": [
+            "EB04-002"
+          ],
+          "life": 3,
+          "deck": [
+            "EB02-017",
+            "OP01-016",
+            "OP13-040",
+            "OP15-032",
+            "OP17-017",
+            "ST30-012",
+            "ST31-005"
+          ],
+          "life_cards": [
+            "EB04-002",
+            "OP01-030",
+            "ST31-001"
+          ],
+          "don_cost": [
+            "Don",
+            "Don"
+          ],
+          "rested_rz1": {
+            "don_cost": [
+              "Don"
+            ]
+          },
+          "rested": {
+            "EB04-002": 1
+          }
+        }
+      }
+    },
+    {
+      "turn": 4,
+      "player": "Opponent",
+      "card_drawn": null,
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "attack",
+          "attacker": "Luffy & Ace",
+          "attacker_code": "ST30-001",
+          "target": "Dracule Mihawk [\"OP14-020\">OP14-020]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": [
+            "OP12-023"
+          ]
+        },
+        {
+          "type": "play",
+          "card": "OP12-015",
+          "card_name": "Monkey D. Luffy",
+          "effects": [
+            "Deploy Jewelry Bonney [\"EB04-002\">EB04-002]",
+            "Attach 1 Rested Don to Monkey D. Luffy [\"OP12-015\">OP12-015]"
+          ]
+        },
+        {
+          "type": "activate",
+          "card": "EB04-002",
+          "card_name": "Jewelry Bonney",
+          "effects": [
+            "<b>Reveal and Draw Brook [\"OP15-032\">OP15-032]</b>"
+          ]
+        }
+      ],
+      "snapshot": {
+        "Opponent": {
+          "hand": [
+            "OP04-016",
+            "OP01-030",
+            "OP12-037",
+            "ST21-014",
+            "OP01-057",
+            "OP01-030",
+            "OP15-032"
+          ],
+          "board": [
+            "EB04-002",
+            "OP12-015",
+            "EB04-002"
+          ],
+          "trash": [],
+          "life": 3,
+          "deck": [
+            "EB02-017",
+            "OP01-016",
+            "OP12-015",
+            "OP13-040",
+            "OP17-017",
+            "ST21-014",
+            "ST30-012",
+            "ST31-005"
+          ],
+          "life_cards": [
+            "EB04-002",
+            "OP01-030",
+            "ST31-001"
+          ],
+          "don_cost": [
+            "Don",
+            "Don",
+            "Don"
+          ],
+          "attached_don": [
+            "Don"
+          ],
+          "rested_rz1": {
+            "attached_don": [
+              "Don"
+            ]
+          },
+          "rested": {
+            "OP12-015": 1
+          }
+        },
+        "You": {
+          "hand": [
+            "OP06-033",
+            "OP13-031",
+            "OP17-031",
+            "OP12-023",
+            "OP17-031"
+          ],
+          "trash": [
+            "OP13-031",
+            "OP12-023"
+          ],
+          "board": [
+            "ST32-001"
+          ],
+          "life": 5,
+          "life_cards": [
+            "OP06-038",
+            "OP06-038",
+            "OP07-022",
+            "OP12-034",
+            "OP12-034"
+          ],
+          "attached_don": [
+            "Don",
+            "Don",
+            "Don"
+          ]
+        }
+      }
+    },
+    {
+      "turn": 5,
+      "player": "You",
+      "card_drawn": null,
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "play",
+          "card": "OP17-031",
+          "card_name": "Yasopp",
+          "effects": [
+            "Draw 1 Card",
+            "Rest Monkey D. Luffy [\"OP12-015\">OP12-015]"
+          ]
+        },
+        {
+          "type": "activate",
+          "card": "OP14-020",
+          "card_name": "Dracule Mihawk",
+          "effects": [
+            "Rest Dracule Mihawk [\"OP14-020\">OP14-020]",
+            "Activate 1 Don",
+            "Activate 1 Don",
+            "Activate 1 Don",
+            "Can't play Cost 1 Or More Characters for the Turn!"
+          ]
+        }
+      ],
+      "snapshot": {
+        "You": {
+          "hand": [
+            "OP06-033",
+            "OP13-031",
+            "OP12-023",
+            "OP17-031",
+            "OP17-022",
+            "OP14-023"
+          ],
+          "board": [
+            "ST32-001",
+            "OP17-031"
+          ],
+          "trash": [
+            "OP13-031",
+            "OP12-023"
+          ],
+          "life": 5,
+          "life_cards": [
+            "OP06-038",
+            "OP06-038",
+            "OP07-022",
+            "OP12-034",
+            "OP12-034"
+          ],
+          "don_cost": [
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don"
+          ],
+          "rested": {
+            "OP17-031": 1
+          }
+        },
+        "Opponent": {
+          "hand": [
+            "OP04-016",
+            "OP01-030",
+            "OP12-037",
+            "ST21-014",
+            "OP01-057",
+            "OP01-030",
+            "OP15-032"
+          ],
+          "trash": [],
+          "board": [
+            "EB04-002",
+            "OP12-015",
+            "EB04-002"
+          ],
+          "life": 3,
+          "deck": [
+            "EB02-017",
+            "OP01-016",
+            "OP12-015",
+            "OP13-040",
+            "OP17-017",
+            "ST21-014",
+            "ST30-012",
+            "ST31-005"
+          ],
+          "life_cards": [
+            "EB04-002",
+            "OP01-030",
+            "ST31-001"
+          ],
+          "don_cost": [
+            "Don",
+            "Don",
+            "Don"
+          ],
+          "attached_don": [
+            "Don"
+          ],
+          "rested_rz1": {
+            "attached_don": [
+              "Don"
+            ]
+          },
+          "rested": {
+            "OP12-015": 1
+          }
+        }
+      }
+    },
+    {
+      "turn": 6,
+      "player": "Opponent",
+      "card_drawn": null,
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "play",
+          "card": "ST30-012",
+          "card_name": "Monkey D. Luffy",
+          "effects": [
+            "Rest 1 Don",
+            "Give Monkey D. Luffy [\"ST30-012\">ST30-012] Rush"
+          ]
+        },
+        {
+          "type": "attack",
+          "attacker": "Luffy & Ace",
+          "attacker_code": "ST30-001",
+          "target": "Dracule Mihawk [\"OP14-020\">OP14-020]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": [
+            "OP06-033",
+            "OP17-031"
+          ]
+        },
+        {
+          "type": "attack",
+          "attacker": "Monkey D. Luffy",
+          "attacker_code": "ST30-012",
+          "target": "Dracule Mihawk [\"OP14-020\">OP14-020]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": [
+            "OP12-023"
+          ]
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP12-015",
+          "to_name": "Monkey D. Luffy",
+          "total": 1
+        },
+        {
+          "type": "attack",
+          "attacker": "Monkey D. Luffy",
+          "attacker_code": "OP12-015",
+          "target": "Dracule Mihawk [\"OP14-020\">OP14-020]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        }
+      ],
+      "snapshot": {
+        "Opponent": {
+          "hand": [
+            "OP04-016",
+            "OP01-030",
+            "OP12-037",
+            "ST21-014",
+            "OP01-057",
+            "OP01-030",
+            "OP15-032"
+          ],
+          "board": [
+            "EB04-002",
+            "OP12-015",
+            "EB04-002",
+            "ST30-012"
+          ],
+          "trash": [],
+          "life": 3,
+          "deck": [
+            "EB02-017",
+            "OP01-016",
+            "OP12-015",
+            "OP13-040",
+            "OP17-017",
+            "ST21-014",
+            "ST31-005"
+          ],
+          "life_cards": [
+            "EB04-002",
+            "OP01-030",
+            "ST31-001"
+          ],
+          "don_cost": [
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don"
+          ],
+          "attached_don": [
+            "Don"
+          ],
+          "rested": {
+            "OP12-015": 1,
+            "ST30-012": 1
+          }
+        },
+        "You": {
+          "hand": [
+            "OP13-031",
+            "OP17-022",
+            "OP14-023",
+            "OP07-022"
+          ],
+          "trash": [
+            "OP13-031",
+            "OP12-023",
+            "OP06-033",
+            "OP17-031",
+            "OP12-023"
+          ],
+          "board": [
+            "ST32-001",
+            "OP17-031"
+          ],
+          "life": 4,
+          "life_cards": [
+            "OP06-038",
+            "OP06-038",
+            "OP12-034",
+            "OP12-034"
+          ],
+          "don_cost": [
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don"
+          ],
+          "rested": {
+            "OP17-031": 1
+          }
+        }
+      }
+    },
+    {
+      "turn": 7,
+      "player": "You",
+      "card_drawn": null,
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "play",
+          "card": "OP13-031",
+          "card_name": "Trafalgar Law",
+          "effects": [
+            "Return Trafalgar Law [\"OP13-031\">OP13-031] to Hand",
+            "Deploy Otama [\"OP07-022\">OP07-022]"
+          ]
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP17-031",
+          "to_name": "Yasopp",
+          "total": 1
+        },
+        {
+          "type": "attack",
+          "attacker": "Yasopp",
+          "attacker_code": "OP17-031",
+          "target": "Monkey D. Luffy [\"OP12-015\">OP12-015]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": [
+            "OP15-032"
+          ]
+        },
+        {
+          "type": "activate",
+          "card": "OP14-020",
+          "card_name": "Dracule Mihawk",
+          "effects": [
+            "Rest Kin'emon [\"ST32-001\">ST32-001]",
+            "Activate 1 Don",
+            "Activate 1 Don",
+            "Activate 1 Don",
+            "Can't play Cost 1 Or More Characters for the Turn!"
+          ]
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP14-020",
+          "to_name": "Dracule Mihawk",
+          "total": 1
+        },
+        {
+          "type": "attach_don",
+          "amount": 2,
+          "to": "OP14-020",
+          "to_name": "Dracule Mihawk",
+          "total": 3
+        },
+        {
+          "type": "attack",
+          "attacker": "Dracule Mihawk",
+          "attacker_code": "OP14-020",
+          "target": "Monkey D. Luffy [\"OP12-015\">OP12-015]",
+          "result": "hit",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "activate",
+          "card": "OP17-031",
+          "card_name": "Yasopp",
+          "effects": [
+            "Set Yasopp [\"OP17-031\">OP17-031] to Active"
+          ]
+        }
+      ],
+      "snapshot": {
+        "You": {
+          "hand": [
+            "OP17-022",
+            "OP14-023",
+            "OP12-034",
+            "OP13-031"
+          ],
+          "board": [
+            "ST32-001",
+            "OP17-031",
+            "OP07-022"
+          ],
+          "trash": [
+            "OP13-031",
+            "OP12-023",
+            "OP06-033",
+            "OP17-031",
+            "OP12-023"
+          ],
+          "life": 4,
+          "deck": [
+            "OP06-033",
+            "OP13-031",
+            "OP14-039",
+            "OP17-022",
+            "ST32-003"
+          ],
+          "life_cards": [
+            "OP06-038",
+            "OP06-038",
+            "OP12-034",
+            "OP12-034"
+          ],
+          "don_cost": [
+            "Don",
+            "Don",
+            "Don"
+          ],
+          "attached_don": [
+            "Don",
+            "Don",
+            "Don",
+            "Don"
+          ],
+          "rested_rz1": {
+            "board": [
+              "OP07-022"
+            ]
+          },
+          "rested": {
+            "ST32-001": 1,
+            "OP17-031": 1
+          }
+        },
+        "Opponent": {
+          "hand": [
+            "OP04-016",
+            "OP01-030",
+            "OP12-037",
+            "ST21-014",
+            "OP01-057",
+            "OP01-030"
+          ],
+          "trash": [
+            "OP15-032",
+            "OP12-015"
+          ],
+          "board": [
+            "EB04-002",
+            "EB04-002",
+            "ST30-012"
+          ],
+          "life": 3,
+          "deck": [
+            "EB02-017",
+            "OP01-016",
+            "OP12-015",
+            "OP13-040",
+            "OP17-017",
+            "ST21-014",
+            "ST31-005"
+          ],
+          "life_cards": [
+            "EB04-002",
+            "OP01-030",
+            "ST31-001"
+          ],
+          "don_cost": [
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don"
+          ],
+          "rested_rz1": {
+            "don_cost": [
+              "Don"
+            ]
+          },
+          "rested": {
+            "ST30-012": 1
+          }
+        }
+      }
+    },
+    {
+      "turn": 8,
+      "player": "Opponent",
+      "card_drawn": null,
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "attack",
+          "attacker": "Luffy & Ace",
+          "attacker_code": "ST30-001",
+          "target": "Otama [\"OP07-022\">OP07-022]",
+          "result": null,
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "play",
+          "card": "ST21-014",
+          "card_name": "Monkey D. Luffy",
+          "effects": [
+            "Attach 1 Rested Don to Luffy & Ace [\"ST30-001\">ST30-001]"
+          ]
+        },
+        {
+          "type": "attack",
+          "attacker": "Monkey D. Luffy",
+          "attacker_code": "ST30-012",
+          "target": "Dracule Mihawk [\"OP14-020\">OP14-020]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": [
+            "OP14-023"
+          ]
+        },
+        {
+          "type": "attack",
+          "attacker": "Monkey D. Luffy",
+          "attacker_code": "ST21-014",
+          "target": "Dracule Mihawk [\"OP14-020\">OP14-020]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "attack",
+          "attacker": "Jewelry Bonney",
+          "attacker_code": "EB04-002",
+          "target": "Kin'emon [\"ST32-001\">ST32-001]",
+          "result": null,
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "attach_don",
+          "amount": 3,
+          "to": "EB04-002",
+          "to_name": "Jewelry Bonney",
+          "total": 3
+        },
+        {
+          "type": "attack",
+          "attacker": "Jewelry Bonney",
+          "attacker_code": "EB04-002",
+          "target": "Dracule Mihawk [\"OP14-020\">OP14-020]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": [
+            "OP12-034"
+          ]
+        }
+      ],
+      "snapshot": {
+        "Opponent": {
+          "hand": [
+            "OP04-016",
+            "OP01-030",
+            "OP12-037",
+            "OP01-057",
+            "OP01-030",
+            "ST21-014"
+          ],
+          "board": [
+            "EB04-002",
+            "EB04-002",
+            "ST30-012",
+            "ST21-014"
+          ],
+          "trash": [
+            "OP15-032",
+            "OP12-015"
+          ],
+          "life": 3,
+          "deck": [
+            "EB02-017",
+            "OP01-016",
+            "OP12-015",
+            "OP13-040",
+            "OP17-017",
+            "ST31-005"
+          ],
+          "life_cards": [
+            "EB04-002",
+            "OP01-030",
+            "ST31-001"
+          ],
+          "don_cost": [
+            "Don",
+            "Don",
+            "Don",
+            "Don"
+          ],
+          "attached_don": [
+            "Don",
+            "Don",
+            "Don",
+            "Don"
+          ],
+          "rested_rz1": {
+            "attached_don": [
+              "Don"
+            ]
+          },
+          "rested": {
+            "EB04-002": 2,
+            "ST30-012": 1,
+            "ST21-014": 1
+          }
+        },
+        "You": {
+          "hand": [
+            "OP17-022",
+            "OP12-034",
+            "OP13-031"
+          ],
+          "trash": [
+            "OP13-031",
+            "OP12-023",
+            "OP06-033",
+            "OP17-031",
+            "OP12-023",
+            "OP07-022",
+            "OP14-023",
+            "ST32-001",
+            "OP12-034"
+          ],
+          "board": [
+            "OP17-031"
+          ],
+          "life": 3,
+          "deck": [
+            "OP06-033",
+            "OP13-031",
+            "OP14-039",
+            "OP17-022",
+            "ST32-003"
+          ],
+          "life_cards": [
+            "OP06-038",
+            "OP06-038",
+            "OP12-034"
+          ],
+          "don_cost": [
+            "Don",
+            "Don",
+            "Don"
+          ],
+          "attached_don": [
+            "Don",
+            "Don",
+            "Don",
+            "Don"
+          ],
+          "rested": {
+            "OP17-031": 1
+          }
+        }
+      }
+    },
+    {
+      "turn": 9,
+      "player": "You",
+      "card_drawn": null,
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "play",
+          "card": "OP13-031",
+          "card_name": "Trafalgar Law",
+          "effects": [
+            "Return Trafalgar Law [\"OP13-031\">OP13-031] to Hand",
+            "Deploy Perona [\"OP12-034\">OP12-034]"
+          ]
+        },
+        {
+          "type": "activate",
+          "card": "OP12-034",
+          "card_name": "Perona",
+          "effects": [
+            "<b>Reveal and Draw Kouzuki Oden [\"ST32-002\">ST32-002]</b>"
+          ]
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP14-020",
+          "to_name": "Dracule Mihawk",
+          "total": 1
+        },
+        {
+          "type": "attach_don",
+          "amount": 2,
+          "to": "OP14-020",
+          "to_name": "Dracule Mihawk",
+          "total": 3
+        },
+        {
+          "type": "attack",
+          "attacker": "Dracule Mihawk",
+          "attacker_code": "OP14-020",
+          "target": "Luffy & Ace [\"ST30-001\">ST30-001]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "attack",
+          "attacker": "Yasopp",
+          "attacker_code": "OP17-031",
+          "target": "Luffy & Ace [\"ST30-001\">ST30-001]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": [
+            "EB04-002"
+          ]
+        },
+        {
+          "type": "activate",
+          "card": "OP17-031",
+          "card_name": "Yasopp",
+          "effects": [
+            "Set Yasopp [\"OP17-031\">OP17-031] to Active"
+          ]
+        }
+      ],
+      "snapshot": {
+        "You": {
+          "hand": [
+            "OP17-022",
+            "OP01-055",
+            "OP13-031",
+            "ST32-002"
+          ],
+          "board": [
+            "OP17-031",
+            "OP12-034"
+          ],
+          "trash": [
+            "OP13-031",
+            "OP12-023",
+            "OP06-033",
+            "OP17-031",
+            "OP12-023",
+            "OP07-022",
+            "OP14-023",
+            "ST32-001",
+            "OP12-034"
+          ],
+          "life": 3,
+          "deck": [
+            "OP06-033",
+            "OP12-023",
+            "OP12-034",
+            "OP13-031",
+            "OP13-040",
+            "OP14-039",
+            "OP17-022",
+            "ST32-001",
+            "ST32-003"
+          ],
+          "life_cards": [
+            "OP06-038",
+            "OP06-038",
+            "OP12-034"
+          ],
+          "don_cost": [
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don"
+          ],
+          "attached_don": [
+            "Don",
+            "Don",
+            "Don"
+          ],
+          "rested_rz1": {
+            "don_cost": [
+              "Don"
+            ],
+            "board": [
+              "OP12-034"
+            ]
+          },
+          "rested": {
+            "OP17-031": 1
+          }
+        },
+        "Opponent": {
+          "hand": [
+            "OP04-016",
+            "OP01-030",
+            "OP12-037",
+            "OP01-057",
+            "OP01-030",
+            "ST21-014"
+          ],
+          "trash": [
+            "OP15-032",
+            "OP12-015",
+            "EB04-002"
+          ],
+          "board": [
+            "EB04-002",
+            "EB04-002",
+            "ST30-012",
+            "ST21-014"
+          ],
+          "life": 2,
+          "deck": [
+            "EB02-017",
+            "OP01-016",
+            "OP12-015",
+            "OP13-040",
+            "OP17-017",
+            "ST31-005"
+          ],
+          "life_cards": [
+            "OP01-030",
+            "ST31-001"
+          ],
+          "don_cost": [
+            "Don",
+            "Don",
+            "Don",
+            "Don"
+          ],
+          "attached_don": [
+            "Don",
+            "Don",
+            "Don",
+            "Don"
+          ],
+          "rested_rz1": {
+            "attached_don": [
+              "Don"
+            ]
+          },
+          "rested": {
+            "EB04-002": 2,
+            "ST30-012": 1,
+            "ST21-014": 1
+          }
+        }
+      }
+    },
+    {
+      "turn": 10,
+      "player": "Opponent",
+      "card_drawn": null,
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "attack",
+          "attacker": "Luffy & Ace",
+          "attacker_code": "ST30-001",
+          "target": "Dracule Mihawk [\"OP14-020\">OP14-020]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "attack",
+          "attacker": "Monkey D. Luffy",
+          "attacker_code": "ST21-014",
+          "target": "Dracule Mihawk [\"OP14-020\">OP14-020]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "attack",
+          "attacker": "Monkey D. Luffy",
+          "attacker_code": "ST30-012",
+          "target": "Dracule Mihawk [\"OP14-020\">OP14-020]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "play",
+          "card": "ST21-014",
+          "card_name": "Monkey D. Luffy",
+          "effects": [
+            "Attach 1 Rested Don to Luffy & Ace [\"ST30-001\">ST30-001]"
+          ]
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "ST21-014",
+          "to_name": "Monkey D. Luffy",
+          "total": 1
+        },
+        {
+          "type": "attack",
+          "attacker": "Monkey D. Luffy",
+          "attacker_code": "ST21-014",
+          "target": "Dracule Mihawk [\"OP14-020\">OP14-020]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        }
+      ],
+      "snapshot": {}
+    }
+  ]
+}

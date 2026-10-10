@@ -1,6 +1,8 @@
 # TODO — Analisador de Decks OPTCG
 
-**Última atualização:** 9 de outubro de 2026 (blocos 943-956)
+**Última atualização:** 9 de outubro de 2026 (blocos 943-957)
+
+> **957**: 2a leva Mihawk x Luffy: 10x0 ao vivo, motor 76% -- causa aberta (descartados: deck proprio, turno, DON). Coletor agora registra toda partida. Proximo: reproduzir partida real no motor.
 
 > **956**: Xebec 10 descartado = no auto-jogo nao faz diferenca (partidas curtas, quase nunca e jogado). Carta baixada de graca agora e decisao do Q (ponto unico auto-jogo/ao vivo). Coletor nao copia mais a sessao inteira.
 

@@ -1,5 +1,23 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-10-10 (957) - 2a leva CPU x CPU Mihawk x Luffy & Ace; coletor contava a partida DEPOIS do parser
+
+10 partidas (7 + 3; a 8a nao comecou: clique no menu caiu no Deck Editor -> esperas maiores no loop).
+Placar Luffy & Ace 10 x 0 -- o motor da Mihawk 76% comecando. A diferenca segue.
+
+**Coletor**: o conserto do bloco 950 NUNCA funcionou ao vivo: `_id_da_partida_nova` contava os
+cabecalhos DEPOIS do parser, e `split_multigame_log` reescreve o arquivo base so com a 1a partida ->
+1 cabecalho -> procurava o id sem `_pN`. Agora conta ANTES (`alvo_id`). Confirmado ao vivo nas 3
+ultimas partidas (OK com _p2/_p3).
+
+**mede_motor_x_jogo.py** (MEDE_GLOB): ao vivo o Luffy ataca o lider 10,5x/partida (motor 7,9), o
+Mihawk 5,0 (motor 7,5); poder medio no ataque ao lider MENOR ao vivo nos dois lados (~800-900).
+Descartados: DON desperdicado (1/22 turnos agora), conhecimento do PROPRIO deck (ao vivo vem de
+`deck_cards_for_leader`: Mihawk so 25/50 cartas batem; mas trocar no motor deu 39/60 x 39/60 --
+o census muda e nao pesa, quem decide e o Q), e o numero do turno (ao vivo ja e por lado, 1-6).
+Proximo: reproduzir uma partida real no motor com a mesma ordem de cartas e achar a 1a divergencia.
+Usuario: toda leva CPU x CPU deve TROCAR os decks (memoria `feedback_cpu_trocar_decks`).
+
 ## 2026-10-10 (956) - Xebec 10 descartado pelo proprio efeito; carta baixada de graca vira decisao do Q
 
 Log `Sabo-RB_x_Rocks.D.Xebec-B_2026-10-10T10.26.44` (bot Xebec p2). Usuario: "descartando o Xebec 10
