@@ -17459,14 +17459,54 @@ class OPTCGMatch:
         for p in [self.state_a, self.state_b]:
             p.hand = [p.deck.pop() for _ in range(min(5, len(p.deck)))]
 
-            # Mulligan se mão sem cartas de custo <= 2
-            if not any(c.cost <= 2 for c in p.hand if c.card_type != 'LEADER'):
+        # MULLIGAN pela decisao UNICA (bloco 955): antes o auto-jogo tinha a
+        # propria regra ("troca se nao houver custo <= 2") e o jogo real outra
+        # (`_mulligan_decision`) -- duas funcoes pra mesma decisao, e nenhuma
+        # do modelo. Agora as duas passam por `decide_mulligan`.
+        for p in [self.state_a, self.state_b]:
+            opp_state = self.state_b if p is self.state_a else self.state_a
+            if self.decide_mulligan(p, opp_state)[0]:
                 p.deck.extend(p.hand)
                 random.shuffle(p.deck)
                 p.hand = [p.deck.pop() for _ in range(min(5, len(p.deck)))]
 
+        for p in [self.state_a, self.state_b]:
             life_count = p.leader.life if p.leader.life > 0 else 5
             p.life = [p.deck.pop() for _ in range(min(life_count, len(p.deck)))]
+
+    def decide_mulligan(self, p, opp) -> tuple:
+        """MANTER ou TROCAR a mao inicial -- decisao do Q (bloco 955, pedido
+        do usuario: "deixar o modelo decidir o mulligan e aprender pelo
+        resultado quais maos funcionam com cada deck").
+
+        Mesmo ponto unico das outras familias (`_q_escolhe_familia`): enquanto
+        o Q nao aprendeu `mulligan`, vale `_mulligan_decision` (a contagem de
+        sinais de hoje) e a exploracao testa a outra opcao; o resultado da
+        partida da o rotulo. Opcoes no mesmo formato do counter (bloco 910):
+        MANTER e descrita pela mao (soma de custo/poder/counter), TROCAR nao
+        tem carta. Devolve (troca: bool, resumo: str)."""
+        from types import SimpleNamespace
+        troca_regra, resumo, _ = self._mulligan_decision(p.hand, deck=p.deck or None)
+        mao = [c for c in p.hand if getattr(c, 'card_type', '') != 'LEADER']
+        manter = SimpleNamespace(
+            cost=sum(getattr(c, 'cost', 0) for c in mao),
+            power=sum(getattr(c, 'power', 0) for c in mao), power_buff=0,
+            counter=sum(getattr(c, 'counter', 0) for c in mao))
+        opcoes = [(0.0, 'mulligan', manter, None, None, 0, False),
+                  (0.0, 'mulligan', None, None, None, 0, False)]
+        _antes = (_Q_CTX.get('match'), _Q_CTX.get('ativo'))
+        # `ativo` None => a linha sai com vez=False: o rotulo (`alvo_consequencia`)
+        # fecha no fim do 2o turno PROPRIO (base = turno 0), como uma defesa --
+        # com vez=True o indice seria -1 e o mulligan ficaria sem rotulo.
+        _Q_CTX['match'], _Q_CTX['ativo'] = self, None
+        try:
+            i = _q_escolhe_familia(p, opp, 'mulligan', opcoes, 1 if troca_regra else 0)
+        finally:
+            _Q_CTX['match'], _Q_CTX['ativo'] = _antes
+        troca = (i == 1)
+        if troca != bool(troca_regra):
+            resumo = f'modelo: {"troca" if troca else "mantem"} (regra: {resumo})'
+        return troca, resumo
 
 
     # ── Fases do turno ───────────────────────────────────────────────────────

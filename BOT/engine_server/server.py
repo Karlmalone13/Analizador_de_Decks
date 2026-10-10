@@ -760,6 +760,7 @@ def reveal(req: RevealRequest):
 
 class MulliganRequest(BaseModel):
     hand: list[CardDto] = []
+    state: Optional["GameStateDto"] = None   # bloco 955: o Q decide com o estado
 
 
 class TurnOrderRequest(BaseModel):
@@ -1197,6 +1198,17 @@ def mulligan(req: MulliganRequest):
         if not hand_cards:
             return {"mulligan": False, "reason": "mao vazia/desconhecida — keep"}
         deve_trocar, resumo, sinais = match._mulligan_decision(hand_cards, deck=None)
+        # Bloco 955: com o estado (lideres etc.), a decisao e a MESMA do
+        # auto-jogo -- `decide_mulligan`, onde o Q decide. Sem estado (plugin
+        # antigo), segue a contagem de sinais.
+        if req.state is not None:
+            try:
+                gs_m = _dto_to_gs(req.state.bot, req.state.turnNumber)
+                opp_m = _dto_to_gs(req.state.opp, req.state.turnNumber, hide_hidden=True)
+                gs_m.hand = hand_cards
+                deve_trocar, resumo = match.decide_mulligan(gs_m, opp_m)
+            except Exception as _e:
+                print(f"[MULLIGAN] decide_mulligan falhou, usando a contagem: {_e}", flush=True)
         chosen = "mulligan" if deve_trocar else "keep"
         # Score comparavel (20/09, mesmo padrao de blocker/counter): a
         # MARGEM que ja decidiu `deve_trocar` (ruins-bons), exposta com o

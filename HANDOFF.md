@@ -1,5 +1,29 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-10-10 (955) - O MULLIGAN passa a ser decisao do modelo (pedido do usuario)
+
+Usuario: a mao do Xebec (Linlin, Gloriosa, Stussy, Buckin, OP17-055) "nao e tao boa -- nao veio draw nem
+search, e a Buckin nesse deck so serve de counter"; a regra manteve ("curva ok"). Pedido: o MODELO decide e
+aprende pelo resultado quais maos funcionam com cada deck.
+
+Estado ANTES: ao vivo `_mulligan_decision` (contagem de sinais); no AUTO-JOGO outra regra no `setup()`
+("troca se nao ha custo <= 2") -- duas funcoes pra mesma decisao, nenhuma do modelo, e o modelo nunca via
+a decisao.
+
+Agora: `OPTCGMatch.decide_mulligan(p, opp)` -> `_q_escolhe_familia('mulligan')`. Opcoes no formato do
+counter: MANTER descrita pela mao (soma custo/poder/counter), TROCAR sem carta. Enquanto o Q nao aprendeu
+a familia vale `_mulligan_decision` e a exploracao testa a outra. Linha gravada com vez=False -> o rotulo
+(`alvo_consequencia`) fecha no fim do 2o turno proprio (com vez=True o indice seria -1, sem rotulo).
+`setup()` usa a funcao (maos dos dois, depois mulligans, depois vida). `gerar_selfplay_dataset` chama o
+setup DEPOIS de ligar exploracao/captura (antes o mulligan nunca seria gravado). `treinar_q`
+FAMILIAS_JOGO += 'mulligan'. Ao vivo: plugin manda o estado junto (`ShouldMulligan(..., mulDto)`), o
+servidor usa `decide_mulligan`; sem estado (plugin antigo), a contagem.
+Sem coluna nova no vetor (coluna no bloco de ACAO desalinharia a CORRIDA das linhas antigas).
+Limite honesto: o Q ve a mao por somas + as features de estado; "esta carta so vale como counter" so
+aparece no que essas features carregam. E 1 decisao por partida: aprende devagar.
+smoke_fast 1927 OK (controles: sem exploracao = regra de hoje; com exploracao difere em parte das maos).
+Uma partida de auto-jogo gera 2 linhas `mulligan` (vez=False, turn 0). Plugin NAO recompilado (jogo aberto).
+
 ## 2026-10-10 (954) - 3a partida x Xebec (bot p2, Sabo): Shiki atacando, Newgate de mao vazia, final mal jogado, mulligan
 
 Log `Sabo-RB_x_Rocks.D.Xebec-B_2026-10-10T08.59.15` (bot Xebec p2, perdeu). q_fallback 0.

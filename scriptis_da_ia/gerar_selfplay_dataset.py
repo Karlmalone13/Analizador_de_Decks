@@ -283,7 +283,6 @@ def _run_one_match(task) -> list:
 
     try:
         match = OPTCGMatch(deck_a, deck_b)
-        match.setup()
     except Exception:
         return []
 
@@ -392,6 +391,14 @@ def _run_one_match(task) -> list:
         # pra ENSINAR (produzir o alvo) e quem decide e o Q, sempre -- entao
         # nao ha mais nada pra desligar aqui.
         match._q_captura = []
+
+    # SETUP DEPOIS da configuracao (bloco 955): o mulligan agora e decisao do Q
+    # dentro do setup, e precisa da exploracao e da captura ja ligadas -- antes
+    # o setup vinha logo apos criar a partida e o mulligan nunca seria gravado.
+    try:
+        match.setup()
+    except Exception:
+        return []
 
     revisoes = int(os.environ.get('OPTCG_REVISOES', '2') or 0) if q_out else 0
     amostras, winner, fotos = _joga(match, 0, i, code_a, code_b, geracao,

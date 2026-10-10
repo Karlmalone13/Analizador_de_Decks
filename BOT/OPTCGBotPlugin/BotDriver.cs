@@ -334,7 +334,7 @@ namespace OPTCGBotPlugin
                             "decidindo sem ver a mao (keep por fallback do servidor)");
                     string mulliganDecisionId = "";
                     bool mull = EngineClient.IsAlive() && EngineClient.ShouldMulligan(
-                        mulDto.bot.hand, id => mulliganDecisionId = id);
+                        mulDto.bot.hand, id => mulliganDecisionId = id, mulDto);
                     Plugin.Log.LogInfo($"[Bot] mao inicial: {(mull ? "MULLIGAN" : "KEEP")}");
                     gls.ChoiceButtonClicked(
                         mull ? ButtonChoiceType.StartingHand_Mulligan : ButtonChoiceType.StartingHand_Keep, -1);

@@ -375,11 +375,13 @@ namespace OPTCGBotPlugin
 
         // true = trocar a mao; false = manter (default seguro em erro)
         public static bool ShouldMulligan(System.Collections.Generic.List<CardDto> hand,
-                                          Action<string>? onDecision = null)
+                                          Action<string>? onDecision = null,
+                                          GameStateDto? state = null)
         {
             try
             {
-                string json = JsonConvert.SerializeObject(new { hand });
+                // Bloco 955: o estado vai junto -- o Q decide o mulligan com ele.
+                string json = JsonConvert.SerializeObject(new { hand, state });
                 var content = new StringContent(json, Encoding.UTF8, "application/json");
                 var resp = _http.PostAsync($"{BASE}/mulligan", content).GetAwaiter().GetResult();
                 if (!resp.IsSuccessStatusCode)

@@ -11011,6 +11011,7 @@ def main() -> int:
     test_debuff_em_batalha_ve_o_atacante_bloco952()
     test_campo_cheio_nao_tira_o_recem_jogado_bloco952()
     test_reacao_em_batalha_le_o_bloco_de_batalha_bloco953()
+    test_mulligan_e_decisao_do_q_bloco955()
     test_explora_so_onde_o_modelo_esta_incerto_27_09()
     test_treino_continua_do_campeao_27_09()
     test_registro_de_geracoes_27_09()
@@ -16108,6 +16109,47 @@ def test_reacao_em_batalha_le_o_bloco_de_batalha_bloco953() -> None:
     me.deck = [real_card("OP17-045") for _ in range(5)]
     check("CONTROLE: fora de batalha o on_play (draw, sem custo) segue valendo -> aceita",
           sim_bridge.resolve_optional_effect(me, opp, actor_code="OP17-040") is True)
+
+
+def test_mulligan_e_decisao_do_q_bloco955() -> None:
+    """Pedido do usuario (10/10): o MODELO decide o mulligan e aprende pelo
+    resultado. Uma funcao so (`decide_mulligan`) pro auto-jogo e pro jogo real;
+    a linha entra no corpus como familia `mulligan`, com vez=False (rotulo no
+    fim do 2o turno proprio)."""
+    import random as _r
+    from optcg_engine import sim_bridge as sb
+    from optcg_engine.decision_engine import OPTCGMatch
+    deck = sb.load_sim_deck('Mihawk op17') if hasattr(sb, 'load_sim_deck') else None
+    if deck is None:
+        check("mulligan: sem deck do simulador (pulado)", True)
+        return
+    _r.seed(955)
+    m = OPTCGMatch(deck, deck)
+    m._q_captura = []
+    m._explora_eps = 1.0
+    m.setup()
+    linhas = [x for x in m._q_captura if x.get('acao') == 'mulligan']
+    check("mulligan: o setup decide pelo Q e grava 1 linha por jogador", len(linhas) == 2)
+    check("mulligan: linha com vez=False (rotulo fecha no 2o turno proprio)",
+          all(x.get('vez') is False for x in linhas))
+    check("mulligan: maos de 5 depois da decisao", len(m.state_a.hand) == 5 and len(m.state_b.hand) == 5)
+    # CONTROLE: sem exploracao e sem Q que aprendeu, vale a contagem de sinais
+    _r.seed(956)
+    m2 = OPTCGMatch(deck, deck)
+    m2._explora_eps = 0.0
+    m2.state_a.hand = [m2.state_a.deck.pop() for _ in range(5)]
+    regra = m2._mulligan_decision(m2.state_a.hand, deck=m2.state_a.deck)[0]
+    check("CONTROLE: sem exploracao, decide igual a regra de hoje",
+          m2.decide_mulligan(m2.state_a, m2.state_b)[0] == bool(regra))
+    trocas = 0
+    for s in range(40):
+        _r.seed(9000 + s)
+        m3 = OPTCGMatch(deck, deck)
+        m3._explora_eps = 1.0
+        m3.state_a.hand = [m3.state_a.deck.pop() for _ in range(5)]
+        r = m3._mulligan_decision(m3.state_a.hand, deck=m3.state_a.deck)[0]
+        trocas += int(m3.decide_mulligan(m3.state_a, m3.state_b)[0] != bool(r))
+    check("CONTROLE: com exploracao a escolha DIFERE da regra em parte das maos", 0 < trocas < 40)
 
 
 def _so_ev(ev):

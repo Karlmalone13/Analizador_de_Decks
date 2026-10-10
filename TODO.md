@@ -1,6 +1,8 @@
 # TODO — Analisador de Decks OPTCG
 
-**Última atualização:** 9 de outubro de 2026 (blocos 943-954)
+**Última atualização:** 9 de outubro de 2026 (blocos 943-955)
+
+> **955**: mulligan virou decisao do modelo (Q), uma funcao so pro auto-jogo e pro jogo real; aprende nos proximos ciclos. Falta recompilar o plugin (jogo aberto).
 
 > **954**: Shiki atacando volta a mirar o defensor; Newgate nao aceita mais com mao vazia. Pendentes: o bot nao fecha o jogo (oponente com vida 0, atacou personagens); mulligan ainda e regra fixa.
 

@@ -138,7 +138,8 @@ def passa_filtro_modo(linha: dict, modo: str = MODO_PADRAO) -> bool:
 # consequencia e familia que o ML NAO aprende -- o numero nao da pra fingir.
 FAMILIAS_JOGO = ('attack', 'play', 'pass', 'activate', 'attach_don',
                  'block', 'counter', 'target', 'descarte', 'counter_evento',
-                 'custo_restar', 'custo_sacrificar', 'busca', 'pagar_custo', 'opcao_efeito')
+                 'custo_restar', 'custo_sacrificar', 'busca', 'pagar_custo', 'opcao_efeito',
+                 'mulligan')
 SELFPLAY = RAIZ / 'metrics' / 'selfplay_v2.jsonl'
 
 
