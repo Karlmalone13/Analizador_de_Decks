@@ -11010,6 +11010,7 @@ def main() -> int:
     test_descarte_ao_vivo_protege_counter_bloco949()
     test_debuff_em_batalha_ve_o_atacante_bloco952()
     test_campo_cheio_nao_tira_o_recem_jogado_bloco952()
+    test_reacao_em_batalha_le_o_bloco_de_batalha_bloco953()
     test_explora_so_onde_o_modelo_esta_incerto_27_09()
     test_treino_continua_do_campeao_27_09()
     test_registro_de_geracoes_27_09()
@@ -16055,13 +16056,18 @@ def test_debuff_em_batalha_ve_o_atacante_bloco952() -> None:
         sem = list(vistos); vistos.clear()
         sim_bridge.order_target_candidates(me, opp, cands, attacker_power=8000, defender_uid=1,
                                            actor_code="OP17-049", purpose="effect", attacker_uid=-460)
-        buff = list(vistos)
+        buff = list(vistos); vistos.clear()
+        meu_atk = list(me.field_chars)[0]; meu_atk._deck_uid = 340
+        sim_bridge.order_target_candidates(me, opp, cands, attacker_power=9000, defender_uid=-320,
+                                           actor_code="OP17-048", purpose="effect", attacker_uid=340)
+        proprio = list(vistos)
     finally:
         EffectExecutor._pick_effect_target = orig
     check("ao vivo: debuff em batalha vai pra MESMA escolha do motor, sabendo quem ataca",
           bool(com) and com[0][0] is atk and any(c is atk for c in com[0][1]))
     check("CONTROLE: sem attacker_uid (plugin antigo) nao passa pelo motor em batalha", not sem)
     check("CONTROLE: BUFF de defesa em batalha (Linlin) segue na regua de batalha", not buff)
+    check("CONTROLE: no ataque DO BOT o debuff segue na regua (defensor), nao no motor", not proprio)
 
 
 def test_campo_cheio_nao_tira_o_recem_jogado_bloco952() -> None:
@@ -16085,6 +16091,23 @@ def test_campo_cheio_nao_tira_o_recem_jogado_bloco952() -> None:
     ordem4 = sim_bridge.order_target_candidates(me4, opp, cands[:4], actor_code="OP17-118")
     check("CONTROLE: campo NAO cheio segue a escolha de alvo de efeito (outra ordem)",
           ordem4[:1] == [400])
+
+
+def test_reacao_em_batalha_le_o_bloco_de_batalha_bloco953() -> None:
+    """Ao vivo 10/10: Newgate OP17-040 aceito com a MAO VAZIA (custo: trash 1
+    da mao). O laco lia o `on_play` (draw, sem custo) antes do bloco de
+    batalha e decidia "custo zero"."""
+    me = GameState(leader=real_card("OP17-039"))
+    me.field_chars = [real_card("OP17-040"), real_card("OP17-040"), real_card("OP17-045")]
+    me.hand = []
+    opp = GameState(leader=real_card("OP13-004"))
+    me.leader._deck_uid = -1
+    r = sim_bridge.resolve_optional_effect(me, opp, actor_code="OP17-040", attacker_power=8000,
+                                           defender_power=5000, actor_defending=True, defender_uid=-1)
+    check("Newgate em batalha com a MAO VAZIA: recusa (nao ha carta pro custo)", r is False)
+    me.deck = [real_card("OP17-045") for _ in range(5)]
+    check("CONTROLE: fora de batalha o on_play (draw, sem custo) segue valendo -> aceita",
+          sim_bridge.resolve_optional_effect(me, opp, actor_code="OP17-040") is True)
 
 
 def _so_ev(ev):

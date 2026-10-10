@@ -1,0 +1,71 @@
+{
+  "cards": [
+    {
+      "code": "OP17-119",
+      "name": "Loki",
+      "count": 3
+    },
+    {
+      "code": "OP17-095",
+      "name": "OP17-095",
+      "count": 2
+    },
+    {
+      "code": "OP17-093",
+      "name": "Monkey D. Luffy",
+      "count": 2
+    },
+    {
+      "code": "OP17-086",
+      "name": "Nami",
+      "count": 2
+    },
+    {
+      "code": "OP17-087",
+      "name": "OP17-087",
+      "count": 2
+    },
+    {
+      "code": "OP17-089",
+      "name": "OP17-089",
+      "count": 2
+    },
+    {
+      "code": "ST01-011",
+      "name": "Brook",
+      "count": 1
+    },
+    {
+      "code": "OP14-096",
+      "name": "OP14-096",
+      "count": 1
+    },
+    {
+      "code": "OP04-016",
+      "name": "OP04-016",
+      "count": 1
+    },
+    {
+      "code": "OP15-088",
+      "name": "Pirate Docking 6",
+      "count": 1
+    },
+    {
+      "code": "OP17-081",
+      "name": "OP17-081",
+      "count": 1
+    },
+    {
+      "code": "OP17-082",
+      "name": "OP17-082",
+      "count": 1
+    },
+    {
+      "code": "OP17-084",
+      "name": "OP17-084",
+      "count": 1
+    }
+  ],
+  "total_seen": 20,
+  "leader": "OP13-004"
+}

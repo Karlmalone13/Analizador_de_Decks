@@ -1989,8 +1989,15 @@ def resolve_optional_effect(gs: GameState, opp_gs: GameState,
     # Katakuri OP11-062): mesmo tipo de gatilho de custo opcional que
     # resolve sozinho durante o combate, sem scoring previo -- ver
     # comentario espelhado em execute() (decision_engine.py).
-    for trig in ('on_play', 'main', 'activate_main', 'when_attacking', 'on_opp_attack',
-                 'leader_battle_reactive'):
+    # EM BATALHA so os blocos de batalha (bloco 953): o Newgate OP17-040 tem
+    # `on_play` (draw, SEM custo) antes do `leader_battle_reactive` (trash 1
+    # da mao) -- o laco decidia pelo on_play, "custo zero, vale", e o bot
+    # aceitava com a MAO VAZIA, travando a tela tentando pagar.
+    _gatilhos = (('when_attacking', 'on_opp_attack', 'leader_battle_reactive')
+                 if attacker_power > 0 else
+                 ('on_play', 'main', 'activate_main', 'when_attacking', 'on_opp_attack',
+                  'leader_battle_reactive'))
+    for trig in _gatilhos:
         ef = effects.get(trig)
         if not ef:
             continue
@@ -2566,8 +2573,13 @@ def order_target_candidates(gs: GameState, opp_gs: GameState,
     # So DEBUFF: buff de defesa segue na regua de batalha abaixo, que ja sabe
     # do defensor (mandar tudo pro motor, 1a tentativa do bloco 952, pos o
     # buff no personagem errado ao vivo).
+    # So no ataque DO OPONENTE (quem ataca e carta dele). No ataque do PROPRIO
+    # bot o debuff certo e no DEFENSOR, que a regua de batalha abaixo ja trata
+    # (Shiki atacando Pirate Docking 6 deu -3000 no Loki, 10/10/2026).
+    _atk_do_oponente = any(getattr(c, '_deck_uid', None) == attacker_uid
+                           for c in [opp_gs.leader] + list(opp_gs.field_chars))
     _debuff_em_batalha = bool(
-        attacker_power > 0 and attacker_uid and actor_code
+        attacker_power > 0 and attacker_uid and actor_code and _atk_do_oponente
         and any(s.get('action') == 'debuff_power'
                 for k, b in get_card_effects(actor_code).items()
                 if k in ('on_opp_attack', 'when_attacking', 'counter', 'trigger')

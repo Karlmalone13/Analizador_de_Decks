@@ -1,5 +1,22 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-10-10 (954) - 3a partida x Xebec (bot p2, Sabo): Shiki atacando, Newgate de mao vazia, final mal jogado, mulligan
+
+Log `Sabo-RB_x_Rocks.D.Xebec-B_2026-10-10T08.59.15` (bot Xebec p2, perdeu). q_fallback 0.
+
+1. **Shiki ATACANDO deu -3000 no Loki** (atacava Pirate Docking 6, 9000x10000; -3000 no defensor passava).
+   O 953 mandava TODO debuff em batalha pro motor, inclusive no ataque DO BOT, onde a regua de batalha ja
+   acerta o defensor. Restrito a quando QUEM ATACA e do oponente (`_atk_do_oponente`).
+2. **Newgate OP17-040 aceito com a MAO VAZIA** (4x, tela parada ~10 s cada): `resolve_optional_effect`
+   lia os blocos na ordem e decidia pelo `on_play` (draw, SEM custo) antes do `leader_battle_reactive`
+   (trash 1 da mao). Em batalha agora so le blocos de batalha. Replay do estado real: True -> False.
+3. **Final**: Sabo com vida 0, Kyo (4000) em campo sem atacar; os 7 DON foram pro Shiki (Rush:Character,
+   so ataca personagem). A auditoria de derrota (turno 10) mostra o motor de HOJE tambem atacando
+   personagens -- decisao do modelo (fechar o jogo), nao bug de regra. Pendente: medir.
+4. **Mulligan e REGRA FIXA** (`_mulligan_decision`: contagem de sinais curva/searcher/counter/trigger),
+   nao o modelo. Manteve (1 x -1). Candidato a virar decisao do Q.
+smoke_fast 1922 OK (novos: no ataque do bot debuff segue a regua; Newgate mao vazia recusa + controle).
+
 ## 2026-10-09 (953) - 2a partida x Xebec: o 952 travou o Kaido e piorou buff de defesa; Xebec se autodescartava
 
 Log `Rocks.D.Xebec-B_x_Enel-P_2026-10-09T21.54.25` (bot Xebec, perdeu). Usuario: "kaido nao concluiu o

@@ -1,6 +1,8 @@
 # TODO — Analisador de Decks OPTCG
 
-**Última atualização:** 9 de outubro de 2026 (blocos 943-953)
+**Última atualização:** 9 de outubro de 2026 (blocos 943-954)
+
+> **954**: Shiki atacando volta a mirar o defensor; Newgate nao aceita mais com mao vazia. Pendentes: o bot nao fecha o jogo (oponente com vida 0, atacou personagens); mulligan ainda e regra fixa.
 
 > **953**: corrige regressoes do 952 (Kaido travava; buff de defesa ia pro personagem errado) e o Xebec que se autodescartava com campo cheio. Falta testar ao vivo.
 
