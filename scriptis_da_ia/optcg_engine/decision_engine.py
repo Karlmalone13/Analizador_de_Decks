@@ -2862,6 +2862,14 @@ class Card:
         return v
 
 
+def quem_sai_do_campo_cheio(field_chars):
+    """Campo com 5 e um Character novo entrando: quem sai. Fonte UNICA (bloco
+    952) -- a jogada do motor e o prompt ao vivo do jogo ("deploy swap")
+    usam esta mesma funcao. Ao vivo o prompt caia na escolha de ALVO DE
+    EFEITO (maior valor) e o bot tirou o proprio Xebec OP17-118 recem-jogado."""
+    return min(field_chars, key=lambda c: c.board_value()) if field_chars else None
+
+
 def character_needs_rush(c: 'Card') -> bool:
     """Rush so importa pra quem ENTROU EM CAMPO NESTE TURNO (just_played) e
     ainda nao tem a permissao -- um Character de turno anterior ja ataca
@@ -23238,7 +23246,7 @@ class OPTCGMatch:
 
         if card.card_type == 'CHARACTER':
             if len(p.field_chars) >= 5:
-                worst = min(p.field_chars, key=lambda c: c.board_value())
+                worst = quem_sai_do_campo_cheio(p.field_chars)
                 remove_character_from_field(p, worst, 'trash')
                 if verbose:
                     print(f'    campo cheio -> descartou {worst.name[:25]}')

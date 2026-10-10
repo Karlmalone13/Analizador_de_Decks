@@ -429,7 +429,9 @@ namespace OPTCGBotPlugin
                 // sinal do PROPRIO JOGO de quem deve responder -- e o mesmo
                 // criterio ja usado na linha ~374 com `HasOfferedButtons`.
                 if (BotExecutor.IsOfferingV3Choice(gls)
-                    && BotExecutor.ShouldBotAnswer(gls, pdBotPs, BotPlayerIndex))
+                    && BotExecutor.ShouldBotAnswer(gls, pdBotPs, BotPlayerIndex)
+                    // Linlin do bot: "Your opponent chooses" -- e do humano (bloco 952)
+                    && !BotExecutor.MinhaCartaVezDoOponente(gls, pdBotPs, BotPlayerIndex))
                 {
                     var opcoes = BotExecutor.GetV3Choices(gls);
                     var dtoV3 = GameStateBuilder.Build(pdBotPs, gls.Lps_Players[1 - BotPlayerIndex], gls);
@@ -968,6 +970,17 @@ namespace OPTCGBotPlugin
             // partida parava ate o humano clicar. Ver `ShouldBotAnswer`.
             if (!BotExecutor.ShouldBotAnswer(gls, botPs, BotPlayerIndex))
                 return;
+            // Carta do bot, vez do oponente, e os alvos sao so cartas da MAO
+            // dele (Linlin: "your opponent trashes 2") -- a escolha e do humano
+            // (bloco 952). Alvo no CAMPO do oponente (Kaido) segue com o bot.
+            if (BotExecutor.MinhaCartaVezDoOponente(gls, botPs, BotPlayerIndex))
+            {
+                var cs = BotExecutor.CollectTargetCandidates(botPs, oppPs, gls);
+                var validos = cs.FindAll(c => c.valido == true);
+                if (validos.Count > 0) cs = validos;
+                if (cs.Count > 0 && cs.TrueForAll(c => c.zone == "opp_hand"))
+                    return;
+            }
 
             // Novo prompt (ou novo step do mesmo efeito V3)? refaz a ordem
             int step = gls.acaActive.iActionStep;

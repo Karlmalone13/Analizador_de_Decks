@@ -2533,19 +2533,51 @@ def order_target_candidates(gs: GameState, opp_gs: GameState,
     # do offline (`_pick_effect_target`, onde o Q decide quando aprendeu). A
     # regua por zona abaixo fica so pro que ainda nao chega validado (custo,
     # redirect, plugin antigo).
-    # DURANTE UM ATAQUE tambem (bloco 952): com o plugin dizendo QUEM ataca
+    # Campo cheio: o jogo pergunta quem SAI pra entrar o novo (plugin manda
+    # actor "deploy_swap", e tambem no meio de um efeito -- bloco 952). Mesma
+    # funcao da jogada do motor, repetida pra dar a ordem inteira.
+    # Tambem DENTRO de um efeito que baixa carta (Xebec OP17-118 "play up to
+    # 2 ... from your hand"): o jogo nao entra no estado de swap, pede "quem
+    # sai" como alvo comum. Reconhece pela forma: ator com `play_card`, campo
+    # cheio e todos os alvos sao personagens proprios.
+    _swap_em_efeito = bool(
+        actor_code and candidates and len(gs.field_chars) >= 5
+        and all(c.get('zone') == 'own_board' for c in candidates)
+        and any(s.get('action') == 'play_card'
+                for b in get_card_effects(actor_code).values() for s in b.get('steps', [])))
+    if actor_code == 'deploy_swap' or purpose == 'deploy_swap' or _swap_em_efeito:
+        from optcg_engine.decision_engine import quem_sai_do_campo_cheio
+        por_uid = {getattr(c, '_deck_uid', None): c for c in gs.field_chars}
+        restantes = [por_uid[c['id']] for c in candidates if c['id'] in por_uid]
+        ids = []
+        while restantes:
+            sai = quem_sai_do_campo_cheio(restantes)
+            ids.append(sai._deck_uid)
+            restantes = [c for c in restantes if c is not sai]
+        ids += [c['id'] for c in candidates if c['id'] not in ids]
+        if with_scores:
+            return [(i, ['quem_sai_do_campo_cheio', pos]) for pos, i in enumerate(ids)]
+        return ids
+
+    # DEBUFF EM BATALHA (bloco 953): com o plugin dizendo QUEM ataca
     # (`attacker_uid`), a escolha vai pra MESMA funcao do auto-jogo, com a
-    # batalha em curso -- antes caia na regua por zona abaixo, que nao sabia
-    # quem atacava (Shiki deu -3000 no Zoro parado em vez do Luffy atacante).
-    # Redirect de ataque segue na regua propria dele.
-    _redirect = bool(actor_code) and any(
-        s.get('action') == 'redirect_attack_target'
-        for b in get_card_effects(actor_code).values() for s in b.get('steps', []))
-    _em_batalha = attacker_power > 0 and attacker_uid and not _redirect
-    if (purpose != 'cost' and (attacker_power <= 0 or _em_batalha) and candidates
+    # batalha em curso (`_battle_attacker`) -- Shiki OP17-048 "[On Your
+    # Opponent's Attack] -3000" ia pro Zoro/Ohm parado pela regua por zona.
+    # So DEBUFF: buff de defesa segue na regua de batalha abaixo, que ja sabe
+    # do defensor (mandar tudo pro motor, 1a tentativa do bloco 952, pos o
+    # buff no personagem errado ao vivo).
+    _debuff_em_batalha = bool(
+        attacker_power > 0 and attacker_uid and actor_code
+        and any(s.get('action') == 'debuff_power'
+                for k, b in get_card_effects(actor_code).items()
+                if k in ('on_opp_attack', 'when_attacking', 'counter', 'trigger')
+                for s in b.get('steps', []))
+        and not any(s.get('action') == 'redirect_attack_target'
+                    for b in get_card_effects(actor_code).values() for s in b.get('steps', [])))
+    if (purpose != 'cost' and (attacker_power <= 0 or _debuff_em_batalha) and candidates
             and all(c.get('valido') is True for c in candidates)):
         ee = EffectExecutor(gs, opp_gs)
-        if _em_batalha:
+        if _debuff_em_batalha:
             ee._battle_attacker = next(
                 (c for c in [opp_gs.leader] + list(opp_gs.field_chars)
                  + [gs.leader] + list(gs.field_chars)

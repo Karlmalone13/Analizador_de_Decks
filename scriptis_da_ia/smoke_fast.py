@@ -11009,6 +11009,7 @@ def main() -> int:
     test_regua_rapida_igual_ao_sklearn_bloco945()
     test_descarte_ao_vivo_protege_counter_bloco949()
     test_debuff_em_batalha_ve_o_atacante_bloco952()
+    test_campo_cheio_nao_tira_o_recem_jogado_bloco952()
     test_explora_so_onde_o_modelo_esta_incerto_27_09()
     test_treino_continua_do_campeao_27_09()
     test_registro_de_geracoes_27_09()
@@ -16042,25 +16043,48 @@ def test_debuff_em_batalha_ve_o_atacante_bloco952() -> None:
     vistos = []
     orig = EffectExecutor._pick_effect_target
     EffectExecutor._pick_effect_target = lambda self, cs: (
-        vistos.append(getattr(self, '_battle_attacker', None)), cs[0])[1]
+        vistos.append((getattr(self, '_battle_attacker', None), list(cs))), cs[0])[1]
     try:
-        cands = [{"id": -460, "zone": "opp_board", "code": "OP17-093", "valido": True},
-                 {"id": -320, "zone": "opp_board", "code": "OP17-095", "valido": True}]
-        sim_bridge.order_target_candidates(me, opp, cands, attacker_power=8000,
-                                           defender_uid=1, actor_code="OP17-048",
-                                           purpose="effect", attacker_uid=-460)
-        ok_vivo = bool(vistos) and vistos[0] is atk
-        vistos.clear()
-        sim_bridge.order_target_candidates(me, opp, cands, attacker_power=8000,
-                                           defender_uid=1, actor_code="OP17-048",
-                                           purpose="effect")
-        sem_uid = not vistos
+        cands = [{"id": -320, "zone": "opp_board", "code": "OP17-095", "valido": True},
+                 {"id": -460, "zone": "opp_board", "code": "OP17-093", "valido": True}]
+        sim_bridge.order_target_candidates(me, opp, cands, attacker_power=8000, defender_uid=1,
+                                           actor_code="OP17-048", purpose="effect", attacker_uid=-460)
+        com = list(vistos); vistos.clear()
+        sim_bridge.order_target_candidates(me, opp, cands, attacker_power=8000, defender_uid=1,
+                                           actor_code="OP17-048", purpose="effect")
+        sem = list(vistos); vistos.clear()
+        sim_bridge.order_target_candidates(me, opp, cands, attacker_power=8000, defender_uid=1,
+                                           actor_code="OP17-049", purpose="effect", attacker_uid=-460)
+        buff = list(vistos)
     finally:
         EffectExecutor._pick_effect_target = orig
-    check("ao vivo: com attacker_uid, o alvo vai pra MESMA escolha do motor, sabendo quem ataca",
-          ok_vivo)
-    check("CONTROLE: sem attacker_uid (plugin antigo) cai na regua antiga, como antes",
-          sem_uid)
+    check("ao vivo: debuff em batalha vai pra MESMA escolha do motor, sabendo quem ataca",
+          bool(com) and com[0][0] is atk and any(c is atk for c in com[0][1]))
+    check("CONTROLE: sem attacker_uid (plugin antigo) nao passa pelo motor em batalha", not sem)
+    check("CONTROLE: BUFF de defesa em batalha (Linlin) segue na regua de batalha", not buff)
+
+
+def test_campo_cheio_nao_tira_o_recem_jogado_bloco952() -> None:
+    """Ao vivo 09/10: o On Play do Xebec OP17-118 baixou carta com o campo
+    cheio e o jogo pediu "quem sai" como alvo comum; a escolha de ALVO DE
+    EFEITO (maior valor) tirou o proprio Xebec. Agora usa a mesma funcao da
+    jogada do motor (`quem_sai_do_campo_cheio`)."""
+    from optcg_engine.decision_engine import quem_sai_do_campo_cheio
+    codes = [("OP17-118", 400), ("OP17-042", 170), ("OP17-048", 340), ("OP17-043", 240), ("OP17-044", 180)]
+    campo = []
+    for code, uid in codes:
+        c = real_card(code); c._deck_uid = uid; campo.append(c)
+    me = GameState(leader=real_card("OP17-039")); me.field_chars = campo
+    opp = GameState(leader=real_card("OP15-058"))
+    cands = [{"id": uid, "zone": "own_board", "code": code, "valido": True} for code, uid in codes]
+    ordem = sim_bridge.order_target_candidates(me, opp, cands, actor_code="OP17-118")
+    check("campo cheio em efeito: o 1o a sair e o MESMO que o motor tiraria",
+          ordem[:1] == [quem_sai_do_campo_cheio(campo)._deck_uid])
+    check("campo cheio em efeito: nao tira o Xebec recem-jogado primeiro", ordem[:1] != [400])
+    me4 = GameState(leader=real_card("OP17-039")); me4.field_chars = campo[:4]
+    ordem4 = sim_bridge.order_target_candidates(me4, opp, cands[:4], actor_code="OP17-118")
+    check("CONTROLE: campo NAO cheio segue a escolha de alvo de efeito (outra ordem)",
+          ordem4[:1] == [400])
 
 
 def _so_ev(ev):

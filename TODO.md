@@ -1,6 +1,8 @@
 # TODO — Analisador de Decks OPTCG
 
-**Última atualização:** 9 de outubro de 2026 (blocos 943-952)
+**Última atualização:** 9 de outubro de 2026 (blocos 943-953)
+
+> **953**: corrige regressoes do 952 (Kaido travava; buff de defesa ia pro personagem errado) e o Xebec que se autodescartava com campo cheio. Falta testar ao vivo.
 
 > **952**: bot nao responde mais escolha do oponente (Linlin); efeito em batalha (Shiki -3000) agora enxerga o atacante, no motor e ao vivo. Falta testar ao vivo. Mihawk motor x jogo: Luffy ataca o lider muito mais ao vivo -- causa aberta.
 

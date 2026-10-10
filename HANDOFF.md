@@ -1,5 +1,26 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-10-09 (953) - 2a partida x Xebec: o 952 travou o Kaido e piorou buff de defesa; Xebec se autodescartava
+
+Log `Rocks.D.Xebec-B_x_Enel-P_2026-10-09T21.54.25` (bot Xebec, perdeu). Usuario: "kaido nao concluiu o
+efeito, shiki nao resolvido, jogou o xebec e descartou ele mesmo".
+
+1. **Kaido OP17-042 travou ("Forcing opponent")**: ao mirar personagem DO OPONENTE o jogo tambem poe
+   iPlayerAction no oponente. A troca geral do 952 (`ShouldBotAnswer` olhando iPlayerAction primeiro)
+   fazia o bot nao responder. Revertida; novo `MinhaCartaVezDoOponente` barra so os dois casos em que a
+   escolha e do humano: tela V3Choice e alvos que sao SO cartas da mao do oponente.
+2. **Buff de defesa no personagem errado** (Linlin +1000 e evento Rocks Pirates +2000 no Shiki/Kaido em vez
+   do Xebec atacado -- 6000x6000 passou): o 952 mandava toda escolha em batalha pra `_pick_effect_target`,
+   que nao sabe do defensor. Agora so DEBUFF em batalha (ator com `debuff_power` e `attacker_uid` do
+   plugin) vai pra `_pick_effect_target` com `_battle_attacker`; buff de defesa volta pra regua de batalha.
+   (Uma linha "atacante primeiro" na regua foi barrada pelo hook de segundo motor -- delegado ao motor.)
+3. **Xebec OP17-118 se autodescartou**: com campo cheio, o On Play ("play up to 2 from hand") faz o jogo
+   pedir "quem sai" como alvo comum; a escolha de alvo de efeito tirou o mais valioso (o Xebec). Nova fonte
+   unica `quem_sai_do_campo_cheio` (decision_engine), usada pela jogada do motor e pelo servidor (actor
+   `deploy_swap` ou efeito com `play_card` + campo cheio + alvos so own_board).
+smoke_fast 1918 OK (controles: sem attacker_uid a ordem antiga; campo de 4 segue a escolha de efeito).
+Plugin recompilado, servidor reiniciado. Falta testar ao vivo.
+
 ## 2026-10-09 (952) - Partida humano x Xebec: Linlin escolhia pelo humano; Shiki nao sabia quem atacava
 
 Log `Rocks.D.Xebec-B_x_Monkey.D.Luffy-B_2026-10-09T19.25.19` (bot Xebec p1, perdeu). q_fallback 0.
