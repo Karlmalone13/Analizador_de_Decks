@@ -1,6 +1,8 @@
 # TODO — Analisador de Decks OPTCG
 
-**Última atualização:** 9 de outubro de 2026 (blocos 943-958)
+**Última atualização:** 9 de outubro de 2026 (blocos 943-959)
+
+> **959**: custo opcional de On Play (devolver/deitar personagem proprio) ao vivo agora passa pela mesma decisao do motor; antes era pago sem perguntar (Law se devolvendo). Pendentes: custo da ativacao do lider Mihawk (deita o lider no motor), OP01-055 sem custo pagavel.
 
 > **958**: 2 regras do motor corrigidas (DON restado dado; passivo de poder continuo). Mihawk no motor 70% -> 58% (jogo real 0/20). Seguir pelas divergencias de mede_replay_estado.py.
 

@@ -1,5 +1,22 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-10-10 (959) - Custo opcional de On Play pago com carta do proprio campo: ao vivo era pago sem perguntar
+
+Seguindo `mede_replay_estado.py`: na partida 17.44.21 o Law OP13-031 ("You may return 1 of your
+Characters to hand: play up to 1 Character cost<=5 from hand rested") se DEVOLVEU (unico personagem)
+pra baixar a Otama, turnos 4 e 5 (12 DON). Ao vivo o jogo pede DIRETO o alvo do custo; nenhum
+"vale pagar?" era perguntado e o plugin clicava o unico candidato. No motor o mesmo efeito passa por
+`_worth_paying_optional_costs` (Q `pagar_custo`).
+Agora `order_target_candidates`: ator com [On Play] de custo de campo (return/rest/trash/ko/bottom de
+personagem proprio) + alvos so do proprio campo + purpose != effect -> `resolve_optional_effect`
+(a MESMA decisao); nao vale -> lista vazia -> plugin cancela. Ativacao fica de fora (o motor ja
+decidiu pagar ao ativar).
+Achado lateral: nesse estado o Q fica NO LIMITE (estado do motor: nao paga; estado do pedido de alvo:
+paga) e a regra-padrao acha "barato" devolver corpo de 6000 (`board_value*10 <= 60`). Nao e regra de
+jogo errada -- e julgamento do modelo, agora com a decisao certa sendo perguntada.
+Divergencias restantes da reproducao: ativacao do lider Mihawk deita o LIDER no motor e outra carta no
+jogo (duas funcoes escolhendo o custo `rest_own_card`); OP01-055 jogado sem poder pagar.
+
 ## 2026-10-10 (958) - Reproduzindo partida real acao por acao: 2 regras que o motor simulava errado
 
 Mesmo estado => mesma decisao (Otama x passar: Q 0,499 x 0,542 ao vivo E no motor; features do Q

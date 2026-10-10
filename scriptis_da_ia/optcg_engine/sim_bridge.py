@@ -2566,6 +2566,29 @@ def order_target_candidates(gs: GameState, opp_gs: GameState,
             return [(i, ['quem_sai_do_campo_cheio', pos]) for pos, i in enumerate(ids)]
         return ids
 
+    # CUSTO OPCIONAL DE [On Play] PAGO COM CARTA DO PROPRIO CAMPO (bloco 959):
+    # Law OP13-031 "You may return 1 of your Characters to hand: play ...". Ao
+    # vivo o jogo pede DIRETO o alvo do custo, sem perguntar se o bot quer
+    # pagar -- e o bot clicava o unico candidato, o PROPRIO Law (6 DON),
+    # duas vezes seguidas (partida 17.44.21). No motor a mesma carta passa por
+    # "vale pagar?" (`resolve_optional_effect` -> `_worth_paying_optional_costs`)
+    # e recusa. Aqui a MESMA pergunta; nao vale -> lista vazia -> o plugin
+    # cancela (recusa o efeito). Ativacao fica de fora: ao escolher ativar o
+    # motor ja decidiu pagar.
+    _CUSTO_CAMPO = {'return_own_character_to_hand', 'rest_own_character',
+                    'trash_own_character', 'ko_own_character',
+                    'place_own_character_bottom_deck'}
+    if (purpose != 'effect' and actor_code and candidates
+            and all(c.get('zone') in ('own_board', 'own_leader', 'own_stage') for c in candidates)
+            and any(cst.get('type') in _CUSTO_CAMPO
+                    for cst in (get_card_effects(actor_code).get('on_play') or {}).get('costs', []))):
+        try:
+            vale = resolve_optional_effect(gs, opp_gs, actor_code=actor_code)
+        except Exception:
+            vale = True
+        if not vale:
+            return [] if not with_scores else []
+
     # CARTA BAIXADA DE GRACA por efeito (bloco 956, Xebec OP17-118 "play up to
     # 2 ... from your hand"): a MESMA escolha do auto-jogo
     # (`escolhe_carta_para_jogar`, onde o Q decide), repetida pra dar a ordem.
