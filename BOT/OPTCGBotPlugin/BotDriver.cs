@@ -1194,7 +1194,7 @@ namespace OPTCGBotPlugin
             // Efeito resolvendo DURANTE um ataque (ex: redirect do
             // Teach)? Passa o contexto — o engine nunca escolhe o alvo
             // original e prefere quem sobrevive ao golpe.
-            int atkPower = 0, defenderId = 0;
+            int atkPower = 0, defenderId = 0, attackerId = 0;
             var attacker = BotExecutor.Attacker(gls);
             var defender = BotExecutor.Defender(gls);
             if (attacker != null && defender != null &&
@@ -1204,13 +1204,15 @@ namespace OPTCGBotPlugin
             {
                 atkPower   = BotExecutor.PowerOf(gls, attacker, true);
                 defenderId = BotExecutor.UidOf(defender);
+                attackerId = BotExecutor.UidOf(attacker);
             }
 
             _pendingOrder = EngineClient.ChooseTarget(
                 dto, candidates, BotExecutor.ActorCode(gls), atkPower, defenderId,
                 id => _pendingTargetDecisionId = id,
                 BotExecutor.StepIndex(gls), BotExecutor.ActionIndex(gls),
-                BotExecutor.TargetIndex(gls), BotExecutor.TargetPurpose(gls, botPs, duringAttack, countWasFree));
+                BotExecutor.TargetIndex(gls), BotExecutor.TargetPurpose(gls, botPs, duringAttack, countWasFree),
+                attackerId);
         }
 
         // Defesa quando o HUMANO ataca o bot. Durante o blocker/counter step o

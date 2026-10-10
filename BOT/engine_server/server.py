@@ -811,6 +811,7 @@ class ChooseTargetRequest(BaseModel):
     actorCode: Optional[str] = None   # carta cujo efeito esta resolvendo
     attackerPower: int = 0            # > 0 = efeito resolvendo durante um ataque (redirect)
     defenderId: int = 0               # uid do alvo original do ataque (nunca redirecionar p/ ele)
+    attackerId: int = 0               # uid de QUEM ataca (bloco 952) -- alvo de efeito em batalha
     # DE QUAL PASSO e PRA QUE (bloco 854). Ate aqui o motor recebia so o saco
     # de candidatos e o `actorCode` -- marcado no proprio campo como
     # "debug/futuro" -- entao so dava pra ORDENAR por preferencia e o plugin
@@ -1617,6 +1618,7 @@ def choose_target(req: ChooseTargetRequest):
             defender_uid=req.defenderId,
             actor_code=req.actorCode,
             purpose=req.purpose,
+            attacker_uid=req.attackerId,
             with_scores=True)
         out = [i for i, _ in marcados]
         _rank = {i: (pos, chave) for pos, (i, chave) in enumerate(marcados)}

@@ -11008,6 +11008,7 @@ def main() -> int:
     test_exploracao_guiada_pela_simulacao_bloco_935()
     test_regua_rapida_igual_ao_sklearn_bloco945()
     test_descarte_ao_vivo_protege_counter_bloco949()
+    test_debuff_em_batalha_ve_o_atacante_bloco952()
     test_explora_so_onde_o_modelo_esta_incerto_27_09()
     test_treino_continua_do_campeao_27_09()
     test_registro_de_geracoes_27_09()
@@ -16010,6 +16011,56 @@ def test_descarte_ao_vivo_protege_counter_bloco949() -> None:
           sim_bridge.order_target_candidates(
               GameState(leader=real_card("OP17-039"), hand=[ev]) if False else _so_ev(ev), opp,
               cands[:1], actor_code="OP17-039", purpose="cost")[:1] == [420])
+
+
+def test_debuff_em_batalha_ve_o_atacante_bloco952() -> None:
+    """Partida ao vivo 09/10 (Xebec x Luffy): Shiki OP17-048 "[On Your
+    Opponent's Attack] -3000" foi no Zoro parado -- o atacante, deitado, saia
+    da lista de candidatos (motor) e o caminho ao vivo nem sabia quem atacava."""
+    from optcg_engine.decision_engine import EffectExecutor
+    shiki = real_card("OP17-048")
+    atk = real_card("OP17-093"); atk.rested = True; atk._deck_uid = -460
+    zoro = real_card("OP17-095"); zoro.rested = False; zoro._deck_uid = -320
+    me = GameState(leader=real_card("OP17-039")); me.field_chars = [shiki]
+    opp = GameState(leader=real_card("OP17-079")); opp.field_chars = [atk, zoro]
+    step = {"action": "debuff_power", "amount": 3000, "target": "opp_character"}
+
+    def _cands(batalha):
+        vistos = []
+        ee = EffectExecutor(me, opp)
+        ee._battle_attacker = atk if batalha else None
+        ee._pick_effect_target = lambda cs: (vistos.append(list(cs)), cs[0])[1]
+        for c in (atk, zoro):
+            c.power_buff = 0
+        ee._execute_step(step, shiki)
+        return vistos[0] if vistos else []
+    check("motor: em batalha, o ATACANTE (deitado) e candidato do -3000",
+          any(c is atk for c in _cands(True)))
+    check("CONTROLE: fora de batalha o personagem deitado continua de fora",
+          not any(c is atk for c in _cands(False)))
+
+    vistos = []
+    orig = EffectExecutor._pick_effect_target
+    EffectExecutor._pick_effect_target = lambda self, cs: (
+        vistos.append(getattr(self, '_battle_attacker', None)), cs[0])[1]
+    try:
+        cands = [{"id": -460, "zone": "opp_board", "code": "OP17-093", "valido": True},
+                 {"id": -320, "zone": "opp_board", "code": "OP17-095", "valido": True}]
+        sim_bridge.order_target_candidates(me, opp, cands, attacker_power=8000,
+                                           defender_uid=1, actor_code="OP17-048",
+                                           purpose="effect", attacker_uid=-460)
+        ok_vivo = bool(vistos) and vistos[0] is atk
+        vistos.clear()
+        sim_bridge.order_target_candidates(me, opp, cands, attacker_power=8000,
+                                           defender_uid=1, actor_code="OP17-048",
+                                           purpose="effect")
+        sem_uid = not vistos
+    finally:
+        EffectExecutor._pick_effect_target = orig
+    check("ao vivo: com attacker_uid, o alvo vai pra MESMA escolha do motor, sabendo quem ataca",
+          ok_vivo)
+    check("CONTROLE: sem attacker_uid (plugin antigo) cai na regua antiga, como antes",
+          sem_uid)
 
 
 def _so_ev(ev):

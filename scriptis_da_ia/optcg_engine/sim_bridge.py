@@ -2463,7 +2463,8 @@ def order_target_candidates(gs: GameState, opp_gs: GameState,
                             defender_uid: int = 0,
                             actor_code: str | None = None,
                             with_scores: bool = False,
-                            purpose: str = "unknown"):
+                            purpose: str = "unknown",
+                            attacker_uid: int = 0):
     """
     Ordena candidatos de alvo de um efeito pendente por preferencia.
     candidates: [{'id': uid, 'zone': 'own_hand'|'own_board'|'top_deck'|...,
@@ -2532,9 +2533,23 @@ def order_target_candidates(gs: GameState, opp_gs: GameState,
     # do offline (`_pick_effect_target`, onde o Q decide quando aprendeu). A
     # regua por zona abaixo fica so pro que ainda nao chega validado (custo,
     # redirect, plugin antigo).
-    if (purpose != 'cost' and attacker_power <= 0 and candidates
+    # DURANTE UM ATAQUE tambem (bloco 952): com o plugin dizendo QUEM ataca
+    # (`attacker_uid`), a escolha vai pra MESMA funcao do auto-jogo, com a
+    # batalha em curso -- antes caia na regua por zona abaixo, que nao sabia
+    # quem atacava (Shiki deu -3000 no Zoro parado em vez do Luffy atacante).
+    # Redirect de ataque segue na regua propria dele.
+    _redirect = bool(actor_code) and any(
+        s.get('action') == 'redirect_attack_target'
+        for b in get_card_effects(actor_code).values() for s in b.get('steps', []))
+    _em_batalha = attacker_power > 0 and attacker_uid and not _redirect
+    if (purpose != 'cost' and (attacker_power <= 0 or _em_batalha) and candidates
             and all(c.get('valido') is True for c in candidates)):
         ee = EffectExecutor(gs, opp_gs)
+        if _em_batalha:
+            ee._battle_attacker = next(
+                (c for c in [opp_gs.leader] + list(opp_gs.field_chars)
+                 + [gs.leader] + list(gs.field_chars)
+                 if getattr(c, '_deck_uid', None) == attacker_uid), None)
         fonte = next((c for c in [gs.leader] + gs.field_chars + gs.hand
                       if getattr(c, 'code', None) == actor_code), None) if actor_code else None
         if fonte is None and actor_code and _cards_db.get(actor_code):

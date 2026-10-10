@@ -261,12 +261,13 @@ namespace OPTCGBotPlugin
             int stepIndex = -1,
             int actionIndex = -1,
             int targetIndex = -1,
-            string purpose = "unknown")
+            string purpose = "unknown",
+            int attackerId = 0)
         {
             try
             {
                 string json = JsonConvert.SerializeObject(new { state, candidates, actorCode,
-                                                               attackerPower, defenderId,
+                                                               attackerPower, defenderId, attackerId,
                                                                stepIndex, actionIndex,
                                                                targetIndex, purpose });
                 var content = new StringContent(json, Encoding.UTF8, "application/json");

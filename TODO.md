@@ -1,6 +1,8 @@
 # TODO — Analisador de Decks OPTCG
 
-**Última atualização:** 9 de outubro de 2026 (blocos 943-951)
+**Última atualização:** 9 de outubro de 2026 (blocos 943-952)
+
+> **952**: bot nao responde mais escolha do oponente (Linlin); efeito em batalha (Shiki -3000) agora enxerga o atacante, no motor e ao vivo. Falta testar ao vivo. Mihawk motor x jogo: Luffy ataca o lider muito mais ao vivo -- causa aberta.
 
 > **951**: DON no lider = sem diferenca medida (56,7 x 54,5%). Plugin encerrava o turno ao anexar DON 4x seguidas (trava de repeticao sem olhar estado) -- corrigido, falta rebuild com jogo fechado. Mihawk 76% no motor x 10% no jogo: causa ainda aberta. Counter: trace mostra calculo antigo, quem decide e o Q.
 

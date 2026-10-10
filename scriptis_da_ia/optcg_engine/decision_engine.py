@@ -9808,6 +9808,11 @@ class EffectExecutor:
                 ativos = [c for c in opp.field_chars if not c.rested]
                 if not getattr(opp.leader, 'rested', False):
                     ativos.append(opp.leader)
+                # Atacante deitado ainda age nesta batalha (bloco 952).
+                _atk = getattr(self, '_battle_attacker', None)
+                if _atk is not None and not any(c is _atk for c in ativos) and (
+                        _atk is opp.leader or any(c is _atk for c in opp.field_chars)):
+                    ativos.append(_atk)
                 candidatos = list(ativos or (list(opp.field_chars) + [opp.leader]))
                 # "up to a total of N" com N>1 (achado 17/07, EB01-053/
                 # OP02-089) -- mesmo padrao ja usado por opp_character
@@ -9825,6 +9830,15 @@ class EffectExecutor:
                 if not opp.field_chars:
                     return ''
                 ativos = [c for c in opp.field_chars if not c.rested]
+                # Durante a batalha, QUEM ATACA ja esta deitado e ainda age
+                # nesta batalha (bloco 952, ao vivo: Shiki OP17-048 "[On Your
+                # Opponent's Attack] -3000" foi no Zoro parado porque o
+                # atacante, deitado, saia da lista). Regra de legalidade/
+                # contexto, nao de valor: o atacante volta a ser candidato e a
+                # escolha continua com `_pick_effect_target`.
+                _atk = getattr(self, '_battle_attacker', None)
+                if _atk is not None and any(c is _atk for c in opp.field_chars)                         and not any(c is _atk for c in ativos):
+                    ativos.append(_atk)
                 candidatos = list(ativos or opp.field_chars)
                 # "up to N" com N>1 (achado 15/07, ex: OP01-022/OP11-020,
                 # 13 cartas reais): antes so debuffava 1 alvo sempre, mesmo

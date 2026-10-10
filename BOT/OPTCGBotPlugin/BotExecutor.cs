@@ -800,11 +800,23 @@ namespace OPTCGBotPlugin
         // nasceu ja com o bug) e 29/08 (`HandlePendingAction`). Cada uma foi
         // corrigida isolada. Daqui pra frente, TODO ponto que decide "devo
         // responder?" usa esta funcao -- nao `PendingActionIsMine` direto.
+        //
+        // O CONTRARIO tambem vale (achado ao vivo 09/10/2026, bloco 952): carta
+        // DO BOT em que quem escolhe e o OPONENTE -- Linlin OP17-049 jogada pelo
+        // bot ("Your opponent chooses one" e "opponent trashes 2 cards"). O dono
+        // era o bot, `PendingActionIsMine` dava true ANTES de olhar o jogo, e o
+        // bot escolhia a opcao E as cartas da mao do humano. O sinal do jogo
+        // (`iPlayerAction`) vem PRIMEIRO; o dono so desempata quando ele nao diz.
         public static bool ShouldBotAnswer(GameplayLogicScript gls, PlayerState botPs, int botIndex)
         {
-            if (PendingActionIsMine(gls, botPs)) return true;
-            try { return gls.gsv_CurrentGame.iPlayerAction == botIndex; }
-            catch { return false; }
+            try
+            {
+                int quem = gls.gsv_CurrentGame.iPlayerAction;
+                if (quem == botIndex) return true;
+                if (quem == 1 - botIndex) return false;
+            }
+            catch { }
+            return PendingActionIsMine(gls, botPs);
         }
 
         // Alvos que ainda faltam selecionar num step V3 (<= 0 = pode confirmar)

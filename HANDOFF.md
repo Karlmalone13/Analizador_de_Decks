@@ -1,5 +1,28 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-10-09 (952) - Partida humano x Xebec: Linlin escolhia pelo humano; Shiki nao sabia quem atacava
+
+Log `Rocks.D.Xebec-B_x_Monkey.D.Luffy-B_2026-10-09T19.25.19` (bot Xebec p1, perdeu). q_fallback 0.
+Usuario: "escolhendo sozinho pro adversario quando joga a Linlin cost 5"; "quase nao usou o Shiki, e quando
+usou deu o alvo num personagem que nao atacaria mais".
+
+**Linlin OP17-049 (do bot)**: "Your opponent chooses" -- o jogo marcava iPlayerAction=1 (humano), mas
+`BotExecutor.ShouldBotAnswer` respondia true pelo DONO da carta antes de olhar o jogo; o bot escolheu a
+opcao E as cartas da mao do humano. Agora o sinal do jogo vem primeiro; o dono so desempata. Quando o
+HUMANO joga a Linlin, o jogo marca o bot e ele continua escolhendo (confirmado pelo usuario).
+
+**Shiki OP17-048 (-3000 no On Your Opponent's Attack)**: no MOTOR o atacante (deitado) saia dos candidatos
+do debuff `opp_character`/`opp_leader_or_character` ("so ativos") -- agora entra quando ha batalha
+(`_battle_attacker`). AO VIVO o plugin nao mandava QUEM ataca e a ordem caia na regua por zona: agora
+`attackerId` vai plugin -> /choose_target -> `order_target_candidates(attacker_uid=)`, que usa a MESMA
+`_pick_effect_target` do auto-jogo com a batalha em curso (redirect segue na regua dele). O Q ja tem
+`alvo_rested` -- em batalha o unico deitado candidato e o atacante, entao o criterio pode emergir.
+O pouco USO do Shiki (aceitou ~2 de 15) e julgamento do modelo -- nao mexido.
+smoke_fast 1915 OK (4 novos, 2 controles). Plugin recompilado; servidor reiniciado.
+
+Investigacao Mihawk 76% motor x 10% jogo (`mede_motor_x_jogo.py`): no jogo o Luffy ataca o lider 11,7 de 13
+por partida (motor 7,9 de 12); o Mihawk raramente tem personagem deitado ao vivo. Causa ainda aberta.
+
 ## 2026-10-09 (951) - Mihawk: DON no lider nao e erro; trava do plugin encerrava o turno antes do ataque; counter
 
 **DON no lider em vez de baixar personagem** (`mede_don_no_lider.py`, 24 partidas, 19 posicoes, 16 ramos
