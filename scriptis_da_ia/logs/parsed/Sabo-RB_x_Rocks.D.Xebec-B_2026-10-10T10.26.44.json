@@ -1,0 +1,1078 @@
+{
+  "meta": {
+    "players": {
+      "p1": {
+        "name": "You",
+        "leader": {
+          "name": "Sabo",
+          "code": "OP13-004"
+        }
+      },
+      "p2": {
+        "name": "Opponent",
+        "leader": {
+          "name": "Rocks D. Xebec",
+          "code": "OP17-039"
+        }
+      }
+    },
+    "goes_first": null
+  },
+  "total_turns": 9,
+  "turns": [
+    {
+      "turn": 1,
+      "player": "You",
+      "card_drawn": null,
+      "don_drawn": 1,
+      "actions": [],
+      "snapshot": {
+        "You": {
+          "hand": [
+            "OP17-082",
+            "OP17-095",
+            "OP15-088",
+            "OP17-081",
+            "OP17-080"
+          ],
+          "board": [],
+          "trash": [],
+          "life": 5,
+          "deck": [
+            "EB04-007",
+            "OP01-016",
+            "OP04-016",
+            "OP14-096",
+            "OP17-083",
+            "OP17-084",
+            "OP17-086",
+            "OP17-087",
+            "OP17-089",
+            "OP17-119",
+            "OP17-119",
+            "ST01-011"
+          ],
+          "life_cards": [
+            "OP15-088",
+            "OP17-080",
+            "OP17-080",
+            "OP17-082",
+            "OP17-093"
+          ],
+          "don_cost": [
+            "Don"
+          ]
+        },
+        "Opponent": {
+          "hand": [
+            "OP17-042",
+            "OP17-054",
+            "OP17-118",
+            "OP17-056",
+            "OP08-051"
+          ],
+          "trash": [],
+          "board": [],
+          "life": 5,
+          "deck": [
+            "OP17-041",
+            "OP17-043",
+            "OP17-044",
+            "OP17-045",
+            "OP17-046",
+            "OP17-048",
+            "OP17-049",
+            "OP17-052",
+            "OP17-053",
+            "OP17-055",
+            "OP17-057"
+          ],
+          "life_cards": [
+            "OP17-040",
+            "OP17-050",
+            "OP17-050",
+            "OP17-050",
+            "OP17-118"
+          ]
+        }
+      }
+    },
+    {
+      "turn": 2,
+      "player": "Opponent",
+      "card_drawn": null,
+      "don_drawn": 2,
+      "actions": [],
+      "snapshot": {
+        "Opponent": {
+          "hand": [
+            "OP17-042",
+            "OP17-054",
+            "OP17-118",
+            "OP17-056",
+            "OP08-051",
+            "OP17-053"
+          ],
+          "board": [],
+          "trash": [],
+          "life": 5,
+          "deck": [
+            "OP17-041",
+            "OP17-043",
+            "OP17-044",
+            "OP17-045",
+            "OP17-046",
+            "OP17-048",
+            "OP17-049",
+            "OP17-052",
+            "OP17-055",
+            "OP17-057"
+          ],
+          "life_cards": [
+            "OP17-040",
+            "OP17-050",
+            "OP17-050",
+            "OP17-050",
+            "OP17-118"
+          ],
+          "don_cost": [
+            "Don",
+            "Don"
+          ]
+        },
+        "You": {
+          "hand": [
+            "OP17-082",
+            "OP17-095",
+            "OP15-088",
+            "OP17-081",
+            "OP17-080"
+          ],
+          "trash": [],
+          "board": [],
+          "life": 5,
+          "deck": [
+            "EB04-007",
+            "OP01-016",
+            "OP04-016",
+            "OP14-096",
+            "OP17-083",
+            "OP17-084",
+            "OP17-086",
+            "OP17-087",
+            "OP17-089",
+            "OP17-119",
+            "OP17-119",
+            "ST01-011"
+          ],
+          "life_cards": [
+            "OP15-088",
+            "OP17-080",
+            "OP17-080",
+            "OP17-082",
+            "OP17-093"
+          ],
+          "don_cost": [
+            "Don"
+          ]
+        }
+      }
+    },
+    {
+      "turn": 3,
+      "player": "You",
+      "card_drawn": null,
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "play",
+          "card": "OP17-080",
+          "card_name": "Usopp",
+          "effects": [
+            "<b>Reveal and Draw Jaguar D. Saul [\"OP17-089\">OP17-089]</b>",
+            "Trash 2 Remaining Cards"
+          ]
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP13-004",
+          "to_name": "Sabo",
+          "total": 1
+        },
+        {
+          "type": "attack",
+          "attacker": "Sabo",
+          "attacker_code": "OP13-004",
+          "target": "Rocks D. Xebec [\"OP17-039\">OP17-039]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        }
+      ],
+      "snapshot": {
+        "You": {
+          "hand": [
+            "OP17-082",
+            "OP17-095",
+            "OP15-088",
+            "OP17-081",
+            "OP14-096",
+            "OP17-089"
+          ],
+          "board": [
+            "OP17-080"
+          ],
+          "trash": [
+            "OP17-083",
+            "ST01-011"
+          ],
+          "life": 5,
+          "deck": [
+            "EB04-007",
+            "OP01-016",
+            "OP04-016",
+            "OP17-084",
+            "OP17-086",
+            "OP17-087",
+            "OP17-119",
+            "OP17-119"
+          ],
+          "life_cards": [
+            "OP15-088",
+            "OP17-080",
+            "OP17-080",
+            "OP17-082",
+            "OP17-093"
+          ],
+          "don_cost": [
+            "Don",
+            "Don"
+          ],
+          "attached_don": [
+            "Don"
+          ],
+          "rested": {
+            "OP17-080": 1
+          }
+        },
+        "Opponent": {
+          "hand": [
+            "OP17-042",
+            "OP17-054",
+            "OP17-118",
+            "OP17-056",
+            "OP08-051",
+            "OP17-053",
+            "OP17-050"
+          ],
+          "trash": [],
+          "board": [],
+          "life": 4,
+          "deck": [
+            "OP17-041",
+            "OP17-043",
+            "OP17-044",
+            "OP17-045",
+            "OP17-046",
+            "OP17-048",
+            "OP17-049",
+            "OP17-052",
+            "OP17-055",
+            "OP17-057"
+          ],
+          "life_cards": [
+            "OP17-040",
+            "OP17-050",
+            "OP17-050",
+            "OP17-118"
+          ],
+          "don_cost": [
+            "Don",
+            "Don"
+          ]
+        }
+      }
+    },
+    {
+      "turn": 4,
+      "player": "Opponent",
+      "card_drawn": null,
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "play",
+          "card": "OP17-042",
+          "card_name": "Kaido",
+          "effects": [
+            "Buff Usopp [\"OP17-080\">OP17-080] -3000"
+          ]
+        },
+        {
+          "type": "attack",
+          "attacker": "Rocks D. Xebec",
+          "attacker_code": "OP17-039",
+          "target": "Sabo [\"OP13-004\">OP13-004]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        }
+      ],
+      "snapshot": {
+        "Opponent": {
+          "hand": [
+            "OP17-054",
+            "OP17-118",
+            "OP08-051",
+            "OP17-053",
+            "OP17-050",
+            "OP17-046"
+          ],
+          "board": [
+            "OP17-042"
+          ],
+          "trash": [
+            "OP17-056"
+          ],
+          "life": 4,
+          "deck": [
+            "OP17-041",
+            "OP17-043",
+            "OP17-044",
+            "OP17-045",
+            "OP17-048",
+            "OP17-049",
+            "OP17-052",
+            "OP17-055",
+            "OP17-057"
+          ],
+          "life_cards": [
+            "OP17-040",
+            "OP17-050",
+            "OP17-050",
+            "OP17-118"
+          ],
+          "don_cost": [
+            "Don",
+            "Don",
+            "Don",
+            "Don"
+          ],
+          "rested_rz1": {
+            "don_cost": [
+              "Don"
+            ]
+          },
+          "rested": {
+            "OP17-042": 1
+          }
+        },
+        "You": {
+          "hand": [
+            "OP17-082",
+            "OP17-095",
+            "OP15-088",
+            "OP17-081",
+            "OP14-096",
+            "OP17-089",
+            "OP17-082"
+          ],
+          "trash": [
+            "OP17-083",
+            "ST01-011"
+          ],
+          "board": [
+            "OP17-080"
+          ],
+          "life": 4,
+          "deck": [
+            "EB04-007",
+            "OP01-016",
+            "OP04-016",
+            "OP17-084",
+            "OP17-086",
+            "OP17-087",
+            "OP17-119",
+            "OP17-119"
+          ],
+          "life_cards": [
+            "OP15-088",
+            "OP17-080",
+            "OP17-080",
+            "OP17-093"
+          ],
+          "don_cost": [
+            "Don",
+            "Don"
+          ],
+          "attached_don": [
+            "Don"
+          ],
+          "rested": {
+            "OP17-080": 1
+          }
+        }
+      }
+    },
+    {
+      "turn": 5,
+      "player": "You",
+      "card_drawn": null,
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "play",
+          "card": "OP17-089",
+          "card_name": "Jaguar D. Saul",
+          "effects": [
+            "<b>Reveal and Draw Loki [\"OP17-119\">OP17-119]</b>",
+            "Trash 2 Remaining Cards"
+          ]
+        },
+        {
+          "type": "attack",
+          "attacker": "Usopp",
+          "attacker_code": "OP17-080",
+          "target": "Rocks D. Xebec [\"OP17-039\">OP17-039]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": [
+            "OP08-051"
+          ]
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP13-004",
+          "to_name": "Sabo",
+          "total": 1
+        },
+        {
+          "type": "attack",
+          "attacker": "Sabo",
+          "attacker_code": "OP13-004",
+          "target": "Rocks D. Xebec [\"OP17-039\">OP17-039]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        }
+      ],
+      "snapshot": {
+        "You": {
+          "hand": [
+            "OP17-082",
+            "OP17-095",
+            "OP15-088",
+            "OP17-081",
+            "OP14-096",
+            "OP17-082",
+            "OP17-081",
+            "OP17-119"
+          ],
+          "board": [
+            "OP17-080",
+            "OP17-089"
+          ],
+          "trash": [
+            "OP17-083",
+            "ST01-011",
+            "OP17-086",
+            "OP17-095"
+          ],
+          "life": 4,
+          "deck": [
+            "EB04-007",
+            "OP01-016",
+            "OP04-016",
+            "OP17-084",
+            "OP17-087",
+            "OP17-119"
+          ],
+          "life_cards": [
+            "OP15-088",
+            "OP17-080",
+            "OP17-080",
+            "OP17-093"
+          ],
+          "don_cost": [
+            "Don",
+            "Don",
+            "Don",
+            "Don"
+          ],
+          "attached_don": [
+            "Don"
+          ],
+          "rested": {
+            "OP17-080": 1,
+            "OP17-089": 1
+          }
+        },
+        "Opponent": {
+          "hand": [
+            "OP17-054",
+            "OP17-118",
+            "OP17-053",
+            "OP17-050",
+            "OP17-046",
+            "OP17-118"
+          ],
+          "trash": [
+            "OP17-056",
+            "OP08-051"
+          ],
+          "board": [
+            "OP17-042"
+          ],
+          "life": 3,
+          "deck": [
+            "OP17-041",
+            "OP17-043",
+            "OP17-044",
+            "OP17-045",
+            "OP17-048",
+            "OP17-049",
+            "OP17-052",
+            "OP17-055",
+            "OP17-057"
+          ],
+          "life_cards": [
+            "OP17-040",
+            "OP17-050",
+            "OP17-050"
+          ],
+          "don_cost": [
+            "Don",
+            "Don",
+            "Don",
+            "Don"
+          ],
+          "rested_rz1": {
+            "don_cost": [
+              "Don"
+            ]
+          },
+          "rested": {
+            "OP17-042": 1
+          }
+        }
+      }
+    },
+    {
+      "turn": 6,
+      "player": "Opponent",
+      "card_drawn": null,
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "play",
+          "card": "OP17-053",
+          "card_name": "Barbell",
+          "effects": []
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP17-039",
+          "to_name": "Rocks D. Xebec",
+          "total": 1
+        },
+        {
+          "type": "attack",
+          "attacker": "Rocks D. Xebec",
+          "attacker_code": "OP17-039",
+          "target": "Sabo [\"OP13-004\">OP13-004]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": [
+            "OP17-081"
+          ]
+        },
+        {
+          "type": "activate",
+          "card": "OP17-039",
+          "card_name": "Rocks D. Xebec",
+          "effects": [
+            "Trash Rocks D. Xebec [\"OP17-118\">OP17-118]",
+            "Draw 2 Card"
+          ]
+        },
+        {
+          "type": "attack",
+          "attacker": "Kaido",
+          "attacker_code": "OP17-042",
+          "target": "Sabo [\"OP13-004\">OP13-004]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": [
+            "OP17-095"
+          ]
+        }
+      ],
+      "snapshot": {
+        "Opponent": {
+          "hand": [
+            "OP17-054",
+            "OP17-118",
+            "OP17-050",
+            "OP17-046",
+            "OP08-051",
+            "OP17-044"
+          ],
+          "board": [
+            "OP17-042",
+            "OP17-053"
+          ],
+          "trash": [
+            "OP17-056",
+            "OP08-051",
+            "OP17-118",
+            "OP17-055"
+          ],
+          "life": 3,
+          "deck": [
+            "OP17-041",
+            "OP17-043",
+            "OP17-045",
+            "OP17-048",
+            "OP17-049",
+            "OP17-052",
+            "OP17-057"
+          ],
+          "life_cards": [
+            "OP17-040",
+            "OP17-050",
+            "OP17-050"
+          ],
+          "don_cost": [
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don"
+          ],
+          "attached_don": [
+            "Don"
+          ],
+          "rested": {
+            "OP17-042": 1,
+            "OP17-053": 1
+          }
+        },
+        "You": {
+          "hand": [
+            "OP17-082",
+            "OP15-088",
+            "OP17-081",
+            "OP14-096",
+            "OP17-082",
+            "OP17-119"
+          ],
+          "trash": [
+            "OP17-083",
+            "ST01-011",
+            "OP17-086",
+            "OP17-095",
+            "OP17-081",
+            "OP17-095"
+          ],
+          "board": [
+            "OP17-080",
+            "OP17-089"
+          ],
+          "life": 4,
+          "deck": [
+            "EB04-007",
+            "OP01-016",
+            "OP04-016",
+            "OP17-084",
+            "OP17-087",
+            "OP17-119"
+          ],
+          "life_cards": [
+            "OP15-088",
+            "OP17-080",
+            "OP17-080",
+            "OP17-093"
+          ],
+          "don_cost": [
+            "Don",
+            "Don",
+            "Don",
+            "Don"
+          ],
+          "attached_don": [
+            "Don"
+          ],
+          "rested": {
+            "OP17-080": 1,
+            "OP17-089": 1
+          }
+        }
+      }
+    },
+    {
+      "turn": 7,
+      "player": "You",
+      "card_drawn": null,
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "play",
+          "card": "OP17-119",
+          "card_name": "Loki",
+          "effects": [
+            "Destroy Kaido [\"OP17-042\">OP17-042]"
+          ]
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP13-004",
+          "to_name": "Sabo",
+          "total": 1
+        },
+        {
+          "type": "attack",
+          "attacker": "Usopp",
+          "attacker_code": "OP17-080",
+          "target": "Rocks D. Xebec [\"OP17-039\">OP17-039]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "attack",
+          "attacker": "Jaguar D. Saul",
+          "attacker_code": "OP17-089",
+          "target": "Rocks D. Xebec [\"OP17-039\">OP17-039]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "attack",
+          "attacker": "Sabo",
+          "attacker_code": "OP13-004",
+          "target": "Rocks D. Xebec [\"OP17-039\">OP17-039]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        }
+      ],
+      "snapshot": {
+        "You": {
+          "hand": [
+            "OP17-082",
+            "OP15-088",
+            "OP17-081",
+            "OP14-096",
+            "OP17-082",
+            "OP17-093"
+          ],
+          "board": [
+            "OP17-080",
+            "OP17-089",
+            "OP17-119"
+          ],
+          "trash": [
+            "OP17-083",
+            "ST01-011",
+            "OP17-086",
+            "OP17-095",
+            "OP17-081",
+            "OP17-095"
+          ],
+          "life": 4,
+          "deck": [
+            "EB04-007",
+            "OP01-016",
+            "OP04-016",
+            "OP17-084",
+            "OP17-087",
+            "OP17-119"
+          ],
+          "life_cards": [
+            "OP15-088",
+            "OP17-080",
+            "OP17-080",
+            "OP17-093"
+          ],
+          "don_cost": [
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don"
+          ],
+          "attached_don": [
+            "Don"
+          ],
+          "rested": {
+            "OP17-080": 1,
+            "OP17-089": 1,
+            "OP17-119": 1
+          }
+        },
+        "Opponent": {
+          "hand": [
+            "OP17-054",
+            "OP17-118",
+            "OP17-050",
+            "OP17-046",
+            "OP08-051",
+            "OP17-044",
+            "OP17-050",
+            "OP17-050",
+            "OP17-040"
+          ],
+          "trash": [
+            "OP17-056",
+            "OP08-051",
+            "OP17-118",
+            "OP17-055",
+            "OP17-042"
+          ],
+          "board": [
+            "OP17-053"
+          ],
+          "life": 0,
+          "deck": [
+            "OP17-041",
+            "OP17-043",
+            "OP17-045",
+            "OP17-048",
+            "OP17-049",
+            "OP17-052",
+            "OP17-057"
+          ],
+          "don_cost": [
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don"
+          ],
+          "attached_don": [
+            "Don"
+          ],
+          "rested": {
+            "OP17-053": 1
+          }
+        }
+      }
+    },
+    {
+      "turn": 8,
+      "player": "Opponent",
+      "card_drawn": null,
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "play",
+          "card": "OP17-040",
+          "card_name": "Edward Newgate",
+          "effects": [
+            "Draw 1 Card",
+            "Trash Edward Newgate [\"OP17-040\">OP17-040]",
+            "Buff Rocks D. Xebec [\"OP17-039\">OP17-039] 3000 for the Combat"
+          ]
+        },
+        {
+          "type": "attach_don",
+          "amount": 2,
+          "to": "OP17-039",
+          "to_name": "Rocks D. Xebec",
+          "total": 2
+        },
+        {
+          "type": "attack",
+          "attacker": "Rocks D. Xebec",
+          "attacker_code": "OP17-039",
+          "target": "Sabo [\"OP13-004\">OP13-004]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "activate",
+          "card": "OP17-039",
+          "card_name": "Rocks D. Xebec",
+          "effects": [
+            "Trash Rocks D. Xebec [\"OP17-118\">OP17-118]",
+            "Draw 2 Card"
+          ]
+        }
+      ],
+      "snapshot": {
+        "Opponent": {
+          "hand": [
+            "OP17-054",
+            "OP17-050",
+            "OP17-046",
+            "OP08-051",
+            "OP17-044",
+            "OP17-050",
+            "OP17-050",
+            "OP17-046",
+            "OP17-057",
+            "OP17-049"
+          ],
+          "board": [
+            "OP17-053",
+            "OP17-040"
+          ],
+          "trash": [
+            "OP17-056",
+            "OP08-051",
+            "OP17-118",
+            "OP17-055",
+            "OP17-042",
+            "OP17-118",
+            "OP17-040"
+          ],
+          "life": 0,
+          "deck": [
+            "OP17-041",
+            "OP17-043",
+            "OP17-045",
+            "OP17-048",
+            "OP17-052"
+          ],
+          "don_cost": [
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don"
+          ],
+          "attached_don": [
+            "Don",
+            "Don"
+          ]
+        },
+        "You": {
+          "hand": [
+            "OP17-082",
+            "OP15-088",
+            "OP17-081",
+            "OP14-096",
+            "OP17-082",
+            "OP17-093",
+            "OP15-088"
+          ],
+          "trash": [
+            "OP17-083",
+            "ST01-011",
+            "OP17-086",
+            "OP17-095",
+            "OP17-081",
+            "OP17-095"
+          ],
+          "board": [
+            "OP17-080",
+            "OP17-089",
+            "OP17-119"
+          ],
+          "life": 3,
+          "deck": [
+            "EB04-007",
+            "OP01-016",
+            "OP04-016",
+            "OP17-084",
+            "OP17-087",
+            "OP17-119"
+          ],
+          "life_cards": [
+            "OP17-080",
+            "OP17-080",
+            "OP17-093"
+          ],
+          "don_cost": [
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don"
+          ],
+          "attached_don": [
+            "Don"
+          ],
+          "rested": {
+            "OP17-080": 1,
+            "OP17-089": 1,
+            "OP17-119": 1
+          }
+        }
+      }
+    },
+    {
+      "turn": 9,
+      "player": "You",
+      "card_drawn": null,
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "play",
+          "card": "OP17-093",
+          "card_name": "Monkey D. Luffy",
+          "effects": [
+            "Draw 1 Card",
+            "Deployed Gerd [\"OP17-081\">OP17-081] from Trash"
+          ]
+        },
+        {
+          "type": "activate",
+          "card": "OP17-081",
+          "card_name": "Gerd",
+          "effects": [
+            "Trash Pirate Docking 6 [\"OP15-088\">OP15-088]"
+          ]
+        },
+        {
+          "type": "attack",
+          "attacker": "Usopp",
+          "attacker_code": "OP17-080",
+          "target": "Rocks D. Xebec [\"OP17-039\">OP17-039]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": [
+            "OP08-051"
+          ]
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP13-004",
+          "to_name": "Sabo",
+          "total": 1
+        },
+        {
+          "type": "attack",
+          "attacker": "Sabo",
+          "attacker_code": "OP13-004",
+          "target": "Rocks D. Xebec [\"OP17-039\">OP17-039]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        }
+      ],
+      "snapshot": {}
+    }
+  ]
+}

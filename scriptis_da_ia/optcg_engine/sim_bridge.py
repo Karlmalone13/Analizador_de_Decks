@@ -2566,6 +2566,31 @@ def order_target_candidates(gs: GameState, opp_gs: GameState,
             return [(i, ['quem_sai_do_campo_cheio', pos]) for pos, i in enumerate(ids)]
         return ids
 
+    # CARTA BAIXADA DE GRACA por efeito (bloco 956, Xebec OP17-118 "play up to
+    # 2 ... from your hand"): a MESMA escolha do auto-jogo
+    # (`escolhe_carta_para_jogar`, onde o Q decide), repetida pra dar a ordem.
+    # Antes ia pra escolha de ALVO (`_pick_effect_target`) -- duas funcoes pra
+    # mesma decisao. O validador do jogo segue cuidando de orcamento/nomes.
+    if (purpose != 'cost' and actor_code and candidates
+            and all(c.get('zone') in ('own_hand', 'own_trash') for c in candidates)
+            and any(s.get('action') == 'play_card'
+                    for b in get_card_effects(actor_code).values() for s in b.get('steps', []))):
+        ee_j = EffectExecutor(gs, opp_gs)
+        pares_j = [(c, card_of(c)) for c in candidates]
+        restantes_j = [card for _, card in pares_j if card is not None]
+        ordem_j = []
+        while restantes_j:
+            esc = ee_j.escolhe_carta_para_jogar(restantes_j)
+            if esc is None:
+                break
+            ordem_j.append(esc)
+            restantes_j = [c for c in restantes_j if c is not esc]
+        ids = [cand['id'] for esc in ordem_j for cand, card in pares_j if card is esc]
+        ids += [cand['id'] for cand, _ in pares_j if cand['id'] not in ids]
+        if with_scores:
+            return [(i, ['escolhe_carta_para_jogar', pos]) for pos, i in enumerate(ids)]
+        return ids
+
     # DEBUFF EM BATALHA (bloco 953): com o plugin dizendo QUEM ataca
     # (`attacker_uid`), a escolha vai pra MESMA funcao do auto-jogo, com a
     # batalha em curso (`_battle_attacker`) -- Shiki OP17-048 "[On Your

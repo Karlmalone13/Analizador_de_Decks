@@ -139,7 +139,7 @@ def passa_filtro_modo(linha: dict, modo: str = MODO_PADRAO) -> bool:
 FAMILIAS_JOGO = ('attack', 'play', 'pass', 'activate', 'attach_don',
                  'block', 'counter', 'target', 'descarte', 'counter_evento',
                  'custo_restar', 'custo_sacrificar', 'busca', 'pagar_custo', 'opcao_efeito',
-                 'mulligan')
+                 'mulligan', 'jogar_gratis')
 SELFPLAY = RAIZ / 'metrics' / 'selfplay_v2.jsonl'
 
 

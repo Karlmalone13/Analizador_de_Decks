@@ -8094,6 +8094,79 @@ class EffectExecutor:
             return self.opp.don_available + self.opp.don_rested
         return cost_lte
 
+    def _nota_para_jogar(self, c):
+        """Nota de "qual carta jogar de graca" (play_card de efeito). Era
+        `_score_to_play`, local de `_execute_step`; virou metodo (bloco 956)
+        pra ser o PADRAO de `escolhe_carta_para_jogar` tambem ao vivo."""
+        # score local: board_value real + bônus por efeito útil, via
+        # as MESMAS flags do analysis_db, gateadas pelo MESMO
+        # checador de DecisionEngine.avaliar_carta (self._de(),
+        # cache por instância -- ver bloco 03/08) pra não divergir
+        # "dois motores" na mesma decisão. Achado real 10/08 (mesmo
+        # bug do Sanji/Gum-Gum Giant OP09-078): sem o gate, esta
+        # função de EXECUÇÃO podia escolher jogar uma carta que só
+        # tem bloco [Counter] achando que ela ia comprar/buffar,
+        # quando nada acontece fora de batalha -- a DECISÃO
+        # (avaliar_carta, via _score_activate_main) já ganhou esse
+        # gate neste mesmo fix; sem espelhar aqui, a execução real
+        # continuaria escolhendo a carta errada mesmo com a decisão
+        # de ativar já correta.
+        f = get_card_flags(c.code)
+        s = c.board_value()
+        de = self._de()
+        if (f.get('kos') or f.get('is_removal')) and de._step_condition_currently_holds(
+                c, lambda st: st.get('action') in (
+                    'ko', 'trash_character', 'ko_selected', 'debuff_power', 'set_base_power',
+                    'rest_opp_character', 'place_opp_character_bottom_deck',
+                    'lock_opp_character_refresh', 'lock_opp_character_attack')):
+            s += 70
+        if f.get('bounces') and de._step_condition_currently_holds(
+                c, lambda st: st.get('action') in ('bounce', 'opp_bounce_own_character')):
+            s += 45
+        if f.get('rests_opponent') and de._step_condition_currently_holds(
+                c, lambda st: st.get('action') == 'rest_opp_character'):
+            s += 35
+        if f.get('is_searcher') and de._step_condition_currently_holds(
+                c, lambda st: st.get('action') in ('look_top_deck', 'add_to_hand', 'add_from_trash')):
+            s += 40
+        if f.get('draws') and de._step_condition_currently_holds(
+                c, lambda st: st.get('action') == 'draw'):
+            s += 35
+        if f.get('is_blocker'):                 s += 30
+        if f.get('power_buff') and de._step_condition_currently_holds(
+                c, lambda st: st.get('action') == 'buff_power'):
+            s += 20
+        if f.get('has_trigger'):                s += 10
+        # Carta CERTA do game_plan (a bomba do combo, ex: Five Elders):
+        # 3a copia do MESMO bug ja corrigido em avaliar_carta (14/07) e
+        # em order_target_candidates/own_hand (09/07) -- esta selecao
+        # (usada pela EXECUCAO real de qualquer 'play_card' dentro de
+        # QUALQUER trigger, incl. Empty Throne activate_main) nunca
+        # tinha sido tocada. Sem isso, um searcher generico (+40 de
+        # flag) batia a bomba de 12000 poder (board_value=12, zero
+        # flags) por larga margem -- achado ao vivo indireto 14/07
+        # (Empty Throne jogou Ju Peter em vez de Five Elders com
+        # ambos na mao). Generico via compute_game_plan, zero nome de
+        # carta.
+        try:
+            if compute_game_plan(self.me).get('win_con_code') == c.code:
+                s += 90
+        except Exception:
+            pass
+        return s
+
+    def escolhe_carta_para_jogar(self, pool):
+        """Qual carta o efeito BAIXA DE GRACA (ex: Xebec OP17-118 "play up to
+        2 ... total cost 9"). PONTO UNICO (bloco 956): o auto-jogo escolhia
+        pela nota fixa e o jogo real pela escolha de alvo -- duas funcoes. Agora
+        o Q decide (familia `jogar_gratis`), com a nota como padrao enquanto
+        nao aprendeu. Orcamento/nomes diferentes seguem como regra (legalidade)
+        no chamador."""
+        if not pool:
+            return None
+        padrao = max(pool, key=self._nota_para_jogar)
+        return _q_escolhe_carta(self.me, self.opp, 'jogar_gratis', pool, padrao)
+
     def _execute_step(self, step: dict, card: Card) -> str:
         from optcg_engine.rules_facade import eligible_cards
 
@@ -11105,63 +11178,7 @@ class EffectExecutor:
         #     o filtro, escolhendo a de maior valor. "up to" => pode não jogar.
         if action == 'play_card':
 
-            def _score_to_play(c):
-                # score local: board_value real + bônus por efeito útil, via
-                # as MESMAS flags do analysis_db, gateadas pelo MESMO
-                # checador de DecisionEngine.avaliar_carta (self._de(),
-                # cache por instância -- ver bloco 03/08) pra não divergir
-                # "dois motores" na mesma decisão. Achado real 10/08 (mesmo
-                # bug do Sanji/Gum-Gum Giant OP09-078): sem o gate, esta
-                # função de EXECUÇÃO podia escolher jogar uma carta que só
-                # tem bloco [Counter] achando que ela ia comprar/buffar,
-                # quando nada acontece fora de batalha -- a DECISÃO
-                # (avaliar_carta, via _score_activate_main) já ganhou esse
-                # gate neste mesmo fix; sem espelhar aqui, a execução real
-                # continuaria escolhendo a carta errada mesmo com a decisão
-                # de ativar já correta.
-                f = get_card_flags(c.code)
-                s = c.board_value()
-                de = self._de()
-                if (f.get('kos') or f.get('is_removal')) and de._step_condition_currently_holds(
-                        c, lambda st: st.get('action') in (
-                            'ko', 'trash_character', 'ko_selected', 'debuff_power', 'set_base_power',
-                            'rest_opp_character', 'place_opp_character_bottom_deck',
-                            'lock_opp_character_refresh', 'lock_opp_character_attack')):
-                    s += 70
-                if f.get('bounces') and de._step_condition_currently_holds(
-                        c, lambda st: st.get('action') in ('bounce', 'opp_bounce_own_character')):
-                    s += 45
-                if f.get('rests_opponent') and de._step_condition_currently_holds(
-                        c, lambda st: st.get('action') == 'rest_opp_character'):
-                    s += 35
-                if f.get('is_searcher') and de._step_condition_currently_holds(
-                        c, lambda st: st.get('action') in ('look_top_deck', 'add_to_hand', 'add_from_trash')):
-                    s += 40
-                if f.get('draws') and de._step_condition_currently_holds(
-                        c, lambda st: st.get('action') == 'draw'):
-                    s += 35
-                if f.get('is_blocker'):                 s += 30
-                if f.get('power_buff') and de._step_condition_currently_holds(
-                        c, lambda st: st.get('action') == 'buff_power'):
-                    s += 20
-                if f.get('has_trigger'):                s += 10
-                # Carta CERTA do game_plan (a bomba do combo, ex: Five Elders):
-                # 3a copia do MESMO bug ja corrigido em avaliar_carta (14/07) e
-                # em order_target_candidates/own_hand (09/07) -- esta selecao
-                # (usada pela EXECUCAO real de qualquer 'play_card' dentro de
-                # QUALQUER trigger, incl. Empty Throne activate_main) nunca
-                # tinha sido tocada. Sem isso, um searcher generico (+40 de
-                # flag) batia a bomba de 12000 poder (board_value=12, zero
-                # flags) por larga margem -- achado ao vivo indireto 14/07
-                # (Empty Throne jogou Ju Peter em vez de Five Elders com
-                # ambos na mao). Generico via compute_game_plan, zero nome de
-                # carta.
-                try:
-                    if compute_game_plan(me).get('win_con_code') == c.code:
-                        s += 90
-                except Exception:
-                    pass
-                return s
+            _score_to_play = self._nota_para_jogar
 
             def _pior_para_trocar(field_chars):
                 # Pior character pra eventual troca por um play gratis quando o
@@ -11318,7 +11335,7 @@ class EffectExecutor:
                     for _ in range(count):
                         if not pool:
                             break
-                        melhor = max(pool, key=_score_to_play)
+                        melhor = self.escolhe_carta_para_jogar(pool)
                         # guarda de campo cheio para characters
                         if melhor.card_type == 'CHARACTER' and len(me.field_chars) >= 5:
                             pior = _pior_para_trocar(me.field_chars)
@@ -11343,7 +11360,7 @@ class EffectExecutor:
                         pool = [c for c in pool if c.cost <= orcamento_restante]
                     if not pool:
                         break
-                    melhor = max(pool, key=_score_to_play)
+                    melhor = self.escolhe_carta_para_jogar(pool)
                     # guarda de campo cheio para characters
                     if melhor.card_type == 'CHARACTER' and len(me.field_chars) >= 5:
                         pior = _pior_para_trocar(me.field_chars)

@@ -8245,5 +8245,38 @@
       "Opponent": "decks_full/Rocks.D.Xebec-B_2026-10-10T08.59.15.json"
     },
     "decision_log_file": "decisions/decisions_2026-10-10T08.59.15.jsonl"
+  },
+  {
+    "id": "2026-10-10T10.26.44",
+    "impressao": "ce375f5635c37a59543d6e90962b7162",
+    "friendly_name": "Sabo-RB_x_Rocks.D.Xebec-B",
+    "date": "2026-10-10",
+    "p1": {
+      "name": "You",
+      "leader_code": "OP13-004",
+      "leader_name": "Sabo",
+      "slug": "Sabo-RB"
+    },
+    "p2": {
+      "name": "Opponent",
+      "leader_code": "OP17-039",
+      "leader_name": "Rocks D. Xebec",
+      "slug": "Rocks.D.Xebec-B"
+    },
+    "turns": 9,
+    "winner": "p1",
+    "bot_side": "p2",
+    "tipo": "com_bot",
+    "log_file": "raw/Sabo-RB_x_Rocks.D.Xebec-B_2026-10-10T10.26.44.log",
+    "parsed_file": "parsed/Sabo-RB_x_Rocks.D.Xebec-B_2026-10-10T10.26.44.json",
+    "deck_files": {
+      "You": "decks/Sabo-RB_2026-10-10T10.26.44.json",
+      "Opponent": "decks/Rocks.D.Xebec-B_2026-10-10T10.26.44.json"
+    },
+    "deck_full_files": {
+      "You": "decks_full/Sabo-RB_2026-10-10T10.26.44.json",
+      "Opponent": "decks_full/Rocks.D.Xebec-B_2026-10-10T10.26.44.json"
+    },
+    "decision_log_file": "decisions/decisions_2026-10-10T10.26.44.jsonl"
   }
 ]

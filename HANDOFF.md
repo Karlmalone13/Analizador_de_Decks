@@ -1,5 +1,28 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-10-10 (956) - Xebec 10 descartado pelo proprio efeito; carta baixada de graca vira decisao do Q
+
+Log `Sabo-RB_x_Rocks.D.Xebec-B_2026-10-10T10.26.44` (bot Xebec p2). Usuario: "descartando o Xebec 10
+durante o efeito do lider ... a bomba do deck". Custo do lider (trash 1 da mao): a REGRA escolheria a
+Stussy; o Q trocou pelo OP17-118 (turnos 3 e 4).
+
+**mede_descarte_xebec.py**: mesma foto rejogada, descarta x guarda. 1a rodada DETERMINISTICA (A e A'
+identicos 64/132 -- ramos sem embaralhar o deck): corrigido embaralhando o resto dos decks no ramo.
+Total 2 rodadas (98 posicoes): descarta 220/392 = 56%, controle 217/392 = 55%, guarda 231/392 = 59% --
+dentro da sorte. **mede_xebec_jogado.py** (80 partidas): Xebec 10 na mao em 46, JOGADO em 5; jogado em
+TODOS os 5 turnos com 10 DON; partida media 5,7 turnos proprios -- quase nunca chega a mesa, por isso o
+Q aprendeu a descarta-lo. (A conta "On Play baixa 1 carta" era erro meu: contei a palavra "jogou".)
+
+**On Play baixa 2, mas escolhe mal e em DOIS lugares**: o auto-jogo escolhia pela nota fixa
+(`_score_to_play`, guloso: John+Kyo=6 com Shiki na mao) e o jogo real pela escolha de ALVO. Agora um
+ponto so: `EffectExecutor.escolhe_carta_para_jogar` -> `_q_escolhe_carta('jogar_gratis')`, nota
+(`_nota_para_jogar`, ex-`_score_to_play`) como padrao; o laco do play_card e o `order_target_candidates`
+(ator com play_card + alvos own_hand/own_trash) usam ele. Orcamento/nomes seguem regra. treinar_q
+FAMILIAS += 'jogar_gratis'. Limite: escolhe 1 carta por vez (nao monta a dupla).
+
+**Coletor**: o decision_log banco era a SESSAO inteira (960 MB numa partida). Agora so as linhas do
+match_id; o de 19.25.19 foi recortado (9,5 MB). smoke_fast 1930 OK. Servidor reiniciado.
+
 ## 2026-10-10 (955) - O MULLIGAN passa a ser decisao do modelo (pedido do usuario)
 
 Usuario: a mao do Xebec (Linlin, Gloriosa, Stussy, Buckin, OP17-055) "nao e tao boa -- nao veio draw nem

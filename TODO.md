@@ -1,6 +1,8 @@
 # TODO — Analisador de Decks OPTCG
 
-**Última atualização:** 9 de outubro de 2026 (blocos 943-955)
+**Última atualização:** 9 de outubro de 2026 (blocos 943-956)
+
+> **956**: Xebec 10 descartado = no auto-jogo nao faz diferenca (partidas curtas, quase nunca e jogado). Carta baixada de graca agora e decisao do Q (ponto unico auto-jogo/ao vivo). Coletor nao copia mais a sessao inteira.
 
 > **955**: mulligan virou decisao do modelo (Q), uma funcao so pro auto-jogo e pro jogo real; aprende nos proximos ciclos. Falta recompilar o plugin (jogo aberto).
 

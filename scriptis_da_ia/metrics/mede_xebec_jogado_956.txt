@@ -1,0 +1,10 @@
+partidas: 80 | Xebec venceu 49/80
+Xebec 10 na mao em algum turno: 46/80
+partidas em que JOGOU o Xebec 10: 5/80
+turno proprio em que jogou: media 5.6 | [(6, 3), (5, 2)]
+cartas baixadas de graca pelo On Play (media por Xebec jogado): 1.00
+turnos com 10+ DON e Xebec na mao: 5
+Xebec 10 terminando no trash (media/partida): 1.49
+duracao media (turnos proprios): 5.7
+vitoria quando JOGOU: 3/5
+vitoria quando teve na mao e NAO jogou: 28/41

@@ -11012,6 +11012,7 @@ def main() -> int:
     test_campo_cheio_nao_tira_o_recem_jogado_bloco952()
     test_reacao_em_batalha_le_o_bloco_de_batalha_bloco953()
     test_mulligan_e_decisao_do_q_bloco955()
+    test_jogar_gratis_ponto_unico_bloco956()
     test_explora_so_onde_o_modelo_esta_incerto_27_09()
     test_treino_continua_do_campeao_27_09()
     test_registro_de_geracoes_27_09()
@@ -16150,6 +16151,38 @@ def test_mulligan_e_decisao_do_q_bloco955() -> None:
         r = m3._mulligan_decision(m3.state_a.hand, deck=m3.state_a.deck)[0]
         trocas += int(m3.decide_mulligan(m3.state_a, m3.state_b)[0] != bool(r))
     check("CONTROLE: com exploracao a escolha DIFERE da regra em parte das maos", 0 < trocas < 40)
+
+
+def test_jogar_gratis_ponto_unico_bloco956() -> None:
+    """Xebec OP17-118 "[On Play] ... play up to 2 Rocks Pirates ... total cost 9":
+    qual carta baixar de graca era a nota fixa no auto-jogo e a escolha de ALVO
+    ao vivo. Agora as duas passam por `escolhe_carta_para_jogar` (Q decide)."""
+    from optcg_engine import decision_engine as de
+    chamadas = []
+    orig = de.EffectExecutor.escolhe_carta_para_jogar
+    de.EffectExecutor.escolhe_carta_para_jogar = lambda self, pool: (
+        chamadas.append([c.code for c in pool]), orig(self, pool))[1]
+    try:
+        me = GameState(leader=real_card("OP17-039"))
+        me.hand = [real_card(c) for c in ("OP17-048", "OP17-043", "OP17-044")]
+        me.deck = [real_card("OP17-045") for _ in range(10)]
+        opp = GameState(leader=real_card("OP13-004"))
+        x = real_card("OP17-118"); me.field_chars.append(x)
+        out = de.EffectExecutor(me, opp).execute(x, 'on_play')
+        auto = list(chamadas); chamadas.clear()
+        cands = []
+        for uid, c in enumerate(me.hand, start=500):
+            c._deck_uid = uid
+            cands.append({"id": uid, "zone": "own_hand", "code": c.code, "valido": True})
+        if cands:
+            sim_bridge.order_target_candidates(me, opp, cands, actor_code="OP17-118", purpose="effect")
+        vivo = list(chamadas)
+    finally:
+        de.EffectExecutor.escolhe_carta_para_jogar = orig
+    check("auto-jogo: a carta baixada de graca sai de escolhe_carta_para_jogar", len(auto) >= 1)
+    check("ao vivo: a MESMA funcao ordena as cartas da mao pro play_card", (not cands) or len(vivo) >= 1)
+    check("CONTROLE: sem Q que aprendeu, baixa 2 cartas dentro do orcamento 9",
+          any('jogou' in str(o) and ',' in str(o) for o in out))
 
 
 def _so_ev(ev):

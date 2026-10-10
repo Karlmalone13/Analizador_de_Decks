@@ -1,0 +1,4 @@
+posicoes (Q descartou o Xebec 10 contra a regra): 65
+A descarta Xebec              159/260  =  61.2%
+A' descarta (controle)        153/260  =  58.8%
+B guarda Xebec                156/260  =  60.0%

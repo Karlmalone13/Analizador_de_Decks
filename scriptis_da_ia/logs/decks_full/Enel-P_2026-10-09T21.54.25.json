@@ -1,0 +1,73 @@
+{
+  "leader": "OP15-058",
+  "source_deck": "Enel P",
+  "source_dir": "E:\\Games\\OnePieceSimulador\\Builds_Windows\\Decks",
+  "captured_at_ingest": true,
+  "cards": [
+    {
+      "code": "OP05-077",
+      "count": 3
+    },
+    {
+      "code": "OP09-072",
+      "count": 1
+    },
+    {
+      "code": "OP09-077",
+      "count": 2
+    },
+    {
+      "code": "OP10-067",
+      "count": 2
+    },
+    {
+      "code": "OP12-071",
+      "count": 2
+    },
+    {
+      "code": "OP13-076",
+      "count": 1
+    },
+    {
+      "code": "OP15-061",
+      "count": 4
+    },
+    {
+      "code": "OP15-066",
+      "count": 4
+    },
+    {
+      "code": "OP15-067",
+      "count": 4
+    },
+    {
+      "code": "OP15-074",
+      "count": 4
+    },
+    {
+      "code": "OP15-075",
+      "count": 4
+    },
+    {
+      "code": "OP15-076",
+      "count": 4
+    },
+    {
+      "code": "OP15-077",
+      "count": 4
+    },
+    {
+      "code": "OP15-078",
+      "count": 4
+    },
+    {
+      "code": "OP15-118",
+      "count": 4
+    },
+    {
+      "code": "ST10-010",
+      "count": 3
+    }
+  ],
+  "total": 50
+}

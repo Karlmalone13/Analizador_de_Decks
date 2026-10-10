@@ -298,7 +298,16 @@ def collect_latest(decision_log: Path, autosaved_dir: Path = DEFAULT_AUTOSAVED,
     bank_decision_dir = DB_ROOT / "decisions"
     bank_decision_dir.mkdir(parents=True, exist_ok=True)
     bank_decision_log = bank_decision_dir / f"decisions_{bank_entry['id']}.jsonl"
-    shutil.copy2(decision_log, bank_decision_log)
+    # So as linhas DESTA partida (bloco 956): o log do servidor e da SESSAO
+    # inteira -- numa sessao de 10 partidas CPU x CPU a copia chegou a 960 MB
+    # pra uma partida, acima do limite do GitHub.
+    if match_id:
+        with open(decision_log, encoding="utf-8", errors="ignore") as fi,                 open(bank_decision_log, "w", encoding="utf-8") as fo:
+            for linha in fi:
+                if match_id in linha[:600]:
+                    fo.write(linha)
+    else:
+        shutil.copy2(decision_log, bank_decision_log)
     bank_entry["decision_log_file"] = bank_decision_log.relative_to(DB_ROOT).as_posix()
 
     if result:
