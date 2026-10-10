@@ -1,0 +1,123 @@
+{'comparadas': 75, 'divergiu': 34, 'decisao_diferente': 2}
+
+== play OP14-039: 5 divergencia(s)
+   2026-10-10T16.41.32 turno 5
+      mao: motor tem a mais {}, jogo tem a mais {'ST32-001': 1}
+   2026-10-10T17.44.21 turno 4
+      mao: motor tem a mais {}, jogo tem a mais {'OP14-039': 1}
+   2026-10-10T17.44.21 turno 4
+      mao: motor tem a mais {}, jogo tem a mais {'OP07-022': 1}
+
+== play OP12-034: 5 divergencia(s)
+   2026-10-10T17.44.21 turno 6
+      mao: motor tem a mais {}, jogo tem a mais {'OP01-055': 1}
+      mao_n: motor 5 | jogo 6
+   2026-10-10T17.44.21 turno 6
+      mao: motor tem a mais {}, jogo tem a mais {'ST32-001': 1}
+      mao_n: motor 5 | jogo 6
+   2026-10-10T17.47.28_p2 turno 6
+      mao: motor tem a mais {}, jogo tem a mais {'OP13-031': 1}
+      mao_n: motor 7 | jogo 8
+
+== play EB02-017: 4 divergencia(s)
+   2026-10-10T16.41.32 turno 2
+      mao: motor tem a mais {}, jogo tem a mais {'OP12-015': 1}
+      mao_n: motor 7 | jogo 8
+   2026-10-10T16.41.32 turno 4
+      mao: motor tem a mais {}, jogo tem a mais {'OP12-015': 1}
+      mao_n: motor 5 | jogo 6
+   2026-10-10T17.47.28_p2 turno 5
+      mao: motor tem a mais {}, jogo tem a mais {'OP15-032': 1}
+      mao_n: motor 4 | jogo 5
+
+== play OP01-055: 3 divergencia(s)
+   2026-10-10T16.41.32 turno 3
+      mao: motor tem a mais {}, jogo tem a mais {'OP01-055': 1}
+      mao_n: motor 3 | jogo 4
+      don_ativo: motor 2 | jogo 3
+      don_restado: motor 3 | jogo 2
+      trash: motor {'OP01-055': 1} | jogo {}
+   2026-10-10T16.41.32 turno 6
+      mao: motor tem a mais {}, jogo tem a mais {'OP01-055': 1}
+      mao_n: motor 4 | jogo 5
+      don_ativo: motor 0 | jogo 1
+      don_restado: motor 1 | jogo 0
+      trash: motor {'OP01-055': 1} | jogo {}
+   2026-10-10T17.51.30_p3 turno 6
+      mao: motor tem a mais {}, jogo tem a mais {'OP01-055': 1}
+      mao_n: motor 6 | jogo 7
+      don_ativo: motor 4 | jogo 5
+      don_restado: motor 6 | jogo 5
+      trash: motor {'OP01-055': 1} | jogo {}
+
+== play OP12-015: 3 divergencia(s)
+   2026-10-10T17.44.21 turno 2
+      campo: motor [('OP12-015', False, 0, 4000)] | jogo [('OP12-015', False, 1, 5000)]
+      lider: motor ('ST30-001', True, 1, 7000) | jogo ('ST30-001', True, 0, 6000)
+   2026-10-10T17.44.21 turno 4
+      campo: motor [('OP12-015', False, 0, 4000), ('OP12-015', False, 0, 4000), ('ST21-014', False, 1, 7000)] | jogo [('OP12-015', False, 0, 4000), ('OP12-015', False, 0, 4000), ('ST21-014', False, 0, 6000)]
+      lider: motor ('ST30-001', True, 0, 6000) | jogo ('ST30-001', True, 1, 7000)
+   2026-10-10T17.47.28_p2 turno 2
+      mao: motor tem a mais {}, jogo tem a mais {'ST21-014': 1}
+      mao_n: motor 4 | jogo 5
+      campo: motor [('EB04-002', False, 0, 2000), ('EB04-002', False, 1, 3000), ('OP12-015', False, 0, 4000)] | jogo [('EB04-002', False, 0, 2000), ('EB04-002', False, 0, 2000), ('OP12-015', False, 0, 4000)]
+      lider: motor ('ST30-001', True, 0, 6000) | jogo ('ST30-001', True, 1, 7000)
+
+== play OP13-031: 3 divergencia(s)
+   2026-10-10T17.44.21 turno 4
+      mao: motor tem a mais {'OP07-022': 1}, jogo tem a mais {'OP13-031': 1, 'OP12-023': 1}
+      mao_n: motor 7 | jogo 8
+      campo: motor [('OP13-031', False, 0, 6000)] | jogo [('OP07-022', True, 0, 0)]
+   2026-10-10T17.44.21 turno 5
+      mao: motor tem a mais {}, jogo tem a mais {'OP14-023': 1}
+   2026-10-10T17.44.21 turno 6
+      mao: motor tem a mais {'OP06-033': 1}, jogo tem a mais {'OP07-022': 1}
+      campo: motor [('OP07-022', False, 0, 0), ('OP13-031', False, 0, 6000), ('OP14-023', False, 0, 2000)] | jogo [('OP06-033', True, 0, 2000), ('OP13-031', False, 0, 6000), ('OP14-023', False, 0, 2000)]
+
+== activate OP14-020: 3 divergencia(s)
+   2026-10-10T17.44.21 turno 5
+      lider: motor ('OP14-020', True, 2, 7000) | jogo ('OP14-020', False, 2, 7000)
+   2026-10-10T17.44.21 turno 6
+      lider: motor ('OP14-020', True, 1, 6000) | jogo ('OP14-020', False, 1, 6000)
+   2026-10-10T17.51.30_p3 turno 6
+      campo: motor [('OP12-034', False, 0, 2000), ('OP17-022', True, 0, 12000)] | jogo [('OP12-034', True, 0, 2000), ('OP17-022', True, 0, 12000)]
+
+== play EB04-002: 2 divergencia(s)
+   2026-10-10T16.41.32 turno 3
+      mao: motor tem a mais {}, jogo tem a mais {'ST31-001': 1}
+      mao_n: motor 7 | jogo 8
+   2026-10-10T17.47.28_p2 turno 1
+      mao: motor tem a mais {}, jogo tem a mais {'ST21-014': 1}
+      mao_n: motor 5 | jogo 6
+
+== play ST32-001: 2 divergencia(s)
+   2026-10-10T16.41.32 turno 5
+      mao: motor tem a mais {'OP17-022': 1}, jogo tem a mais {'OP01-055': 2, 'OP12-023': 1}
+      campo: motor [('OP12-023', True, 3, 9000), ('ST32-001', True, 0, 2000), ('ST32-003', True, 0, 7000)] | jogo [('OP12-023', True, 3, 9000), ('ST32-001', False, 0, 2000), ('ST32-003', True, 0, 7000)]
+      don_ativo: motor 4 | jogo 3
+      don_restado: motor 1 | jogo 2
+      trash: motor {'OP01-055': 1} | jogo {'OP17-022': 1}
+   2026-10-10T16.41.32 turno 5
+      mao: motor tem a mais {'OP12-023': 1}, jogo tem a mais {'OP01-055': 1, 'OP17-031': 1, 'OP13-031': 1}
+      don_ativo: motor 1 | jogo 0
+      don_restado: motor 4 | jogo 5
+      trash: motor {'OP01-055': 1} | jogo {'OP12-023': 1}
+
+== play ST31-005: 1 divergencia(s)
+   2026-10-10T16.41.32 turno 4
+      mao: motor tem a mais {}, jogo tem a mais {'OP01-016': 1}
+
+== play OP17-031: 1 divergencia(s)
+   2026-10-10T17.47.28_p2 turno 3
+      mao: motor tem a mais {}, jogo tem a mais {'OP07-022': 1}
+
+== play OP01-016: 1 divergencia(s)
+   2026-10-10T17.47.28_p2 turno 5
+      mao: motor tem a mais {}, jogo tem a mais {'ST30-012': 1}
+      mao_n: motor 5 | jogo 6
+
+== play ST31-001: 1 divergencia(s)
+   2026-10-10T17.51.30_p3 turno 4
+      mao: motor tem a mais {'OP01-016': 1}, jogo tem a mais {'ST30-012': 1, 'ST31-001': 1}
+      mao_n: motor 5 | jogo 6
+      campo: motor [('EB02-017', True, 3, 5000), ('ST21-014', True, 0, 6000), ('ST31-001', False, 0, 3000)] | jogo [('EB02-017', True, 3, 5000), ('OP01-016', False, 0, 2000), ('ST21-014', True, 0, 6000), ('ST31-001', False, 0, 3000)]

@@ -1,5 +1,28 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-10-10 (958) - Reproduzindo partida real acao por acao: 2 regras que o motor simulava errado
+
+Mesmo estado => mesma decisao (Otama x passar: Q 0,499 x 0,542 ao vivo E no motor; features do Q
+identicas). Logo a diferenca motor x jogo vem de como o ESTADO EVOLUI. Ferramenta nova
+`mede_replay_estado.py`: pra cada par de decisoes `main` seguidas do mesmo lado/turno de uma partida
+real, reconstroi o estado como o servidor, confere que o motor escolhe a MESMA acao, aplica
+(`_apply_action`) e compara com o estado que o JOGO mandou na decisao seguinte.
+
+1. **give_don RESTADO nao era dado**: o teto "so o necessario pra bater o lider, guarda pra defesa"
+   (15/07) valia tambem pro DON restado -- que ja foi gasto e nao defende. O OPTCGSim sempre da
+   (OP12-015/ST21-014 do Luffy). Agora o teto so vale pro DON ATIVO (testes do Brook ajustados + teste
+   novo do ativo).
+2. **Passivo condicional de poder so no inicio do turno**: OP12-015 "+2000 se total >= 2 DON dados"
+   ficava 5000 no motor e 7000 no jogo. Novo `EffectExecutor.reavalia_passivos_de_poder` (so passivos
+   simples: condicao + buff_power self), chamado em `_apply_action` (jogada real e simulacao);
+   `apply_your_turn_buffs` marca os aplicados (`_passivo_on`). Cobre tambem quem entra em campo no meio
+   do turno. Generico, qualquer carta.
+
+Motor Mihawk x Luffy & Ace: comecando 76% -> 56%, total 70% -> 58% (jogo real 0/20). Diferenca
+diminuiu, nao fechou. Divergencias restantes: OP01-055 jogado sem poder pagar (rest 2 chars),
+ativacao do lider Mihawk deita o LIDER no motor e outra carta no jogo, Law OP13-031, maos (busca).
+smoke_fast 1934 OK.
+
 ## 2026-10-10 (957) - 2a leva CPU x CPU Mihawk x Luffy & Ace; coletor contava a partida DEPOIS do parser
 
 10 partidas (7 + 3; a 8a nao comecou: clique no menu caiu no Deck Editor -> esperas maiores no loop).

@@ -3331,8 +3331,20 @@ def test_give_don_da_so_o_necessario_nao_sempre_o_teto() -> None:
     forte = mk("XFORTE", "Forte", power=9000, cost=4)
     me_a.field_chars = [brook_a, forte]
     EffectExecutor(me_a, opp_a).execute(brook_a, "on_play")
-    check("give_don NAO gasta DON se o alvo ja bate o lider do oponente sem ajuda",
-          me_a.don_rested == 2 and forte.don_attached == 0)
+    # Bloco 958: o Brook da DON RESTADO -- sem custo de oportunidade (ja foi
+    # gasto e nao serve pra defesa), entao o teto "guardar pra defesa" NAO se
+    # aplica a ele. Ao vivo o OPTCGSim sempre dava; o motor nao (deck do
+    # Luffy mais fraco no motor que no jogo real).
+    check("give_don RESTADO: da o DON mesmo se o alvo ja bate o lider (DON restado e de graca)",
+          me_a.don_rested < 2)
+    # O teto vale pro DON ATIVO (o caso que a regra de 15/07 protegia).
+    me_c = GameState(leader=meu_lider_fraco, don_available=2, turn=3)
+    opp_c = GameState(leader=mk("XOPPL", "Lider", power=5000, cost=0, card_type="LEADER"), turn=3)
+    forte_c = mk("XFORTE", "Forte", power=9000, cost=4)
+    me_c.field_chars = [forte_c]
+    EffectExecutor(me_c, opp_c)._execute_step({"action": "give_don", "count": 2}, forte_c)
+    check("give_don ATIVO NAO gasta DON se o alvo ja bate o lider do oponente sem ajuda",
+          me_c.don_available == 2 and forte_c.don_attached == 0)
 
     # Cenario B: personagem precisa so de 1 DON (4000 vs 5000, falta 1000)
     # pra bater o lider -- carta pede ate 2, deveria dar so 1.
@@ -3343,8 +3355,8 @@ def test_give_don_da_so_o_necessario_nao_sempre_o_teto() -> None:
     fraco = mk("XFRACO", "Fraco", power=4000, cost=2)
     me_b.field_chars = [brook_b, fraco]
     EffectExecutor(me_b, opp_b).execute(brook_b, "on_play")
-    check("give_don da so o necessario (1), nao o teto pedido pela carta (2)",
-          me_b.don_rested == 1 and fraco.don_attached == 1)
+    check("give_don RESTADO: da ate o teto da carta (2), nao so o necessario",
+          me_b.don_rested == 0)
 
 
 def test_hand_to_deck_clausula_loot_apos_draw() -> None:
@@ -11013,6 +11025,7 @@ def main() -> int:
     test_reacao_em_batalha_le_o_bloco_de_batalha_bloco953()
     test_mulligan_e_decisao_do_q_bloco955()
     test_jogar_gratis_ponto_unico_bloco956()
+    test_passivo_de_poder_e_continuo_bloco958()
     test_explora_so_onde_o_modelo_esta_incerto_27_09()
     test_treino_continua_do_campeao_27_09()
     test_registro_de_geracoes_27_09()
@@ -16183,6 +16196,29 @@ def test_jogar_gratis_ponto_unico_bloco956() -> None:
     check("ao vivo: a MESMA funcao ordena as cartas da mao pro play_card", (not cands) or len(vivo) >= 1)
     check("CONTROLE: sem Q que aprendeu, baixa 2 cartas dentro do orcamento 9",
           any('jogou' in str(o) and ',' in str(o) for o in out))
+
+
+def test_passivo_de_poder_e_continuo_bloco958() -> None:
+    """OP12-015 "+2000 se voce tiver um total de 2 ou mais DON dados": no jogo
+    vale na hora; o motor so aplicava no inicio do turno (Luffy 5000 no motor x
+    7000 no OPTCGSim, reproduzindo partida real acao por acao)."""
+    from optcg_engine.decision_engine import EffectExecutor
+    me = GameState(leader=real_card("ST30-001"), turn=3)
+    luffy = real_card("OP12-015"); me.field_chars = [luffy]
+    opp = GameState(leader=real_card("OP14-020"), turn=3)
+    ee = EffectExecutor(me, opp)
+    ee.apply_your_turn_buffs()
+    base = luffy.effective_power(True)
+    me.leader.don_attached = 2
+    ee.reavalia_passivos_de_poder()
+    check("passivo continuo: 2 DON dados no meio do turno -> +2000 na hora",
+          luffy.effective_power(True) == base + 2000)
+    ee.reavalia_passivos_de_poder()
+    check("passivo continuo: reavaliar de novo nao soma duas vezes",
+          luffy.effective_power(True) == base + 2000)
+    me.leader.don_attached = 1
+    ee.reavalia_passivos_de_poder()
+    check("CONTROLE: condicao deixou de valer -> o +2000 sai", luffy.effective_power(True) == base)
 
 
 def _so_ev(ev):

@@ -1,6 +1,8 @@
 # TODO — Analisador de Decks OPTCG
 
-**Última atualização:** 9 de outubro de 2026 (blocos 943-957)
+**Última atualização:** 9 de outubro de 2026 (blocos 943-958)
+
+> **958**: 2 regras do motor corrigidas (DON restado dado; passivo de poder continuo). Mihawk no motor 70% -> 58% (jogo real 0/20). Seguir pelas divergencias de mede_replay_estado.py.
 
 > **957**: 2a leva Mihawk x Luffy: 10x0 ao vivo, motor 76% -- causa aberta (descartados: deck proprio, turno, DON). Coletor agora registra toda partida. Proximo: reproduzir partida real no motor.
 

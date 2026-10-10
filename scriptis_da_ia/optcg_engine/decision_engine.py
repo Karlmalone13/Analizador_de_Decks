@@ -6340,6 +6340,7 @@ class EffectExecutor:
             c.power_buff = 0
             c.cost_buff = 0
             c.cost_buff_permanent = 0
+            c._passivo_on = set()
 
         # "Vida removida desde o ultimo check" (achado 29/07, Nami OP11-041
         # e familia) -- calculado ANTES de checar qualquer condicao (pra
@@ -6396,6 +6397,10 @@ class EffectExecutor:
                     log = self._execute_step(step, source)
                     if log:
                         logs.append(log)
+                if self._passivo_simples(ef_data):
+                    if not hasattr(source, '_passivo_on'):
+                        source._passivo_on = set()
+                    source._passivo_on.add(trigger)
 
         # Atualiza a snapshot pro PROXIMO check (depois de usar a antiga
         # acima pra decidir "mudou desde a ultima vez") -- vira a nova
@@ -6404,6 +6409,46 @@ class EffectExecutor:
         self.me.life_count_snapshot_opp = len(self.opp.life)
 
         return logs
+
+    @staticmethod
+    def _passivo_simples(ef_data) -> bool:
+        """'Se [condicao], esta carta ganha +N de poder' -- passivo COM
+        condicao e so buff_power no proprio card (bloco 958)."""
+        steps = ef_data.get('steps') or []
+        return bool(ef_data.get('conditions') and steps
+                    and not ef_data.get('conditional_stack') and not ef_data.get('choice')
+                    and not ef_data.get('don_requirement')
+                    and all(s.get('action') == 'buff_power' and s.get('target') == 'self'
+                            for s in steps))
+
+    def reavalia_passivos_de_poder(self) -> None:
+        """Passivo condicional de poder e CONTINUO no jogo real (bloco 958):
+        OP12-015 "+2000 se voce tiver um total de 2 ou mais DON dados" vale no
+        instante em que o 2o DON e dado. O motor so aplicava no inicio do turno
+        (`apply_your_turn_buffs`): reproduzindo partidas reais acao por acao,
+        o Luffy ficava com 5000 no motor e 7000 no OPTCGSim. Aqui, depois de
+        cada acao, liga/desliga cada passivo simples conforme a condicao -- e
+        cobre o personagem que ENTRA em campo no meio do turno. Nao toca nos
+        outros buffs do turno."""
+        for source in self.me.field_chars + [self.me.leader]:
+            if source is None:
+                continue
+            efs = get_card_effects(source.code)
+            for trig in ('your_turn', 'passive'):
+                ef = efs.get(trig)
+                if not ef or not self._passivo_simples(ef):
+                    continue
+                on_set = getattr(source, '_passivo_on', None)
+                if on_set is None:
+                    on_set = source._passivo_on = set()
+                quer = self._check_conditions(ef.get('conditions', {}), source)
+                amt = sum(int(s.get('amount', 0) or 0) for s in ef.get('steps', []))
+                if quer and trig not in on_set:
+                    source.power_buff += amt
+                    on_set.add(trig)
+                elif not quer and trig in on_set:
+                    source.power_buff -= amt
+                    on_set.discard(trig)
 
     def reset_your_turn_buffs(self):
         """Reseta buffs temporários ao fim do turno."""
@@ -10189,7 +10234,16 @@ class EffectExecutor:
                 # Activate Main roda antes da fase de ataque).
                 deficit = opp.leader.power - attack_time_power(best, opp)
                 necessario = (deficit + 999) // 1000 if deficit > 0 else 0
-                count = min(count, necessario)
+                # DON RESTADO nao tem custo de oportunidade (bloco 958): ja foi
+                # gasto neste turno e nao serve pra defesa -- o teto acima
+                # ("guardar pra defesa") so vale pro DON ATIVO. Com ele o motor
+                # quase nunca dava o DON restado de OP12-015/ST21-014 (Luffy),
+                # que o JOGO real sempre da -- e OP12-015 ainda perde os +2000
+                # de "2 ou mais DON dados". Achado reproduzindo partidas reais
+                # acao por acao (mede_replay_estado.py): o deck do Luffy
+                # ficava mais fraco no motor que no OPTCGSim.
+                if not rested:
+                    count = min(count, necessario)
                 # Debita do banco de DON real (don_rested + don_available),
                 # nunca de uma fonte gratuita externa -- ambos os tipos vêm
                 # do mesmo banco do jogador. Achado 15/07 via
@@ -21933,6 +21987,10 @@ class OPTCGMatch:
         Default: `_ml_captura` e None => custo zero, nada muda.
         """
         r = self._apply_action_inner(action, p, opp, ee, engine, verbose)
+        try:
+            ee.reavalia_passivos_de_poder()      # bloco 958: passivo e continuo
+        except Exception:
+            pass
         buf = getattr(self, '_ml_captura', None)
         if buf is not None and not getattr(self, '_suppress_replay_log', False):
             try:
