@@ -1,5 +1,20 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-10-10 (960) - Defesa (counter): o jogo real decidia com outra estrutura que o motor
+
+`mede_replay_ataque.py`: ataques de partidas reais reproduzidos no motor, defensor montado pelo
+`state_before` da DEFESA dele (mao real, CPU x CPU). Golpe do Luffy no lider do Mihawk: passa 25/33 no
+motor x 17/33 ao vivo -- o Mihawk ao vivo usava counter onde o motor nao usava.
+Causa: duas estruturas pra mesma decisao. Motor: (1) personagens (`should_use_counter`/`pick_counters`,
+Q `counter`) e, se ainda passa, (2) UM evento (`_q_counter_evento`, Q `counter_evento`, com os extras do
+evento). Ao vivo (`select_counter_cards`): personagens + eventos num pool so, decidido de uma vez, so com
+o buff basico do evento.
+Agora o ao vivo segue a sequencia do motor: `EffectExecutor.escolhe_counter_evento_power/_debuff`
+(escolha separada da aplicacao; `try_counter_event_*` usam elas) e `select_counter_cards` faz (1)+(2).
+Pendente: o evento de DEBUFF no atacante ao vivo (precisa do atacante no pedido de defesa).
+A reproducao usa o combate do motor -> mesmos numeros; o efeito aparece em partidas NOVAS ao vivo.
+smoke_fast 1936 OK.
+
 ## 2026-10-10 (959) - Custo opcional de On Play pago com carta do proprio campo: ao vivo era pago sem perguntar
 
 Seguindo `mede_replay_estado.py`: na partida 17.44.21 o Law OP13-031 ("You may return 1 of your

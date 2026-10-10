@@ -11026,6 +11026,7 @@ def main() -> int:
     test_mulligan_e_decisao_do_q_bloco955()
     test_jogar_gratis_ponto_unico_bloco956()
     test_passivo_de_poder_e_continuo_bloco958()
+    test_counter_ao_vivo_mesma_sequencia_do_motor_bloco960()
     test_explora_so_onde_o_modelo_esta_incerto_27_09()
     test_treino_continua_do_campeao_27_09()
     test_registro_de_geracoes_27_09()
@@ -16219,6 +16220,30 @@ def test_passivo_de_poder_e_continuo_bloco958() -> None:
     me.leader.don_attached = 1
     ee.reavalia_passivos_de_poder()
     check("CONTROLE: condicao deixou de valer -> o +2000 sai", luffy.effective_power(True) == base)
+
+
+def test_counter_ao_vivo_mesma_sequencia_do_motor_bloco960() -> None:
+    """Defesa ao vivo = sequencia do combate do motor: personagens de counter
+    (`should_use_counter`) e, se o golpe ainda passa, UM evento pela mesma
+    escolha do motor (`escolhe_counter_evento_power`)."""
+    from optcg_engine.decision_engine import EffectExecutor
+    chamadas = []
+    orig = EffectExecutor.escolhe_counter_evento_power
+    EffectExecutor.escolhe_counter_evento_power = lambda self, *a: (chamadas.append(a), orig(self, *a))[1]
+    try:
+        me = GameState(leader=real_card("OP14-020"), don_available=3, turn=4)
+        me.hand = [real_card("OP13-040")]
+        for i, c in enumerate(me.hand):
+            c._deck_uid = 700 + i
+        opp = GameState(leader=real_card("ST30-001"), turn=4)
+        sim_bridge.select_counter_cards(me, 9000, 5000, opp_gs=opp, defender_uid=0)
+        com_falta = len(chamadas); chamadas.clear()
+        sim_bridge.select_counter_cards(me, 4000, 5000, opp_gs=opp, defender_uid=0)
+        sem_falta = len(chamadas)
+    finally:
+        EffectExecutor.escolhe_counter_evento_power = orig
+    check("defesa ao vivo: golpe passando -> consulta a MESMA escolha de evento do motor", com_falta >= 1)
+    check("CONTROLE: ataque que ja perde nao consulta evento nenhum", sem_falta == 0)
 
 
 def _so_ev(ev):

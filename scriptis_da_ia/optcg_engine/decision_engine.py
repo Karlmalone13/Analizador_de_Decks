@@ -5846,9 +5846,11 @@ class EffectExecutor:
                                 1 + next(k for k, it in enumerate(candidates) if it is _padrao))
         return None if _i == 0 else candidates[_i - 1]
 
-    def try_counter_event_power(self, target: Card, target_type: str,
-                                needed: int) -> tuple[int, str] | None:
-        """Usa um evento [Counter] simples se o buff de batalha impedir o hit."""
+    def escolhe_counter_evento_power(self, target: Card, target_type: str, needed: int):
+        """QUAL evento [Counter] de buff usar (sem aplicar) -- bloco 960: o
+        caminho ao vivo (`select_counter_cards`) usa esta MESMA escolha, em vez
+        de juntar eventos no pool de personagens com outra regua. Devolve a
+        tupla do candidato ou None."""
         candidates = []
         for event in self.me.hand:
             if event.card_type != 'EVENT':
@@ -5866,11 +5868,14 @@ class EffectExecutor:
             if not self._counter_event_cost_payable(event, costs):
                 continue
             candidates.append((amount - needed, play_cost, event, amount, costs, extras))
-
         if not candidates:
             return None
+        return self._q_counter_evento(candidates, target, target_type)
 
-        _esc = self._q_counter_evento(candidates, target, target_type)
+    def try_counter_event_power(self, target: Card, target_type: str,
+                                needed: int) -> tuple[int, str] | None:
+        """Usa um evento [Counter] simples se o buff de batalha impedir o hit."""
+        _esc = self.escolhe_counter_evento_power(target, target_type, needed)
         if _esc is None:
             return None
         _, play_cost, event, amount, costs, extras = _esc
@@ -5944,10 +5949,9 @@ class EffectExecutor:
             total += step.get('amount', 0)
         return total or None
 
-    def try_counter_event_debuff(self, attacker: Card, attacker_type: str,
-                                 needed: int) -> tuple[int, str] | None:
-        """Usa um evento [Counter] que enfraquece o ATACANTE (em vez de
-        buffar a propria defesa) se isso sozinho impedir o hit."""
+    def escolhe_counter_evento_debuff(self, attacker: Card, attacker_type: str, needed: int):
+        """QUAL evento [Counter] de enfraquecer o atacante usar (sem aplicar) --
+        mesma escolha pro motor e pro caminho ao vivo (bloco 960)."""
         candidates = []
         for event in self.me.hand:
             if event.card_type != 'EVENT':
@@ -5962,11 +5966,15 @@ class EffectExecutor:
             if not self._counter_event_cost_payable(event, costs):
                 continue
             candidates.append((amount - needed, play_cost, event, amount, costs))
-
         if not candidates:
             return None
+        return self._q_counter_evento(candidates, attacker, attacker_type)
 
-        _esc = self._q_counter_evento(candidates, attacker, attacker_type)
+    def try_counter_event_debuff(self, attacker: Card, attacker_type: str,
+                                 needed: int) -> tuple[int, str] | None:
+        """Usa um evento [Counter] que enfraquece o ATACANTE (em vez de
+        buffar a propria defesa) se isso sozinho impedir o hit."""
+        _esc = self.escolhe_counter_evento_debuff(attacker, attacker_type, needed)
         if _esc is None:
             return None
         _, play_cost, event, amount, costs = _esc

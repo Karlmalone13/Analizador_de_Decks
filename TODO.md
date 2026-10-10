@@ -1,6 +1,8 @@
 # TODO — Analisador de Decks OPTCG
 
-**Última atualização:** 9 de outubro de 2026 (blocos 943-959)
+**Última atualização:** 9 de outubro de 2026 (blocos 943-960)
+
+> **960**: defesa ao vivo agora segue a mesma sequencia do motor (personagens, depois evento). Medir com partidas novas ao vivo.
 
 > **959**: custo opcional de On Play (devolver/deitar personagem proprio) ao vivo agora passa pela mesma decisao do motor; antes era pago sem perguntar (Law se devolvendo). Pendentes: custo da ativacao do lider Mihawk (deita o lider no motor), OP01-055 sem custo pagavel.
 

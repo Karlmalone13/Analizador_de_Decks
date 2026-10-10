@@ -1644,41 +1644,34 @@ def select_counter_cards(gs: GameState, atk_power: int, def_power: int,
         defender_char = next((c for c in gs.field_chars
                               if getattr(c, '_deck_uid', 0) == defender_uid), None)
 
+    # A MESMA SEQUENCIA DO COMBATE DO MOTOR (bloco 960). Antes este caminho
+    # juntava personagens E eventos num pool so, decidido de uma vez, enquanto
+    # o motor (auto-jogo, onde o modelo aprende) decide em DOIS passos:
+    # (1) personagens com counter -- `should_use_counter`/`pick_counters`;
+    # (2) se o golpe ainda passa, UM evento [Counter] -- `escolhe_counter_
+    # evento_power` (familia `counter_evento`, com os extras do evento).
+    # Duas estruturas pra mesma decisao: reproduzindo partidas reais, o golpe
+    # do Luffy no lider do Mihawk passava 25/33 no motor e 17/33 ao vivo.
+    # Ataque que ja perde sozinho: `should_use_counter` recusa e o passo (2)
+    # so roda se o golpe ainda passa -- nao precisa de checagem propria aqui.
     needed = atk_power - def_power + 1
-    if needed <= 0 or not pool:
-        # Sao DUAS recusas corretas por motivos diferentes -- o ataque ja nao
-        # passa, ou nao havia counter elegivel -- e so a segunda e "o bot
-        # tinha carta e nao usou". Vao como DADO (`needed` e `pool_vazio`) em
-        # vez de um ramo que escolhe o rotulo: esta funcao nao decide nada
-        # aqui, so registra o que o motor ja decidiu, e o `if` acima e o
-        # mesmo que sempre existiu.
-        _registra('sem_counter_utilizavel', False,
-                  needed=needed, pool_vazio=not pool)
+    alvo = defender_char if defender_char is not None else gs.leader
+    alvo_tipo = 'character' if defender_char is not None else 'leader'
+    final = []
+    defesa = def_power
+    if engine.should_use_counter(atk_power, def_power, alvo=defender_char):
+        escolha, gasto, total = engine.pick_counters(needed)
+        final = list(getattr(engine, '_counter_escolhido', None) or escolha)
+        defesa += sum(getattr(c, 'counter', 0) for c in final)
+    if atk_power >= defesa:
+        _esc = ee.escolhe_counter_evento_power(alvo, alvo_tipo, atk_power - defesa + 1)
+        if _esc is not None:
+            final.append(_esc[2])
+            defesa += _esc[3]
+    if not final:
+        _registra('decisao_do_motor', False, needed=needed)
         return []
-
-    # Selecao unica pros dois casos (lider/personagem): cobre `needed`
-    # minimizando o valor PERDIDO (pitch_cost_as_counter, que desconta o
-    # papel de counter da carta — avaliar_carta puro deixava um Saturn
-    # jogavel "barato" de pitchar e um evento counter "caro" de usar,
-    # achado real 11/07).
-    escolha, gasto, total = engine.pick_counters(needed, pool=pool)
-    if total < needed:
-        # Recusa CORRETA: counter parcial nao salva nada, so joga carta fora.
-        # Provavelmente o grosso das 46 -- e era exatamente isto que o log
-        # nao conseguia dizer.
-        _registra('nao_cobre', False, needed=needed, total_disponivel=total)
-        return []
-    # A MESMA decisao do motor offline, lider OU personagem (bloco 910): SE
-    # counteria e COM QUAIS cartas saem de `should_use_counter`, que e onde o
-    # modelo decide e aprende. Aqui havia uma regra propria pra defender
-    # personagem ("troca de recursos") que o offline nao usava -- duas
-    # funcoes pra mesma decisao (`REGRA_SEM_DUPLICACAO`).
-    if not engine.should_use_counter(atk_power, def_power, alvo=defender_char,
-                                     counter_avail=total, gasto=gasto, pool=pool):
-        return []
-    final = getattr(engine, '_counter_escolhido', None) or escolha
-    _registra('decisao_do_motor', True, needed=needed,
-              gasto=round(float(gasto), 2), cartas=_cods(final),
+    _registra('decisao_do_motor', True, needed=needed, cartas=_cods(final),
               defendendo=getattr(defender_char, 'code', None))
     return [uid for c in final if (uid := getattr(c, '_deck_uid', 0))]
 

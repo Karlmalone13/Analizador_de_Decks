@@ -1,0 +1,20 @@
+{'comparados': 72, 'decisao_diferente': 6, 'resultado_diferente': 15, 'sem_par': 4}
+OP14-020 ataca lider             n= 17 | golpe passou: motor   8 | jogo   7
+OP14-020 ataca personagem        n= 14 | golpe passou: motor   0 | jogo   0
+ST30-001 ataca lider             n= 33 | golpe passou: motor  25 | jogo  17
+ST30-001 ataca personagem        n=  8 | golpe passou: motor   0 | jogo   0
+
+== ST30-001 ataca lider: 10 com resultado diferente
+    2026-10-10T16.41.32 4 ST21-014 motor passou (defesa gastou -1) jogo segurou (defesa gastou 1)
+    2026-10-10T17.44.21 5 ST30-001 motor passou (defesa gastou -1) jogo segurou (defesa gastou 1)
+    2026-10-10T17.44.21 5 ST21-014 motor passou (defesa gastou -1) jogo segurou (defesa gastou 1)
+    2026-10-10T17.47.28_p2 3 ST30-001 motor passou (defesa gastou -1) jogo segurou (defesa gastou 1)
+    2026-10-10T17.47.28_p2 4 ST21-014 motor passou (defesa gastou -1) jogo segurou (defesa gastou 2)
+    2026-10-10T17.51.30_p3 2 EB02-017 motor segurou (defesa gastou 0) jogo passou (defesa gastou -1)
+
+== OP14-020 ataca lider: 5 com resultado diferente
+    2026-10-10T16.41.32 6 ST32-001 motor passou (defesa gastou -1) jogo segurou (defesa gastou 1)
+    2026-10-10T17.44.21 5 OP14-020 motor passou (defesa gastou -1) jogo segurou (defesa gastou 2)
+    2026-10-10T17.47.28_p2 5 OP14-020 motor segurou (defesa gastou 0) jogo passou (defesa gastou -1)
+    2026-10-10T17.47.28_p2 5 OP17-031 motor passou (defesa gastou -1) jogo segurou (defesa gastou 1)
+    2026-10-10T17.51.30_p3 2 OP14-020 motor segurou (defesa gastou 1) jogo passou (defesa gastou -1)
