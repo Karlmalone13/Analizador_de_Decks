@@ -1,0 +1,61 @@
+{
+  "cards": [
+    {
+      "code": "OP17-082",
+      "name": "OP17-082",
+      "count": 3
+    },
+    {
+      "code": "OP17-087",
+      "name": "Nico Robin",
+      "count": 2
+    },
+    {
+      "code": "ST01-011",
+      "name": "ST01-011",
+      "count": 2
+    },
+    {
+      "code": "OP17-093",
+      "name": "OP17-093",
+      "count": 2
+    },
+    {
+      "code": "OP17-095",
+      "name": "Roronoa Zoro",
+      "count": 2
+    },
+    {
+      "code": "EB04-007",
+      "name": "Roronoa Zoro",
+      "count": 2
+    },
+    {
+      "code": "OP17-081",
+      "name": "Gerd",
+      "count": 1
+    },
+    {
+      "code": "OP15-088",
+      "name": "Pirate Docking 6",
+      "count": 1
+    },
+    {
+      "code": "OP17-080",
+      "name": "OP17-080",
+      "count": 1
+    },
+    {
+      "code": "OP17-086",
+      "name": "OP17-086",
+      "count": 1
+    },
+    {
+      "code": "OP17-119",
+      "name": "OP17-119",
+      "count": 1
+    }
+  ],
+  "total_seen": 18,
+  "leader": "OP13-004"
+}

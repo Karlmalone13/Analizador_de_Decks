@@ -8602,5 +8602,170 @@
       "Opponent": "decks_full/Luffy.&.Ace-RG_2026-10-10T17.51.30_p3.json"
     },
     "decision_log_file": "decisions/decisions_2026-10-10T17.51.30_p3.jsonl"
+  },
+  {
+    "id": "2026-10-10T20.30.44_p4",
+    "impressao": "185341e3e0747c278fe0c12aeabed290",
+    "friendly_name": "Rocks.D.Xebec-B_x_Sabo-RB",
+    "date": "2026-10-10",
+    "p1": {
+      "name": "You",
+      "leader_code": "OP17-039",
+      "leader_name": "Rocks D. Xebec",
+      "slug": "Rocks.D.Xebec-B"
+    },
+    "p2": {
+      "name": "Opponent",
+      "leader_code": "OP13-004",
+      "leader_name": "Sabo",
+      "slug": "Sabo-RB"
+    },
+    "turns": 11,
+    "winner": "p1",
+    "bot_side": null,
+    "tipo": "cpu_vs_cpu",
+    "log_file": "raw/Rocks.D.Xebec-B_x_Sabo-RB_2026-10-10T20.30.44_p4.log",
+    "parsed_file": "parsed/Rocks.D.Xebec-B_x_Sabo-RB_2026-10-10T20.30.44_p4.json",
+    "deck_files": {
+      "You": "decks/Rocks.D.Xebec-B_2026-10-10T20.30.44_p4.json",
+      "Opponent": "decks/Sabo-RB_2026-10-10T20.30.44_p4.json"
+    },
+    "deck_full_files": {
+      "You": "decks_full/Rocks.D.Xebec-B_2026-10-10T20.30.44_p4.json",
+      "Opponent": "decks_full/Sabo-RB_2026-10-10T20.30.44_p4.json"
+    },
+    "decision_log_file": "decisions/decisions_2026-10-10T20.30.44_p4.jsonl.gz"
+  },
+  {
+    "id": "2026-10-10T20.34.30_p5",
+    "impressao": "a692da4b3da0ca26089fad59227b7230",
+    "friendly_name": "Enel-P_x_Imu-B",
+    "date": "2026-10-10",
+    "p1": {
+      "name": "You",
+      "leader_code": "OP15-058",
+      "leader_name": "Enel",
+      "slug": "Enel-P"
+    },
+    "p2": {
+      "name": "Opponent",
+      "leader_code": "OP13-079",
+      "leader_name": "Imu",
+      "slug": "Imu-B"
+    },
+    "turns": 12,
+    "winner": "p2",
+    "bot_side": null,
+    "tipo": "cpu_vs_cpu",
+    "log_file": "raw/Enel-P_x_Imu-B_2026-10-10T20.34.30_p5.log",
+    "parsed_file": "parsed/Enel-P_x_Imu-B_2026-10-10T20.34.30_p5.json",
+    "deck_files": {
+      "You": "decks/Enel-P_2026-10-10T20.34.30_p5.json",
+      "Opponent": "decks/Imu-B_2026-10-10T20.34.30_p5.json"
+    },
+    "deck_full_files": {
+      "You": "decks_full/Enel-P_2026-10-10T20.34.30_p5.json",
+      "Opponent": "decks_full/Imu-B_2026-10-10T20.34.30_p5.json"
+    },
+    "decision_log_file": "decisions/decisions_2026-10-10T20.34.30_p5.jsonl.gz"
+  },
+  {
+    "id": "2026-10-10T20.37.59_p6",
+    "impressao": "5671c32e673ff4bb169ad9ab0a37d958",
+    "friendly_name": "Charlotte.Katakuri-P_x_Eustass.Captain.Kid-Y",
+    "date": "2026-10-10",
+    "p1": {
+      "name": "You",
+      "leader_code": "OP11-062",
+      "leader_name": "Charlotte Katakuri",
+      "slug": "Charlotte.Katakuri-P"
+    },
+    "p2": {
+      "name": "Opponent",
+      "leader_code": "OP10-099",
+      "leader_name": "Eustass \"Captain\" Kid",
+      "slug": "Eustass.Captain.Kid-Y"
+    },
+    "turns": 12,
+    "winner": "p2",
+    "bot_side": null,
+    "tipo": "cpu_vs_cpu",
+    "log_file": "raw/Charlotte.Katakuri-P_x_Eustass.Captain.Kid-Y_2026-10-10T20.37.59_p6.log",
+    "parsed_file": "parsed/Charlotte.Katakuri-P_x_Eustass.Captain.Kid-Y_2026-10-10T20.37.59_p6.json",
+    "deck_files": {
+      "You": "decks/Charlotte.Katakuri-P_2026-10-10T20.37.59_p6.json",
+      "Opponent": "decks/Eustass.Captain.Kid-Y_2026-10-10T20.37.59_p6.json"
+    },
+    "deck_full_files": {
+      "You": "decks_full/Charlotte.Katakuri-P_2026-10-10T20.37.59_p6.json",
+      "Opponent": "decks_full/Eustass.Captain.Kid-Y_2026-10-10T20.37.59_p6.json"
+    },
+    "decision_log_file": "decisions/decisions_2026-10-10T20.37.59_p6.jsonl.gz"
+  },
+  {
+    "id": "2026-10-10T20.42.38_p7",
+    "impressao": "972051f9050a5eede65098d731b924f1",
+    "friendly_name": "Monkey.D.Luffy-RG_x_Marshall.D.Teach-BY",
+    "date": "2026-10-10",
+    "p1": {
+      "name": "You",
+      "leader_code": "OP13-001",
+      "leader_name": "Monkey D. Luffy",
+      "slug": "Monkey.D.Luffy-RG"
+    },
+    "p2": {
+      "name": "Opponent",
+      "leader_code": "OP16-080",
+      "leader_name": "Marshall D. Teach",
+      "slug": "Marshall.D.Teach-BY"
+    },
+    "turns": 12,
+    "winner": "p2",
+    "bot_side": null,
+    "tipo": "cpu_vs_cpu",
+    "log_file": "raw/Monkey.D.Luffy-RG_x_Marshall.D.Teach-BY_2026-10-10T20.42.38_p7.log",
+    "parsed_file": "parsed/Monkey.D.Luffy-RG_x_Marshall.D.Teach-BY_2026-10-10T20.42.38_p7.json",
+    "deck_files": {
+      "You": "decks/Monkey.D.Luffy-RG_2026-10-10T20.42.38_p7.json",
+      "Opponent": "decks/Marshall.D.Teach-BY_2026-10-10T20.42.38_p7.json"
+    },
+    "deck_full_files": {
+      "You": "decks_full/Monkey.D.Luffy-RG_2026-10-10T20.42.38_p7.json",
+      "Opponent": "decks_full/Marshall.D.Teach-BY_2026-10-10T20.42.38_p7.json"
+    },
+    "decision_log_file": "decisions/decisions_2026-10-10T20.42.38_p7.jsonl.gz"
+  },
+  {
+    "id": "2026-10-10T20.46.36_p8",
+    "impressao": "f048afe69e531995699bbfe521e9518c",
+    "friendly_name": "Dracule.Mihawk-G_x_Luffy.&.Ace-RG",
+    "date": "2026-10-10",
+    "p1": {
+      "name": "You",
+      "leader_code": "OP14-020",
+      "leader_name": "Dracule Mihawk",
+      "slug": "Dracule.Mihawk-G"
+    },
+    "p2": {
+      "name": "Opponent",
+      "leader_code": "ST30-001",
+      "leader_name": "Luffy & Ace",
+      "slug": "Luffy.&.Ace-RG"
+    },
+    "turns": 12,
+    "winner": "p2",
+    "bot_side": null,
+    "tipo": "cpu_vs_cpu",
+    "log_file": "raw/Dracule.Mihawk-G_x_Luffy.&.Ace-RG_2026-10-10T20.46.36_p8.log",
+    "parsed_file": "parsed/Dracule.Mihawk-G_x_Luffy.&.Ace-RG_2026-10-10T20.46.36_p8.json",
+    "deck_files": {
+      "You": "decks/Dracule.Mihawk-G_2026-10-10T20.46.36_p8.json",
+      "Opponent": "decks/Luffy.&.Ace-RG_2026-10-10T20.46.36_p8.json"
+    },
+    "deck_full_files": {
+      "You": "decks_full/Dracule.Mihawk-G_2026-10-10T20.46.36_p8.json",
+      "Opponent": "decks_full/Luffy.&.Ace-RG_2026-10-10T20.46.36_p8.json"
+    },
+    "decision_log_file": "decisions/decisions_2026-10-10T20.46.36_p8.jsonl.gz"
   }
 ]

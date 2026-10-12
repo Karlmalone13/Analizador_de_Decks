@@ -1,0 +1,186 @@
+{
+  "parsed_file": "Rocks.D.Xebec-B_x_Monkey.D.Luffy-B_2026-10-09T19.25.19.json",
+  "bot_side": "You",
+  "bot_leader": "Rocks D. Xebec",
+  "opp_leader": "Monkey D. Luffy",
+  "turnos_auditados": 4,
+  "turnos": [
+    {
+      "turn": 3,
+      "don_available_estimado": 1,
+      "historical_actions": [
+        {
+          "type": "attach_don",
+          "amount": 2,
+          "to": "OP17-039",
+          "to_name": "Rocks D. Xebec",
+          "total": 2
+        },
+        {
+          "type": "attack",
+          "attacker": "Rocks D. Xebec",
+          "attacker_code": "OP17-039",
+          "target": "Monkey D. Luffy [\"OP17-079\">OP17-079]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "activate",
+          "card": "OP17-039",
+          "card_name": "Rocks D. Xebec",
+          "effects": [
+            "Trash Rocks D. Xebec [\"OP17-118\">OP17-118]",
+            "Draw 2 Card"
+          ]
+        },
+        {
+          "type": "play",
+          "card": "OP17-050",
+          "card_name": "Streusen",
+          "effects": [
+            "Draw 1 Card"
+          ]
+        }
+      ],
+      "engine_hoje_narrativa": "  \u001b[90mComprou: Streusen\u001b[0m\n  \u001b[93mDON!! +2 rampados │ 3 ativos │ 0 restados\u001b[0m\n  -- Turno (Turn Planner: simula sequências) --\n  Banco de cartas: 2839 cartas carregadas\n  > gastou 1 DON -> Joga: Streusen (2000pwr) [CHARACTER]\n    \u001b[90mefeito: [On Play] Look at 2 cards from the top of your deck, sort them in any order and place them...\u001b[0m\n    ↳ [Streusen] 2 carta(s) reordenada(s) no deck (melhor no topo)\n    ↳ [Streusen] comprou: Edward.Newga\n    ⚡ anexou 2 DON em Rocks.D.Xebec (039)  para ligar [attack_power]\n    Rocks.D.Xebec (039)  (7000pwr) ataca Nami\n      💀 Nami foi KO!\n"
+    },
+    {
+      "turn": 5,
+      "don_available_estimado": 0,
+      "historical_actions": [
+        {
+          "type": "play",
+          "card": "OP17-049",
+          "card_name": "Charlotte Linlin",
+          "effects": []
+        },
+        {
+          "type": "attack",
+          "attacker": "Rocks D. Xebec",
+          "attacker_code": "OP17-039",
+          "target": "Monkey D. Luffy [\"OP17-079\">OP17-079]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": [
+            "OP17-087"
+          ]
+        }
+      ],
+      "engine_hoje_narrativa": "  \u001b[90mComprou: Streusen\u001b[0m\n  \u001b[93mDON!! +2 rampados │ 5 ativos │ 0 restados\u001b[0m\n  -- Turno (Turn Planner: simula sequências) --\n  > gastou 5 DON -> Joga: Charlotte Linlin (049) (Altern (7000pwr) [CHARACTER]\n    \u001b[90mefeito: [On Play] Your opponent chooses one:\r • Draw 2 cards.\r • Your opponent trashes 2 cards fro...\u001b[0m\n    ↳ [Charlotte Linlin (04] comprou: Edward.Newga, Wang Zhi\n    Rocks.D.Xebec (039)  (5000pwr) ataca Roronoa Zoro\n      ↳ [when attacking] custo: trashou da mão: Edward.Newgate\n      ↳ [when attacking] revelou Rocks Pirates do topo do deck: bateu a condicao | comprou: Rocks Pirate, Captain John\n      💀 Roronoa Zoro foi KO!\n  \u001b[90mpassa (busca preferiu nao agir)\u001b[0m\n"
+    },
+    {
+      "turn": 7,
+      "don_available_estimado": 2,
+      "historical_actions": [
+        {
+          "type": "play",
+          "card": "OP17-048",
+          "card_name": "Shiki",
+          "effects": []
+        },
+        {
+          "type": "attack",
+          "attacker": "Charlotte Linlin",
+          "attacker_code": "OP17-049",
+          "target": "Monkey D. Luffy [\"OP17-079\">OP17-079]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": "OP17-119",
+          "countered_by": []
+        },
+        {
+          "type": "attack",
+          "attacker": "Rocks D. Xebec",
+          "attacker_code": "OP17-039",
+          "target": "Shirahoshi [\"OP05-082\">OP05-082]",
+          "result": "hit",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "activate",
+          "card": "OP17-039",
+          "card_name": "Rocks D. Xebec",
+          "effects": [
+            "Trash Wang Zhi [\"OP17-041\">OP17-041]",
+            "Draw 2 Card"
+          ]
+        },
+        {
+          "type": "attack",
+          "attacker": "Shiki",
+          "attacker_code": "OP17-048",
+          "target": "Roronoa Zoro [\"OP17-095\">OP17-095]",
+          "result": "hit",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": []
+        }
+      ],
+      "engine_hoje_narrativa": "  \u001b[90mComprou: Don Marlon\u001b[0m\n  \u001b[93mDON!! +2 rampados │ 7 ativos │ 0 restados\u001b[0m\n  -- Turno (Turn Planner: simula sequências) --\n  > gastou 7 DON -> Joga: Shiki (048) (Alternate Art) (9000pwr) [CHARACTER]\n    \u001b[90mefeito: [Rush: Character]\r [When Attacking]/[On Your Opponent's Attack] [Once Per Turn] You may tr...\u001b[0m\n    Rocks.D.Xebec (039)  (5000pwr) ataca Roronoa Zoro\n      🔁 Roronoa Zoro evitou K.O./remoção mandando pro fundo do deck: Brook, I'm Luffy!! The, Nico Robin (Alt\n    Shiki (048) (Alterna (9000pwr) ataca Loki (Alternate Art)\n      🛡 Counter! +2000 -> defesa 10000\n      ✗ Ataque bloqueado (9000 < 10000)\n    Charlotte Linlin (04 (7000pwr) ataca Roronoa Zoro\n      💀 Roronoa Zoro foi KO!\n"
+    },
+    {
+      "turn": 9,
+      "don_available_estimado": 4,
+      "historical_actions": [
+        {
+          "type": "play",
+          "card": "OP17-048",
+          "card_name": "Shiki",
+          "effects": []
+        },
+        {
+          "type": "attack",
+          "attacker": "Shiki",
+          "attacker_code": "OP17-048",
+          "target": "Monkey D. Luffy [\"OP17-079\">OP17-079]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "attach_don",
+          "amount": 2,
+          "to": "OP17-039",
+          "to_name": "Rocks D. Xebec",
+          "total": 2
+        },
+        {
+          "type": "attack",
+          "attacker": "Rocks D. Xebec",
+          "attacker_code": "OP17-039",
+          "target": "Monkey D. Luffy [\"OP17-079\">OP17-079]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "activate",
+          "card": "OP17-039",
+          "card_name": "Rocks D. Xebec",
+          "effects": [
+            "Trash Edward Newgate [\"OP17-040\">OP17-040]",
+            "Draw 2 Card"
+          ]
+        },
+        {
+          "type": "attack",
+          "attacker": "Shiki",
+          "attacker_code": "OP17-048",
+          "target": "Nami [\"OP17-086\">OP17-086]",
+          "result": "hit",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": []
+        }
+      ],
+      "engine_hoje_narrativa": "  \u001b[90mComprou: Shiki (048) (Alternate Art)\u001b[0m\n  \u001b[93mDON!! +2 rampados │ 9 ativos │ 0 restados\u001b[0m\n  -- Turno (Turn Planner: simula sequências) --\n  > gastou 7 DON -> Joga: Shiki (048) (Alternate Art) (9000pwr) [CHARACTER]\n    \u001b[90mefeito: [Rush: Character]\r [When Attacking]/[On Your Opponent's Attack] [Once Per Turn] You may tr...\u001b[0m\n    anexou 2 DON em Shiki (048) (Alterna\n    Shiki (048) (Alterna (11000pwr) ataca Loki (Alternate Art)\n      ↳ [when attacking] custo: trashou da mão: Kaido\n      ↳ [when attacking] -3000 power em: Loki (Alternate\n      💀 Loki (Alternate Art) foi KO!\n    Shiki (048) (Alterna (9000pwr) ataca Usopp (Alternate Art\n      ↳ [when attacking] custo: trashou da mão: Edward.Newgate\n      ↳ [when attacking] -3000 power em: Usopp (Alternat\n      💀 Usopp (Alternate Art foi KO!\n    Rocks.D.Xebec (039)  (5000pwr) ataca Leader\n      ↳ [when attacking] custo: trashou da mão: Don Marlon\n      ↳ [when attacking] revelou Fullalead do topo do deck: bateu a condicao | comprou: Fullalead, Captain John\n      🛡 Counter! +2000 -> defesa 7000\n      ✗ Ataque bloqueado (5000 < 7000)\n"
+    }
+  ]
+}

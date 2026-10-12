@@ -1,6 +1,8 @@
-# TODO — Analisador de Decks OPTCG
+﻿# TODO — Analisador de Decks OPTCG
 
 **Última atualização:** 9 de outubro de 2026 (blocos 943-960)
+
+> **961**: ciclo 74 PROMOVEU (185x140). Lentidao do ciclo 73 era carga da maquina (AS-IS: motor mais rapido). Rodar ciclos com o jogo fechado (MemoryError no treino).
 
 > **960**: defesa ao vivo agora segue a mesma sequencia do motor (personagens, depois evento). Medir com partidas novas ao vivo.
 

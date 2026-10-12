@@ -1,7 +1,7 @@
 {
   "counts": {
-    "MATCH": 15,
-    "DIVERGE": 302,
+    "MATCH": 13,
+    "DIVERGE": 311,
     "ERROR": 0,
     "SKIPPED": 0
   },
@@ -70,30 +70,6 @@
       "hoje_leader_atk": 0,
       "hist_char_atk": 0,
       "hoje_char_atk": 1
-    },
-    {
-      "file": "Imu-B_x_Marshall.D.Teach-BY_2026-07-09T17.22.22.json",
-      "turn": 9,
-      "hist_plays": [],
-      "hoje_plays": [],
-      "hist_activates": [],
-      "hoje_activates": [],
-      "hist_leader_atk": 0,
-      "hoje_leader_atk": 0,
-      "hist_char_atk": 2,
-      "hoje_char_atk": 3
-    },
-    {
-      "file": "Imu-B_x_Marshall.D.Teach-BY_2026-07-09T17.42.21.json",
-      "turn": 9,
-      "hist_plays": [],
-      "hoje_plays": [],
-      "hist_activates": [],
-      "hoje_activates": [],
-      "hist_leader_atk": 0,
-      "hoje_leader_atk": 0,
-      "hist_char_atk": 2,
-      "hoje_char_atk": 3
     },
     {
       "file": "Imu-B_x_Marshall.D.Teach-BY_2026-07-09T18.39.46.json",
@@ -2669,13 +2645,17 @@
       "hist_plays": [
         "bartholomewk"
       ],
-      "hoje_plays": [],
+      "hoje_plays": [
+        "stjaygarcias"
+      ],
       "hist_activates": [],
-      "hoje_activates": [],
+      "hoje_activates": [
+        "imualternate"
+      ],
       "hist_leader_atk": 0,
       "hoje_leader_atk": 0,
       "hist_char_atk": 0,
-      "hoje_char_atk": 2
+      "hoje_char_atk": 1
     },
     {
       "file": "Imu-B_x_Marshall.D.Teach-BY_2026-07-09T16.07.36.json",
@@ -2683,17 +2663,17 @@
       "hist_plays": [
         "stmarcusmars"
       ],
-      "hoje_plays": [],
+      "hoje_plays": [
+        "stjaygarcias"
+      ],
       "hist_activates": [
         "thefiveelder"
       ],
-      "hoje_activates": [
-        "imualternate"
-      ],
+      "hoje_activates": [],
       "hist_leader_atk": 0,
-      "hoje_leader_atk": 0,
+      "hoje_leader_atk": 1,
       "hist_char_atk": 0,
-      "hoje_char_atk": 2
+      "hoje_char_atk": 0
     },
     {
       "file": "Imu-B_x_Marshall.D.Teach-BY_2026-07-09T16.07.36.json",
@@ -2701,15 +2681,18 @@
       "hist_plays": [
         "sttopmanwarc"
       ],
-      "hoje_plays": [],
+      "hoje_plays": [
+        "stjaygarcias",
+        "stshepherdju"
+      ],
       "hist_activates": [
         "grounddeath"
       ],
       "hoje_activates": [],
       "hist_leader_atk": 0,
-      "hoje_leader_atk": 0,
+      "hoje_leader_atk": 1,
       "hist_char_atk": 2,
-      "hoje_char_atk": 3
+      "hoje_char_atk": 0
     },
     {
       "file": "Imu-B_x_Marshall.D.Teach-BY_2026-07-09T16.07.36.json",
@@ -2719,11 +2702,13 @@
       ],
       "hoje_plays": [],
       "hist_activates": [],
-      "hoje_activates": [],
+      "hoje_activates": [
+        "imualternate"
+      ],
       "hist_leader_atk": 0,
-      "hoje_leader_atk": 0,
+      "hoje_leader_atk": 1,
       "hist_char_atk": 3,
-      "hoje_char_atk": 2
+      "hoje_char_atk": 1
     },
     {
       "file": "Imu-B_x_Marshall.D.Teach-BY_2026-07-09T16.12.30.json",
@@ -2731,13 +2716,17 @@
       "hist_plays": [
         "bartholomewk"
       ],
-      "hoje_plays": [],
+      "hoje_plays": [
+        "stjaygarcias"
+      ],
       "hist_activates": [],
-      "hoje_activates": [],
+      "hoje_activates": [
+        "imualternate"
+      ],
       "hist_leader_atk": 0,
       "hoje_leader_atk": 0,
       "hist_char_atk": 0,
-      "hoje_char_atk": 2
+      "hoje_char_atk": 1
     },
     {
       "file": "Imu-B_x_Marshall.D.Teach-BY_2026-07-09T16.12.30.json",
@@ -2745,7 +2734,9 @@
       "hist_plays": [
         "stmarcusmars"
       ],
-      "hoje_plays": [],
+      "hoje_plays": [
+        "stjaygarcias"
+      ],
       "hist_activates": [
         "thefiveelder"
       ],
@@ -2753,9 +2744,9 @@
         "imualternate"
       ],
       "hist_leader_atk": 0,
-      "hoje_leader_atk": 0,
+      "hoje_leader_atk": 1,
       "hist_char_atk": 0,
-      "hoje_char_atk": 2
+      "hoje_char_atk": 0
     },
     {
       "file": "Imu-B_x_Marshall.D.Teach-BY_2026-07-09T16.12.30.json",
@@ -2763,7 +2754,9 @@
       "hist_plays": [
         "sttopmanwarc"
       ],
-      "hoje_plays": [],
+      "hoje_plays": [
+        "stshepherdju"
+      ],
       "hist_activates": [
         "grounddeath"
       ],
@@ -2771,7 +2764,7 @@
       "hist_leader_atk": 0,
       "hoje_leader_atk": 0,
       "hist_char_atk": 2,
-      "hoje_char_atk": 3
+      "hoje_char_atk": 1
     },
     {
       "file": "Imu-B_x_Marshall.D.Teach-BY_2026-07-09T16.12.30.json",
@@ -2781,11 +2774,13 @@
       ],
       "hoje_plays": [],
       "hist_activates": [],
-      "hoje_activates": [],
+      "hoje_activates": [
+        "imualternate"
+      ],
       "hist_leader_atk": 0,
-      "hoje_leader_atk": 0,
+      "hoje_leader_atk": 1,
       "hist_char_atk": 3,
-      "hoje_char_atk": 2
+      "hoje_char_atk": 1
     },
     {
       "file": "Imu-B_x_Marshall.D.Teach-BY_2026-07-09T16.12.30.json",
@@ -2797,9 +2792,7 @@
         "fiveelders"
       ],
       "hist_activates": [],
-      "hoje_activates": [
-        "imualternate"
-      ],
+      "hoje_activates": [],
       "hist_leader_atk": 0,
       "hoje_leader_atk": 1,
       "hist_char_atk": 1,
@@ -2832,15 +2825,13 @@
         "stshepherdju"
       ],
       "hoje_plays": [
-        "stethanbaron"
+        "stethanbaron",
+        "sttopmanwarc"
       ],
       "hist_activates": [],
-      "hoje_activates": [
-        "imualternate",
-        "theemptythro"
-      ],
+      "hoje_activates": [],
       "hist_leader_atk": 0,
-      "hoje_leader_atk": 2,
+      "hoje_leader_atk": 1,
       "hist_char_atk": 0,
       "hoje_char_atk": 2
     },
@@ -2851,7 +2842,7 @@
         "stjaygarcias"
       ],
       "hoje_plays": [
-        "neverexisted",
+        "stjaygarcias",
         "thefiveelder"
       ],
       "hist_activates": [],
@@ -2859,9 +2850,9 @@
         "imualternate"
       ],
       "hist_leader_atk": 0,
-      "hoje_leader_atk": 0,
+      "hoje_leader_atk": 2,
       "hist_char_atk": 2,
-      "hoje_char_atk": 4
+      "hoje_char_atk": 2
     },
     {
       "file": "Imu-B_x_Marshall.D.Teach-BY_2026-07-09T17.22.22.json",
@@ -2877,7 +2868,7 @@
       ],
       "hoje_activates": [],
       "hist_leader_atk": 1,
-      "hoje_leader_atk": 0,
+      "hoje_leader_atk": 1,
       "hist_char_atk": 0,
       "hoje_char_atk": 0
     },
@@ -2887,19 +2878,19 @@
       "hist_plays": [
         "stshalria"
       ],
-      "hoje_plays": [],
+      "hoje_plays": [
+        "stjaygarcias"
+      ],
       "hist_activates": [
         "imu",
         "stjaygarcias",
         "theemptythro"
       ],
-      "hoje_activates": [
-        "imualternate"
-      ],
+      "hoje_activates": [],
       "hist_leader_atk": 1,
       "hoje_leader_atk": 0,
       "hist_char_atk": 0,
-      "hoje_char_atk": 2
+      "hoje_char_atk": 1
     },
     {
       "file": "Imu-B_x_Marshall.D.Teach-BY_2026-07-09T17.22.22.json",
@@ -2908,21 +2899,39 @@
         "stmarcusmars",
         "stshalria"
       ],
-      "hoje_plays": [],
+      "hoje_plays": [
+        "stmarcusmars"
+      ],
+      "hist_activates": [],
+      "hoje_activates": [],
+      "hist_leader_atk": 1,
+      "hoje_leader_atk": 2,
+      "hist_char_atk": 0,
+      "hoje_char_atk": 0
+    },
+    {
+      "file": "Imu-B_x_Marshall.D.Teach-BY_2026-07-09T17.22.22.json",
+      "turn": 9,
+      "hist_plays": [],
+      "hoje_plays": [
+        "sttopmanwarc"
+      ],
       "hist_activates": [],
       "hoje_activates": [
         "imualternate"
       ],
-      "hist_leader_atk": 1,
+      "hist_leader_atk": 0,
       "hoje_leader_atk": 2,
-      "hist_char_atk": 0,
+      "hist_char_atk": 2,
       "hoje_char_atk": 1
     },
     {
       "file": "Imu-B_x_Marshall.D.Teach-BY_2026-07-09T17.22.22.json",
       "turn": 11,
       "hist_plays": [],
-      "hoje_plays": [],
+      "hoje_plays": [
+        "fiveelders"
+      ],
       "hist_activates": [
         "grounddeath",
         "theemptythro"
@@ -2931,9 +2940,9 @@
         "imualternate"
       ],
       "hist_leader_atk": 0,
-      "hoje_leader_atk": 1,
+      "hoje_leader_atk": 2,
       "hist_char_atk": 1,
-      "hoje_char_atk": 1
+      "hoje_char_atk": 0
     },
     {
       "file": "Imu-B_x_Marshall.D.Teach-BY_2026-07-09T17.42.21.json",
@@ -2949,7 +2958,7 @@
       ],
       "hoje_activates": [],
       "hist_leader_atk": 1,
-      "hoje_leader_atk": 0,
+      "hoje_leader_atk": 1,
       "hist_char_atk": 0,
       "hoje_char_atk": 0
     },
@@ -2959,19 +2968,19 @@
       "hist_plays": [
         "stshalria"
       ],
-      "hoje_plays": [],
+      "hoje_plays": [
+        "stjaygarcias"
+      ],
       "hist_activates": [
         "imu",
         "stjaygarcias",
         "theemptythro"
       ],
-      "hoje_activates": [
-        "imualternate"
-      ],
+      "hoje_activates": [],
       "hist_leader_atk": 1,
       "hoje_leader_atk": 0,
       "hist_char_atk": 0,
-      "hoje_char_atk": 2
+      "hoje_char_atk": 1
     },
     {
       "file": "Imu-B_x_Marshall.D.Teach-BY_2026-07-09T17.42.21.json",
@@ -2980,21 +2989,39 @@
         "stmarcusmars",
         "stshalria"
       ],
-      "hoje_plays": [],
+      "hoje_plays": [
+        "stmarcusmars"
+      ],
+      "hist_activates": [],
+      "hoje_activates": [],
+      "hist_leader_atk": 1,
+      "hoje_leader_atk": 2,
+      "hist_char_atk": 0,
+      "hoje_char_atk": 0
+    },
+    {
+      "file": "Imu-B_x_Marshall.D.Teach-BY_2026-07-09T17.42.21.json",
+      "turn": 9,
+      "hist_plays": [],
+      "hoje_plays": [
+        "sttopmanwarc"
+      ],
       "hist_activates": [],
       "hoje_activates": [
         "imualternate"
       ],
-      "hist_leader_atk": 1,
+      "hist_leader_atk": 0,
       "hoje_leader_atk": 2,
-      "hist_char_atk": 0,
+      "hist_char_atk": 2,
       "hoje_char_atk": 1
     },
     {
       "file": "Imu-B_x_Marshall.D.Teach-BY_2026-07-09T17.42.21.json",
       "turn": 11,
       "hist_plays": [],
-      "hoje_plays": [],
+      "hoje_plays": [
+        "fiveelders"
+      ],
       "hist_activates": [
         "grounddeath",
         "theemptythro"
@@ -3003,26 +3030,26 @@
         "imualternate"
       ],
       "hist_leader_atk": 0,
-      "hoje_leader_atk": 1,
+      "hoje_leader_atk": 2,
       "hist_char_atk": 1,
-      "hoje_char_atk": 1
+      "hoje_char_atk": 0
     },
     {
       "file": "Imu-B_x_Marshall.D.Teach-BY_2026-07-09T17.42.21.json",
       "turn": 14,
       "hist_plays": [],
       "hoje_plays": [
+        "stethanbaron",
         "stjaygarcias"
       ],
       "hist_activates": [],
       "hoje_activates": [
-        "imualternate",
-        "theemptythro"
+        "imualternate"
       ],
       "hist_leader_atk": 0,
-      "hoje_leader_atk": 0,
+      "hoje_leader_atk": 1,
       "hist_char_atk": 0,
-      "hoje_char_atk": 1
+      "hoje_char_atk": 0
     },
     {
       "file": "Imu-B_x_Marshall.D.Teach-BY_2026-07-09T17.42.21.json",
@@ -3058,23 +3085,27 @@
         "imualternate"
       ],
       "hist_leader_atk": 0,
-      "hoje_leader_atk": 0,
+      "hoje_leader_atk": 2,
       "hist_char_atk": 0,
-      "hoje_char_atk": 2
+      "hoje_char_atk": 0
     },
     {
       "file": "Imu-B_x_Marshall.D.Teach-BY_2026-07-09T17.42.21.json",
       "turn": 20,
       "hist_plays": [],
-      "hoje_plays": [],
+      "hoje_plays": [
+        "bartholomewk"
+      ],
       "hist_activates": [
         "theemptythro"
       ],
-      "hoje_activates": [],
+      "hoje_activates": [
+        "imualternate"
+      ],
       "hist_leader_atk": 1,
-      "hoje_leader_atk": 1,
+      "hoje_leader_atk": 4,
       "hist_char_atk": 2,
-      "hoje_char_atk": 3
+      "hoje_char_atk": 0
     },
     {
       "file": "Imu-B_x_Marshall.D.Teach-BY_2026-07-09T17.42.21.json",
@@ -3084,9 +3115,9 @@
       "hist_activates": [],
       "hoje_activates": [],
       "hist_leader_atk": 2,
-      "hoje_leader_atk": 1,
+      "hoje_leader_atk": 5,
       "hist_char_atk": 2,
-      "hoje_char_atk": 1
+      "hoje_char_atk": 0
     },
     {
       "file": "Imu-B_x_Marshall.D.Teach-BY_2026-07-09T17.52.14.json",
@@ -3096,13 +3127,11 @@
       "hist_activates": [
         "theemptythro"
       ],
-      "hoje_activates": [
-        "imualternate"
-      ],
+      "hoje_activates": [],
       "hist_leader_atk": 0,
       "hoje_leader_atk": 1,
       "hist_char_atk": 1,
-      "hoje_char_atk": 1
+      "hoje_char_atk": 0
     },
     {
       "file": "Imu-B_x_Marshall.D.Teach-BY_2026-07-09T17.52.14.json",
@@ -3112,7 +3141,6 @@
         "stshalria"
       ],
       "hoje_plays": [
-        "saintshalria",
         "stjaygarcias"
       ],
       "hist_activates": [
@@ -3122,9 +3150,9 @@
         "imualternate"
       ],
       "hist_leader_atk": 1,
-      "hoje_leader_atk": 1,
+      "hoje_leader_atk": 0,
       "hist_char_atk": 0,
-      "hoje_char_atk": 0
+      "hoje_char_atk": 1
     },
     {
       "file": "Imu-B_x_Marshall.D.Teach-BY_2026-07-09T17.52.14.json",
@@ -3137,7 +3165,9 @@
         "imu",
         "thefiveelder"
       ],
-      "hoje_activates": [],
+      "hoje_activates": [
+        "imualternate"
+      ],
       "hist_leader_atk": 1,
       "hoje_leader_atk": 1,
       "hist_char_atk": 0,
@@ -3149,9 +3179,13 @@
       "hist_plays": [
         "stshalria"
       ],
-      "hoje_plays": [],
+      "hoje_plays": [
+        "sttopmanwarc"
+      ],
       "hist_activates": [],
-      "hoje_activates": [],
+      "hoje_activates": [
+        "imualternate"
+      ],
       "hist_leader_atk": 0,
       "hoje_leader_atk": 0,
       "hist_char_atk": 2,
@@ -3165,14 +3199,16 @@
         "sttopmanwarc"
       ],
       "hoje_plays": [
-        "bartholomewk"
+        "bartholomewk",
+        "sttopmanwarc",
+        "thefiveelder"
       ],
       "hist_activates": [],
       "hoje_activates": [],
       "hist_leader_atk": 0,
-      "hoje_leader_atk": 0,
+      "hoje_leader_atk": 1,
       "hist_char_atk": 1,
-      "hoje_char_atk": 2
+      "hoje_char_atk": 1
     },
     {
       "file": "Imu-B_x_Marshall.D.Teach-BY_2026-07-09T18.39.46.json",
@@ -5542,6 +5578,139 @@
       "hoje_leader_atk": 0,
       "hist_char_atk": 0,
       "hoje_char_atk": 1
+    },
+    {
+      "file": "Rocks.D.Xebec-B_x_Portgas.D.Ace-R_2026-10-07T19.17.41.json",
+      "turn": 3,
+      "hist_plays": [
+        "kyo"
+      ],
+      "hoje_plays": [
+        "missbuckingh"
+      ],
+      "hist_activates": [
+        "rocksdxebec"
+      ],
+      "hoje_activates": [],
+      "hist_leader_atk": 1,
+      "hoje_leader_atk": 1,
+      "hist_char_atk": 0,
+      "hoje_char_atk": 0
+    },
+    {
+      "file": "Rocks.D.Xebec-B_x_Portgas.D.Ace-R_2026-10-07T19.17.41.json",
+      "turn": 5,
+      "hist_plays": [
+        "barbell"
+      ],
+      "hoje_plays": [
+        "barbell"
+      ],
+      "hist_activates": [
+        "rocksdxebec"
+      ],
+      "hoje_activates": [
+        "barbell"
+      ],
+      "hist_leader_atk": 1,
+      "hoje_leader_atk": 1,
+      "hist_char_atk": 0,
+      "hoje_char_atk": 0
+    },
+    {
+      "file": "Rocks.D.Xebec-B_x_Portgas.D.Ace-R_2026-10-07T19.17.41.json",
+      "turn": 7,
+      "hist_plays": [
+        "stussy"
+      ],
+      "hoje_plays": [
+        "shiki"
+      ],
+      "hist_activates": [
+        "rocksdxebec"
+      ],
+      "hoje_activates": [],
+      "hist_leader_atk": 2,
+      "hoje_leader_atk": 2,
+      "hist_char_atk": 0,
+      "hoje_char_atk": 1
+    },
+    {
+      "file": "Rocks.D.Xebec-B_x_Portgas.D.Ace-R_2026-10-07T19.17.41.json",
+      "turn": 9,
+      "hist_plays": [
+        "fullalead",
+        "shiki"
+      ],
+      "hoje_plays": [
+        "shiki"
+      ],
+      "hist_activates": [
+        "rocksdxebec"
+      ],
+      "hoje_activates": [],
+      "hist_leader_atk": 3,
+      "hoje_leader_atk": 5,
+      "hist_char_atk": 1,
+      "hoje_char_atk": 1
+    },
+    {
+      "file": "Rocks.D.Xebec-B_x_Portgas.D.Ace-R_2026-10-07T19.17.41.json",
+      "turn": 11,
+      "hist_plays": [
+        "rocksdxebec"
+      ],
+      "hoje_plays": [
+        "rocksdxebec",
+        "theresnoauth"
+      ],
+      "hist_activates": [
+        "charlottelin",
+        "gloriosa",
+        "rocksdxebec"
+      ],
+      "hoje_activates": [],
+      "hist_leader_atk": 1,
+      "hoje_leader_atk": 1,
+      "hist_char_atk": 1,
+      "hoje_char_atk": 3
+    },
+    {
+      "file": "Rocks.D.Xebec-B_x_Portgas.D.Ace-R_2026-10-07T19.17.41.json",
+      "turn": 13,
+      "hist_plays": [
+        "gloriosa",
+        "kaido"
+      ],
+      "hoje_plays": [
+        "kaido",
+        "theresnoauth"
+      ],
+      "hist_activates": [
+        "rocksdxebec"
+      ],
+      "hoje_activates": [],
+      "hist_leader_atk": 4,
+      "hoje_leader_atk": 4,
+      "hist_char_atk": 1,
+      "hoje_char_atk": 1
+    },
+    {
+      "file": "Rocks.D.Xebec-B_x_Portgas.D.Ace-R_2026-10-07T19.17.41.json",
+      "turn": 15,
+      "hist_plays": [],
+      "hoje_plays": [
+        "rocksdxebec",
+        "theresnoauth"
+      ],
+      "hist_activates": [
+        "theresnoauth"
+      ],
+      "hoje_activates": [],
+      "hist_leader_atk": 4,
+      "hoje_leader_atk": 2,
+      "hist_char_atk": 0,
+      "hoje_char_atk": 3
     }
   ]
 }

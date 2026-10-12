@@ -1,0 +1,1552 @@
+{
+  "meta": {
+    "players": {
+      "p1": {
+        "name": "You",
+        "leader": {
+          "name": "Charlotte Katakuri",
+          "code": "OP11-062"
+        }
+      },
+      "p2": {
+        "name": "Opponent",
+        "leader": {
+          "name": "Eustass \"Captain\" Kid",
+          "code": "OP10-099"
+        }
+      }
+    },
+    "goes_first": null
+  },
+  "total_turns": 12,
+  "turns": [
+    {
+      "turn": 1,
+      "player": "You",
+      "card_drawn": null,
+      "don_drawn": 1,
+      "actions": [],
+      "snapshot": {
+        "You": {
+          "hand": [
+            "OP07-077",
+            "OP15-069",
+            "OP11-067",
+            "OP11-070",
+            "ST34-005"
+          ],
+          "board": [],
+          "trash": [],
+          "life": 5,
+          "life_cards": [
+            "OP11-070",
+            "OP11-070",
+            "OP15-069",
+            "OP15-078",
+            "ST34-002"
+          ],
+          "don_cost": [
+            "Don"
+          ]
+        },
+        "Opponent": {
+          "hand": [
+            "ST36-002",
+            "OP10-111",
+            "OP10-119",
+            "ST36-003",
+            "OP11-101"
+          ],
+          "trash": [],
+          "board": [],
+          "life": 5,
+          "deck": [
+            "EB04-059",
+            "OP10-101",
+            "OP10-112",
+            "OP10-114",
+            "OP12-117",
+            "OP15-105",
+            "P-088",
+            "ST36-001",
+            "ST36-004"
+          ],
+          "life_cards": [
+            "OP10-109",
+            "OP13-116",
+            "ST36-003",
+            "ST36-003",
+            "ST36-005"
+          ]
+        }
+      }
+    },
+    {
+      "turn": 2,
+      "player": "Opponent",
+      "card_drawn": null,
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "play",
+          "card": "OP10-111",
+          "card_name": "Monkey D. Luffy",
+          "effects": [
+            "<b>Reveal and Draw Trafalgar Law [\"OP10-119\">OP10-119]</b>"
+          ]
+        }
+      ],
+      "snapshot": {
+        "Opponent": {
+          "hand": [
+            "ST36-002",
+            "OP10-119",
+            "ST36-003",
+            "OP11-101",
+            "OP10-109",
+            "OP10-119"
+          ],
+          "board": [
+            "OP10-111"
+          ],
+          "trash": [],
+          "life": 5,
+          "deck": [
+            "EB04-059",
+            "OP10-101",
+            "OP10-112",
+            "OP10-114",
+            "OP12-117",
+            "OP15-105",
+            "P-088",
+            "ST36-001",
+            "ST36-003",
+            "ST36-004"
+          ],
+          "life_cards": [
+            "OP10-109",
+            "OP13-116",
+            "ST36-003",
+            "ST36-003",
+            "ST36-005"
+          ],
+          "don_cost": [
+            "Don",
+            "Don"
+          ],
+          "rested_rz1": {
+            "don_cost": [
+              "Don"
+            ]
+          },
+          "rested": {
+            "OP10-111": 1
+          }
+        },
+        "You": {
+          "hand": [
+            "OP07-077",
+            "OP15-069",
+            "OP11-067",
+            "OP11-070",
+            "ST34-005"
+          ],
+          "trash": [],
+          "board": [],
+          "life": 5,
+          "life_cards": [
+            "OP11-070",
+            "OP11-070",
+            "OP15-069",
+            "OP15-078",
+            "ST34-002"
+          ],
+          "don_cost": [
+            "Don"
+          ]
+        }
+      }
+    },
+    {
+      "turn": 3,
+      "player": "You",
+      "card_drawn": null,
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "attach_don",
+          "amount": 2,
+          "to": "OP11-062",
+          "to_name": "Charlotte Katakuri",
+          "total": 2
+        },
+        {
+          "type": "attack",
+          "attacker": "Charlotte Katakuri",
+          "attacker_code": "OP11-062",
+          "target": "Eustass \"Captain\" Kid [\"OP10-099\">OP10-099]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "activate",
+          "card": "OP07-077",
+          "card_name": "We're Going to Claim the One Piece!!!",
+          "effects": [
+            "Rest 1 Don",
+            "<b>Reveal and Draw Charlotte Linlin [\"ST34-004\">ST34-004]</b>"
+          ]
+        }
+      ],
+      "snapshot": {
+        "You": {
+          "hand": [
+            "OP15-069",
+            "OP11-067",
+            "OP11-070",
+            "ST34-005",
+            "ST34-003",
+            "ST34-004"
+          ],
+          "board": [],
+          "trash": [
+            "OP07-077"
+          ],
+          "life": 5,
+          "deck": [
+            "OP11-067",
+            "OP11-073",
+            "PRB02-010",
+            "ST18-001"
+          ],
+          "life_cards": [
+            "OP11-070",
+            "OP11-070",
+            "OP15-069",
+            "OP15-078",
+            "ST34-002"
+          ],
+          "don_cost": [
+            "Don"
+          ],
+          "attached_don": [
+            "Don",
+            "Don"
+          ],
+          "rested_rz1": {
+            "don_cost": [
+              "Don"
+            ]
+          }
+        },
+        "Opponent": {
+          "hand": [
+            "ST36-002",
+            "OP10-119",
+            "ST36-003",
+            "OP11-101",
+            "OP10-109",
+            "OP10-119",
+            "ST36-005"
+          ],
+          "trash": [],
+          "board": [
+            "OP10-111"
+          ],
+          "life": 4,
+          "deck": [
+            "EB04-059",
+            "OP10-101",
+            "OP10-112",
+            "OP10-114",
+            "OP12-117",
+            "OP15-105",
+            "P-088",
+            "ST36-001",
+            "ST36-003",
+            "ST36-004"
+          ],
+          "life_cards": [
+            "OP10-109",
+            "OP13-116",
+            "ST36-003",
+            "ST36-003"
+          ],
+          "don_cost": [
+            "Don",
+            "Don"
+          ],
+          "rested_rz1": {
+            "don_cost": [
+              "Don"
+            ]
+          },
+          "rested": {
+            "OP10-111": 1
+          }
+        }
+      }
+    },
+    {
+      "turn": 4,
+      "player": "Opponent",
+      "card_drawn": null,
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "play",
+          "card": "ST36-002",
+          "card_name": "Killer",
+          "effects": [
+            "Add card to top of Life from Deck"
+          ]
+        },
+        {
+          "type": "attack",
+          "attacker": "Eustass \"Captain\" Kid",
+          "attacker_code": "OP10-099",
+          "target": "Charlotte Katakuri [\"OP11-062\">OP11-062]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": []
+        }
+      ],
+      "snapshot": {
+        "Opponent": {
+          "hand": [
+            "OP10-119",
+            "ST36-003",
+            "OP11-101",
+            "OP10-109",
+            "OP10-119",
+            "ST36-005",
+            "OP13-116"
+          ],
+          "board": [
+            "OP10-111",
+            "ST36-002"
+          ],
+          "trash": [],
+          "life": 5,
+          "deck": [
+            "EB04-059",
+            "OP10-101",
+            "OP10-112",
+            "OP10-114",
+            "OP12-117",
+            "OP15-105",
+            "P-088",
+            "ST36-001",
+            "ST36-003",
+            "ST36-004"
+          ],
+          "life_cards": [
+            "OP10-109",
+            "OP10-111",
+            "OP13-116",
+            "ST36-003",
+            "ST36-003"
+          ],
+          "don_cost": [
+            "Don",
+            "Don",
+            "Don",
+            "Don"
+          ],
+          "rested_rz1": {
+            "don_cost": [
+              "Don"
+            ]
+          },
+          "rested": {
+            "ST36-002": 1
+          }
+        },
+        "You": {
+          "hand": [
+            "OP15-069",
+            "OP11-067",
+            "OP11-070",
+            "ST34-005",
+            "ST34-003",
+            "ST34-004"
+          ],
+          "trash": [
+            "OP07-077"
+          ],
+          "board": [],
+          "life": 5,
+          "deck": [
+            "OP11-067",
+            "OP11-073",
+            "PRB02-010",
+            "ST18-001"
+          ],
+          "life_cards": [
+            "OP11-070",
+            "OP11-070",
+            "OP15-069",
+            "OP15-078",
+            "ST34-002"
+          ],
+          "don_deck": [
+            "Don"
+          ],
+          "don_cost": [
+            "Don"
+          ],
+          "attached_don": [
+            "Don"
+          ],
+          "rested_rz1": {
+            "don_cost": [
+              "Don"
+            ]
+          }
+        }
+      }
+    },
+    {
+      "turn": 5,
+      "player": "You",
+      "card_drawn": null,
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "play",
+          "card": "ST34-005",
+          "card_name": "Baron Tamago & Pekoms",
+          "effects": []
+        },
+        {
+          "type": "play",
+          "card": "ST34-003",
+          "card_name": "Charlotte Brulee",
+          "effects": [
+            "<b>Reveal and Draw Baron Tamago & Pekoms [\"ST34-005\">ST34-005]</b>"
+          ]
+        },
+        {
+          "type": "attack",
+          "attacker": "Charlotte Katakuri",
+          "attacker_code": "OP11-062",
+          "target": "Eustass \"Captain\" Kid [\"OP10-099\">OP10-099]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": [
+            "ST36-003"
+          ]
+        }
+      ],
+      "snapshot": {
+        "You": {
+          "hand": [
+            "OP15-069",
+            "OP11-067",
+            "OP11-070",
+            "ST34-004",
+            "OP11-067",
+            "ST34-005"
+          ],
+          "board": [
+            "ST34-005",
+            "ST34-003"
+          ],
+          "trash": [
+            "OP07-077"
+          ],
+          "life": 5,
+          "deck": [
+            "OP07-077",
+            "OP11-073",
+            "OP15-069",
+            "PRB02-010",
+            "ST18-001"
+          ],
+          "life_cards": [
+            "OP11-070",
+            "OP11-070",
+            "OP15-069",
+            "OP15-078",
+            "ST34-002"
+          ],
+          "don_cost": [
+            "Don",
+            "Don",
+            "Don",
+            "Don"
+          ],
+          "rested_rz1": {
+            "don_cost": [
+              "Don",
+              "Don"
+            ]
+          },
+          "rested": {
+            "ST34-005": 1,
+            "ST34-003": 1
+          }
+        },
+        "Opponent": {
+          "hand": [
+            "OP10-119",
+            "OP11-101",
+            "OP10-109",
+            "OP10-119",
+            "ST36-005",
+            "OP13-116"
+          ],
+          "trash": [
+            "ST36-003"
+          ],
+          "board": [
+            "OP10-111",
+            "ST36-002"
+          ],
+          "life": 5,
+          "deck": [
+            "EB04-059",
+            "OP10-101",
+            "OP10-112",
+            "OP10-114",
+            "OP12-117",
+            "OP15-105",
+            "P-088",
+            "ST36-001",
+            "ST36-003",
+            "ST36-004"
+          ],
+          "life_cards": [
+            "OP10-109",
+            "OP10-111",
+            "OP13-116",
+            "ST36-003",
+            "ST36-003"
+          ],
+          "don_cost": [
+            "Don",
+            "Don",
+            "Don",
+            "Don"
+          ],
+          "rested_rz1": {
+            "don_cost": [
+              "Don"
+            ]
+          },
+          "rested": {
+            "ST36-002": 1
+          }
+        }
+      }
+    },
+    {
+      "turn": 6,
+      "player": "Opponent",
+      "card_drawn": null,
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "play",
+          "card": "ST36-005",
+          "card_name": "Eustass \"Captain\" Kid",
+          "effects": []
+        },
+        {
+          "type": "attack",
+          "attacker": "Killer",
+          "attacker_code": "ST36-002",
+          "target": "Charlotte Katakuri [\"OP11-062\">OP11-062]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": [
+            "ST34-005"
+          ]
+        },
+        {
+          "type": "attack",
+          "attacker": "Eustass \"Captain\" Kid",
+          "attacker_code": "OP10-099",
+          "target": "Charlotte Katakuri [\"OP11-062\">OP11-062]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": []
+        }
+      ],
+      "snapshot": {
+        "Opponent": {
+          "hand": [
+            "OP10-119",
+            "OP11-101",
+            "OP10-109",
+            "OP10-119",
+            "OP13-116",
+            "OP11-101"
+          ],
+          "board": [
+            "OP10-111",
+            "ST36-002",
+            "ST36-005"
+          ],
+          "trash": [
+            "ST36-003"
+          ],
+          "life": 5,
+          "deck": [
+            "EB04-059",
+            "OP10-101",
+            "OP10-112",
+            "OP10-114",
+            "OP12-117",
+            "OP15-105",
+            "P-088",
+            "ST36-001",
+            "ST36-003",
+            "ST36-004"
+          ],
+          "life_cards": [
+            "OP10-109",
+            "OP10-111",
+            "OP13-116",
+            "ST36-003",
+            "ST36-003"
+          ],
+          "don_cost": [
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don"
+          ],
+          "rested_rz1": {
+            "don_cost": [
+              "Don"
+            ]
+          },
+          "rested": {
+            "ST36-002": 1,
+            "ST36-005": 1
+          }
+        },
+        "You": {
+          "hand": [
+            "OP15-069",
+            "OP11-067",
+            "OP11-070",
+            "ST34-004",
+            "OP11-067"
+          ],
+          "trash": [
+            "OP07-077",
+            "ST34-005"
+          ],
+          "board": [
+            "ST34-005",
+            "ST34-003"
+          ],
+          "life": 5,
+          "deck": [
+            "OP07-077",
+            "OP11-073",
+            "OP15-069",
+            "PRB02-010",
+            "ST18-001"
+          ],
+          "life_cards": [
+            "OP11-070",
+            "OP11-070",
+            "OP15-069",
+            "OP15-078",
+            "ST34-002"
+          ],
+          "don_deck": [
+            "Don"
+          ],
+          "don_cost": [
+            "Don",
+            "Don",
+            "Don"
+          ],
+          "rested_rz1": {
+            "don_cost": [
+              "Don"
+            ]
+          },
+          "rested": {
+            "ST34-005": 1,
+            "ST34-003": 1
+          }
+        }
+      }
+    },
+    {
+      "turn": 7,
+      "player": "You",
+      "card_drawn": null,
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "attach_don",
+          "amount": 3,
+          "to": "ST34-003",
+          "to_name": "Charlotte Brulee",
+          "total": 3
+        },
+        {
+          "type": "attack",
+          "attacker": "Charlotte Katakuri",
+          "attacker_code": "OP11-062",
+          "target": "Eustass \"Captain\" Kid [\"OP10-099\">OP10-099]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": [
+            "OP11-101"
+          ]
+        }
+      ],
+      "snapshot": {
+        "You": {
+          "hand": [
+            "OP15-069",
+            "OP11-067",
+            "OP11-070",
+            "ST34-004",
+            "OP11-067",
+            "OP15-078"
+          ],
+          "board": [
+            "ST34-005",
+            "ST34-003"
+          ],
+          "trash": [
+            "OP07-077",
+            "ST34-005"
+          ],
+          "life": 5,
+          "deck": [
+            "OP07-077",
+            "OP11-073",
+            "OP15-069",
+            "PRB02-010",
+            "ST18-001"
+          ],
+          "life_cards": [
+            "OP11-070",
+            "OP11-070",
+            "OP15-069",
+            "OP15-078",
+            "ST34-002"
+          ],
+          "don_cost": [
+            "Don",
+            "Don"
+          ],
+          "attached_don": [
+            "Don",
+            "Don",
+            "Don"
+          ]
+        },
+        "Opponent": {
+          "hand": [
+            "OP10-119",
+            "OP10-109",
+            "OP10-119",
+            "OP13-116",
+            "OP11-101"
+          ],
+          "trash": [
+            "ST36-003",
+            "OP11-101"
+          ],
+          "board": [
+            "OP10-111",
+            "ST36-002",
+            "ST36-005"
+          ],
+          "life": 5,
+          "deck": [
+            "EB04-059",
+            "OP10-101",
+            "OP10-112",
+            "OP10-114",
+            "OP12-117",
+            "OP15-105",
+            "P-088",
+            "ST36-001",
+            "ST36-003",
+            "ST36-004"
+          ],
+          "life_cards": [
+            "OP10-109",
+            "OP10-111",
+            "OP13-116",
+            "ST36-003",
+            "ST36-003"
+          ],
+          "don_cost": [
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don"
+          ],
+          "rested_rz1": {
+            "don_cost": [
+              "Don"
+            ]
+          },
+          "rested": {
+            "ST36-002": 1,
+            "ST36-005": 1
+          }
+        }
+      }
+    },
+    {
+      "turn": 8,
+      "player": "Opponent",
+      "card_drawn": null,
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "play",
+          "card": "OP10-119",
+          "card_name": "Trafalgar Law",
+          "effects": [
+            "Added card to top of Life from Hand",
+            "Attach 1 Rested Don to Eustass \"Captain\" Kid [\"OP10-099\">OP10-099]"
+          ]
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP10-099",
+          "to_name": "Eustass \"Captain\" Kid",
+          "total": 2
+        },
+        {
+          "type": "attack",
+          "attacker": "Eustass \"Captain\" Kid",
+          "attacker_code": "OP10-099",
+          "target": "Charlotte Katakuri [\"OP11-062\">OP11-062]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "attack",
+          "attacker": "Eustass \"Captain\" Kid",
+          "attacker_code": "ST36-005",
+          "target": "Charlotte Katakuri [\"OP11-062\">OP11-062]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "attack",
+          "attacker": "Killer",
+          "attacker_code": "ST36-002",
+          "target": "Charlotte Katakuri [\"OP11-062\">OP11-062]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": [
+            "OP15-069"
+          ]
+        }
+      ],
+      "snapshot": {
+        "Opponent": {
+          "hand": [
+            "OP10-119",
+            "OP13-116",
+            "OP11-101",
+            "OP10-112"
+          ],
+          "board": [
+            "OP10-111",
+            "ST36-002",
+            "ST36-005",
+            "OP10-119"
+          ],
+          "trash": [
+            "ST36-003",
+            "OP11-101"
+          ],
+          "life": 6,
+          "deck": [
+            "EB04-059",
+            "OP10-101",
+            "OP10-114",
+            "OP12-117",
+            "OP15-105",
+            "P-088",
+            "ST36-001",
+            "ST36-003",
+            "ST36-004"
+          ],
+          "life_cards": [
+            "OP10-109",
+            "OP10-109",
+            "OP10-111",
+            "OP13-116",
+            "ST36-003",
+            "ST36-003"
+          ],
+          "don_cost": [
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don"
+          ],
+          "attached_don": [
+            "Don",
+            "Don"
+          ],
+          "rested_rz1": {
+            "attached_don": [
+              "Don"
+            ]
+          },
+          "rested": {
+            "ST36-002": 1,
+            "ST36-005": 1,
+            "OP10-119": 1
+          }
+        },
+        "You": {
+          "hand": [
+            "OP11-067",
+            "OP11-070",
+            "ST34-004",
+            "OP11-067",
+            "OP15-078",
+            "OP11-070",
+            "OP11-070"
+          ],
+          "trash": [
+            "OP07-077",
+            "ST34-005",
+            "OP15-069"
+          ],
+          "board": [
+            "ST34-005",
+            "ST34-003"
+          ],
+          "life": 3,
+          "deck": [
+            "OP07-077",
+            "OP11-073",
+            "OP15-069",
+            "PRB02-010",
+            "ST18-001"
+          ],
+          "life_cards": [
+            "OP15-069",
+            "OP15-078",
+            "ST34-002"
+          ],
+          "don_cost": [
+            "Don",
+            "Don"
+          ],
+          "attached_don": [
+            "Don",
+            "Don",
+            "Don"
+          ]
+        }
+      }
+    },
+    {
+      "turn": 9,
+      "player": "You",
+      "card_drawn": null,
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "attach_don",
+          "amount": 2,
+          "to": "OP11-062",
+          "to_name": "Charlotte Katakuri",
+          "total": 2
+        },
+        {
+          "type": "attack",
+          "attacker": "Charlotte Katakuri",
+          "attacker_code": "OP11-062",
+          "target": "Eustass \"Captain\" Kid [\"ST36-005\">ST36-005]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": [
+            "OP11-101"
+          ]
+        }
+      ],
+      "snapshot": {
+        "You": {
+          "hand": [
+            "OP11-067",
+            "OP11-070",
+            "ST34-004",
+            "OP11-067",
+            "OP11-070",
+            "OP11-070",
+            "ST34-004"
+          ],
+          "board": [
+            "ST34-005",
+            "ST34-003"
+          ],
+          "trash": [
+            "OP07-077",
+            "ST34-005",
+            "OP15-069",
+            "OP15-078"
+          ],
+          "life": 3,
+          "deck": [
+            "OP07-077",
+            "OP11-073",
+            "OP15-069",
+            "PRB02-010",
+            "ST18-001"
+          ],
+          "life_cards": [
+            "OP15-069",
+            "OP15-078",
+            "ST34-002"
+          ],
+          "don_cost": [
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don"
+          ],
+          "attached_don": [
+            "Don",
+            "Don"
+          ],
+          "rested_rz1": {
+            "don_cost": [
+              "Don"
+            ]
+          }
+        },
+        "Opponent": {
+          "hand": [
+            "OP10-119",
+            "OP13-116",
+            "OP10-112"
+          ],
+          "trash": [
+            "ST36-003",
+            "OP11-101",
+            "OP11-101"
+          ],
+          "board": [
+            "OP10-111",
+            "ST36-002",
+            "ST36-005",
+            "OP10-119"
+          ],
+          "life": 6,
+          "deck": [
+            "EB04-059",
+            "OP10-101",
+            "OP10-114",
+            "OP12-117",
+            "OP15-105",
+            "P-088",
+            "ST36-001",
+            "ST36-003",
+            "ST36-004"
+          ],
+          "life_cards": [
+            "OP10-109",
+            "OP10-109",
+            "OP10-111",
+            "OP13-116",
+            "ST36-003",
+            "ST36-003"
+          ],
+          "don_cost": [
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don"
+          ],
+          "attached_don": [
+            "Don",
+            "Don"
+          ],
+          "rested_rz1": {
+            "attached_don": [
+              "Don"
+            ]
+          },
+          "rested": {
+            "ST36-002": 1,
+            "ST36-005": 1,
+            "OP10-119": 1
+          }
+        }
+      }
+    },
+    {
+      "turn": 10,
+      "player": "Opponent",
+      "card_drawn": null,
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "play",
+          "card": "OP10-119",
+          "card_name": "Trafalgar Law",
+          "effects": [
+            "Added card to top of Life from Hand",
+            "Attach 1 Rested Don to Eustass \"Captain\" Kid [\"OP10-099\">OP10-099]"
+          ]
+        },
+        {
+          "type": "attack",
+          "attacker": "Trafalgar Law",
+          "attacker_code": "OP10-119",
+          "target": "Charlotte Katakuri [\"OP11-062\">OP11-062]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "attack",
+          "attacker": "Killer",
+          "attacker_code": "ST36-002",
+          "target": "Charlotte Katakuri [\"OP11-062\">OP11-062]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": [
+            "OP15-069"
+          ]
+        },
+        {
+          "type": "activate",
+          "card": "ST36-005",
+          "card_name": "Eustass \"Captain\" Kid",
+          "effects": [
+            "Flip 1 Bottom Life Face Up",
+            "Attach 1 Rested Don to Eustass \"Captain\" Kid [\"OP10-099\">OP10-099]"
+          ]
+        },
+        {
+          "type": "attack",
+          "attacker": "Eustass \"Captain\" Kid",
+          "attacker_code": "ST36-005",
+          "target": "Charlotte Katakuri [\"OP11-062\">OP11-062]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "attach_don",
+          "amount": 3,
+          "to": "OP10-111",
+          "to_name": "Monkey D. Luffy",
+          "total": 3
+        },
+        {
+          "type": "attack",
+          "attacker": "Monkey D. Luffy",
+          "attacker_code": "OP10-111",
+          "target": "Charlotte Katakuri [\"OP11-062\">OP11-062]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "attack",
+          "attacker": "Eustass \"Captain\" Kid",
+          "attacker_code": "OP10-099",
+          "target": "Charlotte Katakuri [\"OP11-062\">OP11-062]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        }
+      ],
+      "snapshot": {
+        "Opponent": {
+          "hand": [
+            "OP13-116",
+            "ST36-001"
+          ],
+          "board": [
+            "OP10-111",
+            "ST36-002",
+            "ST36-005",
+            "OP10-119",
+            "OP10-119"
+          ],
+          "trash": [
+            "ST36-003",
+            "OP11-101",
+            "OP11-101"
+          ],
+          "life": 7,
+          "deck": [
+            "EB04-059",
+            "OP10-101",
+            "OP10-114",
+            "OP12-117",
+            "OP15-105",
+            "P-088",
+            "ST36-003",
+            "ST36-004"
+          ],
+          "life_cards": [
+            "OP10-109",
+            "OP10-109",
+            "OP10-111",
+            "OP10-112",
+            "OP13-116",
+            "ST36-003",
+            "ST36-003"
+          ],
+          "don_cost": [
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don"
+          ],
+          "attached_don": [
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don"
+          ],
+          "rested_rz1": {
+            "attached_don": [
+              "Don",
+              "Don"
+            ]
+          },
+          "rested": {
+            "OP10-111": 1,
+            "ST36-002": 1,
+            "ST36-005": 1,
+            "OP10-119": 2
+          }
+        },
+        "You": {
+          "hand": [
+            "OP11-067",
+            "OP11-070",
+            "ST34-004",
+            "OP11-067",
+            "OP11-070",
+            "OP11-070",
+            "ST34-004",
+            "OP15-078",
+            "ST34-002"
+          ],
+          "trash": [
+            "OP07-077",
+            "ST34-005",
+            "OP15-069",
+            "OP15-078",
+            "OP15-069"
+          ],
+          "board": [
+            "ST34-005",
+            "ST34-003"
+          ],
+          "life": 0,
+          "deck": [
+            "OP07-077",
+            "OP11-073",
+            "OP15-069",
+            "PRB02-010",
+            "ST18-001"
+          ],
+          "don_deck": [
+            "Don"
+          ],
+          "don_cost": [
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don"
+          ],
+          "attached_don": [
+            "Don"
+          ],
+          "rested_rz1": {
+            "don_cost": [
+              "Don"
+            ]
+          }
+        }
+      }
+    },
+    {
+      "turn": 11,
+      "player": "You",
+      "card_drawn": null,
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "play",
+          "card": "OP11-067",
+          "card_name": "Charlotte Katakuri",
+          "effects": [
+            "Set Baron Tamago & Pekoms [\"ST34-005\">ST34-005] to Active"
+          ]
+        },
+        {
+          "type": "attack",
+          "attacker": "Charlotte Katakuri",
+          "attacker_code": "OP11-062",
+          "target": "Eustass \"Captain\" Kid [\"OP10-099\">OP10-099]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "attack",
+          "attacker": "Baron Tamago & Pekoms",
+          "attacker_code": "ST34-005",
+          "target": "Eustass \"Captain\" Kid [\"OP10-099\">OP10-099]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "activate",
+          "card": "ST34-005",
+          "card_name": "Baron Tamago & Pekoms",
+          "effects": [
+            "Minus 1 Don",
+            "Destroy Monkey D. Luffy [\"OP10-111\">OP10-111]"
+          ]
+        }
+      ],
+      "snapshot": {
+        "You": {
+          "hand": [
+            "OP11-070",
+            "ST34-004",
+            "OP11-067",
+            "OP11-070",
+            "OP11-070",
+            "ST34-004",
+            "ST34-002",
+            "OP07-077"
+          ],
+          "board": [
+            "ST34-005",
+            "ST34-003",
+            "OP11-067"
+          ],
+          "trash": [
+            "OP07-077",
+            "ST34-005",
+            "OP15-069",
+            "OP15-078",
+            "OP15-069",
+            "OP15-078"
+          ],
+          "life": 0,
+          "deck": [
+            "OP11-073",
+            "OP15-069",
+            "PRB02-010",
+            "ST18-001"
+          ],
+          "don_cost": [
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don"
+          ],
+          "rested_rz1": {
+            "don_cost": [
+              "Don",
+              "Don"
+            ]
+          },
+          "rested": {
+            "ST34-005": 1,
+            "OP11-067": 1
+          }
+        },
+        "Opponent": {
+          "hand": [
+            "OP13-116",
+            "ST36-001"
+          ],
+          "trash": [
+            "ST36-003",
+            "OP11-101",
+            "OP11-101",
+            "OP10-111"
+          ],
+          "board": [
+            "ST36-002",
+            "ST36-005",
+            "OP10-119",
+            "OP10-119"
+          ],
+          "life": 7,
+          "deck": [
+            "EB04-059",
+            "OP10-101",
+            "OP10-114",
+            "OP12-117",
+            "OP15-105",
+            "P-088",
+            "ST36-003",
+            "ST36-004"
+          ],
+          "life_cards": [
+            "OP10-109",
+            "OP10-109",
+            "OP10-111",
+            "OP10-112",
+            "OP13-116",
+            "ST36-003",
+            "ST36-003"
+          ],
+          "don_cost": [
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don"
+          ],
+          "attached_don": [
+            "Don",
+            "Don"
+          ],
+          "rested_rz1": {
+            "don_cost": [
+              "Don",
+              "Don",
+              "Don"
+            ]
+          },
+          "rested": {
+            "ST36-002": 1,
+            "ST36-005": 1,
+            "OP10-119": 2
+          }
+        }
+      }
+    },
+    {
+      "turn": 12,
+      "player": "Opponent",
+      "card_drawn": null,
+      "don_drawn": 0,
+      "actions": [
+        {
+          "type": "play",
+          "card": "OP10-119",
+          "card_name": "Trafalgar Law",
+          "effects": [
+            "Added card to top of Life from Hand",
+            "Attach 1 Rested Don to Eustass \"Captain\" Kid [\"OP10-099\">OP10-099]"
+          ]
+        },
+        {
+          "type": "activate",
+          "card": "OP13-116",
+          "card_name": "The Pirate King Is Just The Freest Man on the Sea!!!",
+          "effects": [
+            "Rest 1 Don",
+            "<b>Reveal and Draw Bartolomeo [\"ST36-004\">ST36-004]</b>"
+          ]
+        },
+        {
+          "type": "play",
+          "card": "ST36-004",
+          "card_name": "Bartolomeo",
+          "effects": []
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "ST36-002",
+          "to_name": "Killer",
+          "total": 1
+        },
+        {
+          "type": "attack",
+          "attacker": "Killer",
+          "attacker_code": "ST36-002",
+          "target": "Charlotte Katakuri [\"OP11-062\">OP11-062]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": "OP11-067",
+          "countered_by": []
+        },
+        {
+          "type": "attack",
+          "attacker": "Trafalgar Law",
+          "attacker_code": "OP10-119",
+          "target": "Charlotte Katakuri [\"OP11-067\">OP11-067]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": [
+            "OP11-070",
+            "OP11-070"
+          ]
+        },
+        {
+          "type": "attack",
+          "attacker": "Trafalgar Law",
+          "attacker_code": "OP10-119",
+          "target": "Charlotte Katakuri [\"OP11-062\">OP11-062]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        }
+      ],
+      "snapshot": {}
+    }
+  ]
+}

@@ -1,0 +1,1592 @@
+{
+  "meta": {
+    "players": {
+      "p1": {
+        "name": "You",
+        "leader": {
+          "name": "Enel",
+          "code": "OP15-058"
+        }
+      },
+      "p2": {
+        "name": "Opponent",
+        "leader": {
+          "name": "Imu",
+          "code": "OP13-079"
+        }
+      }
+    },
+    "goes_first": null
+  },
+  "total_turns": 12,
+  "turns": [
+    {
+      "turn": 1,
+      "player": "You",
+      "card_drawn": null,
+      "don_drawn": 1,
+      "actions": [
+        {
+          "type": "play",
+          "card": "OP15-066",
+          "card_name": "Satori",
+          "effects": [
+            "Minus 1 Don",
+            "Draw 1 Card"
+          ]
+        }
+      ],
+      "snapshot": {
+        "You": {
+          "hand": [
+            "OP15-078",
+            "OP15-076",
+            "OP15-076",
+            "OP15-077",
+            "OP15-067"
+          ],
+          "board": [
+            "OP15-066"
+          ],
+          "trash": [],
+          "life": 5,
+          "life_cards": [
+            "OP10-067",
+            "OP12-071",
+            "OP15-066",
+            "OP15-077",
+            "OP15-118"
+          ],
+          "don_deck": [
+            "Don"
+          ],
+          "rested": {
+            "OP15-066": 1
+          }
+        },
+        "Opponent": {
+          "hand": [
+            "OP13-098",
+            "OP13-096",
+            "OP13-084",
+            "OP13-089",
+            "OP13-096"
+          ],
+          "trash": [],
+          "board": [],
+          "life": 4,
+          "deck": [
+            "OP05-097",
+            "OP13-080",
+            "OP13-082",
+            "OP13-083",
+            "OP13-086",
+            "OP13-092",
+            "OP14-096"
+          ],
+          "stage": [
+            "OP13-099"
+          ],
+          "life_cards": [
+            "OP13-084",
+            "OP13-091",
+            "OP16-093",
+            "OP16-093"
+          ]
+        }
+      }
+    },
+    {
+      "turn": 2,
+      "player": "Opponent",
+      "card_drawn": null,
+      "don_drawn": 2,
+      "actions": [],
+      "snapshot": {
+        "Opponent": {
+          "hand": [
+            "OP13-098",
+            "OP13-096",
+            "OP13-084",
+            "OP13-089",
+            "OP13-096",
+            "OP13-096"
+          ],
+          "board": [],
+          "trash": [],
+          "life": 4,
+          "deck": [
+            "OP05-097",
+            "OP13-080",
+            "OP13-082",
+            "OP13-083",
+            "OP13-086",
+            "OP13-092",
+            "OP14-096"
+          ],
+          "stage": [
+            "OP13-099"
+          ],
+          "life_cards": [
+            "OP13-084",
+            "OP13-091",
+            "OP16-093",
+            "OP16-093"
+          ],
+          "don_cost": [
+            "Don",
+            "Don"
+          ]
+        },
+        "You": {
+          "hand": [
+            "OP15-078",
+            "OP15-076",
+            "OP15-076",
+            "OP15-077",
+            "OP15-067"
+          ],
+          "trash": [],
+          "board": [
+            "OP15-066"
+          ],
+          "life": 5,
+          "life_cards": [
+            "OP10-067",
+            "OP12-071",
+            "OP15-066",
+            "OP15-077",
+            "OP15-118"
+          ],
+          "don_deck": [
+            "Don"
+          ],
+          "rested": {
+            "OP15-066": 1
+          }
+        }
+      }
+    },
+    {
+      "turn": 3,
+      "player": "You",
+      "card_drawn": null,
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "attack",
+          "attacker": "Enel",
+          "attacker_code": "OP15-058",
+          "target": "Imu [\"OP13-079\">OP13-079]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "activate",
+          "card": "OP15-076",
+          "card_name": "Lightning Beast Kiten",
+          "effects": [
+            "Minus 1 Don",
+            "Draw 1 Card"
+          ]
+        },
+        {
+          "type": "play",
+          "card": "OP15-067",
+          "card_name": "Shura",
+          "effects": [
+            "Minus 1 Don",
+            "Draw 1 Card"
+          ]
+        }
+      ],
+      "snapshot": {
+        "You": {
+          "hand": [
+            "OP15-077",
+            "OP15-077",
+            "OP09-077",
+            "OP15-066"
+          ],
+          "board": [
+            "OP15-066",
+            "OP15-067"
+          ],
+          "trash": [
+            "OP15-078",
+            "OP15-076",
+            "OP15-076"
+          ],
+          "life": 5,
+          "life_cards": [
+            "OP10-067",
+            "OP12-071",
+            "OP15-066",
+            "OP15-077",
+            "OP15-118"
+          ],
+          "don_deck": [
+            "Don",
+            "Don"
+          ]
+        },
+        "Opponent": {
+          "hand": [
+            "OP13-096",
+            "OP13-084",
+            "OP13-089",
+            "OP13-096",
+            "OP13-096"
+          ],
+          "trash": [
+            "OP13-098"
+          ],
+          "board": [],
+          "life": 4,
+          "deck": [
+            "OP05-097",
+            "OP13-080",
+            "OP13-082",
+            "OP13-083",
+            "OP13-086",
+            "OP13-092",
+            "OP14-096"
+          ],
+          "stage": [
+            "OP13-099"
+          ],
+          "life_cards": [
+            "OP13-084",
+            "OP13-091",
+            "OP16-093",
+            "OP16-093"
+          ],
+          "don_cost": [
+            "Don",
+            "Don"
+          ],
+          "rested_rz1": {
+            "don_cost": [
+              "Don"
+            ]
+          }
+        }
+      }
+    },
+    {
+      "turn": 4,
+      "player": "Opponent",
+      "card_drawn": null,
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "play",
+          "card": "OP13-089",
+          "card_name": "St. Topman Warcury",
+          "effects": []
+        },
+        {
+          "type": "attack",
+          "attacker": "Imu",
+          "attacker_code": "OP13-079",
+          "target": "Enel [\"OP15-058\">OP15-058]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        }
+      ],
+      "snapshot": {
+        "Opponent": {
+          "hand": [
+            "OP13-096",
+            "OP13-084",
+            "OP13-096",
+            "OP13-096",
+            "OP13-089"
+          ],
+          "board": [
+            "OP13-089"
+          ],
+          "trash": [
+            "OP13-098"
+          ],
+          "life": 4,
+          "deck": [
+            "OP05-097",
+            "OP13-080",
+            "OP13-082",
+            "OP13-083",
+            "OP13-086",
+            "OP13-092",
+            "OP14-096"
+          ],
+          "stage": [
+            "OP13-099"
+          ],
+          "life_cards": [
+            "OP13-084",
+            "OP13-091",
+            "OP16-093",
+            "OP16-093"
+          ],
+          "don_cost": [
+            "Don",
+            "Don",
+            "Don",
+            "Don"
+          ],
+          "rested_rz1": {
+            "don_cost": [
+              "Don"
+            ]
+          },
+          "rested": {
+            "OP13-089": 1
+          }
+        },
+        "You": {
+          "hand": [
+            "OP15-077",
+            "OP15-077",
+            "OP09-077",
+            "OP15-066",
+            "OP12-071"
+          ],
+          "trash": [
+            "OP15-078",
+            "OP15-076",
+            "OP15-076"
+          ],
+          "board": [
+            "OP15-066",
+            "OP15-067"
+          ],
+          "life": 4,
+          "life_cards": [
+            "OP10-067",
+            "OP15-066",
+            "OP15-077",
+            "OP15-118"
+          ],
+          "don_deck": [
+            "Don",
+            "Don"
+          ]
+        }
+      }
+    },
+    {
+      "turn": 5,
+      "player": "You",
+      "card_drawn": null,
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "activate",
+          "card": "OP15-058",
+          "card_name": "Enel",
+          "effects": [
+            "Attach 1 Rested Don to Satori [\"OP15-066\">OP15-066]",
+            "Attach 1 Rested Don to Satori [\"OP15-066\">OP15-066]",
+            "Attach 1 Rested Don to Satori [\"OP15-066\">OP15-066]"
+          ]
+        },
+        {
+          "type": "attack",
+          "attacker": "Enel",
+          "attacker_code": "OP15-058",
+          "target": "Imu [\"OP13-079\">OP13-079]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": [
+            "OP13-089"
+          ]
+        },
+        {
+          "type": "attack",
+          "attacker": "Satori",
+          "attacker_code": "OP15-066",
+          "target": "Imu [\"OP13-079\">OP13-079]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "play",
+          "card": "OP15-066",
+          "card_name": "Satori",
+          "effects": [
+            "Minus 1 Don",
+            "Draw 1 Card"
+          ]
+        }
+      ],
+      "snapshot": {
+        "You": {
+          "hand": [
+            "OP15-077",
+            "OP15-077",
+            "OP09-077",
+            "OP12-071",
+            "OP15-061",
+            "OP15-061"
+          ],
+          "board": [
+            "OP15-066",
+            "OP15-067",
+            "OP15-066"
+          ],
+          "trash": [
+            "OP15-078",
+            "OP15-076",
+            "OP15-076"
+          ],
+          "life": 4,
+          "deck": [
+            "OP15-074",
+            "OP15-076"
+          ],
+          "life_cards": [
+            "OP10-067",
+            "OP15-066",
+            "OP15-077",
+            "OP15-118"
+          ],
+          "don_deck": [
+            "Don"
+          ],
+          "don_cost": [
+            "Don",
+            "Don",
+            "Don"
+          ],
+          "attached_don": [
+            "Don",
+            "Don"
+          ],
+          "rested_rz1": {
+            "don_cost": [
+              "Don"
+            ],
+            "attached_don": [
+              "Don",
+              "Don"
+            ]
+          },
+          "rested": {
+            "OP15-066": 2
+          }
+        },
+        "Opponent": {
+          "hand": [
+            "OP13-096",
+            "OP13-084",
+            "OP13-096",
+            "OP13-096",
+            "OP13-084"
+          ],
+          "trash": [
+            "OP13-098",
+            "OP13-089"
+          ],
+          "board": [
+            "OP13-089"
+          ],
+          "life": 3,
+          "deck": [
+            "OP05-097",
+            "OP13-080",
+            "OP13-082",
+            "OP13-083",
+            "OP13-086",
+            "OP13-092",
+            "OP14-096"
+          ],
+          "stage": [
+            "OP13-099"
+          ],
+          "life_cards": [
+            "OP13-091",
+            "OP16-093",
+            "OP16-093"
+          ],
+          "don_cost": [
+            "Don",
+            "Don",
+            "Don",
+            "Don"
+          ],
+          "rested_rz1": {
+            "don_cost": [
+              "Don"
+            ]
+          },
+          "rested": {
+            "OP13-089": 1
+          }
+        }
+      }
+    },
+    {
+      "turn": 6,
+      "player": "Opponent",
+      "card_drawn": null,
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "attack",
+          "attacker": "Imu",
+          "attacker_code": "OP13-079",
+          "target": "Satori [\"OP15-066\">OP15-066]",
+          "result": "hit",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "attack",
+          "attacker": "St. Topman Warcury",
+          "attacker_code": "OP13-089",
+          "target": "Enel [\"OP15-058\">OP15-058]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "play",
+          "card": "OP13-092",
+          "card_name": "St. Mjosgard",
+          "effects": []
+        },
+        {
+          "type": "activate",
+          "card": "OP13-096",
+          "card_name": "The Five Elders... Are At Your Service",
+          "effects": [
+            "Rest 1 Don",
+            "<b>Reveal and Draw St. Marcus Mars [\"OP13-091\">OP13-091]</b>",
+            "Trash 2 Remaining Cards"
+          ]
+        }
+      ],
+      "snapshot": {
+        "Opponent": {
+          "hand": [
+            "OP13-084",
+            "OP13-096",
+            "OP13-096",
+            "OP13-084",
+            "OP13-091"
+          ],
+          "board": [
+            "OP13-089",
+            "OP13-092"
+          ],
+          "trash": [
+            "OP13-098",
+            "OP13-089",
+            "OP13-096",
+            "OP13-089",
+            "OP13-092"
+          ],
+          "life": 3,
+          "deck": [
+            "OP05-097",
+            "OP13-080",
+            "OP13-082",
+            "OP13-083",
+            "OP13-086",
+            "OP14-096"
+          ],
+          "stage": [
+            "OP13-099"
+          ],
+          "life_cards": [
+            "OP13-091",
+            "OP16-093",
+            "OP16-093"
+          ],
+          "don_cost": [
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don"
+          ],
+          "rested_rz1": {
+            "don_cost": [
+              "Don"
+            ]
+          },
+          "rested": {
+            "OP13-089": 1,
+            "OP13-092": 1
+          }
+        },
+        "You": {
+          "hand": [
+            "OP15-077",
+            "OP15-077",
+            "OP09-077",
+            "OP12-071",
+            "OP15-061",
+            "OP15-061",
+            "OP15-066"
+          ],
+          "trash": [
+            "OP15-078",
+            "OP15-076",
+            "OP15-076",
+            "OP15-066"
+          ],
+          "board": [
+            "OP15-067",
+            "OP15-066"
+          ],
+          "life": 3,
+          "deck": [
+            "OP15-074",
+            "OP15-076"
+          ],
+          "life_cards": [
+            "OP10-067",
+            "OP15-077",
+            "OP15-118"
+          ],
+          "don_deck": [
+            "Don"
+          ],
+          "don_cost": [
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don"
+          ],
+          "rested_rz1": {
+            "don_cost": [
+              "Don",
+              "Don",
+              "Don"
+            ]
+          },
+          "rested": {
+            "OP15-066": 1
+          }
+        }
+      }
+    },
+    {
+      "turn": 7,
+      "player": "You",
+      "card_drawn": null,
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "attack",
+          "attacker": "Enel",
+          "attacker_code": "OP15-058",
+          "target": "Imu [\"OP13-079\">OP13-079]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": [
+            "OP13-091"
+          ]
+        },
+        {
+          "type": "attach_don",
+          "amount": 3,
+          "to": "OP15-066",
+          "to_name": "Satori",
+          "total": 3
+        },
+        {
+          "type": "attack",
+          "attacker": "Satori",
+          "attacker_code": "OP15-066",
+          "target": "St. Topman Warcury [\"OP13-089\">OP13-089]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": [
+            "OP13-084"
+          ]
+        },
+        {
+          "type": "attach_don",
+          "amount": 3,
+          "to": "OP15-067",
+          "to_name": "Shura",
+          "total": 3
+        },
+        {
+          "type": "attack",
+          "attacker": "Shura",
+          "attacker_code": "OP15-067",
+          "target": "St. Topman Warcury [\"OP13-089\">OP13-089]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": [
+            "OP13-084"
+          ]
+        }
+      ],
+      "snapshot": {
+        "You": {
+          "hand": [
+            "OP15-077",
+            "OP15-077",
+            "OP09-077",
+            "OP12-071",
+            "OP15-061",
+            "OP15-061",
+            "OP15-066",
+            "OP05-077"
+          ],
+          "board": [
+            "OP15-067",
+            "OP15-066"
+          ],
+          "trash": [
+            "OP15-078",
+            "OP15-076",
+            "OP15-076",
+            "OP15-066"
+          ],
+          "life": 3,
+          "deck": [
+            "OP05-077",
+            "OP15-074",
+            "OP15-076",
+            "OP15-078"
+          ],
+          "life_cards": [
+            "OP10-067",
+            "OP15-077",
+            "OP15-118"
+          ],
+          "attached_don": [
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don"
+          ],
+          "rested": {
+            "OP15-067": 1,
+            "OP15-066": 1
+          }
+        },
+        "Opponent": {
+          "hand": [
+            "OP13-096",
+            "OP13-096"
+          ],
+          "trash": [
+            "OP13-098",
+            "OP13-089",
+            "OP13-096",
+            "OP13-089",
+            "OP13-092",
+            "OP13-091",
+            "OP13-084",
+            "OP13-084"
+          ],
+          "board": [
+            "OP13-089",
+            "OP13-092"
+          ],
+          "life": 3,
+          "deck": [
+            "OP05-097",
+            "OP13-080",
+            "OP13-082",
+            "OP13-083",
+            "OP13-086",
+            "OP14-096"
+          ],
+          "stage": [
+            "OP13-099"
+          ],
+          "life_cards": [
+            "OP13-091",
+            "OP16-093",
+            "OP16-093"
+          ],
+          "don_cost": [
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don"
+          ],
+          "rested_rz1": {
+            "don_cost": [
+              "Don"
+            ]
+          },
+          "rested": {
+            "OP13-089": 1,
+            "OP13-092": 1
+          }
+        }
+      }
+    },
+    {
+      "turn": 8,
+      "player": "Opponent",
+      "card_drawn": null,
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "attack",
+          "attacker": "Imu",
+          "attacker_code": "OP13-079",
+          "target": "Satori [\"OP15-066\">OP15-066]",
+          "result": "hit",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "attack",
+          "attacker": "St. Topman Warcury",
+          "attacker_code": "OP13-089",
+          "target": "Enel [\"OP15-058\">OP15-058]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "attach_don",
+          "amount": 5,
+          "to": "OP13-092",
+          "to_name": "St. Mjosgard",
+          "total": 5
+        },
+        {
+          "type": "attack",
+          "attacker": "St. Mjosgard",
+          "attacker_code": "OP13-092",
+          "target": "Enel [\"OP15-058\">OP15-058]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "activate",
+          "card": "OP13-096",
+          "card_name": "The Five Elders... Are At Your Service",
+          "effects": [
+            "Rest 1 Don",
+            "<b>Reveal and Draw St. Shepherd Ju Peter [\"OP13-084\">OP13-084]</b>",
+            "Trash 2 Remaining Cards",
+            "Rest 1 Don",
+            "<b>Reveal and Draw ...Never Existed... [\"OP13-098\">OP13-098]</b>",
+            "Trash 2 Remaining Cards"
+          ]
+        },
+        {
+          "type": "activate",
+          "card": "OP14-096",
+          "card_name": "Ground Death",
+          "effects": [
+            "Rest 1 Don"
+          ]
+        }
+      ],
+      "snapshot": {
+        "Opponent": {
+          "hand": [
+            "OP13-084",
+            "OP13-098"
+          ],
+          "board": [
+            "OP13-089",
+            "OP13-092"
+          ],
+          "trash": [
+            "OP13-098",
+            "OP13-089",
+            "OP13-096",
+            "OP13-089",
+            "OP13-092",
+            "OP13-091",
+            "OP13-084",
+            "OP13-084",
+            "OP13-096",
+            "OP13-098",
+            "OP14-096",
+            "OP13-096",
+            "OP13-098",
+            "OP13-082",
+            "OP14-096"
+          ],
+          "life": 3,
+          "deck": [
+            "OP05-097",
+            "OP13-080",
+            "OP13-083",
+            "OP13-086"
+          ],
+          "stage": [
+            "OP13-099"
+          ],
+          "life_cards": [
+            "OP13-091",
+            "OP16-093",
+            "OP16-093"
+          ],
+          "don_cost": [
+            "Don",
+            "Don",
+            "Don"
+          ],
+          "attached_don": [
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don"
+          ],
+          "rested_rz1": {
+            "don_cost": [
+              "Don"
+            ]
+          },
+          "rested": {
+            "OP13-089": 1,
+            "OP13-092": 1
+          }
+        },
+        "You": {
+          "hand": [
+            "OP15-077",
+            "OP15-077",
+            "OP09-077",
+            "OP12-071",
+            "OP15-061",
+            "OP15-061",
+            "OP15-066",
+            "OP05-077",
+            "OP15-077",
+            "OP15-118"
+          ],
+          "trash": [
+            "OP15-078",
+            "OP15-076",
+            "OP15-076",
+            "OP15-066",
+            "OP15-066"
+          ],
+          "board": [
+            "OP15-067"
+          ],
+          "life": 1,
+          "deck": [
+            "OP05-077",
+            "OP15-074",
+            "OP15-076",
+            "OP15-078"
+          ],
+          "life_cards": [
+            "OP10-067"
+          ],
+          "don_cost": [
+            "Don",
+            "Don",
+            "Don"
+          ],
+          "attached_don": [
+            "Don",
+            "Don",
+            "Don"
+          ],
+          "rested_rz1": {
+            "don_cost": [
+              "Don",
+              "Don",
+              "Don"
+            ]
+          },
+          "rested": {
+            "OP15-067": 1
+          }
+        }
+      }
+    },
+    {
+      "turn": 9,
+      "player": "You",
+      "card_drawn": null,
+      "don_drawn": 0,
+      "actions": [
+        {
+          "type": "attack",
+          "attacker": "Enel",
+          "attacker_code": "OP15-058",
+          "target": "St. Mjosgard [\"OP13-092\">OP13-092]",
+          "result": null,
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "play",
+          "card": "OP15-118",
+          "card_name": "Enel",
+          "effects": [
+            "Minus 1 Don",
+            "Added 1 Cards to Hand",
+            "Trash Senor Pink [\"OP10-067\">OP10-067]"
+          ]
+        }
+      ],
+      "snapshot": {
+        "You": {
+          "hand": [
+            "OP15-077",
+            "OP15-077",
+            "OP09-077",
+            "OP12-071",
+            "OP15-061",
+            "OP15-061",
+            "OP15-066",
+            "OP05-077",
+            "OP15-077",
+            "OP15-067"
+          ],
+          "board": [
+            "OP15-067",
+            "OP15-118"
+          ],
+          "trash": [
+            "OP15-078",
+            "OP15-076",
+            "OP15-076",
+            "OP15-066",
+            "OP15-066",
+            "OP10-067"
+          ],
+          "life": 1,
+          "deck": [
+            "OP05-077",
+            "OP15-061",
+            "OP15-074",
+            "OP15-075",
+            "OP15-076",
+            "OP15-078"
+          ],
+          "life_cards": [
+            "OP10-067"
+          ],
+          "don_deck": [
+            "Don"
+          ],
+          "don_cost": [
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don"
+          ],
+          "rested_rz1": {
+            "don_cost": [
+              "Don",
+              "Don",
+              "Don",
+              "Don",
+              "Don"
+            ]
+          },
+          "rested": {
+            "OP15-118": 1
+          }
+        },
+        "Opponent": {
+          "hand": [
+            "OP13-084",
+            "OP13-098"
+          ],
+          "trash": [
+            "OP13-098",
+            "OP13-089",
+            "OP13-096",
+            "OP13-089",
+            "OP13-092",
+            "OP13-091",
+            "OP13-084",
+            "OP13-084",
+            "OP13-096",
+            "OP13-098",
+            "OP14-096",
+            "OP13-096",
+            "OP13-098",
+            "OP13-082",
+            "OP14-096",
+            "OP13-092"
+          ],
+          "board": [
+            "OP13-089"
+          ],
+          "life": 3,
+          "deck": [
+            "OP05-097",
+            "OP13-080",
+            "OP13-083",
+            "OP13-086"
+          ],
+          "stage": [
+            "OP13-099"
+          ],
+          "life_cards": [
+            "OP13-091",
+            "OP16-093",
+            "OP16-093"
+          ],
+          "don_cost": [
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don"
+          ],
+          "rested_rz1": {
+            "don_cost": [
+              "Don",
+              "Don",
+              "Don",
+              "Don",
+              "Don",
+              "Don"
+            ]
+          },
+          "rested": {
+            "OP13-089": 1
+          }
+        }
+      }
+    },
+    {
+      "turn": 10,
+      "player": "Opponent",
+      "card_drawn": null,
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "attach_don",
+          "amount": 2,
+          "to": "OP13-079",
+          "to_name": "Imu",
+          "total": 2
+        },
+        {
+          "type": "attach_don",
+          "amount": 2,
+          "to": "OP13-079",
+          "to_name": "Imu",
+          "total": 4
+        },
+        {
+          "type": "attack",
+          "attacker": "Imu",
+          "attacker_code": "OP13-079",
+          "target": "Enel [\"OP15-058\">OP15-058]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": [
+            "OP12-071",
+            "OP15-061",
+            "OP15-061",
+            "OP15-066",
+            "OP15-067"
+          ]
+        },
+        {
+          "type": "play",
+          "card": "OP13-083",
+          "card_name": "St. Jaygarcia Saturn",
+          "effects": [
+            "<b>Reveal and Draw St. Ethanbaron V. Nusjuro [\"OP13-080\">OP13-080]</b>"
+          ]
+        }
+      ],
+      "snapshot": {
+        "Opponent": {
+          "hand": [
+            "OP13-084",
+            "OP13-098",
+            "OP13-080"
+          ],
+          "board": [
+            "OP13-089",
+            "OP13-083"
+          ],
+          "trash": [
+            "OP13-098",
+            "OP13-089",
+            "OP13-096",
+            "OP13-089",
+            "OP13-092",
+            "OP13-091",
+            "OP13-084",
+            "OP13-084",
+            "OP13-096",
+            "OP13-098",
+            "OP14-096",
+            "OP13-096",
+            "OP13-098",
+            "OP13-082",
+            "OP14-096",
+            "OP13-092"
+          ],
+          "life": 3,
+          "deck": [
+            "OP05-097",
+            "OP13-082",
+            "OP13-086",
+            "OP13-091"
+          ],
+          "stage": [
+            "OP13-099"
+          ],
+          "life_cards": [
+            "OP13-091",
+            "OP16-093",
+            "OP16-093"
+          ],
+          "don_cost": [
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don"
+          ],
+          "attached_don": [
+            "Don",
+            "Don",
+            "Don",
+            "Don"
+          ],
+          "rested_rz1": {
+            "don_cost": [
+              "Don",
+              "Don"
+            ]
+          },
+          "rested": {
+            "OP13-083": 1
+          }
+        },
+        "You": {
+          "hand": [
+            "OP15-077",
+            "OP15-077",
+            "OP09-077",
+            "OP05-077",
+            "OP15-077"
+          ],
+          "trash": [
+            "OP15-078",
+            "OP15-076",
+            "OP15-076",
+            "OP15-066",
+            "OP15-066",
+            "OP10-067",
+            "OP12-071",
+            "OP15-061",
+            "OP15-061",
+            "OP15-066",
+            "OP15-067"
+          ],
+          "board": [
+            "OP15-067",
+            "OP15-118"
+          ],
+          "life": 1,
+          "deck": [
+            "OP05-077",
+            "OP15-061",
+            "OP15-074",
+            "OP15-075",
+            "OP15-076",
+            "OP15-078"
+          ],
+          "life_cards": [
+            "OP10-067"
+          ],
+          "don_deck": [
+            "Don"
+          ],
+          "don_cost": [
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don"
+          ],
+          "rested_rz1": {
+            "don_cost": [
+              "Don",
+              "Don",
+              "Don",
+              "Don",
+              "Don"
+            ]
+          },
+          "rested": {
+            "OP15-118": 1
+          }
+        }
+      }
+    },
+    {
+      "turn": 11,
+      "player": "You",
+      "card_drawn": null,
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "play",
+          "card": "OP15-118",
+          "card_name": "Enel",
+          "effects": [
+            "Minus 1 Don",
+            "Added 1 Cards to Hand",
+            "Trash Gum Gum Lightning [\"OP09-077\">OP09-077]"
+          ]
+        },
+        {
+          "type": "attack",
+          "attacker": "Enel",
+          "attacker_code": "OP15-118",
+          "target": "Imu [\"OP13-079\">OP13-079]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "activate",
+          "card": "OP15-058",
+          "card_name": "Enel",
+          "effects": [
+            "Attach 1 Rested Don to Shura [\"OP15-067\">OP15-067]",
+            "Attach 1 Rested Don to Shura [\"OP15-067\">OP15-067]",
+            "Attach 1 Rested Don to Shura [\"OP15-067\">OP15-067]",
+            "Attach 1 Rested Don to Shura [\"OP15-067\">OP15-067]"
+          ]
+        },
+        {
+          "type": "attack",
+          "attacker": "Shura",
+          "attacker_code": "OP15-067",
+          "target": "Imu [\"OP13-079\">OP13-079]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": [
+            "OP13-084"
+          ]
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP15-058",
+          "to_name": "Enel",
+          "total": 1
+        },
+        {
+          "type": "attack",
+          "attacker": "Enel",
+          "attacker_code": "OP15-058",
+          "target": "Imu [\"OP13-079\">OP13-079]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": []
+        }
+      ],
+      "snapshot": {
+        "You": {
+          "hand": [
+            "OP15-077",
+            "OP15-077",
+            "OP05-077",
+            "OP15-077",
+            "OP15-075"
+          ],
+          "board": [
+            "OP15-067",
+            "OP15-118",
+            "OP15-118"
+          ],
+          "trash": [
+            "OP15-078",
+            "OP15-076",
+            "OP15-076",
+            "OP15-066",
+            "OP15-066",
+            "OP10-067",
+            "OP12-071",
+            "OP15-061",
+            "OP15-061",
+            "OP15-066",
+            "OP15-067",
+            "OP09-077"
+          ],
+          "life": 1,
+          "deck": [
+            "OP05-077",
+            "OP12-071",
+            "OP15-061",
+            "OP15-074",
+            "OP15-076",
+            "OP15-077",
+            "OP15-078",
+            "OP15-118"
+          ],
+          "life_cards": [
+            "OP10-067"
+          ],
+          "don_cost": [
+            "Don"
+          ],
+          "attached_don": [
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don"
+          ],
+          "rested_rz1": {
+            "attached_don": [
+              "Don",
+              "Don",
+              "Don",
+              "Don"
+            ]
+          },
+          "rested": {
+            "OP15-067": 1,
+            "OP15-118": 2
+          }
+        },
+        "Opponent": {
+          "hand": [
+            "OP13-080",
+            "OP13-091"
+          ],
+          "trash": [
+            "OP13-098",
+            "OP13-089",
+            "OP13-096",
+            "OP13-089",
+            "OP13-092",
+            "OP13-091",
+            "OP13-084",
+            "OP13-084",
+            "OP13-096",
+            "OP13-098",
+            "OP14-096",
+            "OP13-096",
+            "OP13-098",
+            "OP13-082",
+            "OP14-096",
+            "OP13-092",
+            "OP13-084",
+            "OP13-098"
+          ],
+          "board": [
+            "OP13-089",
+            "OP13-083"
+          ],
+          "life": 2,
+          "deck": [
+            "OP05-097",
+            "OP13-082",
+            "OP13-086",
+            "OP13-091"
+          ],
+          "stage": [
+            "OP13-099"
+          ],
+          "life_cards": [
+            "OP16-093",
+            "OP16-093"
+          ],
+          "don_cost": [
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don"
+          ],
+          "attached_don": [
+            "Don",
+            "Don",
+            "Don",
+            "Don"
+          ],
+          "rested_rz1": {
+            "don_cost": [
+              "Don",
+              "Don"
+            ]
+          },
+          "rested": {
+            "OP13-083": 1
+          }
+        }
+      }
+    },
+    {
+      "turn": 12,
+      "player": "Opponent",
+      "card_drawn": null,
+      "don_drawn": 0,
+      "actions": [
+        {
+          "type": "attack",
+          "attacker": "St. Jaygarcia Saturn",
+          "attacker_code": "OP13-083",
+          "target": "Enel [\"OP15-058\">OP15-058]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "attack",
+          "attacker": "Imu",
+          "attacker_code": "OP13-079",
+          "target": "Enel [\"OP15-058\">OP15-058]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        }
+      ],
+      "snapshot": {}
+    }
+  ]
+}

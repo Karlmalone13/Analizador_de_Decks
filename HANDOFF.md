@@ -1,4 +1,15 @@
-# HANDOFF — registro de troca entre IAs (Claude / Codex)
+﻿# HANDOFF — registro de troca entre IAs (Claude / Codex)
+
+## 2026-10-12 (961) - Ciclos 73-74: gen promovida (185x140); lentidao era a maquina, nao o motor
+
+Ciclo 73: 70x77 descarta, 32 min (gera 930s vs ~300s). AS-IS (as_is_2026-10-10T23.09.48_b960-lento):
+motor 0,54 -> 0,20 s/partida (mais RAPIDO); o treino (que nao usa o motor) tambem dobrou -> carga da
+maquina (servidor do bot + jogo abertos), nao codigo. Nada otimizado.
+Ciclo 74, 1a tentativa: MemoryError no treino do Q (12 GB, jogo aberto). As linhas ja anexadas
+(484.288 q_alvos, 8.785 selfplay, todas gen 74, conferido) foram cortadas antes de rerodar --
+mesma seed duplicaria o corpus. Rerodado: 185x140 PROMOVE, 10 dos 12 maiores lideres a favor
+(ST04-001 7x11 e OP11-041 9x10 contra). Ancora humana igual (26,9%). Gera 364s, treina 1044s.
+Pendente: rodar ciclo com jogo FECHADO (treino lento por memoria).
 
 ## 2026-10-10 (960) - Defesa (counter): o jogo real decidia com outra estrutura que o motor
 

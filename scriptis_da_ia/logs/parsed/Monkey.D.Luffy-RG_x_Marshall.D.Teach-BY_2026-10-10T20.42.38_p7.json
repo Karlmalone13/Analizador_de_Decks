@@ -1,0 +1,1496 @@
+{
+  "meta": {
+    "players": {
+      "p1": {
+        "name": "You",
+        "leader": {
+          "name": "Monkey D. Luffy",
+          "code": "OP13-001"
+        }
+      },
+      "p2": {
+        "name": "Opponent",
+        "leader": {
+          "name": "Marshall D. Teach",
+          "code": "OP16-080"
+        }
+      }
+    },
+    "goes_first": null
+  },
+  "total_turns": 12,
+  "turns": [
+    {
+      "turn": 1,
+      "player": "You",
+      "card_drawn": null,
+      "don_drawn": 1,
+      "actions": [
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP13-001",
+          "to_name": "Monkey D. Luffy",
+          "total": 1
+        }
+      ],
+      "snapshot": {
+        "You": {
+          "hand": [
+            "OP05-038",
+            "OP05-038",
+            "OP13-118",
+            "ST31-005",
+            "OP13-040"
+          ],
+          "board": [],
+          "trash": [],
+          "life": 4,
+          "life_cards": [
+            "OP05-038",
+            "OP13-040",
+            "OP13-040",
+            "OP14-022"
+          ],
+          "attached_don": [
+            "Don"
+          ]
+        },
+        "Opponent": {
+          "hand": [
+            "OP16-104",
+            "OP16-106",
+            "OP16-103",
+            "OP09-099",
+            "OP16-108"
+          ],
+          "trash": [],
+          "board": [],
+          "life": 4,
+          "deck": [
+            "OP09-093",
+            "OP09-095",
+            "OP09-096",
+            "OP09-098",
+            "OP10-098",
+            "OP16-102",
+            "OP16-110",
+            "P-100",
+            "PRB02-015"
+          ],
+          "life_cards": [
+            "OP09-084",
+            "OP16-107",
+            "OP16-109",
+            "OP16-109"
+          ]
+        }
+      }
+    },
+    {
+      "turn": 2,
+      "player": "Opponent",
+      "card_drawn": null,
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "play",
+          "card": "OP16-103",
+          "card_name": "Van Augur",
+          "effects": []
+        }
+      ],
+      "snapshot": {
+        "Opponent": {
+          "hand": [
+            "OP16-104",
+            "OP16-106",
+            "OP09-099",
+            "OP16-108",
+            "OP16-108"
+          ],
+          "board": [
+            "OP16-103"
+          ],
+          "trash": [],
+          "life": 4,
+          "deck": [
+            "OP09-093",
+            "OP09-095",
+            "OP09-096",
+            "OP09-098",
+            "OP10-098",
+            "OP16-102",
+            "OP16-110",
+            "P-100",
+            "PRB02-015"
+          ],
+          "life_cards": [
+            "OP09-084",
+            "OP16-107",
+            "OP16-109",
+            "OP16-109"
+          ],
+          "don_cost": [
+            "Don",
+            "Don"
+          ],
+          "rested_rz1": {
+            "don_cost": [
+              "Don"
+            ]
+          },
+          "rested": {
+            "OP16-103": 1
+          }
+        },
+        "You": {
+          "hand": [
+            "OP05-038",
+            "OP05-038",
+            "OP13-118",
+            "ST31-005",
+            "OP13-040"
+          ],
+          "trash": [],
+          "board": [],
+          "life": 4,
+          "life_cards": [
+            "OP05-038",
+            "OP13-040",
+            "OP13-040",
+            "OP14-022"
+          ],
+          "attached_don": [
+            "Don"
+          ]
+        }
+      }
+    },
+    {
+      "turn": 3,
+      "player": "You",
+      "card_drawn": null,
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "attack",
+          "attacker": "Monkey D. Luffy",
+          "attacker_code": "OP13-001",
+          "target": "Marshall D. Teach [\"OP16-080\">OP16-080]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": [
+            "OP16-106"
+          ]
+        }
+      ],
+      "snapshot": {
+        "You": {
+          "hand": [
+            "OP05-038",
+            "OP05-038",
+            "OP13-118",
+            "ST31-005",
+            "OP13-040",
+            "ST31-005"
+          ],
+          "board": [],
+          "trash": [],
+          "life": 4,
+          "life_cards": [
+            "OP05-038",
+            "OP13-040",
+            "OP13-040",
+            "OP14-022"
+          ],
+          "don_cost": [
+            "Don",
+            "Don",
+            "Don"
+          ],
+          "rested_rz1": {
+            "don_cost": [
+              "Don"
+            ]
+          }
+        },
+        "Opponent": {
+          "hand": [
+            "OP16-104",
+            "OP09-099",
+            "OP16-108",
+            "OP16-108"
+          ],
+          "trash": [
+            "OP16-106"
+          ],
+          "board": [
+            "OP16-103"
+          ],
+          "life": 4,
+          "deck": [
+            "OP09-093",
+            "OP09-095",
+            "OP09-096",
+            "OP09-098",
+            "OP10-098",
+            "OP16-102",
+            "OP16-110",
+            "P-100",
+            "PRB02-015"
+          ],
+          "life_cards": [
+            "OP09-084",
+            "OP16-107",
+            "OP16-109",
+            "OP16-109"
+          ],
+          "don_cost": [
+            "Don",
+            "Don"
+          ],
+          "rested_rz1": {
+            "don_cost": [
+              "Don"
+            ]
+          },
+          "rested": {
+            "OP16-103": 1
+          }
+        }
+      }
+    },
+    {
+      "turn": 4,
+      "player": "Opponent",
+      "card_drawn": null,
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "attack",
+          "attacker": "Marshall D. Teach",
+          "attacker_code": "OP16-080",
+          "target": "Monkey D. Luffy [\"OP13-001\">OP13-001]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "attach_don",
+          "amount": 3,
+          "to": "OP16-103",
+          "to_name": "Van Augur",
+          "total": 3
+        },
+        {
+          "type": "attack",
+          "attacker": "Van Augur",
+          "attacker_code": "OP16-103",
+          "target": "Monkey D. Luffy [\"OP13-001\">OP13-001]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "play",
+          "card": "OP09-099",
+          "card_name": "Fullalead",
+          "effects": [
+            "Rest Fullalead [\"OP09-099\">OP09-099]",
+            "Trash Shiryu [\"OP16-108\">OP16-108]",
+            "<b>Reveal and Draw Marshall D. Teach [\"OP09-093\">OP09-093]</b>"
+          ]
+        }
+      ],
+      "snapshot": {
+        "Opponent": {
+          "hand": [
+            "OP16-104",
+            "OP16-108",
+            "OP09-095",
+            "OP09-093"
+          ],
+          "board": [
+            "OP16-103"
+          ],
+          "trash": [
+            "OP16-106",
+            "OP16-108"
+          ],
+          "life": 4,
+          "deck": [
+            "OP09-096",
+            "OP09-098",
+            "OP10-098",
+            "OP16-102",
+            "OP16-106",
+            "OP16-110",
+            "P-100",
+            "PRB02-015"
+          ],
+          "life_cards": [
+            "OP09-084",
+            "OP16-107",
+            "OP16-109",
+            "OP16-109"
+          ],
+          "don_cost": [
+            "Don"
+          ],
+          "attached_don": [
+            "Don",
+            "Don",
+            "Don"
+          ],
+          "stage": [
+            "OP09-099"
+          ],
+          "rested_rz1": {
+            "don_cost": [
+              "Don"
+            ]
+          },
+          "rested": {
+            "OP16-103": 1
+          }
+        },
+        "You": {
+          "hand": [
+            "OP05-038",
+            "OP05-038",
+            "OP13-118",
+            "ST31-005",
+            "OP13-040",
+            "ST31-005",
+            "OP14-022",
+            "OP05-038"
+          ],
+          "trash": [],
+          "board": [],
+          "life": 2,
+          "life_cards": [
+            "OP13-040",
+            "OP13-040"
+          ],
+          "don_cost": [
+            "Don",
+            "Don",
+            "Don"
+          ],
+          "rested_rz1": {
+            "don_cost": [
+              "Don"
+            ]
+          }
+        }
+      }
+    },
+    {
+      "turn": 5,
+      "player": "You",
+      "card_drawn": null,
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "attack",
+          "attacker": "Monkey D. Luffy",
+          "attacker_code": "OP13-001",
+          "target": "Van Augur [\"OP16-103\">OP16-103]",
+          "result": null,
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "play",
+          "card": "OP14-022",
+          "card_name": "Usopp",
+          "effects": [
+            "Activate 1 Don",
+            "Activate 1 Don"
+          ]
+        },
+        {
+          "type": "play",
+          "card": "EB02-017",
+          "card_name": "Nami",
+          "effects": [
+            "<b>Reveal and Draw Usopp [\"OP14-022\">OP14-022]</b>"
+          ]
+        }
+      ],
+      "snapshot": {
+        "You": {
+          "hand": [
+            "OP05-038",
+            "OP05-038",
+            "OP13-118",
+            "ST31-005",
+            "OP13-040",
+            "ST31-005",
+            "OP05-038",
+            "OP14-022"
+          ],
+          "board": [
+            "OP14-022",
+            "EB02-017"
+          ],
+          "trash": [],
+          "life": 2,
+          "deck": [
+            "EB02-017",
+            "OP14-031",
+            "OP16-004"
+          ],
+          "life_cards": [
+            "OP13-040",
+            "OP13-040"
+          ],
+          "don_cost": [
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don"
+          ],
+          "rested": {
+            "OP14-022": 1,
+            "EB02-017": 1
+          }
+        },
+        "Opponent": {
+          "hand": [
+            "OP16-104",
+            "OP16-108",
+            "OP09-095",
+            "OP09-093",
+            "OP09-098"
+          ],
+          "trash": [
+            "OP16-106",
+            "OP16-108",
+            "OP16-103"
+          ],
+          "board": [],
+          "life": 4,
+          "deck": [
+            "OP09-096",
+            "OP10-098",
+            "OP16-102",
+            "OP16-106",
+            "OP16-110",
+            "P-100",
+            "PRB02-015"
+          ],
+          "life_cards": [
+            "OP09-084",
+            "OP16-107",
+            "OP16-109",
+            "OP16-109"
+          ],
+          "don_cost": [
+            "Don",
+            "Don",
+            "Don",
+            "Don"
+          ],
+          "stage": [
+            "OP09-099"
+          ],
+          "rested_rz1": {
+            "don_cost": [
+              "Don",
+              "Don",
+              "Don",
+              "Don"
+            ]
+          }
+        }
+      }
+    },
+    {
+      "turn": 6,
+      "player": "Opponent",
+      "card_drawn": null,
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "play",
+          "card": "OP16-108",
+          "card_name": "Shiryu",
+          "effects": []
+        },
+        {
+          "type": "attack",
+          "attacker": "Marshall D. Teach",
+          "attacker_code": "OP16-080",
+          "target": "Monkey D. Luffy [\"OP13-001\">OP13-001]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": [
+            "OP14-022"
+          ]
+        }
+      ],
+      "snapshot": {
+        "Opponent": {
+          "hand": [
+            "OP16-104",
+            "OP09-095",
+            "OP09-093",
+            "OP09-098",
+            "OP09-099"
+          ],
+          "board": [
+            "OP16-108"
+          ],
+          "trash": [
+            "OP16-106",
+            "OP16-108",
+            "OP16-103"
+          ],
+          "life": 4,
+          "deck": [
+            "OP09-096",
+            "OP10-098",
+            "OP16-102",
+            "OP16-106",
+            "OP16-110",
+            "P-100",
+            "PRB02-015"
+          ],
+          "life_cards": [
+            "OP09-084",
+            "OP16-107",
+            "OP16-109",
+            "OP16-109"
+          ],
+          "don_cost": [
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don"
+          ],
+          "stage": [
+            "OP09-099"
+          ],
+          "rested_rz1": {
+            "don_cost": [
+              "Don",
+              "Don",
+              "Don",
+              "Don"
+            ]
+          },
+          "rested": {
+            "OP16-108": 1
+          }
+        },
+        "You": {
+          "hand": [
+            "OP05-038",
+            "OP05-038",
+            "OP13-118",
+            "ST31-005",
+            "OP13-040",
+            "ST31-005",
+            "OP05-038"
+          ],
+          "trash": [
+            "OP14-022"
+          ],
+          "board": [
+            "OP14-022",
+            "EB02-017"
+          ],
+          "life": 2,
+          "deck": [
+            "EB02-017",
+            "OP14-031",
+            "OP16-004"
+          ],
+          "life_cards": [
+            "OP13-040",
+            "OP13-040"
+          ],
+          "don_cost": [
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don"
+          ],
+          "rested": {
+            "OP14-022": 1,
+            "EB02-017": 1
+          }
+        }
+      }
+    },
+    {
+      "turn": 7,
+      "player": "You",
+      "card_drawn": null,
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "play",
+          "card": "OP13-118",
+          "card_name": "Monkey D. Luffy",
+          "effects": [
+            "Activate 1 Don",
+            "Activate 1 Don",
+            "Activate 1 Don",
+            "Activate 1 Don",
+            "Can't play Cost 5 Or More Characters for the Turn!"
+          ]
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP13-001",
+          "to_name": "Monkey D. Luffy",
+          "total": 1
+        },
+        {
+          "type": "attach_don",
+          "amount": 2,
+          "to": "OP13-001",
+          "to_name": "Monkey D. Luffy",
+          "total": 3
+        },
+        {
+          "type": "attach_don",
+          "amount": 2,
+          "to": "OP13-001",
+          "to_name": "Monkey D. Luffy",
+          "total": 5
+        },
+        {
+          "type": "attack",
+          "attacker": "Monkey D. Luffy",
+          "attacker_code": "OP13-001",
+          "target": "Marshall D. Teach [\"OP16-080\">OP16-080]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "activate",
+          "card": "OP14-022",
+          "card_name": "Usopp",
+          "effects": [
+            "Activate 1 Don",
+            "Activate 1 Don"
+          ]
+        }
+      ],
+      "snapshot": {
+        "You": {
+          "hand": [
+            "OP05-038",
+            "OP05-038",
+            "ST31-005",
+            "OP13-040",
+            "ST31-005",
+            "OP05-038",
+            "OP10-011"
+          ],
+          "board": [
+            "OP14-022",
+            "EB02-017",
+            "OP13-118"
+          ],
+          "trash": [
+            "OP14-022"
+          ],
+          "life": 2,
+          "deck": [
+            "EB02-017",
+            "OP14-031",
+            "OP16-004"
+          ],
+          "life_cards": [
+            "OP13-040",
+            "OP13-040"
+          ],
+          "don_cost": [
+            "Don",
+            "Don"
+          ],
+          "attached_don": [
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don"
+          ],
+          "rested": {
+            "OP13-118": 1
+          }
+        },
+        "Opponent": {
+          "hand": [
+            "OP16-104",
+            "OP09-095",
+            "OP09-093",
+            "OP09-098",
+            "OP09-099",
+            "OP16-104"
+          ],
+          "trash": [
+            "OP16-106",
+            "OP16-108",
+            "OP16-103",
+            "OP16-109"
+          ],
+          "board": [
+            "OP16-108"
+          ],
+          "life": 3,
+          "deck": [
+            "OP09-096",
+            "OP10-098",
+            "OP16-102",
+            "OP16-106",
+            "OP16-110",
+            "P-100",
+            "PRB02-015"
+          ],
+          "life_cards": [
+            "OP09-084",
+            "OP16-107",
+            "OP16-109"
+          ],
+          "don_cost": [
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don"
+          ],
+          "stage": [
+            "OP09-099"
+          ],
+          "rested_rz1": {
+            "don_cost": [
+              "Don",
+              "Don",
+              "Don",
+              "Don"
+            ]
+          },
+          "rested": {
+            "OP16-108": 1
+          }
+        }
+      }
+    },
+    {
+      "turn": 8,
+      "player": "Opponent",
+      "card_drawn": null,
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "attack",
+          "attacker": "Shiryu",
+          "attacker_code": "OP16-108",
+          "target": "Monkey D. Luffy [\"OP13-001\">OP13-001]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "play",
+          "card": "OP16-106",
+          "card_name": "Sanjuan Wolf",
+          "effects": []
+        },
+        {
+          "type": "attack",
+          "attacker": "Marshall D. Teach",
+          "attacker_code": "OP16-080",
+          "target": "Monkey D. Luffy [\"OP13-001\">OP13-001]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "play",
+          "card": "OP09-099",
+          "card_name": "Fullalead",
+          "effects": []
+        },
+        {
+          "type": "play",
+          "card": "OP09-095",
+          "card_name": "Laffitte",
+          "effects": []
+        }
+      ],
+      "snapshot": {
+        "Opponent": {
+          "hand": [
+            "OP16-104",
+            "OP09-093",
+            "OP09-098",
+            "OP16-104"
+          ],
+          "board": [
+            "OP16-108",
+            "OP16-106",
+            "OP09-095"
+          ],
+          "trash": [
+            "OP16-106",
+            "OP16-108",
+            "OP16-103",
+            "OP16-109",
+            "OP09-099"
+          ],
+          "life": 3,
+          "deck": [
+            "OP09-096",
+            "OP10-098",
+            "OP16-102",
+            "OP16-110",
+            "P-100",
+            "PRB02-015"
+          ],
+          "life_cards": [
+            "OP09-084",
+            "OP16-107",
+            "OP16-109"
+          ],
+          "don_cost": [
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don"
+          ],
+          "stage": [
+            "OP09-099"
+          ],
+          "rested_rz1": {
+            "don_cost": [
+              "Don",
+              "Don",
+              "Don",
+              "Don"
+            ]
+          },
+          "rested": {
+            "OP16-108": 1,
+            "OP16-106": 1,
+            "OP09-095": 1
+          }
+        },
+        "You": {
+          "hand": [
+            "OP05-038",
+            "ST31-005",
+            "OP13-040",
+            "ST31-005",
+            "OP05-038",
+            "OP10-011",
+            "OP13-040"
+          ],
+          "trash": [
+            "OP14-022",
+            "OP05-038"
+          ],
+          "board": [
+            "OP14-022",
+            "EB02-017",
+            "OP13-118"
+          ],
+          "life": 1,
+          "deck": [
+            "EB02-017",
+            "OP14-031",
+            "OP16-004"
+          ],
+          "life_cards": [
+            "OP13-040"
+          ],
+          "don_cost": [
+            "Don",
+            "Don"
+          ],
+          "attached_don": [
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don"
+          ],
+          "rested_rz1": {
+            "don_cost": [
+              "Don"
+            ]
+          },
+          "rested": {
+            "OP13-118": 1
+          }
+        }
+      }
+    },
+    {
+      "turn": 9,
+      "player": "You",
+      "card_drawn": null,
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP13-118",
+          "to_name": "Monkey D. Luffy",
+          "total": 1
+        },
+        {
+          "type": "attack",
+          "attacker": "Monkey D. Luffy",
+          "attacker_code": "OP13-118",
+          "target": "Marshall D. Teach [\"OP16-080\">OP16-080]",
+          "result": "hit",
+          "damage": 2,
+          "blocked_by": null,
+          "countered_by": []
+        }
+      ],
+      "snapshot": {
+        "You": {
+          "hand": [
+            "OP05-038",
+            "ST31-005",
+            "OP13-040",
+            "ST31-005",
+            "OP05-038",
+            "OP10-011",
+            "OP13-040",
+            "EB02-017"
+          ],
+          "board": [
+            "OP14-022",
+            "EB02-017",
+            "OP13-118"
+          ],
+          "trash": [
+            "OP14-022",
+            "OP05-038"
+          ],
+          "life": 1,
+          "deck": [
+            "OP14-031",
+            "OP16-004"
+          ],
+          "life_cards": [
+            "OP13-040"
+          ],
+          "don_cost": [
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don"
+          ],
+          "attached_don": [
+            "Don"
+          ],
+          "rested_rz1": {
+            "don_cost": [
+              "Don",
+              "Don",
+              "Don",
+              "Don",
+              "Don"
+            ]
+          },
+          "rested": {
+            "OP13-118": 1
+          }
+        },
+        "Opponent": {
+          "hand": [
+            "OP16-104",
+            "OP09-093",
+            "OP09-098",
+            "OP16-104",
+            "OP09-084",
+            "OP16-107"
+          ],
+          "trash": [
+            "OP16-106",
+            "OP16-108",
+            "OP16-103",
+            "OP16-109",
+            "OP09-099"
+          ],
+          "board": [
+            "OP16-108",
+            "OP16-106",
+            "OP09-095"
+          ],
+          "life": 1,
+          "deck": [
+            "OP09-096",
+            "OP10-098",
+            "OP16-102",
+            "OP16-110",
+            "P-100",
+            "PRB02-015"
+          ],
+          "life_cards": [
+            "OP16-109"
+          ],
+          "don_cost": [
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don"
+          ],
+          "stage": [
+            "OP09-099"
+          ],
+          "rested_rz1": {
+            "don_cost": [
+              "Don",
+              "Don",
+              "Don",
+              "Don"
+            ]
+          },
+          "rested": {
+            "OP16-108": 1,
+            "OP16-106": 1,
+            "OP09-095": 1
+          }
+        }
+      }
+    },
+    {
+      "turn": 10,
+      "player": "Opponent",
+      "card_drawn": null,
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "attack",
+          "attacker": "Shiryu",
+          "attacker_code": "OP16-108",
+          "target": "Monkey D. Luffy [\"OP13-001\">OP13-001]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "play",
+          "card": "OP09-093",
+          "card_name": "Marshall D. Teach",
+          "effects": []
+        },
+        {
+          "type": "attack",
+          "attacker": "Marshall D. Teach",
+          "attacker_code": "OP16-080",
+          "target": "Monkey D. Luffy [\"OP13-001\">OP13-001]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": [
+            "OP10-011"
+          ]
+        },
+        {
+          "type": "attack",
+          "attacker": "Sanjuan Wolf",
+          "attacker_code": "OP16-106",
+          "target": "Monkey D. Luffy [\"OP13-001\">OP13-001]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": []
+        }
+      ],
+      "snapshot": {
+        "Opponent": {
+          "hand": [
+            "OP16-104",
+            "OP09-098",
+            "OP16-104",
+            "OP09-084",
+            "OP16-107",
+            "OP16-110"
+          ],
+          "board": [
+            "OP16-108",
+            "OP16-106",
+            "OP09-095",
+            "OP09-093"
+          ],
+          "trash": [
+            "OP16-106",
+            "OP16-108",
+            "OP16-103",
+            "OP16-109",
+            "OP09-099"
+          ],
+          "life": 1,
+          "deck": [
+            "OP09-096",
+            "OP10-098",
+            "OP16-102",
+            "P-100",
+            "PRB02-015"
+          ],
+          "life_cards": [
+            "OP16-109"
+          ],
+          "don_cost": [
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don"
+          ],
+          "stage": [
+            "OP09-099"
+          ],
+          "rested_rz1": {
+            "don_cost": [
+              "Don",
+              "Don",
+              "Don",
+              "Don"
+            ]
+          },
+          "rested": {
+            "OP16-108": 1,
+            "OP16-106": 1,
+            "OP09-093": 1
+          }
+        },
+        "You": {
+          "hand": [
+            "ST31-005",
+            "OP13-040",
+            "ST31-005",
+            "OP13-040",
+            "EB02-017"
+          ],
+          "trash": [
+            "OP14-022",
+            "OP05-038",
+            "OP05-038",
+            "OP10-011",
+            "OP05-038"
+          ],
+          "board": [
+            "OP14-022",
+            "EB02-017",
+            "OP13-118"
+          ],
+          "life": 1,
+          "deck": [
+            "OP14-031",
+            "OP16-004"
+          ],
+          "life_cards": [
+            "OP13-040"
+          ],
+          "don_cost": [
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don"
+          ],
+          "attached_don": [
+            "Don"
+          ],
+          "rested_rz1": {
+            "don_cost": [
+              "Don",
+              "Don",
+              "Don",
+              "Don",
+              "Don"
+            ]
+          },
+          "rested": {
+            "OP13-118": 1
+          }
+        }
+      }
+    },
+    {
+      "turn": 11,
+      "player": "You",
+      "card_drawn": null,
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP13-118",
+          "to_name": "Monkey D. Luffy",
+          "total": 1
+        },
+        {
+          "type": "attack",
+          "attacker": "Monkey D. Luffy",
+          "attacker_code": "OP13-118",
+          "target": "Marshall D. Teach [\"OP16-080\">OP16-080]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "attack",
+          "attacker": "Usopp",
+          "attacker_code": "OP14-022",
+          "target": "Marshall D. Teach [\"OP16-080\">OP16-080]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": [
+            "OP16-104"
+          ]
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP13-001",
+          "to_name": "Monkey D. Luffy",
+          "total": 1
+        },
+        {
+          "type": "attack",
+          "attacker": "Monkey D. Luffy",
+          "attacker_code": "OP13-001",
+          "target": "Marshall D. Teach [\"OP16-080\">OP16-080]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": [
+            "OP16-104"
+          ]
+        },
+        {
+          "type": "attach_don",
+          "amount": 3,
+          "to": "EB02-017",
+          "to_name": "Nami",
+          "total": 3
+        },
+        {
+          "type": "attack",
+          "attacker": "Nami",
+          "attacker_code": "EB02-017",
+          "target": "Marshall D. Teach [\"OP16-080\">OP16-080]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": [
+            "OP09-084"
+          ]
+        }
+      ],
+      "snapshot": {
+        "You": {
+          "hand": [
+            "ST31-005",
+            "OP13-040",
+            "ST31-005",
+            "OP13-040",
+            "EB02-017",
+            "EB02-017"
+          ],
+          "board": [
+            "OP14-022",
+            "EB02-017",
+            "OP13-118"
+          ],
+          "trash": [
+            "OP14-022",
+            "OP05-038",
+            "OP05-038",
+            "OP10-011",
+            "OP05-038"
+          ],
+          "life": 1,
+          "deck": [
+            "OP14-031",
+            "OP16-004"
+          ],
+          "life_cards": [
+            "OP13-040"
+          ],
+          "don_cost": [
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don"
+          ],
+          "attached_don": [
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don"
+          ],
+          "rested_rz1": {
+            "don_cost": [
+              "Don"
+            ]
+          },
+          "rested": {
+            "OP14-022": 1,
+            "EB02-017": 1,
+            "OP13-118": 1
+          }
+        },
+        "Opponent": {
+          "hand": [
+            "OP09-098",
+            "OP16-110"
+          ],
+          "trash": [
+            "OP16-106",
+            "OP16-108",
+            "OP16-103",
+            "OP16-109",
+            "OP09-099",
+            "OP16-107",
+            "OP16-104",
+            "OP16-104",
+            "OP09-084"
+          ],
+          "board": [
+            "OP16-108",
+            "OP16-106",
+            "OP09-095",
+            "OP09-093"
+          ],
+          "life": 1,
+          "deck": [
+            "OP09-096",
+            "OP10-098",
+            "OP16-102",
+            "P-100",
+            "PRB02-015"
+          ],
+          "life_cards": [
+            "OP16-109"
+          ],
+          "don_cost": [
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don"
+          ],
+          "stage": [
+            "OP09-099"
+          ],
+          "rested_rz1": {
+            "don_cost": [
+              "Don",
+              "Don",
+              "Don",
+              "Don"
+            ]
+          },
+          "rested": {
+            "OP16-108": 1,
+            "OP16-106": 1,
+            "OP09-093": 1
+          }
+        }
+      }
+    },
+    {
+      "turn": 12,
+      "player": "Opponent",
+      "card_drawn": null,
+      "don_drawn": 0,
+      "actions": [
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP09-093",
+          "to_name": "Marshall D. Teach",
+          "total": 1
+        },
+        {
+          "type": "attack",
+          "attacker": "Marshall D. Teach",
+          "attacker_code": "OP09-093",
+          "target": "Monkey D. Luffy [\"OP13-001\">OP13-001]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP16-108",
+          "to_name": "Shiryu",
+          "total": 1
+        },
+        {
+          "type": "attack",
+          "attacker": "Shiryu",
+          "attacker_code": "OP16-108",
+          "target": "Monkey D. Luffy [\"OP13-001\">OP13-001]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        }
+      ],
+      "snapshot": {}
+    }
+  ]
+}
