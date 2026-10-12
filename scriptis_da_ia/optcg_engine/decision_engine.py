@@ -1331,10 +1331,77 @@ def _margem_incerteza(p=None, bundle=None) -> float:
         return float('inf')
 
 
-def _q_escolhe_familia(me, opp, familia: str, opcoes: list, padrao_idx: int) -> int:
+def _muda_golpe(me, alvo, atk_power: int, def_power: int, dano: int = 1):
+    """Mudanca (bloco 962) do golpe que PASSA: no lider tira `dano` vida(s)
+    pra mao, sem vida e derrota; num personagem, ele vai pro trash. Golpe que
+    nao alcanca a defesa nao muda nada. Ver `value_net.linhas_pos`."""
+    def muda():
+        from optcg_engine.value_net import DERROTA
+        if atk_power < def_power:
+            return lambda: None
+        if alvo is None:
+            if not me.life:
+                return DERROTA
+            tiradas = [me.life.pop() for _ in range(min(dano, len(me.life)))]
+            me.hand.extend(tiradas)
+
+            def desfaz():
+                del me.hand[len(me.hand) - len(tiradas):]
+                me.life.extend(reversed(tiradas))
+            return desfaz
+        i = next((k for k, c in enumerate(me.field_chars) if c is alvo), None)
+        if i is None:
+            return lambda: None
+        me.field_chars.pop(i)
+        me.trash.append(alvo)
+
+        def desfaz():
+            me.trash.pop()
+            me.field_chars.insert(i, alvo)
+        return desfaz
+    return muda
+
+
+def _muda_gastar(me, cartas):
+    """Mudanca (bloco 962): as cartas de counter saem da mao pro trash."""
+    def muda():
+        ids = {id(c) for c in cartas}   # identidade: copias iguais sao cartas distintas
+        pos = [(i, c) for i, c in enumerate(me.hand) if id(c) in ids]
+        me.hand[:] = [c for c in me.hand if id(c) not in ids]
+        me.trash.extend(c for _, c in pos)
+
+        def desfaz():
+            del me.trash[len(me.trash) - len(pos):]
+            for i, c in sorted(pos, key=lambda t: t[0]):
+                me.hand.insert(i, c)
+        return desfaz
+    return muda
+
+
+def _muda_bloquear(me, blk, atk_power: int):
+    """Mudanca (bloco 962): o blocker deita e toma o golpe no lugar do alvo."""
+    def muda():
+        estava = blk.rested
+        blk.rested = True
+        sai = _muda_golpe(me, blk, atk_power, blk.power + blk.power_buff)()
+
+        def desfaz():
+            sai()
+            blk.rested = estava
+        return desfaz
+    return muda
+
+
+def _q_escolhe_familia(me, opp, familia: str, opcoes: list, padrao_idx: int,
+                       mudancas: list | None = None) -> int:
     """PONTO UNICO das decisoes que o ML passou a aprender no bloco 910:
     bloqueio, counter e alvo de efeito. `opcoes` sao tuplas de acao no formato
     do Q; `padrao_idx` e o que a regra atual escolheria.
+
+    `mudancas` (bloco 962, defesa): uma por opcao, aplica o que ela causa e
+    devolve o desfazer (`value_net.linhas_pos`). Com elas o Q ve cada opcao no
+    estado DEPOIS dela -- vida perdida, corpo derrubado, cartas gastas -- e o
+    corpus grava a mesma linha.
 
     - Em simulacao interna: a regra (lookahead nao e decisao real).
     - Q que JA aprendeu esta familia (cobertura com rotulo de consequencia no
@@ -1355,7 +1422,8 @@ def _q_escolhe_familia(me, opp, familia: str, opcoes: list, padrao_idx: int) -> 
         _aprendeu = bool(_b and _b.get('tipo') == 'q' and
                          ((_b.get('cobertura') or {}).get(familia) or {}).get('consequencia'))
         if _aprendeu and len(opcoes) > 1:
-            _vals = _vn.q_valores(me, opp, opcoes, bundle=_b)
+            _vals = (_vn.q_valores_pos(me, opp, opcoes, mudancas, bundle=_b) if mudancas
+                     else _vn.q_valores(me, opp, opcoes, bundle=_b))
             _ok = [(i, v) for i, v in enumerate(_vals) if v is not None]
             if _ok:
                 idx, _vmax = max(_ok, key=lambda t: t[1])
@@ -1373,10 +1441,14 @@ def _q_escolhe_familia(me, opp, familia: str, opcoes: list, padrao_idx: int) -> 
     if cap is not None:
         try:
             from optcg_engine import value_net as _vn
+            _f = (_vn.linhas_pos(me, opp, [opcoes[idx]], [mudancas[idx]])[0] if mudancas
+                  else (_vn.state_features(me, opp, nomes=_vn.FEATURE_NAMES_ALUNO)
+                        + _vn.acao_features(opcoes[idx], opp)
+                        + _vn.corrida_features(me, opp)))
+            if _f is _vn.DERROTA:
+                return idx   # a partida acaba aqui; o desfecho ja e o rotulo
             cap.append({
-                'feats': (_vn.state_features(me, opp, nomes=_vn.FEATURE_NAMES_ALUNO)
-                          + _vn.acao_features(opcoes[idx], opp)
-                          + _vn.corrida_features(me, opp)),
+                'feats': _f,
                 'alvo': None, 'escolhida': True,
                 'decisao': m._q_nova_decisao(),
                 'acao': familia,
@@ -16403,7 +16475,8 @@ class DecisionEngine:
         except Exception:
             return None
 
-    def should_use_blocker(self, attacker_power: int) -> 'Optional[Card]':
+    def should_use_blocker(self, attacker_power: int, alvo=None,
+                           dano: int = 1) -> 'Optional[Card]':
         """Categoria `bloquear ou nao` (85,7%) -- wrapper de registro.
 
         Wrapper porque a implementacao tem 7 `return` em ramos
@@ -16427,7 +16500,14 @@ class DecisionEngine:
                 (0.0, 'block', c, 'character', _atk) for c in cands]
             _padrao = 0 if escolhido is None else next(
                 (i for i, c in enumerate(cands, 1) if c is escolhido), 0)
-            _i = _q_escolhe_familia(self.me, self.opp, 'block', _opcoes, _padrao)
+            # Bloco 962: cada opcao no estado DEPOIS dela. `alvo` = personagem
+            # atacado (None = lider), so pra medir o golpe de "nao bloquear".
+            _def = self.me.leader if alvo is None else alvo
+            _muds = [_muda_golpe(self.me, alvo, attacker_power,
+                                 _def.power + _def.power_buff, dano)] + [
+                _muda_bloquear(self.me, c, attacker_power) for c in cands]
+            _i = _q_escolhe_familia(self.me, self.opp, 'block_pos', _opcoes, _padrao,
+                                    mudancas=_muds)
             escolhido = _opcoes[_i][2]
         if _DEFESA['on']:
             _log_defesa({
@@ -16873,8 +16953,10 @@ class DecisionEngine:
                         counter=sum(_valor.get(id(x), 0) for x in s))
                 _opcoes = [(0.0, 'counter_none', None, _tipo, _def, None, True)] + [
                     (0.0, 'counter', _agrega(s), _tipo, _def, None, True) for s in _conj]
-                _i = _q_escolhe_familia(self.me, self.opp, 'counter', _opcoes,
-                                        1 if usar else 0)
+                _muds = [_muda_golpe(self.me, alvo, atk_power, def_power)] + [
+                    _muda_gastar(self.me, s) for s in _conj]
+                _i = _q_escolhe_familia(self.me, self.opp, 'counter_pos', _opcoes,
+                                        1 if usar else 0, mudancas=_muds)
                 usar = _i > 0
                 self._counter_escolhido = _conj[_i - 1] if usar else None
         if _DEFESA['on']:
@@ -23604,7 +23686,8 @@ class OPTCGMatch:
 
         # Block step
         opp_engine = DecisionEngine(opp, p)
-        blocker = opp_engine.should_use_blocker(atk_power)
+        blocker = opp_engine.should_use_blocker(
+            atk_power, alvo=(target if target_type != 'leader' else None), dano=damage)
         opp.blocker_lock_battle = None   # trava era so pra ESTA batalha -- limpa already-consumida
         if blocker and not attacker.has_unblockable and not attacker.unblockable_this_turn:
             target_type = 'character'

@@ -1,5 +1,22 @@
 ﻿# HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-10-12 (962) - Defesa (bloqueio/counter): o Q passa a ver o estado DEPOIS de cada opcao
+
+Partida ao vivo Sabo (usuario) x Enel (bot, gen nova), 2026-10-12T17.41.05, derrota em 9 turnos. Telemetria:
+q_fallback 0, efeitos todos concluidos, mulligan novo ok. No ultimo turno o Enel tomou Zoro e Usopp (6000 x 5000)
+sem counter, com 3000 de counter na mao, e morreu pro Sabo de 10000 -- segurar um deles o deixava vivo.
+Reproduzido: o Q decidiu "nao usar" por 0,005-0,02 de diferenca, com margem de incerteza 0,19; a regra
+tambem dizia nao usar. Causa estrutural: a linha do Q era o estado ANTES do golpe + a opcao como "gastei N
+cartas" -- "nao defender" com 5 vidas e com 1 vida era a mesma coisa pro modelo.
+Agora: `_q_escolhe_familia(..., mudancas=)` + `value_net.linhas_pos/q_valores_pos` -- cada opcao e medida no
+estado depois dela (`_muda_golpe`: vida pra mao / corpo pro trash / sem vida = DERROTA, valor 0;
+`_muda_gastar`; `_muda_bloquear`), reversivel, e o corpus grava a mesma linha. Familias renomeadas
+`block_pos`/`counter_pos`; as linhas antigas `block`/`counter` saem do treino (FAMILIAS_APOSENTADAS) -- ate
+aprender, a regra decide a defesa. `should_use_blocker` ganhou `alvo`/`dano` (motor e server passam).
+O modelo atual (treinado no estado antes) quase nao muda as notas com o estado depois -- esperado; aprende
+nos proximos ciclos. smoke_fast 1945 OK.
+Pendente: medir em ciclo se `counter_pos`/`block_pos` ganham cobertura e se o portao aceita.
+
 ## 2026-10-12 (961) - Ciclos 73-74: gen promovida (185x140); lentidao era a maquina, nao o motor
 
 Ciclo 73: 70x77 descarta, 32 min (gera 930s vs ~300s). AS-IS (as_is_2026-10-10T23.09.48_b960-lento):

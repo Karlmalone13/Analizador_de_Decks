@@ -1368,7 +1368,9 @@ def defense(req: DefenseRequest):
 
             if req.phase == "blocker":
                 engine = DecisionEngine(gs, opp_gs)
-                blocker = engine.should_use_blocker(req.attackerPower)
+                _alvo = next((c for c in gs.field_chars
+                              if req.defenderId and getattr(c, '_deck_uid', 0) == req.defenderId), None)
+                blocker = engine.should_use_blocker(req.attackerPower, alvo=_alvo)
                 if blocker is not None:
                     out["blockerId"] = getattr(blocker, '_deck_uid', 0)
                 print(f"[DEF] blocker {req.attackerCode or '?'} atk={req.attackerPower} -> "

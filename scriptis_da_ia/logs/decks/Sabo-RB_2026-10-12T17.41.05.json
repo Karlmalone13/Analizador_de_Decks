@@ -1,0 +1,56 @@
+{
+  "cards": [
+    {
+      "code": "OP17-087",
+      "name": "OP17-087",
+      "count": 2
+    },
+    {
+      "code": "OP17-089",
+      "name": "OP17-089",
+      "count": 2
+    },
+    {
+      "code": "OP17-119",
+      "name": "Loki",
+      "count": 2
+    },
+    {
+      "code": "OP17-080",
+      "name": "Usopp",
+      "count": 1
+    },
+    {
+      "code": "ST01-011",
+      "name": "ST01-011",
+      "count": 1
+    },
+    {
+      "code": "OP17-081",
+      "name": "OP17-081",
+      "count": 1
+    },
+    {
+      "code": "OP04-016",
+      "name": "OP04-016",
+      "count": 1
+    },
+    {
+      "code": "OP17-084",
+      "name": "OP17-084",
+      "count": 1
+    },
+    {
+      "code": "OP17-095",
+      "name": "Roronoa Zoro",
+      "count": 1
+    },
+    {
+      "code": "EB04-007",
+      "name": "Roronoa Zoro",
+      "count": 1
+    }
+  ],
+  "total_seen": 13,
+  "leader": "OP13-004"
+}

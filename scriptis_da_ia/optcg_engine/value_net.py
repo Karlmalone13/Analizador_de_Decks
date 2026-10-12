@@ -866,6 +866,62 @@ def delta_gastar_da_mao_lote(cards, p, opp, bundle=None) -> list:
     return saidas
 
 
+DERROTA = object()   # mudanca que encerra a partida (golpe no lider sem vida)
+
+
+def linhas_pos(p, opp, acoes, mudancas) -> list:
+    """Vetor do Q de cada opcao medido no estado DEPOIS dela (bloco 962).
+
+    `mudancas[i]()` aplica no lugar o que a opcao i causa (vida perdida, corpo
+    derrubado, cartas gastas) e devolve a funcao que desfaz -- ou `DERROTA`,
+    quando a opcao perde a partida ali mesmo. Mesma tecnica reversivel de
+    `delta_perder_vida`. Saida: uma linha por opcao, `DERROTA` onde couber.
+
+    Por que existe: na defesa o Q via o estado ANTES do golpe e a opcao so como
+    "gastei N cartas"; "nao defender" com 5 vidas e com 1 vida eram a MESMA
+    linha a menos do estado. Achado na partida 2026-10-12T17.41.05: o Enel
+    recusou counter com 1 de vida e o Sabo de 10000 vindo, notas separadas
+    por 0,02 com margem de incerteza 0,19.
+    """
+    linhas = []
+    for a, muda in zip(acoes, mudancas):
+        desfaz = muda()
+        if desfaz is DERROTA:
+            linhas.append(DERROTA)
+            continue
+        try:
+            linhas.append(state_features(p, opp, nomes=FEATURE_NAMES_ALUNO)
+                          + acao_features(a, opp) + corrida_features(p, opp))
+        finally:
+            desfaz()
+    return linhas
+
+
+def q_valores_pos(p, opp, acoes, mudancas, bundle=None) -> list:
+    """`q_valores`, com cada opcao no estado DEPOIS dela (`linhas_pos`).
+    Opcao que perde a partida vale 0,0: e o resultado, nao uma estimativa."""
+    n = len(acoes)
+    modelo = bundle.get('modelo') if isinstance(bundle, dict) else None
+    if n == 0 or modelo is None:
+        return [None] * n
+    try:
+        linhas = linhas_pos(p, opp, acoes, mudancas)
+        vivas = [ln for ln in linhas if ln is not DERROTA]
+        vs = []
+        if vivas:
+            esperado = getattr(modelo, 'n_features_in_', None)
+            if esperado is not None and len(vivas[0]) > esperado:
+                vivas = [ln[:esperado] for ln in vivas]
+            if esperado is not None and len(vivas[0]) != esperado:
+                return [None] * n
+            _rapido = _forward_rapido(modelo, vivas)
+            vs = [float(v) for v in (_rapido if _rapido is not None else modelo.predict(vivas))]
+        it = iter(vs)
+        return [0.0 if ln is DERROTA else next(it) for ln in linhas]
+    except Exception:
+        return [None] * n
+
+
 def delta_remover(card, p, opp, bundle=None) -> float | None:
     """Quanto a POSICAO melhora pra `p` se esta carta sumir do campo.
 

@@ -1,0 +1,182 @@
+{
+  "parsed_file": "Sabo-RB_x_Enel-P_2026-10-12T17.41.05.json",
+  "bot_side": "Opponent",
+  "bot_leader": "Enel",
+  "opp_leader": "Sabo",
+  "turnos_auditados": 4,
+  "turnos": [
+    {
+      "turn": 2,
+      "don_available_estimado": 0,
+      "historical_actions": [
+        {
+          "type": "play",
+          "card": "OP12-071",
+          "card_name": "Charlotte Pudding",
+          "effects": [
+            "<b>Reveal and Draw Lightning Beast Kiten [\"OP15-076\">OP15-076]</b>"
+          ]
+        },
+        {
+          "type": "play",
+          "card": "OP12-071",
+          "card_name": "Charlotte Pudding",
+          "effects": [
+            "<b>Reveal and Draw Mamaragan [\"OP15-078\">OP15-078]</b>"
+          ]
+        }
+      ],
+      "engine_hoje_narrativa": "  \u001b[90mComprou: Mamaragan (Alternate Art)\u001b[0m\n  \u001b[93mDON!! +2 rampados │ 2 ativos │ 0 restados\u001b[0m\n  -- Turno (Turn Planner: simula sequências) --\n  Banco de cartas: 2839 cartas carregadas\n  > grátis -> Joga: Lightning Beast Kiten (0pwr) [EVENT]\n    \u001b[90mefeito: [Main] DON!! 1: If your Leader is [Enel], draw 1 card. Then, give up to 1 of your opponent...\u001b[0m\n    ↳ [Lightning Beast Kite] custo: devolveu 1 DON ao deck\n    ↳ [Lightning Beast Kite] comprou: Satori\n  > gastou 1 DON -> Joga: Charlotte Pudding (2000pwr) [CHARACTER]\n    \u001b[90mefeito: [On Play] Look at 4 cards from the top of your deck; reveal up to 1 [Sanji] or Event card ...\u001b[0m\n    ↳ [Charlotte Pudding] olhou 4 do topo -> nada para pegar\n    ↳ [Charlotte Pudding] 3 carta(s) no fundo do deck\n  > grátis -> Joga: Mamaragan (Alternate Art) (0pwr) [EVENT]\n    \u001b[90mefeito: [Main] DON!! 2: Draw 1 card. Then, rest up to 1 of your opponent's Characters with 5000 po...\u001b[0m\n"
+    },
+    {
+      "turn": 4,
+      "don_available_estimado": 1,
+      "historical_actions": [
+        {
+          "type": "play",
+          "card": "ST10-010",
+          "card_name": "Trafalgar Law",
+          "effects": [
+            "Minus 1 Don"
+          ]
+        },
+        {
+          "type": "attack",
+          "attacker": "Enel",
+          "attacker_code": "OP15-058",
+          "target": "Sabo [\"OP13-004\">OP13-004]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        }
+      ],
+      "engine_hoje_narrativa": "  \u001b[90mComprou: Senor Pink (Parallel)\u001b[0m\n  \u001b[93mDON!! +2 rampados │ 4 ativos │ 0 restados\u001b[0m\n  -- Turno (Turn Planner: simula sequências) --\n  > gastou 4 DON -> Joga: Trafalgar Law (ST10-010) (Repr (5000pwr) [CHARACTER]\n    \u001b[90mefeito: [Blocker] (After your opponent declares an attack, you may rest this card to make it the n...\u001b[0m\n  > grátis -> Joga: Lightning Beast Kiten (0pwr) [EVENT]\n    \u001b[90mefeito: [Main] DON!! 1: If your Leader is [Enel], draw 1 card. Then, give up to 1 of your opponent...\u001b[0m\n    ↳ [Lightning Beast Kite] custo: devolveu 1 DON ao deck\n    ↳ [Lightning Beast Kite] comprou: Lightning Be\n    ↳ [Lightning Beast Kite] -1000 power em: Usopp (Alternat\n    Enel (OP15-058) (Alt (5000pwr) ataca Leader\n      🛡 Counter! +1000 -> defesa 6000\n      ✗ Ataque bloqueado (5000 < 6000)\n  > grátis -> Joga: Lightning Beast Kiten (0pwr) [EVENT]\n    \u001b[90mefeito: [Main] DON!! 1: If your Leader is [Enel], draw 1 card. Then, give up to 1 of your opponent...\u001b[0m\n    ↳ [Lightning Beast Kite] custo: devolveu 1 DON ao deck\n    ↳ [Lightning Beast Kite] comprou: Varie\n    ↳ [Lightning Beast Kite] -1000 power em: Usopp (Alternat\n    Charlotte Pudding (2000pwr) ataca Usopp (Alternate Art\n      💀 Usopp (Alternate Art foi KO!\n  > grátis -> Joga: Varie (0pwr) [EVENT]\n    \u001b[90mefeito: [Main] DON!! -1: If your Leader is [Enel], draw 1 card. Then, up to 1 of your Characters g...\u001b[0m\n    ↳ [Varie] custo: devolveu 1 DON ao deck\n    ↳ [Varie] comprou: Enel (OP15-1\n    ↳ [Varie] +2 cost em Charlotte Puddi\n  \u001b[90mpassa (busca preferiu nao agir)\u001b[0m\n"
+    },
+    {
+      "turn": 6,
+      "don_available_estimado": 3,
+      "historical_actions": [
+        {
+          "type": "attack",
+          "attacker": "Enel",
+          "attacker_code": "OP15-058",
+          "target": "Sabo [\"OP13-004\">OP13-004]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": [
+            "OP17-084"
+          ]
+        },
+        {
+          "type": "attack",
+          "attacker": "Trafalgar Law",
+          "attacker_code": "ST10-010",
+          "target": "Sabo [\"OP13-004\">OP13-004]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": [
+            "ST01-011"
+          ]
+        },
+        {
+          "type": "play",
+          "card": "OP15-066",
+          "card_name": "Satori",
+          "effects": [
+            "Minus 1 Don",
+            "Draw 1 Card"
+          ]
+        },
+        {
+          "type": "attach_don",
+          "amount": 2,
+          "to": "OP12-071",
+          "to_name": "Charlotte Pudding",
+          "total": 2
+        },
+        {
+          "type": "attack",
+          "attacker": "Charlotte Pudding",
+          "attacker_code": "OP12-071",
+          "target": "Sabo [\"OP13-004\">OP13-004]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": [
+            "OP17-087"
+          ]
+        },
+        {
+          "type": "attach_don",
+          "amount": 2,
+          "to": "OP12-071",
+          "to_name": "Charlotte Pudding",
+          "total": 2
+        },
+        {
+          "type": "attack",
+          "attacker": "Charlotte Pudding",
+          "attacker_code": "OP12-071",
+          "target": "Sabo [\"OP13-004\">OP13-004]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": [
+            "OP17-087"
+          ]
+        }
+      ],
+      "engine_hoje_narrativa": "  \u001b[90mComprou: Gamma Knife (Reprint)\u001b[0m\n  \u001b[93mDON!! +2 rampados │ 5 ativos │ 0 restados\u001b[0m\n  -- Turno (Turn Planner: simula sequências) --\n    anexou 2 DON em Enel (OP15-058) (Alt\n    Enel (OP15-058) (Alt (7000pwr) ataca Leader\n      💥 DANO! vida do oponente: 3\n    anexou 2 DON em Trafalgar Law (ST10-\n    Trafalgar Law (ST10- (7000pwr) ataca Leader\n      💥 DANO! vida do oponente: 2\n  > gastou 1 DON -> Joga: Satori (2000pwr) [CHARACTER]\n    \u001b[90mefeito: [On Play] DON!! 1: Draw 1 card.\r [When Attacking] If you have 6 or less DON!! cards on you...\u001b[0m\n    ↳ [Satori] custo: devolveu 1 DON ao deck\n    ↳ [Satori] comprou: Shura\n    Charlotte Pudding (2000pwr) ataca Roronoa Zoro\n      🛡 Counter! +1000 -> defesa 3000\n      ✗ Ataque bloqueado (2000 < 3000)\n  \u001b[90mpassa (busca preferiu nao agir)\u001b[0m\n"
+    },
+    {
+      "turn": 8,
+      "don_available_estimado": 0,
+      "historical_actions": [
+        {
+          "type": "play",
+          "card": "OP15-118",
+          "card_name": "Enel",
+          "effects": [
+            "Minus 1 Don",
+            "Added 1 Cards to Hand",
+            "Trash Enel [\"OP15-118\">OP15-118]"
+          ]
+        },
+        {
+          "type": "activate",
+          "card": "OP15-058",
+          "card_name": "Enel",
+          "effects": [
+            "Attach 1 Rested Don to Enel [\"OP15-118\">OP15-118]",
+            "Attach 1 Rested Don to Enel [\"OP15-118\">OP15-118]",
+            "Attach 1 Rested Don to Enel [\"OP15-118\">OP15-118]",
+            "Attach 1 Rested Don to Enel [\"OP15-118\">OP15-118]"
+          ]
+        },
+        {
+          "type": "play",
+          "card": "OP15-067",
+          "card_name": "Shura",
+          "effects": [
+            "Minus 1 Don",
+            "Draw 1 Card"
+          ]
+        },
+        {
+          "type": "attack",
+          "attacker": "Enel",
+          "attacker_code": "OP15-058",
+          "target": "Sabo [\"OP13-004\">OP13-004]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        }
+      ],
+      "engine_hoje_narrativa": "  \u001b[90mComprou: Ohm (Alternate Art)\u001b[0m\n  \u001b[93mDON!! +2 rampados │ 6 ativos │ 0 restados\u001b[0m\n  -- Turno (Turn Planner: simula sequências) --\n  > gastou 6 DON -> Joga: Enel (OP15-118) (Manga) (8000pwr) [CHARACTER]\n    \u001b[90mefeito: If you have 6 or less DON!! cards on your field, this Character cannot be removed from the...\u001b[0m\n    ↳ [Enel (OP15-118) (Man] custo: devolveu 1 DON ao deck\n    ↳ [Enel (OP15-118) (Man] olhou 5 do topo -> pegou: Senor Pink (Par\n    ↳ [Enel (OP15-118) (Man] 4 carta(s) no fundo do deck\n    ↳ [Enel (OP15-118) (Man] descartou da mão: Senor Pink (\n    Enel (OP15-058) (Alt (5000pwr) ataca Usopp (Alternate Art\n      🔁 Roronoa Zoro evitou K.O./remoção mandando pro fundo do deck: Bad Manners Kic, Tony Tony.Chopp, Nico Robin (Alt\n  \u001b[90mpassa (busca preferiu nao agir)\u001b[0m\n"
+    }
+  ]
+}

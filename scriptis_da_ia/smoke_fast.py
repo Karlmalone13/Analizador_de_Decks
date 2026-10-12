@@ -3619,7 +3619,7 @@ def test_roger_vitoria_alternativa_ao_oponente_bloquear() -> None:
     # corpo por lider). Isolando a decisao de bloquear, o teste fica
     # estavel independente de qual modelo/quantas arvores decide isso.
     _blocker_original = DecisionEngine.should_use_blocker
-    DecisionEngine.should_use_blocker = lambda self, atk: blocker_char
+    DecisionEngine.should_use_blocker = lambda self, atk, **kw: blocker_char
     try:
         resultado = match._execute_attack(roger, "leader", None, me, opp, eng, verbose=False)
     finally:
@@ -11018,6 +11018,7 @@ def main() -> int:
     test_custos_busca_e_pagar_passam_pelo_q_bloco_932()
     test_escolha_um_passa_pelo_q_bloco_933()
     test_exploracao_guiada_pela_simulacao_bloco_935()
+    test_defesa_ve_o_estado_depois_bloco_962()
     test_regua_rapida_igual_ao_sklearn_bloco945()
     test_descarte_ao_vivo_protege_counter_bloco949()
     test_debuff_em_batalha_ve_o_atacante_bloco952()
@@ -15835,7 +15836,7 @@ def test_ml_aprende_todas_as_decisoes_pela_consequencia_27_09() -> None:
     check("defesa (fora da vez) conta a partir do PROXIMO turno proprio",
           treinar_q.alvo_consequencia(dict(esc, vez=False, turn=0), traj) == 0.55)
     check("todas as 8 decisoes do jogo sao contadas na cobertura",
-          set(treinar_q.FAMILIAS_JOGO) >= {'block', 'counter', 'target', 'attack', 'pass'})
+          set(treinar_q.FAMILIAS_JOGO) >= {'block_pos', 'counter_pos', 'target', 'attack', 'pass'})
 
 
 def test_treino_ignora_rotulo_busca_por_default_27_09() -> None:
@@ -17560,6 +17561,39 @@ def test_exploracao_guiada_pela_simulacao_bloco_935() -> None:
         check("CONTROLE: sem notas de simulacao cai no sorteio", m._q_explorou_como == 'acaso')
     finally:
         de.random.random, de.random.randrange, de.EXPLORA_GUIADA_FRAC = rnd0, rr0, frac0
+
+
+def test_defesa_ve_o_estado_depois_bloco_962() -> None:
+    """Bloco 962: bloqueio e counter avaliados no estado DEPOIS de cada opcao."""
+    from optcg_engine import decision_engine as de
+    from optcg_engine import value_net as vn
+    print("\n=== defesa ve o estado depois (bloco 962) ===")
+    me = GameState(leader=real_card("OP15-058"))
+    me.life = [mk("L1", "V1"), mk("L2", "V2")]
+    c1, c2 = mk("H1", "C1", counter=1000), mk("H2", "C2", counter=1000)
+    me.hand = [c1, c2]
+    blk = mk("B1", "Blk", power=4000)
+    me.field_chars = [blk]
+    foto = lambda: (list(map(id, me.life)), list(map(id, me.hand)), list(map(id, me.trash)),
+                    list(map(id, me.field_chars)), blk.rested)
+    f0 = foto()
+    d = de._muda_golpe(me, None, 6000, 5000)()
+    check("golpe no lider: 1 vida vai pra mao", len(me.life) == 1 and len(me.hand) == 3)
+    d(); check("golpe no lider desfeito", foto() == f0)
+    de._muda_golpe(me, None, 4000, 5000)()
+    check("CONTROLE: golpe que nao alcanca nao muda nada", foto() == f0)
+    d = de._muda_gastar(me, [c2])()
+    check("counter: a carta sai da mao pro trash", me.hand == [c1] and me.trash == [c2])
+    d(); check("counter desfeito", foto() == f0)
+    d = de._muda_bloquear(me, blk, 6000)()
+    check("bloqueio que perde: blocker deitado e no trash", me.field_chars == [] and blk in me.trash)
+    d(); check("bloqueio desfeito", foto() == f0)
+    me.life = []
+    check("golpe no lider sem vida = DERROTA", de._muda_golpe(me, None, 6000, 5000)() is vn.DERROTA)
+    import treinar_q as tq
+    check("familias novas aprendidas; antigas fora do treino",
+          'counter_pos' in tq.FAMILIAS_JOGO and 'block_pos' in tq.FAMILIAS_JOGO
+          and 'counter' in tq.FAMILIAS_APOSENTADAS and 'counter' not in tq.FAMILIAS_JOGO)
 
 if __name__ == "__main__":
     raise SystemExit(main())

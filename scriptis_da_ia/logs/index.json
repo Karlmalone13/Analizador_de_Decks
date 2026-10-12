@@ -8767,5 +8767,38 @@
       "Opponent": "decks_full/Luffy.&.Ace-RG_2026-10-10T20.46.36_p8.json"
     },
     "decision_log_file": "decisions/decisions_2026-10-10T20.46.36_p8.jsonl.gz"
+  },
+  {
+    "id": "2026-10-12T17.41.05",
+    "impressao": "b11302b185453f1b480eb8368cb4a35f",
+    "friendly_name": "Sabo-RB_x_Enel-P",
+    "date": "2026-10-12",
+    "p1": {
+      "name": "You",
+      "leader_code": "OP13-004",
+      "leader_name": "Sabo",
+      "slug": "Sabo-RB"
+    },
+    "p2": {
+      "name": "Opponent",
+      "leader_code": "OP15-058",
+      "leader_name": "Enel",
+      "slug": "Enel-P"
+    },
+    "turns": 9,
+    "winner": "p1",
+    "bot_side": "p2",
+    "tipo": "com_bot",
+    "log_file": "raw/Sabo-RB_x_Enel-P_2026-10-12T17.41.05.log",
+    "parsed_file": "parsed/Sabo-RB_x_Enel-P_2026-10-12T17.41.05.json",
+    "deck_files": {
+      "You": "decks/Sabo-RB_2026-10-12T17.41.05.json",
+      "Opponent": "decks/Enel-P_2026-10-12T17.41.05.json"
+    },
+    "deck_full_files": {
+      "You": "decks_full/Sabo-RB_2026-10-12T17.41.05.json",
+      "Opponent": "decks_full/Enel-P_2026-10-12T17.41.05.json"
+    },
+    "decision_log_file": "decisions/decisions_2026-10-12T17.41.05.jsonl"
   }
 ]
