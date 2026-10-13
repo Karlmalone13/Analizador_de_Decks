@@ -1210,11 +1210,28 @@ function AnalysisPageContent() {
                     <a href="/deck" className="bg-gray-800 hover:bg-gray-700 px-4 py-2 rounded-xl text-sm transition">← Voltar ao Builder</a>
                 </div>
 
+                {/* INDICE (13/10/2026): a pagina tem uma duzia de blocos; o indice
+                    fixo leva direto a cada um. */}
+                <nav className="sticky top-[57px] z-30 -mx-6 mb-6 flex gap-2 overflow-x-auto border-b border-gray-800 bg-gray-950/95 px-6 py-2 backdrop-blur">
+                    {[
+                        ['sec-visao', 'Visão geral'],
+                        ['sec-sugestoes', 'O que falta'],
+                        ['sec-perfil', 'Perfil de jogo'],
+                        ['sec-abertura', 'Mão inicial'],
+                        ['sec-estrutura', 'Estrutura e sinergias'],
+                    ].map(([id, nome]) => (
+                        <a key={id} href={`#${id}`}
+                            className="whitespace-nowrap rounded-lg bg-gray-800 px-3 py-1.5 text-sm text-gray-200 transition hover:bg-gray-700">
+                            {nome}
+                        </a>
+                    ))}
+                </nav>
                 {!analiseLoading && !motorOk && (
                     <div className="mb-6 rounded-2xl border border-yellow-700/60 bg-yellow-950/40 px-5 py-4 text-sm text-yellow-200">
                         ⚠️ A análise do motor está indisponível agora (a API não respondeu). Os números que dependem do efeito das cartas — Rush, Blocker, Searcher, Draw Power, Trigger, sinergias e sugestões — aparecem como <b>—</b> até ela voltar. Custos, cores e counters continuam valendo.
                     </div>
                 )}
+                <div id="sec-visao" className="scroll-mt-28" />
                 {/* TOP */}
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
                     <div className="bg-gray-900 border border-gray-800 rounded-2xl overflow-hidden">
@@ -1398,6 +1415,7 @@ function AnalysisPageContent() {
                     etc". Os tres eixos vem do motor (`deck_axes.py`), dos
                     efeitos parseados, e a nota 0-100 e a posicao do deck entre
                     os decks de torneio -- nao um teto inventado. */}
+                <div id="sec-sugestoes" className="scroll-mt-28" />
                 {/* Carta que falta, e o motivo (13/10/2026). Calculada na API
                     (`suggest_card.py`): com decks de torneio do lider, a carta
                     que a maioria usa e este deck nao; sem eles, o papel em que
@@ -1446,6 +1464,7 @@ function AnalysisPageContent() {
                     </div>
                 )}
 
+                <div id="sec-perfil" className="scroll-mt-28" />
                 {eixos.some(e => e.nota !== null) && (
                     <div className="bg-gray-900 border border-gray-800 rounded-2xl p-6 mb-8">
                         <div className="flex items-baseline justify-between mb-1">
@@ -1528,6 +1547,7 @@ function AnalysisPageContent() {
                     ))}
                 </div>
 
+                <div id="sec-abertura" className="scroll-mt-28" />
                 {/* ANALISADOR INTELIGENTE */}
                 <div className="bg-gray-900 border border-gray-800 rounded-2xl p-6 mb-8">
                     <div className="flex items-start justify-between mb-6">
@@ -1631,6 +1651,7 @@ function AnalysisPageContent() {
                         </div>
                     </div>
                 )}
+                <div id="sec-estrutura" className="scroll-mt-28" />
                 {!analiseLoading && !analise && deck?.leader && (
                     <div className="bg-gray-900 border border-gray-800 rounded-2xl p-6 mb-8 flex items-center gap-3 text-yellow-400 text-sm">
                         <span>⚠️</span>
