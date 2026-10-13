@@ -266,6 +266,27 @@ async def simulate(req: SimulateRequest, background_tasks: BackgroundTasks):
     return {"job_id": job_id, "status": "pending", "total_steps": total_steps}
 
 
+@app.get("/meta")
+def meta():
+    """Lideres do meta (decks de torneio) e o perfil de cada um -- /meta do front."""
+    import meta_summary
+    return meta_summary.resumo()
+
+
+@app.get("/meta/leader/{code}")
+def meta_leader(code: str):
+    """Como um lider do meta e montado: as cartas centrais dos decks de torneio."""
+    import meta_summary
+    return meta_summary.lider(code.split('_')[0])
+
+
+@app.post("/meta/compare")
+def meta_compare(req: DeckRequest):
+    """O deck do usuario contra a mediana do meta, funcao por funcao."""
+    import meta_summary
+    return meta_summary.comparar([{'code': e.code, 'qty': e.qty} for e in req.cards])
+
+
 @app.get("/leader-stats")
 def leader_stats(leader_name: str):
     """
