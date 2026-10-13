@@ -1,5 +1,18 @@
 ﻿# HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-10-12 (963) - Ciclos 75-76: dois PROMOVE com a defesa no estado depois
+
+Ciclo 75: 72x43 PROMOVE (91 min -- treino 2952s, o front em `next dev` compilava junto).
+Ciclo 76: 51x25 PROMOVE (24 min). Ancora humana igual (26,9%).
+Familias novas do bloco 962 ja com rotulo pela consequencia: counter_pos 7.424 (boas 60,7%, ruins 26,7%),
+block_pos 2.330 (boas 64,3%, ruins 26,7%) -- ja decide pelo Q.
+Por lider (ciclo 76, poucos pares): OP15-058 Enel 12x2 (o deck do achado), OP14-020 8x0; contra:
+OP13-002 0x5, OP04-019 1x5 -- sinal pra acompanhar, nao conclusao.
+NAO EXPORTADO/EMPURRADO ainda (pedido do usuario: registrar e seguir pro front): falta
+`python sincroniza.py entrega` (~1h) + push, que leva junto o commit do bloco 962.
+`next dev` com Turbopack caiu tentando alocar 16 GB com o treino rodando; `.claude/launch.json` ganhou
+`next-dev-webpack` (`next dev --webpack`).
+
 ## 2026-10-12 (962) - Defesa (bloqueio/counter): o Q passa a ver o estado DEPOIS de cada opcao
 
 Partida ao vivo Sabo (usuario) x Enel (bot, gen nova), 2026-10-12T17.41.05, derrota em 9 turnos. Telemetria:
