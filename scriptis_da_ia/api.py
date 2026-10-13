@@ -471,7 +471,7 @@ def _run_one_hand_stats_game(task):
     ao contrário de passar os objetos do motor prontos pela fila).
     """
     (user_cards_raw, opp_name, opp_url, going_first,
-     arq, sq, bomb_code, mc_samples_override) = task
+     arq, sq, bomb_code) = task
     try:
         cards_db, df_raw = _hand_stats_worker_context()
         user_deck = load_deck(user_cards_raw)
@@ -482,7 +482,7 @@ def _run_one_hand_stats_game(task):
 
         if going_first:
             match = _HandStatsInstrumentedMatch(
-                user_deck, opp_deck, mc_samples_override=mc_samples_override)
+                user_deck, opp_deck)
             match.state_a.is_first = True
             match.state_b.is_first = False
             result = match.simulate()
@@ -490,7 +490,7 @@ def _run_one_hand_stats_game(task):
             user_player = 'A'
         else:
             match = _HandStatsInstrumentedMatch(
-                opp_deck, user_deck, mc_samples_override=mc_samples_override)
+                opp_deck, user_deck)
             match.state_a.is_first = True
             match.state_b.is_first = False
             result = match.simulate()
@@ -504,12 +504,6 @@ def _run_one_hand_stats_game(task):
     except Exception:
         return None
 
-
-# Amostras FIXAS e baixas pra busca offline -- so usado aqui (ver docstring
-# de OPTCGMatch.mc_samples_override em decision_engine.py). Medido 05/09:
-# reduz uma partida de ~88s pra ~11s (a busca ainda é REAL, só com 1
-# amostra Monte Carlo por candidata em vez do piso/teto adaptativo 3-6).
-_HAND_STATS_MC_OVERRIDE = (1, 1, 1)
 
 _HAND_STATS_CACHE_DIR = os.path.join(os.path.dirname(__file__), 'hand_stats_cache')
 
@@ -575,7 +569,7 @@ def _compute_and_cache_hand_stats(user_cards_raw: list[dict], cache_key: str,
         n_per_opp = max(1, n_games // len(opponent_pool))
         tasks = [
             (user_cards_raw, opp_name, opp_url, (g % 2 == 0),
-             arq, sq, bomb_code, _HAND_STATS_MC_OVERRIDE)
+             arq, sq, bomb_code)
             for opp_name, opp_url in opponent_pool
             for g in range(n_per_opp)
         ]
@@ -653,14 +647,10 @@ async def hand_stats(req: DeckRequest, background_tasks: BackgroundTasks,
     - archetype: arquétipo detectado
     - n_games_ran: partidas efetivamente simuladas
 
-    Assíncrono com cache (achado 05/09): o docstring antigo estimava
-    ~1-3s/partida; medido de verdade, a busca padrão do motor gasta ~88s
-    NUMA partida só (perfilado -- é o custo real da busca Monte Carlo que
-    faz o bot jogar bem, não um bug). Mesmo com amostragem reduzida
-    (`_HAND_STATS_MC_OVERRIDE`, ~11s/partida isolada) + paralelismo
-    (`workers`), o LOTE inteiro (24 jogos contra 8 decks de meta variados)
-    mediu ~6-7 minutos de parede -- variância grande entre matchups, longe
-    de caber numa requisição HTTP síncrona.
+    Assíncrono com cache (achado 05/09, quando a busca Monte Carlo custava
+    ~88s por partida). O Monte Carlo saiu no bloco 785 e o motor de hoje (o
+    Q decidindo) roda ~0,1 s/partida (medido 13/10/2026, bloco 964) -- o
+    cache continua valendo, mas o lote nao leva mais minutos.
 
     Por isso o endpoint NUNCA bloqueia esperando o cálculo:
     - cache-hit (`hand_stats_cache/<hash>.json`, chaveado pela COMPOSIÇÃO

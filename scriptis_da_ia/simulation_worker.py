@@ -78,14 +78,6 @@ def load_deck(cards: list[dict]) -> tuple:
     return leader, main_deck
 
 
-# Amostras Monte Carlo fixas e baixas pra busca offline -- mesma tripla e
-# mesmo raciocinio de `_HAND_STATS_MC_OVERRIDE` em api.py (perfilado 05/09:
-# reduz uma partida de ~85-88s pra ~11s, ainda e a busca REAL do motor, so
-# com 1 amostra por candidata em vez do piso/teto adaptativo 3-6). Pedido
-# explicito do usuario apos ver o "Simular" do front demorar ~1h nos
-# defaults (5 simulacoes x 10 decks de meta = 50 partidas reais).
-SIMULATE_FAST_MC_OVERRIDE = (1, 1, 1)
-
 # Teto de parede por partida em run_simulation_job (achado 05/09): mesmo no
 # modo rapido, um matchup especifico consumiu minutos de CPU numa partida
 # so (jogo raro/degenerado, nao deadlock -- CPU do processo continuava
@@ -94,35 +86,17 @@ SIMULATE_FAST_MC_OVERRIDE = (1, 1, 1)
 PER_MATCH_TIMEOUT_S = 90
 
 
-# MODO GULOSO no simulador do front (achado 05/09, pedido do usuario --
-# "50 partidas deveria durar 2 min no maximo", depois de ver a IA do
-# Naruto Card Game Simulator responder instantaneamente).
-#
-# `search_top_k_override=0` = aplica a acao de maior score estatico
-# direto, SEM busca Monte Carlo -- a "Abordagem 1" classica de IA de TCG
-# (pontuar as jogadas legais e escolher a melhor), que e o que aquele
-# simulador faz em JavaScript no navegador.
-#
-# MEDIDO (5 partidas, mesmas seeds, mesmo deck real):
-#   busca completa: 40,0s/partida, 13,6 turnos
-#   guloso:          1,3s/partida, 14,2 turnos   -> ~30x
-# As partidas NAO ficam mais longas -- o ganho e real, nao artefato.
-#
-# CUSTO DE QUALIDADE, ja medido em REPROVADOS.md (bloco 700, ablacao
-# equivalente): `play` 28,9% -> 26,2% (-2,7pp), 12 lideres piores x 4
-# melhores, piores casos -36,4pp. Aceito CONSCIENTEMENTE aqui porque
-# nesta tela a pergunta e "qual o winrate do deck", e o ganho estatistico
-# de rodar muitas mais partidas supera 2,7pp de qualidade de jogada
-# (8 partidas dao +-30pp de margem; 200 dao +-6pp).
-#
-# NUNCA ligar no bot que joga contra humanos (sim_bridge.py/server.py):
-# la a busca e liquido positivo, medido, e REPROVADOS.md e explicito.
-SIMULATE_GREEDY_MODE = os.environ.get('OPTCG_SIMULATE_GREEDY', '1') == '1'
+# O SIMULADOR DO FRONT JOGA COM O MESMO MOTOR E O MESMO MODELO DO TREINO
+# (bloco 964). Existia aqui um "modo guloso" (05/09) que pulava a busca Monte
+# Carlo pra acelerar. O Monte Carlo saiu no bloco 785 e quem decide passou a ser
+# o Q -- e o modo guloso pulava justamente o Q: como a lista de jogadas nao tem
+# mais nota estatica, ele executava a PRIMEIRA jogada gerada. Medido em
+# 13/10/2026 (2 decks reais, 4 partidas): guloso 1,18 s/partida e 13-23 turnos;
+# motor atual 0,11 s/partida e 10-12 turnos. Removido, junto com as amostras
+# Monte Carlo fixas, que nao tinham mais efeito.
 
 
-def run_single_match(deck_a: tuple, deck_b: tuple, hide_opponent_info: bool = True,
-                      mc_samples_override: tuple[int, int, int] | None = SIMULATE_FAST_MC_OVERRIDE,
-                      search_top_k_override: int | None = None) -> dict:
+def run_single_match(deck_a: tuple, deck_b: tuple, hide_opponent_info: bool = True) -> dict:
     """
     Roda 1 partida e devolve o resultado bruto de OPTCGMatch.simulate().
 
@@ -140,11 +114,7 @@ def run_single_match(deck_a: tuple, deck_b: tuple, hide_opponent_info: bool = Tr
     pra calibracao) -- so este caminho (o simulador NOVO do front-end)
     usa a flag.
     """
-    if search_top_k_override is None and SIMULATE_GREEDY_MODE:
-        search_top_k_override = 0
-    match = OPTCGMatch(deck_a, deck_b, hide_opponent_info=hide_opponent_info,
-                       mc_samples_override=mc_samples_override,
-                       search_top_k_override=search_top_k_override)
+    match = OPTCGMatch(deck_a, deck_b, hide_opponent_info=hide_opponent_info)
     return match.simulate()
 
 

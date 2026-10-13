@@ -17241,15 +17241,10 @@ class OPTCGMatch:
         o `min_candidates` do shortlist. Default None preserva 100% do
         comportamento pra qualquer chamador existente.
 
-        `search_top_k_override=1` reproduz EXATAMENTE a ablacao ja medida
-        em REPROVADOS.md ("Remover a busca", bloco 700): decisao cai no
-        score estatico, `play` 28,9% -> 26,2% (-2,7pp), 12 lideres piores
-        x 4 melhores, piores casos -36,4pp. **Por isso continua PROIBIDO
-        no bot de producao** (a busca e liquido positivo la, medido) --
-        existe so pro simulador do front, onde o usuario trocou
-        conscientemente 2,7pp de qualidade de jogada por MUITO mais
-        partidas (margem de erro do winrate cai bem mais do que a
-        qualidade perdida: 8 partidas dao +-30pp, 200 dao +-6pp).
+        O "modo guloso" (`search_top_k_override=0`, que aplicava a primeira
+        acao da lista sem decidir) foi REMOVIDO no bloco 964: com o Q no
+        comando a lista nao tem mais nota estatica, entao ele jogava a
+        primeira jogada gerada. O simulador do front usa o motor normal.
         """
         leader_a, cards_a, stage_a = deck_a if len(deck_a) == 3 else (*deck_a, None)
         leader_b, cards_b, stage_b = deck_b if len(deck_b) == 3 else (*deck_b, None)
@@ -23067,27 +23062,6 @@ class OPTCGMatch:
             # margem EXATAMENTE zero em TODOS os matchups -- sinal
             # classico desse bug (as duas condicoes rodaram com o mesmo
             # valor de fato).
-            # MODO GULOSO (search_top_k_override == 0): aplica a acao de
-            # maior score estatico DIRETO, sem chamar a busca -- e a
-            # "Abordagem 1" classica de IA de TCG (pontua as jogadas
-            # legais, escolhe a melhor). Existe SO pro simulador do front
-            # (ver docstring de __init__); o bot de producao NUNCA passa
-            # isso, porque a busca la e liquido positivo (REPROVADOS.md,
-            # bloco 700). Curto-circuito ANTES do shortlist/PASS de
-            # proposito: `TOP_K=1` NAO e este modo -- la a busca ainda
-            # roda com 1 candidata + PASS, e medido ficou mais LENTO que o
-            # padrao (24,8s x 16,5s por partida), porque jogar pior alonga
-            # a partida e o total de decisoes sobe.
-            if self.search_top_k_override == 0:
-                melhor_acao = actions[0]
-                if self._is_unsafe_zero_life_leader_attack(melhor_acao, p, opp, engine):
-                    break
-                if melhor_acao[1] == 'play':
-                    _plays_feitos += 1
-                if self._apply_action(melhor_acao, p, opp, ee, engine, verbose=verbose):
-                    return True
-                continue
-
             cheap_values = (self._compute_cheap_values(p, opp, actions, n_samples=CHEAP_LAYER_SAMPLES)
                             if USE_CHEAP_LAYER_SHORTLIST and not USE_CHEAP_LAYER_GATE else None)
             candidatas = self._candidatas_para_decidir(
