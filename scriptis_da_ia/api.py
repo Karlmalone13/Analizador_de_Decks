@@ -211,6 +211,13 @@ def analyze(req: DeckRequest):
         result['hand_weights'] = _hs.PESOS
     except Exception:
         pass
+    # Carta que falta, e o motivo (13/10/2026) -- ver `suggest_card.py`.
+    try:
+        import suggest_card
+        result['sugestao_carta'] = suggest_card.sugerir(
+            [{'code': e.code, 'qty': e.qty} for e in req.cards])
+    except Exception as e:
+        result['sugestao_carta_error'] = str(e)
     if missing:
         result['warnings'] = {'cards_nao_encontradas': missing}
     return result

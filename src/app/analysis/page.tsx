@@ -86,6 +86,11 @@ interface AnaliseResult {
     cards?: Record<string, CardFlags>
     opening_benchmarks?: { n_decks: number; metricas: Record<string, Benchmark> }
     hand_weights?: Record<string, number>
+    sugestao_carta?: {
+        modo: 'torneio_do_lider' | 'papel_em_falta' | null
+        decks_do_lider?: number
+        sugestoes: { code: string; name: string; cost: number; color?: string; image?: string; motivo: string }[]
+    }
     axes?: Record<string, { bruto: number; detalhes: { tipo: string; desc: string; n?: number; pontos?: number }[] }>
     tribal_cohesion?: {
         leader_type: string
@@ -1383,6 +1388,38 @@ function AnalysisPageContent() {
                     etc". Os tres eixos vem do motor (`deck_axes.py`), dos
                     efeitos parseados, e a nota 0-100 e a posicao do deck entre
                     os decks de torneio -- nao um teto inventado. */}
+                {/* Carta que falta, e o motivo (13/10/2026). Calculada na API
+                    (`suggest_card.py`): com decks de torneio do lider, a carta
+                    que a maioria usa e este deck nao; sem eles, o papel em que
+                    o deck fica mais atras do meta e a melhor carta legal pra ele. */}
+                {(analise?.sugestao_carta?.sugestoes?.length ?? 0) > 0 && (
+                    <div className="bg-gray-900 border border-gray-800 rounded-2xl p-6 mb-8">
+                        <div className="flex items-baseline justify-between mb-1">
+                            <div className="text-sm font-semibold text-gray-300 uppercase tracking-wide"><Icone size="text-2xl">💡</Icone>Cartas que podem faltar</div>
+                            <div className="text-xs text-gray-400">
+                                {analise?.sugestao_carta?.modo === 'torneio_do_lider'
+                                    ? `comparado a ${analise?.sugestao_carta?.decks_do_lider} decks de torneio deste líder`
+                                    : `este líder não tem decks de torneio na base — comparado ao ponto mais fraco do deck contra o meta`}
+                            </div>
+                        </div>
+                        <div className="text-xs text-gray-400 mb-5">
+                            Sugestão a partir de dados, não regra: só você sabe se a carta cabe no plano do deck.
+                        </div>
+                        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+                            {analise!.sugestao_carta!.sugestoes.map(s => (
+                                <div key={s.code} className="flex gap-4 rounded-xl border border-gray-800 bg-gray-950/60 p-3">
+                                    <CardImage src={s.image} alt={s.name} className="w-24 h-auto flex-shrink-0 rounded-lg border border-gray-700" />
+                                    <div className="min-w-0">
+                                        <div className="font-bold text-white leading-tight">{s.name}</div>
+                                        <div className="text-xs text-gray-400 mb-2">{s.code} · custo {s.cost}{s.color ? ` · ${s.color}` : ''}</div>
+                                        <div className="text-sm text-gray-300 leading-snug">{s.motivo}</div>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                )}
+
                 {eixos.some(e => e.nota !== null) && (
                     <div className="bg-gray-900 border border-gray-800 rounded-2xl p-6 mb-8">
                         <div className="flex items-baseline justify-between mb-1">
