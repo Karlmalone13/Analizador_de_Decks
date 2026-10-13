@@ -121,7 +121,7 @@ function ZoneBox({
 }) {
     return (
         <div className={`rounded-md border border-gray-800 bg-gray-900/70 px-1.5 py-0.5 ${className}`}>
-            <div className="mb-0.5 text-[9px] uppercase text-gray-500">{label}</div>
+            <div className="mb-0.5 text-[9px] uppercase text-gray-400">{label}</div>
             {children}
         </div>
     )
@@ -202,7 +202,7 @@ function PlayerStatePanel({ title, state, side }: { title: string; state: Player
                 {handCards.length > 0 ? handCards.map((card, idx) => (
                     <HandCardTile key={`${card.code}-${idx}`} card={card} />
                 )) : (
-                    <span className="text-xs text-gray-500">Sem cartas</span>
+                    <span className="text-xs text-gray-400">Sem cartas</span>
                 )}
             </div>
         </ZoneBox>
@@ -219,11 +219,11 @@ function PlayerStatePanel({ title, state, side }: { title: string; state: Player
             <ZoneBox label="DON">
                 <div className="text-[10px] text-gray-200">
                     <span className="text-yellow-300">{state.don_available}</span>
-                    <span className="mx-0.5 text-gray-600">atv</span>
+                    <span className="mx-0.5 text-gray-400">atv</span>
                     <span className="text-orange-300">{donRested}</span>
-                    <span className="mx-0.5 text-gray-600">rst</span>
+                    <span className="mx-0.5 text-gray-400">rst</span>
                     <span className="text-gray-300">{state.don_total}</span>
-                    <span className="ml-0.5 text-gray-600">ttl</span>
+                    <span className="ml-0.5 text-gray-400">ttl</span>
                 </div>
             </ZoneBox>
         </div>
@@ -231,9 +231,9 @@ function PlayerStatePanel({ title, state, side }: { title: string; state: Player
 
     const charactersZone = (
         <ZoneBox label="Personagens" className="min-h-0 overflow-hidden">
-            <div className="mb-1 text-[11px] text-gray-500">
+            <div className="mb-1 text-[11px] text-gray-400">
                 <span className="text-emerald-300">{activeCharacters}</span> ativos
-                <span className="mx-1 text-gray-600">/</span>
+                <span className="mx-1 text-gray-400">/</span>
                 <span className="text-orange-300">{restedCharacters}</span> restados
             </div>
             <div className="flex flex-wrap gap-1">
@@ -249,7 +249,7 @@ function PlayerStatePanel({ title, state, side }: { title: string; state: Player
                         </span>
                     </MiniCard>
                 )) : (
-                    <span className="text-xs text-gray-500">Sem personagens</span>
+                    <span className="text-xs text-gray-400">Sem personagens</span>
                 )}
             </div>
         </ZoneBox>
@@ -259,7 +259,7 @@ function PlayerStatePanel({ title, state, side }: { title: string; state: Player
         <div className="flex min-h-0 flex-col rounded-lg border border-gray-800 bg-gray-950/70 p-1.5">
             <div className="flex items-center justify-between gap-2">
                 <div className={`truncate text-[11px] font-bold ${color}`}>{title}</div>
-                <div className="text-[10px] text-gray-500">
+                <div className="text-[10px] text-gray-400">
                     Campo {state.characters.length}/5 · Dano {state.stats.damage}
                 </div>
             </div>
@@ -418,13 +418,13 @@ export default function ReplayViewer({ replayData, nameA, nameB, onClose }: Prop
                         <h2 className="text-lg font-bold text-white">🎬 Replay da Partida</h2>
                         <div className="text-xs text-gray-400 mt-0.5">
                             <span className="text-blue-400">{nameA}</span>
-                            <span className="text-gray-500"> vs </span>
+                            <span className="text-gray-400"> vs </span>
                             <span className="text-red-400">{nameB}</span>
-                            <span className="mx-2 text-gray-600">·</span>
+                            <span className="mx-2 text-gray-400">·</span>
                             <span className={replayData.winner === 'A' ? 'text-blue-400' : 'text-red-400'}>
                                 Venceu: {winnerName}
                             </span>
-                            <span className="ml-2 text-gray-500">({replayData.turns} turnos)</span>
+                            <span className="ml-2 text-gray-400">({replayData.turns} turnos)</span>
                         </div>
                     </div>
                     <button onClick={onClose} className="text-gray-400 hover:text-white text-2xl leading-none transition">×</button>
@@ -458,7 +458,7 @@ export default function ReplayViewer({ replayData, nameA, nameB, onClose }: Prop
                     <div className={`text-sm font-bold ${isA ? 'text-blue-300' : 'text-red-300'}`}>
                         Turno {currentTurn?.turn} — {turnOwner}
                     </div>
-                    <div className="text-xs text-gray-500">
+                    <div className="text-xs text-gray-400">
                         {currentTurn?.events.filter(e => e.type !== 'turn_start').length} eventos
                     </div>
                 </div>
@@ -470,7 +470,7 @@ export default function ReplayViewer({ replayData, nameA, nameB, onClose }: Prop
 
                     {/* Events list */}
                     <aside className="flex min-h-0 flex-col bg-gray-950">
-                        <div className="border-b border-gray-800 px-3 py-2 text-[11px] font-semibold uppercase tracking-wide text-gray-500">
+                        <div className="border-b border-gray-800 px-3 py-2 text-[11px] font-semibold uppercase tracking-wide text-gray-400">
                             Eventos do turno
                         </div>
                         <div ref={eventsRef} className="min-h-0 flex-1 overflow-y-auto p-3 space-y-1">
@@ -478,7 +478,7 @@ export default function ReplayViewer({ replayData, nameA, nameB, onClose }: Prop
                                 <EventRow key={i} event={ev} nameA={nameA} nameB={nameB} />
                             ))}
                             {(!currentTurn || currentTurn.events.filter(e => e.type !== 'turn_start').length === 0) && (
-                                <div className="text-center text-gray-600 text-sm py-8">Sem eventos neste turno</div>
+                                <div className="text-center text-gray-400 text-sm py-8">Sem eventos neste turno</div>
                             )}
                         </div>
                     </aside>
@@ -503,7 +503,7 @@ export default function ReplayViewer({ replayData, nameA, nameB, onClose }: Prop
                         >
                             {autoPlay ? '⏸ Pausar' : '▶ Auto'}
                         </button>
-                        <span className="text-xs text-gray-500">{currentTurnIdx + 1} / {totalTurns}</span>
+                        <span className="text-xs text-gray-400">{currentTurnIdx + 1} / {totalTurns}</span>
                     </div>
 
                     <button

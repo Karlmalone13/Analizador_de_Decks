@@ -1252,7 +1252,7 @@ function AnalysisPageContent() {
                                     </button>
                                 </div>
                             </>
-                        ) : <div className="p-6 text-center text-gray-500">Sem Leader definido</div>}
+                        ) : <div className="p-6 text-center text-gray-400">Sem Leader definido</div>}
                     </div>
 
                     <div className="lg:col-span-2 bg-gray-900 border border-gray-800 rounded-2xl p-6">
@@ -1293,13 +1293,13 @@ function AnalysisPageContent() {
                                                         disabled={qty === 0}
                                                         className={`w-full flex items-center gap-3 rounded-lg px-3 py-2 text-left transition ${qty > 0 ? 'bg-gray-800 hover:bg-gray-700 cursor-pointer' : 'bg-gray-800/40 cursor-default'}`}>
                                                         <span className={`w-2.5 h-2.5 rounded-full flex-shrink-0 ${qty > 0 ? color : 'bg-gray-700'}`} />
-                                                        <span className={`text-base flex-1 ${qty > 0 ? 'text-white' : 'text-gray-600'}`}>{label}</span>
+                                                        <span className={`text-base flex-1 ${qty > 0 ? 'text-white' : 'text-gray-400'}`}>{label}</span>
                                                         {ratio && (
-                                                            <span className={`text-sm ${alerta ? 'text-yellow-500' : 'text-gray-500'}`}>
+                                                            <span className={`text-sm ${alerta ? 'text-yellow-500' : 'text-gray-400'}`}>
                                                                 ideal {ratio.ideal[0]}-{ratio.ideal[1]}
                                                             </span>
                                                         )}
-                                                        <span className={`text-xl font-bold w-9 text-right tabular-nums ${qty === 0 ? 'text-gray-600' : alerta ? 'text-yellow-400' : 'text-white'}`}>{qty}</span>
+                                                        <span className={`text-xl font-bold w-9 text-right tabular-nums ${qty === 0 ? 'text-gray-400' : alerta ? 'text-yellow-400' : 'text-white'}`}>{qty}</span>
                                                     </button>
                                                 )
                                             })}
@@ -1333,7 +1333,7 @@ function AnalysisPageContent() {
                                 <div key={type}>
                                     <div className="flex justify-between mb-1">
                                         <span className="text-sm text-white capitalize">{type}</span>
-                                        <span className="text-sm text-gray-400">{qty} <span className="text-gray-600">({Math.round(qty / totalCards * 100)}%)</span></span>
+                                        <span className="text-sm text-gray-400">{qty} <span className="text-gray-400">({Math.round(qty / totalCards * 100)}%)</span></span>
                                     </div>
                                     <div className="w-full bg-gray-800 rounded-full h-2">
                                         <div className="h-2 rounded-full bg-orange-500" style={{ width: `${qty / totalCards * 100}%` }} />
@@ -1352,7 +1352,7 @@ function AnalysisPageContent() {
                                             <span className={`w-3 h-3 rounded-full ${colorClass[color] || 'bg-gray-500'}`} />
                                             <span className="text-sm text-white">{color}</span>
                                         </div>
-                                        <span className="text-sm text-gray-400">{qty} <span className="text-gray-600">({Math.round(qty / totalCards * 100)}%)</span></span>
+                                        <span className="text-sm text-gray-400">{qty} <span className="text-gray-400">({Math.round(qty / totalCards * 100)}%)</span></span>
                                     </div>
                                     <div className="w-full bg-gray-800 rounded-full h-2">
                                         <div className="h-2 rounded-full transition-all" style={{ width: `${qty / totalCards * 100}%`, backgroundColor: colorHex[color] || '#6b7280' }} />
@@ -1368,11 +1368,11 @@ function AnalysisPageContent() {
                                 <div key={cost} className="flex flex-col items-center flex-1">
                                     <span className="text-xs text-gray-400 mb-1">{qty}</span>
                                     <div className="w-full bg-orange-500 rounded-t transition-all" style={{ height: `${(qty / maxCost) * 72}px` }} />
-                                    <span className="text-xs text-gray-500 mt-1">{cost}</span>
+                                    <span className="text-xs text-gray-400 mt-1">{cost}</span>
                                 </div>
                             ))}
                         </div>
-                        <div className="text-xs text-gray-600 text-center mt-2">Custo</div>
+                        <div className="text-xs text-gray-400 text-center mt-2">Custo</div>
                     </div>
                 </div>
 
@@ -1387,11 +1387,11 @@ function AnalysisPageContent() {
                     <div className="bg-gray-900 border border-gray-800 rounded-2xl p-6 mb-8">
                         <div className="flex items-baseline justify-between mb-1">
                             <div className="text-sm font-semibold text-gray-300 uppercase tracking-wide"><Icone size="text-2xl">⚔️</Icone>Perfil de Jogo</div>
-                            <div className="text-xs text-gray-500">
+                            <div className="text-xs text-gray-400">
                                 0-100 = posição entre {analise?.opening_benchmarks?.n_decks ?? 184} decks de torneio · 50 = mediano
                             </div>
                         </div>
-                        <div className="text-xs text-gray-500 mb-5">
+                        <div className="text-xs text-gray-400 mb-5">
                             Calculado dos efeitos das cartas pelo motor, não da mão inicial.
                         </div>
                         <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
@@ -1409,7 +1409,7 @@ function AnalysisPageContent() {
                                             <span className="text-base font-semibold text-white"><Icone size="text-2xl">{e.icon}</Icone>{e.label}</span>
                                             <span className={`text-3xl font-black tabular-nums ${cor}`}>{n}</span>
                                         </div>
-                                        <div className="text-xs text-gray-500 mb-2">{e.sub}</div>
+                                        <div className="text-xs text-gray-400 mb-2">{e.sub}</div>
                                         <div className="w-full bg-gray-700 rounded-full h-2 mb-1.5">
                                             <div className={`h-2 rounded-full transition-all ${barra}`} style={{ width: `${n}%` }} />
                                         </div>
@@ -1417,7 +1417,7 @@ function AnalysisPageContent() {
                                         <ul className="space-y-1">
                                             {e.detalhes.map((d, i) => (
                                                 <li key={i} className="text-xs text-gray-400 leading-snug flex gap-1.5">
-                                                    <span className="text-gray-600">•</span>
+                                                    <span className="text-gray-400">•</span>
                                                     <span>{d.desc}</span>
                                                 </li>
                                             ))}
@@ -1470,7 +1470,7 @@ function AnalysisPageContent() {
                     <div className="flex items-start justify-between mb-6">
                         <div>
                             <div className="text-sm font-semibold text-gray-400 uppercase tracking-wide"><Icone size="text-2xl">🧠</Icone>Analisador Inteligente</div>
-                            <div className="text-xs text-gray-500 mt-1">
+                            <div className="text-xs text-gray-400 mt-1">
                                 Distribuição Hipergeométrica — mão inicial de {n} cartas (N={N}), trigger sobre as {leaderLife} de vida · comparado a {analise?.opening_benchmarks?.n_decks ?? 184} decks de torneio
                             </div>
                         </div>
@@ -1478,8 +1478,8 @@ function AnalysisPageContent() {
                             <div className="text-center bg-gray-800 rounded-2xl px-6 py-3">
                                 <div className={`text-5xl font-black ${scoreColor}`}>{consistScore}</div>
                                 <div className={`text-sm font-bold mt-1 ${scoreColor}`}>{scoreLabel}</div>
-                                <div className="text-xs text-gray-500 mt-0.5">Consistência da ABERTURA (0-100)</div>
-                                <div className="text-xs text-gray-600 mt-0.5">só a mão inicial · 50 = mediano</div>
+                                <div className="text-xs text-gray-400 mt-0.5">Consistência da ABERTURA (0-100)</div>
+                                <div className="text-xs text-gray-400 mt-0.5">só a mão inicial · 50 = mediano</div>
                             </div>
                             <div className="bg-gray-800 rounded-2xl px-4 py-3 text-xs space-y-1.5">
                                 <div className="text-gray-400 font-semibold mb-2 uppercase tracking-wide">Índice</div>
@@ -1507,7 +1507,7 @@ function AnalysisPageContent() {
                                 <div key={label} className="bg-gray-800 rounded-xl p-4">
                                     <div className="flex items-center justify-between mb-2">
                                         <span className="text-xs text-gray-400"><Icone size="text-lg">{icon}</Icone>{label}</span>
-                                        <span className="text-xs text-gray-500">{K} cóp.</span>
+                                        <span className="text-xs text-gray-400">{K} cóp.</span>
                                     </div>
                                     <div className={`text-2xl font-black mb-1 ${c.color}`}>{pct(p)}</div>
                                     {/* Barra em escala ABSOLUTA (0-100%), com um risco marcando
@@ -1522,7 +1522,7 @@ function AnalysisPageContent() {
                                         )}
                                     </div>
                                     <div className={`text-xs font-semibold ${c.color}`}>{c.label}</div>
-                                    <div className="text-xs text-gray-600 mt-0.5">
+                                    <div className="text-xs text-gray-400 mt-0.5">
                                         {!b ? <>chance na mão inicial</>
                                             : metaDiscrimina(b) ? <>meta: {pct(b.mediana)} mediana</>
                                                 : <>meta inteiro entre {pct(b.p25)} e {pct(b.p75)}</>}
@@ -1538,7 +1538,7 @@ function AnalysisPageContent() {
                                     (medido 06/09 nos 184 decks). O tile ficou com a regua velha
                                     quando o score ja tinha migrado pro meta: mesma tela, duas
                                     reguas diferentes pro mesmo custo medio. */}
-                                <span className="text-xs text-gray-500">
+                                <span className="text-xs text-gray-400">
                                     {benchCusto ? <>meta: {benchCusto.mediana.toFixed(2)} mediana</> : 'sem referência'}
                                 </span>
                             </div>
@@ -1578,11 +1578,11 @@ function AnalysisPageContent() {
                         <div className="flex items-start justify-between mb-6">
                             <div>
                                 <div className="text-sm font-semibold text-gray-400 uppercase tracking-wide"><Icone size="text-2xl">📐</Icone>Arquétipo & Estrutura</div>
-                                <div className="text-xs text-gray-500 mt-1">Baseado no consenso de construção competitiva (Golden Ratios)</div>
+                                <div className="text-xs text-gray-400 mt-1">Baseado no consenso de construção competitiva (Golden Ratios)</div>
                             </div>
                             <div className="text-center bg-gray-800 rounded-2xl px-6 py-3">
                                 <div className={`text-2xl font-black ${ARCHETYPE_COLOR[analise.archetype.primary] || 'text-white'}`}>{analise.archetype.label}</div>
-                                <div className="text-xs text-gray-500 mt-1">confiança {analise.archetype.confidence}</div>
+                                <div className="text-xs text-gray-400 mt-1">confiança {analise.archetype.confidence}</div>
                             </div>
                         </div>
                         <div className="mb-2">
@@ -1601,7 +1601,7 @@ function AnalysisPageContent() {
                                             <div className="flex items-center justify-between">
                                                 <span className="text-sm text-white font-medium">{nomePt[c.name] || c.name}</span>
                                                 <span className={`text-sm font-bold ${statusColor}`}>
-                                                    {c.count} <span className="text-xs text-gray-500">(ideal {c.ideal[0]}-{c.ideal[1]})</span>
+                                                    {c.count} <span className="text-xs text-gray-400">(ideal {c.ideal[0]}-{c.ideal[1]})</span>
                                                 </span>
                                             </div>
                                             <div className="text-xs text-gray-400 mt-1.5">{c.advice}</div>
@@ -1683,7 +1683,7 @@ function AnalysisPageContent() {
                                             <div className="h-1.5 rounded-full bg-purple-500"
                                                 style={{ width: `${analise.tribal_cohesion.same_type_pct}%` }} />
                                         </div>
-                                        <div className="text-sm text-gray-500 mt-1.5">
+                                        <div className="text-sm text-gray-400 mt-1.5">
                                             cartas com o tipo {analise.tribal_cohesion.leader_type}
                                         </div>
                                     </div>
@@ -1699,7 +1699,7 @@ function AnalysisPageContent() {
                                             <div className="h-1.5 rounded-full bg-cyan-500"
                                                 style={{ width: `${analise.tribal_cohesion.hook_pct}%` }} />
                                         </div>
-                                        <div className="text-sm text-gray-500 mt-1.5">
+                                        <div className="text-sm text-gray-400 mt-1.5">
                                             {analise.tribal_cohesion.hook_count} cartas citam {analise.tribal_cohesion.leader_type} no efeito
                                         </div>
                                     </div>
@@ -1738,7 +1738,7 @@ function AnalysisPageContent() {
                                 <div className="text-2xl font-bold">{funcaoAberta.label}</div>
                                 <div className="text-sm text-gray-400 mt-0.5">
                                     {funcaoAberta.cards.reduce((s, dc) => s + dc.quantity, 0)} cartas · {funcaoAberta.cards.length} distintas
-                                    <span className="text-gray-600"> · clique numa carta para ver o detalhe</span>
+                                    <span className="text-gray-400"> · clique numa carta para ver o detalhe</span>
                                 </div>
                             </div>
                             <button onClick={() => setFuncaoAberta(null)}
@@ -1756,7 +1756,7 @@ function AnalysisPageContent() {
                                         </span>
                                     </div>
                                     <div className="text-sm text-white font-medium leading-tight line-clamp-2">{dc.card.card_name}</div>
-                                    <div className="text-xs text-gray-500 mt-0.5">
+                                    <div className="text-xs text-gray-400 mt-0.5">
                                         {(dc.card.card_set_id || '').split('_')[0]}
                                         {dc.card.card_cost && <> · custo {dc.card.card_cost}</>}
                                     </div>
@@ -1792,9 +1792,9 @@ function AnalysisPageContent() {
                                         <tr className="border-b border-gray-700">
                                             <th className="text-left text-gray-400 py-3 pr-4 font-semibold">Peça</th>
                                             <th className="text-center text-gray-400 py-3 px-4 font-semibold">No deck</th>
-                                            <th className="text-center text-gray-400 py-3 px-4 font-semibold">Até T2<br /><span className="text-gray-600 font-normal text-xs">+1 compra</span></th>
-                                            <th className="text-center text-gray-400 py-3 px-4 font-semibold">Até T3<br /><span className="text-gray-600 font-normal text-xs">+2 compras</span></th>
-                                            <th className="text-center text-gray-400 py-3 px-4 font-semibold">Até T5<br /><span className="text-gray-600 font-normal text-xs">+4 compras</span></th>
+                                            <th className="text-center text-gray-400 py-3 px-4 font-semibold">Até T2<br /><span className="text-gray-400 font-normal text-xs">+1 compra</span></th>
+                                            <th className="text-center text-gray-400 py-3 px-4 font-semibold">Até T3<br /><span className="text-gray-400 font-normal text-xs">+2 compras</span></th>
+                                            <th className="text-center text-gray-400 py-3 px-4 font-semibold">Até T5<br /><span className="text-gray-400 font-normal text-xs">+4 compras</span></th>
                                         </tr>
                                     </thead>
                                     <tbody>
@@ -1834,7 +1834,7 @@ function AnalysisPageContent() {
                                 ))}
                             </div>
 
-                            <div className="text-xs text-gray-500 mt-6 leading-relaxed">
+                            <div className="text-xs text-gray-400 mt-6 leading-relaxed">
                                 Conta <strong className="text-gray-400">exata</strong>, não estimativa: se nenhuma cópia veio na mão,
                                 todas as {'{K}'} estão entre as {naoVistas} cartas não vistas, então a chance em X compras é{' '}
                                 <span className="font-mono text-gray-400">1 − C({naoVistas}−K, X) / C({naoVistas}, X)</span>.
@@ -1864,14 +1864,14 @@ function AnalysisPageContent() {
                             {cartasAbertas.grupos.filter(g => g.codes.length > 0).map(g => (
                                 <div key={g.rotulo}>
                                     <div className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-3">
-                                        {g.rotulo} <span className="text-gray-600">({g.codes.length})</span>
+                                        {g.rotulo} <span className="text-gray-400">({g.codes.length})</span>
                                     </div>
                                     <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
                                         {g.codes.map(code => {
                                             const dc = cartaPorCodigo(code)
                                             if (!dc) {
                                                 return (
-                                                    <div key={code} className="bg-gray-800 rounded-xl p-3 text-xs text-gray-500">
+                                                    <div key={code} className="bg-gray-800 rounded-xl p-3 text-xs text-gray-400">
                                                         {code} <span className="block mt-1">(não encontrada no deck)</span>
                                                     </div>
                                                 )
@@ -1888,7 +1888,7 @@ function AnalysisPageContent() {
                                                         </span>
                                                     </div>
                                                     <div className="text-sm text-white font-medium leading-tight line-clamp-2">{dc.card.card_name}</div>
-                                                    <div className="text-xs text-gray-500 mt-0.5">
+                                                    <div className="text-xs text-gray-400 mt-0.5">
                                                         {code}
                                                         {dc.card.card_cost && <> · custo {dc.card.card_cost}</>}
                                                     </div>
@@ -1919,7 +1919,7 @@ function AnalysisPageContent() {
                             <div className="mb-8">
                                 <div className="bg-gray-900 border border-gray-800 rounded-2xl p-5">
                                     <div className="text-sm font-semibold text-gray-400 uppercase tracking-wide mb-4">
-                                        Lista do Deck <span className="text-gray-600 font-normal">({totalCards}/50)</span>
+                                        Lista do Deck <span className="text-gray-400 font-normal">({totalCards}/50)</span>
                                     </div>
                                     {/* sem `maxHeight` aqui: o limite de 600px existia pra
                                 lista nao dominar a pagina; dentro do popup o
@@ -1927,7 +1927,7 @@ function AnalysisPageContent() {
                             <div className="overflow-y-auto card-scroll" style={{ scrollbarWidth: 'thin', scrollbarColor: '#f97316 #1f2937' }}>
                                         {deck.leader && (
                                             <div className="mb-5">
-                                                <div className="text-xs text-gray-500 uppercase tracking-wide mb-2">Leader</div>
+                                                <div className="text-xs text-gray-400 uppercase tracking-wide mb-2">Leader</div>
                                                 <div className="flex gap-2">
                                                     <div className="flex flex-col items-center gap-1">
                                                         <div className="relative" style={{ width: '90px', height: '126px' }}>
@@ -1939,7 +1939,7 @@ function AnalysisPageContent() {
                                                 </div>
                                             </div>
                                         )}
-                                        <div className="text-xs text-gray-500 uppercase tracking-wide mb-3">Main Deck</div>
+                                        <div className="text-xs text-gray-400 uppercase tracking-wide mb-3">Main Deck</div>
                                         <div className="flex flex-wrap gap-4">
                                             {allCards.sort((a, b) => parseInt(a.card.card_cost || '0') - parseInt(b.card.card_cost || '0')).map((dc, i) => (
                                                 <div key={i} className="flex flex-col items-center gap-1">
@@ -1965,7 +1965,7 @@ function AnalysisPageContent() {
                             {painelAberto === 'brick' && (<>
                             <div className="bg-gray-900 border border-gray-800 rounded-2xl p-6 mb-8">
                                 <div className="text-sm font-semibold text-gray-400 uppercase tracking-wide mb-1"><Icone size="text-2xl">💀</Icone>Risco de Mão Travada</div>
-                                <div className="text-xs text-gray-500 mb-4">
+                                <div className="text-xs text-gray-400 mb-4">
                                     Probabilidade exata (hipergeométrica) de abrir 5 cartas sem nenhuma jogada possível.
                                     Counters 2000 não contam como jogada — eles são guardados para defesa.
                                 </div>
@@ -1983,7 +1983,7 @@ function AnalysisPageContent() {
                                                         <div className={`h-1.5 rounded-full ${bar}`} style={{ width: `${value * 100}%` }} />
                                                     </div>
                                                     <div className="text-xs font-semibold text-gray-300">{label}</div>
-                                                    <div className="text-xs text-gray-500 mt-1">{desc}</div>
+                                                    <div className="text-xs text-gray-400 mt-1">{desc}</div>
                                                 </div>
                                             )
                                         })}
@@ -1997,7 +1997,7 @@ function AnalysisPageContent() {
                                 <div className="bg-gray-900 border border-gray-800 rounded-2xl p-6 mb-8">
                                     <div className="text-sm font-semibold text-gray-400 uppercase tracking-wide mb-1"><Icone size="text-2xl">🏆</Icone>Melhores Mãos de Abertura</div>
                                     <div className="flex items-center gap-3 mb-5">
-                                        <span className="text-xs text-gray-500">As 3 melhores entre TODAS as mãos possíveis do deck · enumeração exata, não amostragem</span>
+                                        <span className="text-xs text-gray-400">As 3 melhores entre TODAS as mãos possíveis do deck · enumeração exata, não amostragem</span>
                                         <span className="text-xs px-2 py-0.5 rounded font-medium bg-gray-700 text-gray-300">
                                             Arquétipo detectado: <span className="text-orange-400 font-bold capitalize">{arqDetectado}</span>
                                         </span>
@@ -2007,7 +2007,7 @@ function AnalysisPageContent() {
                                     <div className="mb-6">
                                         <div className="flex items-center gap-2 mb-3">
                                             <span className="bg-orange-600 text-white text-xs font-bold px-2 py-0.5 rounded">1º Jogador</span>
-                                            <span className="text-xs text-gray-500">5 cartas · T1: 1 DON · T2: 3 DON · T3: 5 DON</span>
+                                            <span className="text-xs text-gray-400">5 cartas · T1: 1 DON · T2: 3 DON · T3: 5 DON</span>
                                         </div>
                                         <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
                                             {melhoresMaosP1.map((mao, mi) => (
@@ -2016,7 +2016,7 @@ function AnalysisPageContent() {
                                                         <span className="text-sm font-bold text-white">{mi === 0 ? '🥇 Melhor mão' : mi === 1 ? '🥈 2ª melhor' : '🥉 3ª melhor'}</span>
                                                         {/* chance REAL desta mão sair: serve pra não celebrar uma mão
                                                             perfeita que aparece 1 vez em 20.000 */}
-                                                        <span className="text-xs text-gray-500" title="chance desta mão exata sair">
+                                                        <span className="text-xs text-gray-400" title="chance desta mão exata sair">
                                                             1 em {mao.prob > 0 ? Math.round(1 / mao.prob).toLocaleString('pt-BR') : '∞'}
                                                         </span>
                                                     </div>
@@ -2039,7 +2039,7 @@ function AnalysisPageContent() {
                                     <div>
                                         <div className="flex items-center gap-2 mb-3">
                                             <span className="bg-blue-600 text-white text-xs font-bold px-2 py-0.5 rounded">2º Jogador</span>
-                                            <span className="text-xs text-gray-500">5 cartas · T1: 2 DON · T2: 4 DON · T3: 6 DON</span>
+                                            <span className="text-xs text-gray-400">5 cartas · T1: 2 DON · T2: 4 DON · T3: 6 DON</span>
                                         </div>
                                         <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
                                             {melhoresMaosP2.map((mao, mi) => (
@@ -2048,7 +2048,7 @@ function AnalysisPageContent() {
                                                         <span className="text-sm font-bold text-white">{mi === 0 ? '🥇 Melhor mão' : mi === 1 ? '🥈 2ª melhor' : '🥉 3ª melhor'}</span>
                                                         {/* chance REAL desta mão sair: serve pra não celebrar uma mão
                                                             perfeita que aparece 1 vez em 20.000 */}
-                                                        <span className="text-xs text-gray-500" title="chance desta mão exata sair">
+                                                        <span className="text-xs text-gray-400" title="chance desta mão exata sair">
                                                             1 em {mao.prob > 0 ? Math.round(1 / mao.prob).toLocaleString('pt-BR') : '∞'}
                                                         </span>
                                                     </div>
@@ -2080,7 +2080,7 @@ function AnalysisPageContent() {
                                         </span>
                                     )}
                                 </div>
-                                <div className="text-xs text-gray-500 mb-5">
+                                <div className="text-xs text-gray-400 mb-5">
                                     Curva real de DON!! · <span className="text-orange-400 font-medium">1º</span>: T1=1 · T2=3 · T3=5 · T4=7 &nbsp;|&nbsp;
                                     <span className="text-blue-400 font-medium">2º</span>: T1=2 · T2=4 · T3=6 · T4=8 DON!!
                                 </div>
@@ -2090,7 +2090,7 @@ function AnalysisPageContent() {
                                     <div>
                                         <div className="flex items-center gap-2 mb-3">
                                             <span className="bg-orange-600 text-white text-xs font-bold px-2 py-0.5 rounded">1º Jogador</span>
-                                            <span className="text-xs text-gray-500">Age primeiro, menos DON</span>
+                                            <span className="text-xs text-gray-400">Age primeiro, menos DON</span>
                                         </div>
                                         <div className="space-y-2">
                                             {plano.map(({ turno, don1, sugestao1, cartas1 }) => (
@@ -2116,7 +2116,7 @@ function AnalysisPageContent() {
                                     <div>
                                         <div className="flex items-center gap-2 mb-3">
                                             <span className="bg-blue-600 text-white text-xs font-bold px-2 py-0.5 rounded">2º Jogador</span>
-                                            <span className="text-xs text-gray-500">Leva 1º hit, mais DON</span>
+                                            <span className="text-xs text-gray-400">Leva 1º hit, mais DON</span>
                                         </div>
                                         <div className="space-y-2">
                                             {plano.map(({ turno, don2, sugestao2, cartas2 }) => (
@@ -2169,7 +2169,7 @@ function AnalysisPageContent() {
                                         { label: 'Atributo', value: selectedCard.attribute },
                                     ].filter(s => s.value).map(stat => (
                                         <div key={stat.label} className="bg-gray-800 rounded-lg px-3 py-2">
-                                            <div className="text-gray-500 text-xs">{stat.label}</div>
+                                            <div className="text-gray-400 text-xs">{stat.label}</div>
                                             <div className="font-semibold text-white text-lg">{stat.value}</div>
                                         </div>
                                     ))}

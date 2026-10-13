@@ -196,7 +196,7 @@ export default function MeusDecksPage() {
                                                         className="object-cover rounded-xl border border-gray-700"
                                                     />
                                                 ) : (
-                                                    <div style={{ width: '88px', height: '124px' }} className="bg-gray-800 rounded-xl border border-gray-700 flex items-center justify-center text-gray-600 text-2xl">
+                                                    <div style={{ width: '88px', height: '124px' }} className="bg-gray-800 rounded-xl border border-gray-700 flex items-center justify-center text-gray-400 text-2xl">
                                                         🃏
                                                     </div>
                                                 )}
@@ -231,7 +231,7 @@ export default function MeusDecksPage() {
                                                     </div>
                                                 </div>
 
-                                                <div className="text-sm text-gray-500">
+                                                <div className="text-sm text-gray-400">
                                                     {new Date(deck.updated_at).toLocaleDateString('pt-BR', {
                                                         day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit'
                                                     })}
@@ -284,7 +284,7 @@ export default function MeusDecksPage() {
 
                 {/* Sem resultados na busca */}
                 {!loading && decks.length > 0 && filtered.length === 0 && (
-                    <div className="text-center text-gray-500 py-12">
+                    <div className="text-center text-gray-400 py-12">
                         Nenhum deck encontrado para &quot;{search}&quot;
                     </div>
                 )}

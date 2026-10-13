@@ -547,11 +547,11 @@ function SimulatePageContent() {
                                     <div className="flex gap-4 p-4 items-center">
                                         {d.leader_image
                                             ? <CardImage src={d.leader_image} alt={d.name} className="w-14 h-20 object-cover rounded-lg border border-gray-700 flex-shrink-0" />
-                                            : <div className="w-14 h-20 bg-gray-800 rounded-lg border border-gray-700 flex-shrink-0 flex items-center justify-center text-gray-600 text-xl">🃏</div>}
+                                            : <div className="w-14 h-20 bg-gray-800 rounded-lg border border-gray-700 flex-shrink-0 flex items-center justify-center text-gray-400 text-xl">🃏</div>}
                                         <div className="min-w-0">
                                             <div className="font-bold text-white truncate">{d.name}</div>
                                             <div className="text-sm text-orange-400 truncate">{d.leader_name}</div>
-                                            <div className="text-xs text-gray-500 mt-1">{d.total_cards}/50 cartas</div>
+                                            <div className="text-xs text-gray-400 mt-1">{d.total_cards}/50 cartas</div>
                                         </div>
                                     </div>
                                 </button>
@@ -574,7 +574,7 @@ function SimulatePageContent() {
                         <CardImage src={deck.leader.card_image} alt={deck.leader.card_name} className="w-16 h-22 object-cover rounded-lg border-2 border-yellow-500" />
                     )}
                     <div>
-                        <div className="text-xs text-gray-500 uppercase tracking-wide">Simulando com</div>
+                        <div className="text-xs text-gray-400 uppercase tracking-wide">Simulando com</div>
                         <div className="text-xl font-bold text-white">{deck.name}</div>
                         <div className="text-sm text-gray-400">{deck.leader?.card_name}</div>
                     </div>
@@ -607,7 +607,7 @@ function SimulatePageContent() {
                             placeholder={'1xOP16-080\n3xOP09-095\n1xOP09-091\n...'}
                             className="w-full h-40 bg-gray-800 border border-gray-700 rounded-xl p-3 text-sm font-mono text-gray-200 resize-none focus:outline-none focus:border-orange-500"
                         />
-                        <div className="text-xs text-gray-500 mt-1">Formato: uma carta por linha, &quot;QUANTIDADExCÓDIGO&quot; (ex: 4xOP16-109). Inclua o Leader.</div>
+                        <div className="text-xs text-gray-400 mt-1">Formato: uma carta por linha, &quot;QUANTIDADExCÓDIGO&quot; (ex: 4xOP16-109). Inclua o Leader.</div>
 
                         {parsingPasted && <div className="text-sm text-gray-400 mt-3">Buscando cartas...</div>}
 
@@ -619,7 +619,7 @@ function SimulatePageContent() {
 
                         {pastedPreview && (pastedPreview.leader || pastedPreview.cards.length > 0) && (
                             <div className="mt-4">
-                                <div className="text-xs text-gray-500 uppercase tracking-wide mb-2">
+                                <div className="text-xs text-gray-400 uppercase tracking-wide mb-2">
                                     Preview {pastedPreview.leader ? '' : '— ⚠️ sem Leader identificado'}
                                 </div>
                                 <div className="flex flex-wrap gap-2">
@@ -645,7 +645,7 @@ function SimulatePageContent() {
                     <div className="bg-gray-900 border border-gray-800 rounded-2xl p-5 mb-6">
                         <div className="text-sm font-semibold text-gray-400 uppercase tracking-wide mb-3">Escolha um dos seus decks</div>
                         {ownDecks.length === 0 ? (
-                            <div className="text-sm text-gray-500">Nenhum outro deck salvo encontrado.</div>
+                            <div className="text-sm text-gray-400">Nenhum outro deck salvo encontrado.</div>
                         ) : (
                             <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
                                 {ownDecks.map(d => (
@@ -657,7 +657,7 @@ function SimulatePageContent() {
                                         {d.leader_image && <CardImage src={d.leader_image} alt={d.name} className="w-10 h-14 object-cover rounded border border-gray-700" />}
                                         <div className="min-w-0">
                                             <div className="text-sm font-medium text-white truncate">{d.name}</div>
-                                            <div className="text-xs text-gray-500">{d.total_cards}/50 cartas</div>
+                                            <div className="text-xs text-gray-400">{d.total_cards}/50 cartas</div>
                                         </div>
                                     </button>
                                 ))}
@@ -696,9 +696,9 @@ function SimulatePageContent() {
                             onChange={e => setNSimulations(Math.min(MAX_N_SIMULATIONS, Math.max(1, parseInt(e.target.value) || 1)))}
                             className="ml-3 w-20 bg-gray-800 border border-gray-700 rounded-lg px-2 py-1 text-white" />
                     </label>
-                    <div className="text-xs text-gray-500 mb-4">
+                    <div className="text-xs text-gray-400 mb-4">
                         {totalMatches} partida(s) no total · tempo estimado ~{formatDuration(totalMatches * SECONDS_PER_MATCH_GUESS)}
-                        <span className="text-gray-600"> (varia bastante por deck — a estimativa se ajusta durante a simulação)</span>
+                        <span className="text-gray-400"> (varia bastante por deck — a estimativa se ajusta durante a simulação)</span>
                     </div>
 
                     <div className="flex gap-3">
@@ -798,13 +798,13 @@ function SimulatePageContent() {
                             {jobStatus?.progress ?? 0} de {jobStatus?.total_steps ?? '...'} partidas concluídas
                         </div>
 
-                        <div className="text-xs text-gray-500 mb-5 text-center space-y-1">
+                        <div className="text-xs text-gray-400 mb-5 text-center space-y-1">
                             <div className="flex items-center justify-center gap-4">
                                 <span>⏱️ decorrido: <span className="text-gray-300 font-mono">{formatDuration(elapsedSeconds)}</span></span>
                                 <span>·</span>
                                 <span>restante: <span className="text-gray-300 font-mono">~{formatDuration(remainingSeconds)}</span></span>
                             </div>
-                            <div className="text-gray-600">
+                            <div className="text-gray-400">
                                 total estimado ~{formatDuration(projectedSeconds)}
                                 {hasRealRate
                                     ? <> · {formatDuration(elapsedSeconds / doneMatches)} por partida (ritmo real)</>
@@ -843,7 +843,7 @@ function SimulatePageContent() {
                     <span className="text-sm text-white font-medium">
                         Simulando... {jobStatus?.total_steps ? Math.round((jobStatus.progress / jobStatus.total_steps) * 100) : 0}%
                     </span>
-                    <span className="text-xs text-gray-500 font-mono">{formatDuration(elapsedSeconds)}</span>
+                    <span className="text-xs text-gray-400 font-mono">{formatDuration(elapsedSeconds)}</span>
                 </button>
             )}
 

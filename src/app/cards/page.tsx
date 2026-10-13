@@ -312,14 +312,14 @@ export default function CardsPage() {
               <div className="flex items-center gap-2">
                 <span className="text-gray-400 text-sm">Custo:</span>
                 <input type="number" placeholder="Min" value={filters.minCost} onChange={e => updateFilter('minCost', e.target.value)} className="w-16 bg-gray-800 border border-gray-700 rounded-xl px-2 py-1.5 text-white text-sm outline-none" />
-                <span className="text-gray-500">-</span>
+                <span className="text-gray-400">-</span>
                 <input type="number" placeholder="Max" value={filters.maxCost} onChange={e => updateFilter('maxCost', e.target.value)} className="w-16 bg-gray-800 border border-gray-700 rounded-xl px-2 py-1.5 text-white text-sm outline-none" />
               </div>
 
               <div className="flex items-center gap-2">
                 <span className="text-gray-400 text-sm">Poder:</span>
                 <input type="number" placeholder="Min" value={filters.minPower} onChange={e => updateFilter('minPower', e.target.value)} className="w-20 bg-gray-800 border border-gray-700 rounded-xl px-2 py-1.5 text-white text-sm outline-none" />
-                <span className="text-gray-500">-</span>
+                <span className="text-gray-400">-</span>
                 <input type="number" placeholder="Max" value={filters.maxPower} onChange={e => updateFilter('maxPower', e.target.value)} className="w-20 bg-gray-800 border border-gray-700 rounded-xl px-2 py-1.5 text-white text-sm outline-none" />
               </div>
 
@@ -380,7 +380,7 @@ export default function CardsPage() {
             </div>
           ))}
           {!loading && results.length === 0 && (
-            <div className="col-span-7 text-center text-gray-500 py-16">Nenhuma carta encontrada</div>
+            <div className="col-span-7 text-center text-gray-400 py-16">Nenhuma carta encontrada</div>
           )}
         </div>
 
@@ -408,7 +408,7 @@ export default function CardsPage() {
                       { label: 'Atributo', value: selected.attribute },
                     ].filter(s => s.value).map(stat => (
                       <div key={stat.label} className="bg-gray-800 rounded-lg px-2 py-1.5">
-                        <div className="text-gray-500 text-xs">{stat.label}</div>
+                        <div className="text-gray-400 text-xs">{stat.label}</div>
                         <div className="font-semibold text-white text-base">{stat.value}</div>
                       </div>
                     ))}

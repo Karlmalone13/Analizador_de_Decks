@@ -464,11 +464,11 @@ function DeckBuilderPageContent() {
                 className="w-full bg-orange-500 rounded-t transition-all"
                 style={{ height: `${(qty / maxVal) * 36}px` }}
               />
-              <span className="text-xs text-gray-500 mt-1">{cost}</span>
+              <span className="text-xs text-gray-400 mt-1">{cost}</span>
             </div>
           ))}
         </div>
-        <div className="text-xs text-gray-600 text-center mt-1">Custo</div>
+        <div className="text-xs text-gray-400 text-center mt-1">Custo</div>
       </div>
     )
   }
@@ -628,7 +628,7 @@ function DeckBuilderPageContent() {
                 )
               })}
               {!loadingAll && results.length === 0 && (
-                <div className="col-span-5 text-center text-gray-500 py-12">Busque cartas para adicionar ao deck</div>
+                <div className="col-span-5 text-center text-gray-400 py-12">Busque cartas para adicionar ao deck</div>
               )}
             </div>
           </div>
@@ -713,7 +713,7 @@ function DeckBuilderPageContent() {
             <div className="mb-4">
               <div className="text-base text-gray-300 mb-2 font-semibold uppercase tracking-wide flex items-center gap-2">
                 <span>Leader</span>
-                {isLeaderSet ? <span className="text-green-400">✓</span> : <span className="text-gray-600">—</span>}
+                {isLeaderSet ? <span className="text-green-400">✓</span> : <span className="text-gray-400">—</span>}
               </div>
               {deck.leader ? (
                 <div className="rounded-xl overflow-hidden border border-gray-700">
@@ -740,11 +740,11 @@ function DeckBuilderPageContent() {
                         ))}
                       </div>
                     </div>
-                    <button onClick={() => setDeck(d => ({ ...d, leader: null }))} className="text-gray-500 hover:text-red-400 transition flex-shrink-0">✕</button>
+                    <button onClick={() => setDeck(d => ({ ...d, leader: null }))} className="text-gray-400 hover:text-red-400 transition flex-shrink-0">✕</button>
                   </div>
                 </div>
               ) : (
-                <div className="border border-dashed border-gray-700 rounded-xl p-4 text-center text-gray-500 text-sm">
+                <div className="border border-dashed border-gray-700 rounded-xl p-4 text-center text-gray-400 text-sm">
                   Filtre por LEADER e clique para adicionar
                 </div>
               )}
@@ -827,7 +827,7 @@ function DeckBuilderPageContent() {
                   </div>
                 ))}
                 {deck.cards.length === 0 && (
-                  <div className="w-full text-center text-gray-500 text-sm py-8">Clique nas cartas para adicionar ao deck</div>
+                  <div className="w-full text-center text-gray-400 text-sm py-8">Clique nas cartas para adicionar ao deck</div>
                 )}
               </div>
             </div>
@@ -845,7 +845,7 @@ function DeckBuilderPageContent() {
             </div>
             <div className="flex-1 overflow-y-auto p-4">
               {loadingDecks && <div className="text-center text-gray-400 py-8">Carregando...</div>}
-              {!loadingDecks && myDecks.length === 0 && <div className="text-center text-gray-500 py-8">Nenhum deck salvo ainda</div>}
+              {!loadingDecks && myDecks.length === 0 && <div className="text-center text-gray-400 py-8">Nenhum deck salvo ainda</div>}
               <div className="space-y-2">
                 {myDecks.map(d => {
                   let leaderImg = null
@@ -935,7 +935,7 @@ function DeckBuilderPageContent() {
                     { label: 'Atributo', value: selectedCard.attribute },
                   ].filter(s => s.value).map(stat => (
                     <div key={stat.label} className="bg-gray-800 rounded-lg px-2 py-1.5">
-                      <div className="text-gray-500 text-xs">{stat.label}</div>
+                      <div className="text-gray-400 text-xs">{stat.label}</div>
                       <div className="font-semibold text-white text-base">{stat.value}</div>
                     </div>
                   ))}

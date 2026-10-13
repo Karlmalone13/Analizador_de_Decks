@@ -74,7 +74,7 @@ export default function LoginPage() {
 
         <div className="flex items-center gap-3 mb-6">
           <div className="flex-1 h-px bg-gray-700" />
-          <span className="text-gray-500 text-sm">ou</span>
+          <span className="text-gray-400 text-sm">ou</span>
           <div className="flex-1 h-px bg-gray-700" />
         </div>
 

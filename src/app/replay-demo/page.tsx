@@ -83,11 +83,11 @@ export default function ReplayDemoPage() {
                             <div className="text-sm text-gray-400">Matchup</div>
                             <div className="mt-1 text-lg font-semibold">
                                 <span className="text-blue-300">{nameA}</span>
-                                <span className="mx-2 text-gray-500">vs</span>
+                                <span className="mx-2 text-gray-400">vs</span>
                                 <span className="text-red-300">{nameB}</span>
                             </div>
                             {replayData && (
-                                <div className="mt-1 text-sm text-gray-500">
+                                <div className="mt-1 text-sm text-gray-400">
                                     Vencedor: {replayData.winner} · Turnos: {replayData.turns} · Eventos: {replayData.events.length}
                                 </div>
                             )}

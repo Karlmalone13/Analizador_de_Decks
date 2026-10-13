@@ -51,7 +51,7 @@ export default function CardImage({
                 onClick={onClick} title={title || alt}
                 role="img" aria-label={alt}
             >
-                <span className="text-gray-500 px-1 leading-tight" style={{ fontSize: '9px' }}>
+                <span className="text-gray-400 px-1 leading-tight" style={{ fontSize: '9px' }}>
                     {alt || 'sem arte'}
                 </span>
             </div>
