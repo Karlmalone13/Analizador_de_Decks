@@ -31,14 +31,24 @@ MIN_DECKS_LIDER = 3
 # papel -> (rotulo, teste sobre o registro do card_analysis_db)
 PAPEIS = {
     # draws_ativo: compra so pelo [Trigger] da vida nao conta (mesma flag do 'Draw Power' da tela)
-    'compra':   ('cartas de compra', lambda c: bool(c.get('draws_ativo'))),
-    'busca':    ('buscadores', lambda c: bool(c.get('is_searcher'))),
-    'blocker':  ('blockers', lambda c: bool(c.get('is_blocker'))),
-    'counter2k': ('counters de 2000', lambda c: (c.get('counter') or 0) >= 2000),
-    'trigger':  ('cartas com [Trigger]', lambda c: bool(c.get('has_trigger'))),
-    'remocao':  ('cartas de remocao (KO/rest/bounce)',
-                 lambda c: bool(c.get('is_removal') or c.get('kos') or c.get('bounces'))),
+    'compra':   ('Draw Power', lambda c: bool(c.get('draws_ativo')), 'uma carta de compra'),
+    'busca':    ('Searcher', lambda c: bool(c.get('is_searcher')), 'um buscador'),
+    'blocker':  ('Blocker', lambda c: bool(c.get('is_blocker')), 'um blocker'),
+    'counter2k': ('Counter 2000', lambda c: (c.get('counter') or 0) >= 2000, 'um counter de 2000'),
+    'trigger':  ('Trigger', lambda c: bool(c.get('has_trigger')), 'uma carta com [Trigger]'),
 }
+
+# Golden Ratio (nome em `analyze_deck`) -> papel
+RATIO_PAPEL = {'counters': 'counter2k', 'searchers': 'busca', 'blockers': 'blocker'}
+
+
+def _chance(N: int, K: int, n: int) -> float:
+    """P(pelo menos 1 de K em n cartas de N) -- hipergeometrica, a mesma
+    conta da tela (\"Distribuicao Hipergeometrica\")."""
+    from math import comb
+    if K <= 0:
+        return 0.0
+    return 1 - comb(N - K, n) / comb(N, n)
 
 
 def _base(code: str) -> str:
@@ -140,7 +150,8 @@ def _papel_conta(deck: dict, papel: str) -> int:
     return sum(q for c, q in deck.items() if teste(db.get(c) or {}))
 
 
-def sugerir(cards: list[dict], n: int = 3) -> dict:
+def sugerir(cards: list[dict], n: int = 3, benchmarks: dict | None = None,
+            ratios: list | None = None) -> dict:
     """`cards` = [{code, qty}] com o lider. Devolve {modo, sugestoes:[...]}."""
     db = _db()
     lider = None
@@ -176,56 +187,73 @@ def sugerir(cards: list[dict], n: int = 3) -> dict:
                 'color': info.get('color'), 'image': _imagens().get(code),
                 'motivo': motivo, **(extra or {})}
 
-    # ── 1. o lider tem decks de torneio ──────────────────────────────────────
-    do_lider = [d for url, d in torneio.items() if lideres.get(url) == lider]
-    if len(do_lider) >= MIN_DECKS_LIDER:
-        usa = Counter()
-        copias = defaultdict(list)
-        for d in do_lider:
-            for code, q in d.items():
-                usa[code] += 1
-                copias[code].append(q)
-        out = []
-        for code, k in usa.most_common():
-            if code in deck or not legal(code):
-                continue
-            media = sum(copias[code]) / len(copias[code])
-            out.append(carta(code, (
-                f'{k} de {len(do_lider)} decks de torneio com este lider usam esta carta '
-                f'({round(100 * k / len(do_lider))}%), com {media:.1f} copias em media -- '
-                f'e o seu deck nao tem nenhuma.'),
-                {'decks_que_usam': k, 'decks_do_lider': len(do_lider)}))
-            if len(out) >= n:
-                break
-        return {'modo': 'torneio_do_lider', 'decks_do_lider': len(do_lider), 'sugestoes': out}
+    # ── AS FRAQUEZAS QUE A TELA MOSTRA (pedido do usuario, 13/10/2026) ──────
+    # A sugestao parte do que o sistema JA aponta na analise, com os mesmos
+    # numeros: a chance de ter a peca na mao inicial contra as faixas do meta
+    # (`opening_benchmarks`, o "ultimos 25% do meta" da tela) e os Golden
+    # Ratios marcados como "baixo".
+    N = sum(deck.values()) or 50
+    fraquezas = {}   # papel -> (gravidade, texto)
+    for metrica, papel, mao in (('draw', 'compra', 5), ('searcher', 'busca', 5),
+                                ('counter2k', 'counter2k', 5), ('blocker', 'blocker', 5),
+                                ('trigger_vida', 'trigger', 4)):
+        faixa = (benchmarks or {}).get(metrica)
+        if not faixa:
+            continue
+        K = _papel_conta(deck, papel)
+        pr = _chance(N, K, mao)
+        if pr < faixa['p25']:
+            onde = 'na vida (4 cartas)' if metrica == 'trigger_vida' else 'na mao inicial'
+            g = (faixa['mediana'] - pr) / max(faixa['mediana'], 1e-9)
+            fraquezas[papel] = max(fraquezas.get(papel, (0, '')), (g, (
+                f'Fraqueza apontada pela analise: {PAPEIS[papel][0]} {onde} em '
+                f'{pr:.1%} -- nos ultimos 25% do meta (mediana {faixa["mediana"]:.1%}; '
+                f'seu deck tem {K}).')))
+    for r in ratios or []:
+        papel = RATIO_PAPEL.get(r.get('name'))
+        if papel and r.get('status') == 'baixo':
+            a_, b_ = r.get('ideal') or (0, 0)
+            g = (a_ - r.get('count', 0)) / max(a_, 1)
+            fraquezas[papel] = max(fraquezas.get(papel, (0, '')), (g, (
+                f'Fraqueza apontada pela analise: Golden Ratio de {PAPEIS[papel][0]} '
+                f'= {r.get("count")} (ideal {a_}-{b_}).')))
+    if not fraquezas:
+        return {'modo': 'sem_fraqueza', 'sugestoes': []}
 
-    # ── 2. sem decks do lider: o papel mais em falta contra o meta ───────────
-    falta = []
-    for papel, (rotulo, _) in PAPEIS.items():
-        med = median(_papel_conta(d, papel) for d in torneio.values())
-        meu = _papel_conta(deck, papel)
-        if med > 0 and meu < med:
-            falta.append((meu / med, papel, rotulo, meu, med))
-    falta.sort()
-    out = []
-    for _, papel, rotulo, meu, med in falta:
+    # De onde vem a carta: dos decks de torneio do PROPRIO lider quando eles
+    # existem (o que quem joga o lider usa pra cobrir aquilo); senao, das cartas
+    # legais nas cores dele, preferindo o tipo do lider e as mais usadas em torneio.
+    do_lider = [d for url, d in torneio.items() if lideres.get(url) == lider]
+    usa_lider = Counter(code for d in do_lider for code in d)
+    com_torneio = len(do_lider) >= MIN_DECKS_LIDER
+
+    out, usadas = [], set()
+    for papel, (_, motivo) in sorted(fraquezas.items(), key=lambda kv: -kv[1][0]):
         teste = PAPEIS[papel][1]
-        cands = [c for c in db if c not in deck and legal(c) and teste(db[c])]
-        cands.sort(key=lambda c: (-len(_tipos(db[c]) & tipos_l), -uso_total[c], db[c].get('cost') or 0))
-        for code in cands[:1]:
-            info = db[code]
-            mesmo_tipo = sorted(_tipos(info) & tipos_l)
-            partes = [f'Seu deck tem {meu} {rotulo}; a mediana dos {len(torneio)} decks de torneio tem {med:g}.']
-            partes.append(f'{info.get("name")} cobre isso')
-            if mesmo_tipo:
-                partes[-1] += f', e do tipo {mesmo_tipo[0].title()} como o seu lider'
-            if uso_total[code]:
-                partes[-1] += f' e aparece em {uso_total[code]} decks de torneio'
-            partes[-1] += '.'
-            out.append(carta(code, ' '.join(partes), {'papel': papel, 'meu': meu, 'mediana': med}))
+        cands = [c for c in db if c not in deck and c not in usadas and legal(c) and teste(db[c])]
+        if com_torneio and any(usa_lider[c] for c in cands):
+            cands = [c for c in cands if usa_lider[c]]
+            cands.sort(key=lambda c: -usa_lider[c])
+        else:
+            cands.sort(key=lambda c: (-len(_tipos(db[c]) & tipos_l), -uso_total[c], db[c].get('cost') or 0))
+        if not cands:
+            continue
+        code = cands[0]
+        info = db[code]
+        porque = f'{info.get("name")} e {PAPEIS[papel][2]}'
+        mesmo_tipo = sorted(_tipos(info) & tipos_l)
+        if mesmo_tipo:
+            porque += f', do tipo {mesmo_tipo[0].title()} como o seu lider'
+        if com_torneio and usa_lider[code]:
+            porque += f', e esta em {usa_lider[code]} de {len(do_lider)} decks de torneio deste lider'
+        elif uso_total[code]:
+            porque += f', e aparece em {uso_total[code]} decks de torneio'
+        out.append(carta(code, motivo + ' ' + porque + '.', {'papel': papel}))
+        usadas.add(code)
         if len(out) >= n:
             break
-    return {'modo': 'papel_em_falta', 'sugestoes': out}
+    return {'modo': 'torneio_do_lider' if com_torneio else 'papel_em_falta',
+            'decks_do_lider': len(do_lider), 'sugestoes': out}
 
 
 if __name__ == '__main__':

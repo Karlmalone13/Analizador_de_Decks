@@ -214,8 +214,11 @@ def analyze(req: DeckRequest):
     # Carta que falta, e o motivo (13/10/2026) -- ver `suggest_card.py`.
     try:
         import suggest_card
+        # As MESMAS fraquezas que a tela mostra: faixas do meta e Golden Ratios.
         result['sugestao_carta'] = suggest_card.sugerir(
-            [{'code': e.code, 'qty': e.qty} for e in req.cards])
+            [{'code': e.code, 'qty': e.qty} for e in req.cards],
+            benchmarks=(_PERCENTIS_ABERTURA or {}).get('metricas'),
+            ratios=result.get('ratios'))
     except Exception as e:
         result['sugestao_carta_error'] = str(e)
     if missing:

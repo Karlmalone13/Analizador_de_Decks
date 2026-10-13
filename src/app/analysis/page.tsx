@@ -87,7 +87,7 @@ interface AnaliseResult {
     opening_benchmarks?: { n_decks: number; metricas: Record<string, Benchmark> }
     hand_weights?: Record<string, number>
     sugestao_carta?: {
-        modo: 'torneio_do_lider' | 'papel_em_falta' | null
+        modo: 'torneio_do_lider' | 'papel_em_falta' | 'sem_fraqueza' | null
         decks_do_lider?: number
         sugestoes: { code: string; name: string; cost: number; color?: string; image?: string; motivo: string }[]
     }
@@ -1392,14 +1392,22 @@ function AnalysisPageContent() {
                     (`suggest_card.py`): com decks de torneio do lider, a carta
                     que a maioria usa e este deck nao; sem eles, o papel em que
                     o deck fica mais atras do meta e a melhor carta legal pra ele. */}
+                {analise?.sugestao_carta?.modo === 'sem_fraqueza' && (
+                    <div className="bg-gray-900 border border-gray-800 rounded-2xl p-6 mb-8">
+                        <div className="text-sm font-semibold text-gray-300 uppercase tracking-wide"><Icone size="text-2xl">💡</Icone>Cartas que podem faltar</div>
+                        <div className="text-sm text-gray-300 mt-2">
+                            A análise não apontou nenhuma fraqueza de peça (compra, busca, counter, blocker ou trigger abaixo do meta) — nada a sugerir.
+                        </div>
+                    </div>
+                )}
                 {(analise?.sugestao_carta?.sugestoes?.length ?? 0) > 0 && (
                     <div className="bg-gray-900 border border-gray-800 rounded-2xl p-6 mb-8">
                         <div className="flex items-baseline justify-between mb-1">
                             <div className="text-sm font-semibold text-gray-300 uppercase tracking-wide"><Icone size="text-2xl">💡</Icone>Cartas que podem faltar</div>
                             <div className="text-xs text-gray-400">
                                 {analise?.sugestao_carta?.modo === 'torneio_do_lider'
-                                    ? `comparado a ${analise?.sugestao_carta?.decks_do_lider} decks de torneio deste líder`
-                                    : `este líder não tem decks de torneio na base — comparado ao ponto mais fraco do deck contra o meta`}
+                                    ? `para as fraquezas da análise · cartas tiradas de ${analise?.sugestao_carta?.decks_do_lider} decks de torneio deste líder`
+                                    : `para as fraquezas da análise · líder sem decks de torneio na base: cartas legais nas cores dele`}
                             </div>
                         </div>
                         <div className="text-xs text-gray-400 mb-5">
