@@ -22,6 +22,8 @@ export default function Navbar({ email }: NavbarProps) {
     { href: '/cards', label: '🃏 Cartas' },
     { href: '/deck', label: '⚔️ Deck Builder' },
     { href: '/meus-decks', label: '📂 Meus Decks' },
+    { href: '/simulate', label: '🎯 Simular' },
+    { href: '/meta', label: '🏆 Meta' },
   ]
 
   return (

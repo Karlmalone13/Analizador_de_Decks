@@ -806,6 +806,10 @@ function AnalysisPageContent() {
     // era exatamente o bug de 05/09 (0% de searcher num deck com 8). Por isso
     // o efeito depende de `analise`, não só de `deck`.
     const cardFlags = analise?.cards ?? {}
+    // Sem a API, as flags vem vazias e tudo que depende delas daria 0 --
+    // um 0 FALSO (achado 13/10/2026: 'Ofensivo 0%, Draw 0' com a API fora).
+    // Nesses casos a tela mostra '—' e um aviso, nunca o zero.
+    const motorOk = !!analise?.cards
     useEffect(() => {
         if (!deck || simDone) return
         if (!analise?.cards) return
@@ -1105,12 +1109,12 @@ function AnalysisPageContent() {
     }
 
     const metricas = [
-        { icon: '🔍', label: 'Searcher na mão', p: p_searcher, K: K_search, b: bench('searcher'), rec: idealDoMotor('searchers') },
+        { icon: '🔍', label: 'Searcher na mão', motor: true, p: p_searcher, K: K_search, b: bench('searcher'), rec: idealDoMotor('searchers') },
         { icon: '🛡️🛡️', label: 'Counter 2000 na mão', p: p_counter2k, K: K_counter2k, b: bench('counter2k'), rec: idealDoMotor('counters') },
         { icon: '🛡️', label: 'Counter 1000 na mão', p: p_counter1k, K: K_counter1k, b: bench('counter1k'), rec: undefined },
-        { icon: '🔒', label: 'Blocker na mão', p: p_blocker, K: K_blocker, b: bench('blocker'), rec: idealDoMotor('blockers') },
-        { icon: '🃏', label: 'Draw Power na mão', p: p_draw, K: K_draw, b: bench('draw'), rec: undefined },
-        { icon: '⚡', label: `Trigger na vida (${leaderLife} cartas)`, p: p_trigger_vida, K: K_trigger, b: bench('trigger_vida'), rec: undefined },
+        { icon: '🔒', label: 'Blocker na mão', motor: true, p: p_blocker, K: K_blocker, b: bench('blocker'), rec: idealDoMotor('blockers') },
+        { icon: '🃏', label: 'Draw Power na mão', motor: true, p: p_draw, K: K_draw, b: bench('draw'), rec: undefined },
+        { icon: '⚡', label: `Trigger na vida (${leaderLife} cartas)`, motor: true, p: p_trigger_vida, K: K_trigger, b: bench('trigger_vida'), rec: undefined },
         // O tile de custo 1 SOME quando o deck nao tem nenhuma carta de custo 2:
         // ai `low1` e `low2` contam exatamente as MESMAS cartas, os dois tiles
         // exibem o mesmo numero e -- como os benchmarks do meta sao diferentes --
@@ -1168,7 +1172,7 @@ function AnalysisPageContent() {
     // O `ratio` liga cada função ao ideal publicado pelo MOTOR, quando existe.
     const ratioDe = (nome: string) => analise?.ratios?.find(r => r.name === nome)
     const funcoes: {
-        label: string; cards: DeckCard[]; color: string; grupo: string; ratio?: AnaliseRatio
+        label: string; cards: DeckCard[]; color: string; grupo: string; ratio?: AnaliseRatio; impresso?: boolean
     }[] = [
         { label: 'Rush', cards: rush, color: 'bg-red-600', grupo: 'Ofensivo' },
         { label: 'Double Attack', cards: doubleAtk, color: 'bg-orange-600', grupo: 'Ofensivo' },
@@ -1184,8 +1188,8 @@ function AnalysisPageContent() {
         // ja define. Quem exibe o ideal do motor tem que contar o que o motor
         // conta; o counter de 1000 vira linha propria, sem ideal (o motor nao
         // publica um pra ele).
-        { label: 'Counter 2000', cards: counters2k, color: 'bg-sky-600', grupo: 'Defensivo', ratio: ratioDe('counters') },
-        { label: 'Counter 1000', cards: counters1k, color: 'bg-sky-800', grupo: 'Defensivo' },
+        { label: 'Counter 2000', cards: counters2k, color: 'bg-sky-600', grupo: 'Defensivo', ratio: ratioDe('counters'), impresso: true },
+        { label: 'Counter 1000', cards: counters1k, color: 'bg-sky-800', grupo: 'Defensivo', impresso: true },
         { label: 'Trigger', cards: triggers, color: 'bg-yellow-600', grupo: 'Defensivo' },
         { label: 'Searcher', cards: searchers, color: 'bg-green-600', grupo: 'Consistência', ratio: ratioDe('searchers') },
         { label: 'Draw Power', cards: drawPower, color: 'bg-teal-600', grupo: 'Consistência' },
@@ -1206,6 +1210,11 @@ function AnalysisPageContent() {
                     <a href="/deck" className="bg-gray-800 hover:bg-gray-700 px-4 py-2 rounded-xl text-sm transition">← Voltar ao Builder</a>
                 </div>
 
+                {!analiseLoading && !motorOk && (
+                    <div className="mb-6 rounded-2xl border border-yellow-700/60 bg-yellow-950/40 px-5 py-4 text-sm text-yellow-200">
+                        ⚠️ A análise do motor está indisponível agora (a API não respondeu). Os números que dependem do efeito das cartas — Rush, Blocker, Searcher, Draw Power, Trigger, sinergias e sugestões — aparecem como <b>—</b> até ela voltar. Custos, cores e counters continuam valendo.
+                    </div>
+                )}
                 {/* TOP */}
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
                     <div className="bg-gray-900 border border-gray-800 rounded-2xl overflow-hidden">
@@ -1286,11 +1295,12 @@ function AnalysisPageContent() {
                                     <div key={grupo}>
                                         <div className="flex items-baseline justify-between mb-1.5">
                                             <span className="text-sm font-semibold text-gray-300 uppercase tracking-wide">{grupo}</span>
-                                            <span className="text-sm text-gray-400">{pctDoDeck(totalGrupo)}% do deck</span>
+                                            <span className="text-sm text-gray-400">{motorOk ? `${pctDoDeck(totalGrupo)}% do deck` : '—'}</span>
                                         </div>
                                         <div className="space-y-1.5">
-                                            {doGrupo.map(({ label, cards, color, ratio }) => {
+                                            {doGrupo.map(({ label, cards, color, ratio, impresso }) => {
                                                 const qty = countQty(cards)
+                                                const semMotor = !impresso && !motorOk
                                                 const alerta = ratio && ratio.status !== 'ok'
                                                 return (
                                                     <button key={label}
@@ -1304,7 +1314,7 @@ function AnalysisPageContent() {
                                                                 ideal {ratio.ideal[0]}-{ratio.ideal[1]}
                                                             </span>
                                                         )}
-                                                        <span className={`text-xl font-bold w-9 text-right tabular-nums ${qty === 0 ? 'text-gray-400' : alerta ? 'text-yellow-400' : 'text-white'}`}>{qty}</span>
+                                                        <span className={`text-xl font-bold w-9 text-right tabular-nums ${qty === 0 ? 'text-gray-400' : alerta ? 'text-yellow-400' : 'text-white'}`}>{semMotor ? '—' : qty}</span>
                                                     </button>
                                                 )
                                             })}
@@ -1554,15 +1564,16 @@ function AnalysisPageContent() {
 
                     {/* Grid métricas abertura */}
                     <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-6">
-                        {metricas.map(({ icon, label, p, K, b }) => {
-                            const c = classif(p, b)
+                        {metricas.map(({ icon, label, p, K, b, motor }) => {
+                            const semMotor = !!motor && !motorOk
+                            const c = semMotor ? { color: 'text-gray-500', label: 'indisponível', bar: 'bg-gray-700' } : classif(p, b)
                             return (
                                 <div key={label} className="bg-gray-800 rounded-xl p-4">
                                     <div className="flex items-center justify-between mb-2">
                                         <span className="text-xs text-gray-400"><Icone size="text-lg">{icon}</Icone>{label}</span>
-                                        <span className="text-xs text-gray-400">{K} cóp.</span>
+                                        <span className="text-xs text-gray-400">{semMotor ? '—' : K} cóp.</span>
                                     </div>
-                                    <div className={`text-2xl font-black mb-1 ${c.color}`}>{pct(p)}</div>
+                                    <div className={`text-2xl font-black mb-1 ${c.color}`}>{semMotor ? '—' : pct(p)}</div>
                                     {/* Barra em escala ABSOLUTA (0-100%), com um risco marcando
                                         a mediana do meta. Antes era `p / ideal`, que enchia a
                                         barra em qualquer valor >= ideal e escondia a diferenca

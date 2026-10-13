@@ -89,12 +89,11 @@ export default async function Home() {
             <h3 className="text-xl font-bold mb-2 group-hover:text-orange-400 transition">Deck Builder</h3>
             <p className="text-gray-400 text-sm">Monte seus decks com drag and drop, contador automático de cartas e análise instantânea.</p>
           </a>
-          <div className="bg-gray-900 border border-gray-800 rounded-2xl p-6 opacity-50">
+          <a href="/meta" className="bg-gray-900 border border-gray-800 rounded-2xl p-6 hover:border-orange-500 transition group">
             <div className="text-4xl mb-4">📊</div>
-            <h3 className="text-xl font-bold mb-2">Análise de Meta</h3>
-            <p className="text-gray-400 text-sm">Compare seu deck com os tops do meta e receba sugestões automáticas de melhoria.</p>
-            <span className="inline-block mt-3 text-xs bg-gray-800 px-2 py-1 rounded-lg text-gray-400">Em breve</span>
-          </div>
+            <h3 className="text-xl font-bold mb-2 group-hover:text-orange-400 transition">Análise de Meta</h3>
+            <p className="text-gray-400 text-sm">Quais líderes dominam os torneios, como eles são montados e onde o seu deck fica em relação a eles.</p>
+          </a>
         </div>
 
         {/* Cartas recentes */}
