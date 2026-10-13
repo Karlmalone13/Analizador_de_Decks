@@ -4,7 +4,6 @@ import { useEffect, useState, useRef, Suspense , useMemo} from 'react'
 import { useSearchParams } from 'next/navigation'
 import { createClient } from '@/utils/supabase/client'
 import Navbar from '@/components/Navbar'
-import ReplayViewer, { type ReplayResult } from '@/components/ReplayViewer'
 import CardImage from '@/components/CardImage'
 
 interface Card {
@@ -165,10 +164,7 @@ function SimulatePageContent() {
     const [modalMinimized, setModalMinimized] = useState(false)
     const [cancelling, setCancelling] = useState(false)
 
-    // Replay state
-    const [replayData, setReplayData] = useState<ReplayResult | null>(null)
-    const [replayLoading, setReplayLoading] = useState(false)
-    const [showReplay, setShowReplay] = useState(false)
+
 
     // ── Picker: carrega todos os decks quando não há ?id= ───────────────────
     useEffect(() => {
@@ -380,68 +376,6 @@ function SimulatePageContent() {
         } catch { }
         // o polling já em andamento pega o status='cancelled' sozinho; não
         // precisa forçar nada aqui além de manter o botão desabilitado.
-    }
-
-    // ── Replay: roda 1 partida com log detalhado ────────────────────────────
-    async function startReplay() {
-        if (!deck || !deck.leader) return
-        setReplayLoading(true)
-        setShowReplay(false)
-
-        const deckAEntries = [
-            { code: deck.leader.card_set_id, qty: 1 },
-            ...deck.cards.map(dc => ({ code: dc.card.card_set_id, qty: dc.quantity })),
-        ]
-
-        let deckBEntries: { code: string; qty: number }[] = []
-        if (tab === 'pasted' && pastedPreview?.leader) {
-            deckBEntries = [
-                { code: pastedPreview.leader.card_set_id, qty: 1 },
-                ...pastedPreview.cards.map(dc => ({ code: dc.card.card_set_id, qty: dc.quantity })),
-            ]
-        } else if (tab === 'own' && selectedOwnDeckId) {
-            // For own deck replay, fetch the deck from Supabase
-            try {
-                const { data: ownDeckRow } = await supabase.from('decks').select('*').eq('id', selectedOwnDeckId).single()
-                if (ownDeckRow) {
-                    const parsed: { leader: string; cards: { code: string; qty: number }[] } = JSON.parse(ownDeckRow.cards)
-                    deckBEntries = [
-                        { code: parsed.leader, qty: 1 },
-                        ...parsed.cards,
-                    ]
-                }
-            } catch { /* fall through to using deck_a */ }
-        }
-        if (deckBEntries.length === 0) {
-            // meta: não temos deck_b selecionado — usa o próprio deck_a como oponente
-            deckBEntries = deckAEntries
-        }
-
-        try {
-            const r = await fetch(`${API_URL}/replay`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    deck_a: deckAEntries,
-                    deck_b: deckBEntries,
-                    name_a: deck.leader.card_name || 'Deck A',
-                    name_b: (tab === 'pasted' ? pastedPreview?.leader?.card_name : ownDecks.find(d => d.id === selectedOwnDeckId)?.leader_name) || 'Deck B',
-                }),
-            })
-            if (!r.ok) {
-                const err = await r.json().catch(() => ({})) as { detail?: string }
-                alert(`Erro no replay: ${err.detail || r.status}`)
-                setReplayLoading(false)
-                return
-            }
-            const data = await r.json() as ReplayResult
-            setReplayData(data)
-            setShowReplay(true)
-        } catch {
-            alert('Erro de conexão com a API.')
-        } finally {
-            setReplayLoading(false)
-        }
     }
 
     // ── Polling de status ────────────────────────────────────────────────────
@@ -709,14 +643,6 @@ function SimulatePageContent() {
                         >
                             {running ? 'Simulando...' : '🎯 Iniciar Simulação'}
                         </button>
-                        <button
-                            onClick={startReplay}
-                            disabled={replayLoading || running || tab === 'meta'}
-                            title={tab === 'meta' ? 'Selecione Deck Colado ou Meus Decks para usar replay direto' : 'Roda 1 partida completa com log detalhado'}
-                            className="bg-indigo-700 hover:bg-indigo-600 disabled:opacity-50 disabled:cursor-not-allowed px-5 py-3 rounded-xl font-medium transition flex items-center gap-2 whitespace-nowrap"
-                        >
-                            {replayLoading ? <><div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" /> Carregando...</> : '🎬 Replay direto'}
-                        </button>
                     </div>
                 </div>
 
@@ -746,33 +672,11 @@ function SimulatePageContent() {
                                     </div>
                                 )}
 
-                                {/* Botão de replay */}
-                                <button
-                                    onClick={startReplay}
-                                    disabled={replayLoading}
-                                    className="w-full mt-2 bg-indigo-700 hover:bg-indigo-600 disabled:opacity-50 disabled:cursor-not-allowed px-4 py-2.5 rounded-xl text-sm font-medium transition flex items-center justify-center gap-2"
-                                >
-                                    {replayLoading ? (
-                                        <><div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" /> Carregando replay...</>
-                                    ) : (
-                                        <>🎬 Ver Replay de 1 Partida</>
-                                    )}
-                                </button>
                             </div>
                         )}
                     </div>
                 )}
             </div>
-
-            {/* Replay viewer modal */}
-            {showReplay && replayData && (
-                <ReplayViewer
-                    replayData={replayData}
-                    nameA={deck?.leader?.card_name || 'Deck A'}
-                    nameB={(tab === 'pasted' ? pastedPreview?.leader?.card_name : ownDecks.find(d => d.id === selectedOwnDeckId)?.leader_name) || 'Deck B'}
-                    onClose={() => setShowReplay(false)}
-                />
-            )}
 
             {/* Overlay modal de progresso (centro da tela) -- só quando NÃO minimizado */}
             {(running || jobStatus?.status === 'pending' || jobStatus?.status === 'running') && !modalMinimized && (
