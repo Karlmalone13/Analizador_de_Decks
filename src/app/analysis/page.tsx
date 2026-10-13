@@ -1408,7 +1408,15 @@ function AnalysisPageContent() {
                         <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
                             {analise!.sugestao_carta!.sugestoes.map(s => (
                                 <div key={s.code} className="flex gap-4 rounded-xl border border-gray-800 bg-gray-950/60 p-3">
-                                    <CardImage src={s.image} alt={s.name} className="w-24 h-auto flex-shrink-0 rounded-lg border border-gray-700" />
+                                    <CardImage src={s.image} alt={s.name}
+                                        className="w-24 h-auto flex-shrink-0 rounded-lg border border-gray-700 cursor-pointer hover:brightness-110 transition"
+                                        onClick={async () => {
+                                            // A carta sugerida nao esta no deck: busca a linha dela
+                                            // no banco pra abrir a MESMA janela de detalhe das outras.
+                                            const { data } = await supabase.from('cards').select('*')
+                                                .eq('card_set_id', s.code).limit(1)
+                                            if (data?.[0]) setSelectedCard(data[0] as Card)
+                                        }} />
                                     <div className="min-w-0">
                                         <div className="font-bold text-white leading-tight">{s.name}</div>
                                         <div className="text-xs text-gray-400 mb-2">{s.code} · custo {s.cost}{s.color ? ` · ${s.color}` : ''}</div>

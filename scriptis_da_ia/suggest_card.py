@@ -100,6 +100,40 @@ def _tipos(info: dict) -> set:
     return {t for t in _vocab_tipos() if t in st}
 
 
+@lru_cache(maxsize=1)
+def _efeitos() -> dict:
+    with open(os.path.join(AQUI, 'card_effects_db.json'), encoding='utf-8') as f:
+        return json.load(f)
+
+
+def _checa_lider(lider_code: str):
+    """Funcao `code -> bool`: a carta nao tem efeito preso a OUTRO lider.
+
+    Achado do usuario (13/10/2026): Coffin Boat (OP14-039) foi sugerida pro
+    Krieg, mas os dois efeitos dela exigem "If your Leader is [Dracule
+    Mihawk]". Quem decide se a condicao vale e o MOTOR (`_check_conditions`),
+    com o lider deste deck -- so as condicoes sobre o lider (`leader_*`), que
+    nao dependem do estado da partida."""
+    from simulation_worker import load_deck
+    from optcg_engine.decision_engine import EffectExecutor, GameState
+    lider = load_deck([{'code': lider_code, 'qty': 1}])[0]
+    ee = EffectExecutor(GameState(leader=lider), GameState(leader=lider))
+    efs = _efeitos()
+
+    def ok(code: str) -> bool:
+        for blk in ((efs.get(code) or {}).get('effects') or {}).values():
+            conds = blk.get('conditions') if isinstance(blk, dict) else None
+            so_lider = {k: v for k, v in (conds or {}).items() if k.startswith('leader')}
+            if so_lider:
+                try:
+                    if not ee._check_conditions(so_lider, lider):
+                        return False
+                except Exception:
+                    return False
+        return True
+    return ok
+
+
 def _papel_conta(deck: dict, papel: str) -> int:
     teste = PAPEIS[papel][1]
     db = _db()
@@ -127,12 +161,14 @@ def sugerir(cards: list[dict], n: int = 3) -> dict:
     lideres, torneio = _torneio()
     uso_total = Counter(code for d in torneio.values() for code in d)
 
+    checa_lider = _checa_lider(lider)
+
     def legal(code: str) -> bool:
         info = db.get(code) or {}
         if (info.get('type') or '').upper() == 'LEADER':
             return False
         cores = _cores(info)
-        return bool(cores) and cores <= cores_l
+        return bool(cores) and cores <= cores_l and checa_lider(code)
 
     def carta(code: str, motivo: str, extra: dict | None = None) -> dict:
         info = db.get(code) or {}
