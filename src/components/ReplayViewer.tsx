@@ -110,187 +110,208 @@ const EVENT_COLORS: Record<string, string> = {
     default: 'text-gray-300',
 }
 
-function ZoneBox({
-    label,
-    children,
-    className = '',
-}: {
-    label: string
-    children: React.ReactNode
-    className?: string
+// ── Mesa do replay ───────────────────────────────────────────────────────────
+// Cada lado desenhado como o tabuleiro do jogo: mao, campo (5 espacos), lider,
+// stage, vida e DON -- com as cartas de verdade, nao com nomes em texto.
+
+function CardThumb({ card, w, h, rested = false, badge, dim = false }: {
+    card: ReplayCard
+    w: number
+    h: number
+    rested?: boolean
+    badge?: React.ReactNode
+    dim?: boolean
 }) {
+    const [hover, setHover] = useState<{ x: number; y: number } | null>(null)
+    // Carta deitada ocupa o "quadrado" da altura, girada 90 graus, como na mesa.
+    const box = rested ? { width: h, height: h } : { width: w, height: h }
     return (
-        <div className={`rounded-md border border-gray-800 bg-gray-900/70 px-1.5 py-0.5 ${className}`}>
-            <div className="mb-0.5 text-[9px] uppercase text-gray-400">{label}</div>
-            {children}
-        </div>
-    )
-}
-
-function CountZone({ label, value, className = '' }: { label: string; value: string | number; className?: string }) {
-    return (
-        <ZoneBox label={label} className={`flex flex-col justify-between ${className}`}>
-            <div className="text-base font-bold text-gray-100">{value}</div>
-        </ZoneBox>
-    )
-}
-
-function MiniCard({ children, title, card }: { children: React.ReactNode; title?: string; card?: ReplayCard }) {
-    const [hoveredCard, setHoveredCard] = useState<{ card: ReplayCard; x: number; y: number } | null>(null)
-
-    const handleMouseEnter = (e: React.MouseEvent) => {
-        if (card?.image) setHoveredCard({ card, x: e.clientX, y: e.clientY })
-    }
-    const handleMouseLeave = () => setHoveredCard(null)
-
-    return (
-        <>
-            <span
-                className="inline-flex max-w-[156px] rounded border border-gray-700 bg-gray-950 px-1.5 py-0.5 text-[10px] leading-snug text-gray-200"
-                title={title}
-                onMouseEnter={handleMouseEnter}
-                onMouseLeave={handleMouseLeave}
-            >
-                <span className="truncate">{children}</span>
-            </span>
-            {hoveredCard && (
-                <CardPopup card={hoveredCard.card} x={hoveredCard.x} y={hoveredCard.y} />
-            )}
-        </>
-    )
-}
-
-function HandCardTile({ card }: { card: ReplayHandCard }) {
-    const [hoveredCard, setHoveredCard] = useState<{ card: ReplayCard; x: number; y: number } | null>(null)
-    const cost = card.effective_cost ?? card.cost
-
-    const handleMouseEnter = (e: React.MouseEvent) => {
-        if (card.image) setHoveredCard({ card, x: e.clientX, y: e.clientY })
-    }
-    const handleMouseLeave = () => setHoveredCard(null)
-
-    return (
-        <>
+        <div
+            className="relative flex flex-shrink-0 items-center justify-center"
+            style={box}
+            onMouseEnter={e => card.image && setHover({ x: e.clientX, y: e.clientY })}
+            onMouseMove={e => card.image && setHover({ x: e.clientX, y: e.clientY })}
+            onMouseLeave={() => setHover(null)}
+        >
             <div
-                className="relative flex-shrink-0 overflow-hidden rounded border border-gray-700 bg-gray-900"
-                style={{ height: '56px', width: '40px' }}
-                title={`${card.name} | custo ${cost} | counter ${card.counter ?? 0}`}
-                onMouseEnter={handleMouseEnter}
-                onMouseLeave={handleMouseLeave}
+                className={`overflow-hidden rounded-md border shadow-md transition-transform ${
+                    rested ? 'rotate-90 border-orange-400/60' : 'border-gray-600'
+                } ${dim ? 'opacity-60' : ''}`}
+                style={{ width: w, height: h }}
             >
-                <CardImage src={card.image} alt={card.name}
-                    className="h-full w-full object-contain" />
+                <CardImage src={card.image} alt={card.name} className="h-full w-full object-cover" />
             </div>
-            {hoveredCard && (
-                <CardPopup card={hoveredCard.card} x={hoveredCard.x} y={hoveredCard.y} />
-            )}
-        </>
+            {badge}
+            {hover && <CardPopup card={card} x={hover.x} y={hover.y} />}
+        </div>
     )
 }
 
-function PlayerStatePanel({ title, state, side }: { title: string; state: PlayerSnapshot; side: 'A' | 'B' }) {
-    const color = side === 'A' ? 'text-blue-300' : 'text-red-300'
-    const donRested = Math.max(0, state.don_rested)
-    const activeCharacters = state.characters.filter(c => !c.rested).length
-    const restedCharacters = state.characters.length - activeCharacters
-    const handCards = state.hand_cards || []
-    const mirrored = side === 'A'
-
-    const handZone = (
-        <ZoneBox label={`Mao (${state.hand})`} className="overflow-hidden">
-            <div className="flex flex-wrap gap-1">
-                {handCards.length > 0 ? handCards.map((card, idx) => (
-                    <HandCardTile key={`${card.code}-${idx}`} card={card} />
-                )) : (
-                    <span className="text-xs text-gray-400">Sem cartas</span>
-                )}
-            </div>
-        </ZoneBox>
+function PowerBadge({ power, base }: { power: number; base: number }) {
+    const cor = power > base ? 'bg-emerald-600' : power < base ? 'bg-red-700' : 'bg-gray-800'
+    return (
+        <span className={`absolute -bottom-1.5 left-1/2 -translate-x-1/2 rounded-full border border-gray-950 px-1.5 text-[10px] font-bold leading-4 text-white ${cor}`}>
+            {(power / 1000).toLocaleString('pt-BR')}k
+        </span>
     )
+}
 
-    const middleZone = (
-        <div className="grid grid-cols-3 gap-1">
-            <ZoneBox label="Stage">
-                <div className="truncate text-[10px] text-gray-200">{state.stage?.name || '-'}</div>
-            </ZoneBox>
-            <ZoneBox label="Leader">
-                <div className="truncate text-[10px] text-gray-200">{state.leader?.name || '-'}</div>
-            </ZoneBox>
-            <ZoneBox label="DON">
-                <div className="text-[10px] text-gray-200">
-                    <span className="text-yellow-300">{state.don_available}</span>
-                    <span className="mx-0.5 text-gray-400">atv</span>
-                    <span className="text-orange-300">{donRested}</span>
-                    <span className="mx-0.5 text-gray-400">rst</span>
-                    <span className="text-gray-300">{state.don_total}</span>
-                    <span className="ml-0.5 text-gray-400">ttl</span>
+function EmptySlot({ w, h, label }: { w: number; h: number; label?: string }) {
+    return (
+        <div
+            className="flex flex-shrink-0 items-center justify-center rounded-md border border-dashed border-gray-800 text-[9px] uppercase tracking-wide text-gray-500"
+            style={{ width: w, height: h }}
+        >
+            {label}
+        </div>
+    )
+}
+
+function Pile({ label, value, tone }: { label: string; value: number; tone: string }) {
+    return (
+        <div className="flex flex-col items-center gap-0.5">
+            <div className={`flex h-[58px] w-[42px] items-center justify-center rounded-md border text-lg font-bold shadow-inner ${tone}`}>
+                {value}
+            </div>
+            <div className="text-[9px] uppercase tracking-wide text-gray-400">{label}</div>
+        </div>
+    )
+}
+
+function LifeStack({ life }: { life: number }) {
+    return (
+        <div className="flex flex-col items-center gap-0.5">
+            <div className="relative h-[58px] w-[42px]">
+                {life === 0 && <EmptySlot w={42} h={58} />}
+                {Array.from({ length: Math.min(life, 6) }).map((_, i) => (
+                    <div
+                        key={i}
+                        className="absolute left-0 h-[58px] w-[42px] rounded-md border border-rose-900 bg-gradient-to-br from-rose-800 to-rose-950 shadow"
+                        style={{ top: -i * 3, left: i * 2 }}
+                    />
+                ))}
+                <span className="absolute inset-0 flex items-center justify-center text-lg font-bold text-white drop-shadow">
+                    {life}
+                </span>
+            </div>
+            <div className="text-[9px] uppercase tracking-wide text-gray-400">Vida</div>
+        </div>
+    )
+}
+
+function DonTokens({ ativo, restado, total }: { ativo: number; restado: number; total: number }) {
+    const fora = Math.max(0, total - ativo - restado)   // presos em cartas
+    const ficha = (cls: string, n: number, k: string) =>
+        Array.from({ length: n }).map((_, i) => (
+            <span key={`${k}${i}`} className={`h-3.5 w-3.5 rounded-full border ${cls}`} />
+        ))
+    return (
+        <div className="flex flex-col gap-1">
+            <div className="flex max-w-[150px] flex-wrap gap-0.5">
+                {ficha('border-yellow-300 bg-yellow-400', ativo, 'a')}
+                {ficha('border-orange-700 bg-orange-900', restado, 'r')}
+                {ficha('border-gray-600 bg-gray-700', fora, 'f')}
+            </div>
+            <div className="text-[9px] uppercase tracking-wide text-gray-400">
+                DON <span className="text-yellow-300">{ativo}</span> ativos · <span className="text-orange-300">{restado}</span> deitados · {total}/10
+            </div>
+        </div>
+    )
+}
+
+function HandRow({ cards, count }: { cards: ReplayHandCard[]; count: number }) {
+    return (
+        <div className="flex min-h-[84px] items-center gap-1.5 overflow-x-auto px-1 py-1">
+            <span className="mr-1 flex-shrink-0 text-[9px] uppercase tracking-wide text-gray-400">Mão ({count})</span>
+            {cards.length > 0
+                ? cards.map((c, i) => <CardThumb key={`${c.code}-${i}`} card={c} w={56} h={78} />)
+                : Array.from({ length: count }).map((_, i) => (
+                    <div key={i} className="h-[78px] w-[56px] flex-shrink-0 rounded-md border border-indigo-900 bg-gradient-to-br from-indigo-900 to-gray-950" />
+                ))}
+        </div>
+    )
+}
+
+function PlayerBoard({ title, state, side, ativo }: {
+    title: string
+    state: PlayerSnapshot
+    side: 'A' | 'B'
+    ativo: boolean
+}) {
+    const cor = side === 'A' ? 'text-blue-300' : 'text-red-300'
+    const borda = ativo ? (side === 'A' ? 'border-blue-700/70' : 'border-red-700/70') : 'border-gray-800'
+    const slots = Array.from({ length: 5 }, (_, i) => state.characters[i] ?? null)
+    const topo = side === 'B'   // adversario em cima: mao no topo, campo virado pro meio
+
+    const hand = <HandRow cards={state.hand_cards || []} count={state.hand} />
+
+    const campo = (
+        <div className="flex items-center gap-3 px-1 py-1.5">
+            <div className="flex flex-col items-center gap-2">
+                <LifeStack life={state.life} />
+            </div>
+            <div className="flex flex-1 items-end justify-center gap-2">
+                {slots.map((c, i) => c ? (
+                    <CardThumb
+                        key={`${c.code}-${i}`}
+                        card={c}
+                        w={64}
+                        h={90}
+                        rested={c.rested}
+                        badge={<PowerBadge power={c.current_power ?? c.power} base={c.power} />}
+                    />
+                ) : <EmptySlot key={`vazio-${i}`} w={64} h={90} />)}
+            </div>
+            <div className="flex items-end gap-2">
+                <div className="flex flex-col items-center gap-0.5">
+                    {state.stage
+                        ? <CardThumb card={state.stage} w={52} h={72} />
+                        : <EmptySlot w={52} h={72} label="stage" />}
+                    <div className="text-[9px] uppercase tracking-wide text-gray-400">Stage</div>
                 </div>
-            </ZoneBox>
+                <div className="flex flex-col items-center gap-0.5">
+                    {state.leader
+                        ? <CardThumb card={state.leader} w={64} h={90}
+                            badge={<PowerBadge power={state.leader.power} base={state.leader.power} />} />
+                        : <EmptySlot w={64} h={90} label="líder" />}
+                    <div className="text-[9px] uppercase tracking-wide text-gray-400">Líder</div>
+                </div>
+            </div>
+            <div className="flex items-end gap-2">
+                <Pile label="Deck" value={state.deck} tone="border-indigo-800 bg-indigo-950 text-indigo-200" />
+                <Pile label="Trash" value={state.trash} tone="border-gray-700 bg-gray-900 text-gray-300" />
+            </div>
         </div>
     )
 
-    const charactersZone = (
-        <ZoneBox label="Personagens" className="min-h-0 overflow-hidden">
-            <div className="mb-1 text-[11px] text-gray-400">
-                <span className="text-emerald-300">{activeCharacters}</span> ativos
-                <span className="mx-1 text-gray-400">/</span>
-                <span className="text-orange-300">{restedCharacters}</span> restados
+    const barra = (
+        <div className="flex items-center justify-between gap-3 px-2">
+            <div className={`truncate text-xs font-bold ${cor}`}>
+                {title}{ativo && <span className="ml-2 rounded bg-orange-600 px-1.5 py-0.5 text-[9px] font-semibold uppercase text-white">na vez</span>}
             </div>
-            <div className="flex flex-wrap gap-1">
-                {state.characters.length > 0 ? state.characters.map((card, idx) => (
-                    <MiniCard
-                        key={`${card.code}-${idx}`}
-                        card={card}
-                        title={`${card.name} | ${card.current_power ?? card.power} poder | ${card.rested ? 'restado' : 'ativo'}`}
-                    >
-                        {card.name}
-                        <span className={card.rested ? 'ml-1 text-orange-300' : 'ml-1 text-emerald-300'}>
-                            {card.rested ? 'rest' : 'ativo'}
-                        </span>
-                    </MiniCard>
-                )) : (
-                    <span className="text-xs text-gray-400">Sem personagens</span>
-                )}
-            </div>
-        </ZoneBox>
+            <DonTokens ativo={state.don_available} restado={Math.max(0, state.don_rested)} total={state.don_total} />
+        </div>
     )
 
     return (
-        <div className="flex min-h-0 flex-col rounded-lg border border-gray-800 bg-gray-950/70 p-1.5">
-            <div className="flex items-center justify-between gap-2">
-                <div className={`truncate text-[11px] font-bold ${color}`}>{title}</div>
-                <div className="text-[10px] text-gray-400">
-                    Campo {state.characters.length}/5 · Dano {state.stats.damage}
-                </div>
-            </div>
-
-            <div className="mt-1 grid min-h-0 flex-1 grid-cols-[60px_minmax(0,1fr)_60px] grid-rows-[auto_auto_auto] gap-1.5">
-                <div className="row-span-3 grid content-start gap-1">
-                    <CountZone label="Deck" value={state.deck} />
-                    <CountZone label="Trash" value={state.trash} />
-                </div>
-
-                {mirrored ? charactersZone : handZone}
-
-                <CountZone label="Vida" value={state.life} className="row-span-3" />
-
-                {middleZone}
-
-                {mirrored ? handZone : charactersZone}
-            </div>
+        <div className={`flex flex-col gap-1 rounded-xl border bg-gray-950/80 p-1.5 ${borda}`}>
+            {topo ? <>{hand}{barra}{campo}</> : <>{campo}{barra}{hand}</>}
         </div>
     )
 }
 
-function TurnStateSummary({ snapshot, nameA, nameB }: { snapshot?: ReplaySnapshot; nameA: string; nameB: string }) {
+function TurnStateSummary({ snapshot, nameA, nameB, vez }: {
+    snapshot?: ReplaySnapshot
+    nameA: string
+    nameB: string
+    vez?: 'A' | 'B'
+}) {
     if (!snapshot) return null
-
     return (
-        <div className="flex h-full min-h-0 flex-col p-1.5">
-            <div className="grid min-h-0 flex-1 grid-rows-2 gap-1.5">
-                <PlayerStatePanel title={nameB} state={snapshot.B} side="B" />
-                <PlayerStatePanel title={nameA} state={snapshot.A} side="A" />
-            </div>
+        <div className="flex flex-col gap-2 bg-[radial-gradient(ellipse_at_center,_rgba(30,41,59,0.45),_transparent_70%)] p-2">
+            <PlayerBoard title={nameB} state={snapshot.B} side="B" ativo={vez === 'B'} />
+            <div className="h-px bg-gradient-to-r from-transparent via-gray-700 to-transparent" />
+            <PlayerBoard title={nameA} state={snapshot.A} side="A" ativo={vez === 'A'} />
         </div>
     )
 }
@@ -465,7 +486,7 @@ export default function ReplayViewer({ replayData, nameA, nameB, onClose }: Prop
 
                 <div className="grid min-h-0 flex-1 grid-cols-[minmax(0,1fr)_360px] border-b border-gray-800">
                     <div className="min-h-0 overflow-y-auto border-r border-gray-800">
-                        <TurnStateSummary snapshot={snapshot} nameA={nameA} nameB={nameB} />
+                        <TurnStateSummary snapshot={snapshot} nameA={nameA} nameB={nameB} vez={currentTurn?.events[0]?.player} />
                     </div>
 
                     {/* Events list */}
