@@ -147,6 +147,40 @@ def _checa_lider(lider_code: str):
     return ok
 
 
+SAI_SOZINHO = ('trash_self', 'return_self_to_hand', 'place_self_bottom_deck')
+
+
+def _sai_sozinho(code: str) -> bool:
+    """O personagem tem efeito cujo CUSTO e sair do campo (trash/devolver/fundo
+    do deck a si mesmo): entra, faz o efeito e nao fica ocupando o campo."""
+    for blk in ((_efeitos().get(code) or {}).get('effects') or {}).values():
+        if isinstance(blk, dict) and any(isinstance(c, dict) and c.get('type') in SAI_SOZINHO
+                                         for c in blk.get('costs') or []):
+            return True
+    return False
+
+
+def _regras_do_lider(lider_code: str) -> dict:
+    """O que o efeito do LIDER exige do proprio campo (pedido do usuario,
+    14/10/2026: as cartas sugeridas pro Krieg desligavam o efeito dele, que so
+    vale "se todos os seus personagens forem East Blue"). Lido das condicoes
+    PARSEADAS do lider, entao vale pra qualquer lider com a mesma forma:
+      so_tipo        -- `only_field_type`: todo personagem em campo e do tipo
+      poucos         -- `chars_lte`: o lider quer poucos personagens
+      tipo_preferido -- `chars_gte_type_filter`: quer personagens do tipo"""
+    regras = {'so_tipo': None, 'poucos': None, 'tipo_preferido': None}
+    for blk in ((_efeitos().get(lider_code) or {}).get('effects') or {}).values():
+        conds = (blk.get('conditions') or {}) if isinstance(blk, dict) else {}
+        if conds.get('only_field_type'):
+            regras['so_tipo'] = str(conds['only_field_type']).lower()
+        if conds.get('chars_lte') is not None:
+            regras['poucos'] = conds['chars_lte']
+        f = conds.get('chars_gte_type_filter')
+        if f:
+            regras['tipo_preferido'] = str(f.get('type') if isinstance(f, dict) else f).lower()
+    return regras
+
+
 def _papel_conta(deck: dict, papel: str) -> int:
     teste = PAPEIS[papel][1]
     db = _db()
@@ -229,10 +263,21 @@ def sugerir(cards: list[dict], n: int = 3, benchmarks: dict | None = None,
     usa_lider = Counter(code for d in do_lider for code in d)
     com_torneio = len(do_lider) >= MIN_DECKS_LIDER
     nomes_no_deck = {(db.get(c) or {}).get('name') for c in deck}
+    regras = _regras_do_lider(lider)
+    eh_personagem = lambda c: (db[c].get('type') or '').upper() == 'CHARACTER'
+    tem_tipo = lambda c, tipo: tipo in (db[c].get('sub_types') or '').lower()
+
+    def cabe_no_lider(c) -> bool:
+        if regras['so_tipo'] and eh_personagem(c):
+            return tem_tipo(c, regras['so_tipo']) or _sai_sozinho(c)
+        return True
 
     def chave(c):
         info = db[c]
+        fora_do_campo = (not eh_personagem(c)) or _sai_sozinho(c)
         return (-usa_lider[c] if com_torneio else 0,
+                0 if (regras['poucos'] is None or fora_do_campo) else 1,
+                0 if (regras['tipo_preferido'] is None or tem_tipo(c, regras['tipo_preferido'])) else 1,
                 -len(_tipos(info) & tipos_l),
                 0 if (info.get('type') or '').upper() == 'CHARACTER' else 1,
                 -uso_total[c],
@@ -242,16 +287,23 @@ def sugerir(cards: list[dict], n: int = 3, benchmarks: dict | None = None,
     for papel, (_, motivo) in sorted(fraquezas.items(), key=lambda kv: -kv[1][0]):
         teste = PAPEIS[papel][1]
         cands = sorted((c for c in db if c not in deck and c not in usadas and legal(c) and teste(db[c])
-                        and db[c].get('name') not in nomes_no_deck), key=chave)
+                        and db[c].get('name') not in nomes_no_deck and cabe_no_lider(c)), key=chave)
         cartas, nomes = [], set()
         for code in cands:
             info = db[code]
             if info.get('name') in nomes:      # mesma carta em outra impressao
                 continue
             porque = [PAPEIS[papel][2].capitalize()]
-            mesmo_tipo = sorted(_tipos(info) & tipos_l)
-            if mesmo_tipo:
-                porque.append(f'do tipo {mesmo_tipo[0].title()}, como o seu líder')
+            if regras['so_tipo'] and eh_personagem(code) and not tem_tipo(code, regras['so_tipo']):
+                porque.append('sai do campo sozinha depois do efeito, então não desliga o efeito do líder')
+            elif regras['so_tipo'] and not eh_personagem(code):
+                porque.append(f'{ {"EVENT": "evento", "STAGE": "stage"}.get((info.get("type") or "").upper(), "carta")}: não ocupa o campo, o efeito do líder continua valendo')
+            elif regras['so_tipo']:
+                porque.append(f'{regras["so_tipo"].title()}: mantém o efeito do líder ativo')
+            else:
+                mesmo_tipo = sorted(_tipos(info) & tipos_l)
+                if mesmo_tipo:
+                    porque.append(f'do tipo {mesmo_tipo[0].title()}, como o seu líder')
             if com_torneio and usa_lider[code]:
                 porque.append(f'em {usa_lider[code]} de {len(do_lider)} decks de torneio deste líder')
             elif uso_total[code]:
@@ -265,8 +317,16 @@ def sugerir(cards: list[dict], n: int = 3, benchmarks: dict | None = None,
             grupos.append({'papel': papel, 'titulo': PAPEIS[papel][0], 'motivo': motivo, 'cartas': cartas})
         if len(grupos) >= n:
             break
+    aviso = None
+    if regras['so_tipo']:
+        aviso = (f'O efeito do seu líder só vale se todos os seus personagens em campo forem '
+                 f'{regras["so_tipo"].title()}. Por isso só entram personagens {regras["so_tipo"].title()}, '
+                 f'personagens que saem do campo sozinhos depois do efeito, e eventos/stages.')
+    elif regras['poucos'] is not None:
+        aviso = (f'O efeito do seu líder pede no máximo {regras["poucos"]} personagens em campo: '
+                 f'eventos e personagens que saem sozinhos vêm primeiro.')
     return {'modo': 'torneio_do_lider' if com_torneio else 'papel_em_falta',
-            'decks_do_lider': len(do_lider), 'grupos': grupos}
+            'decks_do_lider': len(do_lider), 'regra_do_lider': aviso, 'grupos': grupos}
 
 
 if __name__ == '__main__':

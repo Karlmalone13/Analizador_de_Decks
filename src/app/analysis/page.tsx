@@ -89,6 +89,7 @@ interface AnaliseResult {
     sugestao_carta?: {
         modo: 'torneio_do_lider' | 'papel_em_falta' | 'sem_fraqueza' | null
         decks_do_lider?: number
+        regra_do_lider?: string | null
         grupos: {
             papel: string
             titulo: string
@@ -1562,6 +1563,11 @@ function AnalysisPageContent() {
                         <div className="text-xs text-gray-400 mb-5">
                             Sugestão a partir de dados, não regra: só você sabe se a carta cabe no plano do deck.
                         </div>
+                        {analise?.sugestao_carta?.regra_do_lider && (
+                            <div className="mb-5 rounded-xl border border-sky-800/60 bg-sky-950/30 px-4 py-3 text-sm text-sky-100">
+                                👑 {analise.sugestao_carta.regra_do_lider}
+                            </div>
+                        )}
                         <div className="space-y-6">
                             {analise!.sugestao_carta!.grupos.map(g => (
                                 <div key={g.papel} id={`sug-${g.papel}`} className="scroll-mt-28">
