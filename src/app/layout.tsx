@@ -13,7 +13,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: { default: "OPTCG Analyzer", template: "%s · OPTCG Analyzer" },
+  title: { default: "TCG Analyzer", template: "%s · TCG Analyzer" },
   description: "Analise seu deck de One Piece TCG: pontos fortes, fraquezas e o que melhorar, comparado aos decks de torneio.",
 };
 

@@ -60,7 +60,8 @@ export default function LoginPage() {
     <div className="min-h-screen bg-gray-950 flex items-center justify-center p-4">
       <div className="bg-gray-900 border border-gray-800 rounded-2xl p-8 w-full max-w-md">
         <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold text-white">🏴‍☠️ OPTCG Analyzer</h1>
+          <h1 className="sr-only">TCG Analyzer</h1>
+          <Image src="/logo-menu.png" alt="TCG Analyzer" width={1740} height={422} priority className="mx-auto h-14 w-auto" />
           <p className="text-gray-400 mt-2">Analise seus decks de One Piece TCG</p>
         </div>
 
