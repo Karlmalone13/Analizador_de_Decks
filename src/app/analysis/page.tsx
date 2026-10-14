@@ -91,6 +91,7 @@ interface AnaliseResult {
         modo: 'torneio_do_lider' | 'papel_em_falta' | 'sem_fraqueza' | null
         decks_do_lider?: number
         regra_do_lider?: string | null
+        fraquezas?: { papel: string; titulo: string; motivo: string }[]
         grupos: {
             papel: string
             titulo: string
@@ -866,6 +867,43 @@ function AnalysisPageContent() {
         // quando ele vira true apenas cai no return -- nao regera as maos.
     }, [deck, analise, simDone])
 
+    // Cada carta sugerida TESTADA JOGANDO (14/10/2026): o deck com ela contra
+    // o deck atual, mesmos oponentes e sementes. Chega em segundo plano.
+    type ResultadoTeste = { n: number; winrate: number; d_winrate: number; d_ataque: number; d_defesa: number
+        margem: number; veredito: 'ajuda' | 'atrapalha' | 'sem diferença clara'; sai: string[] }
+    const [teste, setTeste] = useState<{ status: 'pending' | 'done' | 'erro'; candidatas?: Record<string, ResultadoTeste> } | null>(null)
+    useEffect(() => {
+        const grupos = analise?.sugestao_carta?.grupos
+        if (!deck || !deck.leader || !grupos?.length) return
+        const API_URL = process.env.NEXT_PUBLIC_ANALYZER_API || 'http://localhost:8000'
+        const body = JSON.stringify({
+            cards: [{ code: deck.leader.card_set_id, qty: 1 },
+                ...deck.cards.map(dc => ({ code: dc.card.card_set_id, qty: dc.quantity }))],
+            candidatas: grupos.flatMap(g => g.cartas.map(c => c.code)),
+            // sai primeiro o que a analise aponta em EXCESSO (ex.: blocker demais)
+            sair: (analise?.ratios ?? []).filter(r => r.status === 'alto').flatMap(r => r.codes ?? []),
+        })
+        let vivo = true, falhas = 0
+        let timer: ReturnType<typeof setTimeout> | undefined
+        const consulta = () => {
+            fetch(`${API_URL}/suggestions-tested`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body })
+                .then(r => r.ok ? r.json() : Promise.reject(r.status))
+                .then(d => {
+                    if (!vivo) return
+                    setTeste(d)
+                    if (d.status === 'pending') timer = setTimeout(consulta, 5000)
+                })
+                .catch(() => {
+                    if (!vivo) return
+                    if (++falhas <= 8) timer = setTimeout(consulta, 5000)
+                    else setTeste({ status: 'erro' })
+                })
+        }
+        queueMicrotask(() => setTeste({ status: 'pending' }))
+        consulta()
+        return () => { vivo = false; if (timer) clearTimeout(timer) }
+    }, [deck, analise])
+
     // Ataque/Defesa medidos: a 1a chamada dispara a medicao (~40 partidas)
     // e devolve `pending`; consulta de novo a cada 4s ate ficar pronta. Muda
     // a composicao do deck -> mede de novo (o cache da API e por composicao).
@@ -1307,6 +1345,8 @@ function AnalysisPageContent() {
         if (m.motor && !motorOk) continue
         if (!m.b || m.p >= m.b.p25 + 1e-3) continue
         const papel = PAPEL_DA_METRICA[m.label] ?? (m.label.startsWith('Trigger') ? 'trigger' : '')
+        const fraqApi = analise?.sugestao_carta?.fraquezas
+        if (papel && fraqApi && !fraqApi.some(f => f.papel === papel)) continue
         const temGrupo = !!analise?.sugestao_carta?.grupos?.some(g => g.papel === papel)
         dicas.push({
             nivel: 'aviso',
@@ -1680,7 +1720,7 @@ function AnalysisPageContent() {
                                         <div className="text-sm text-amber-100/80">{g.motivo}</div>
                                     </div>
                                     <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-3">
-                                        {g.cartas.map(s => (
+                                        {[...g.cartas].sort((a, b) => (teste?.candidatas?.[b.code]?.d_winrate ?? 0) - (teste?.candidatas?.[a.code]?.d_winrate ?? 0)).map(s => (
                                             <div key={s.code} className="flex gap-3 rounded-xl border border-gray-800 bg-gray-950/60 p-3">
                                                 <CardImage src={s.image} alt={s.name}
                                                     className="w-20 h-auto self-start flex-shrink-0 rounded-lg border border-gray-700 cursor-pointer hover:brightness-110 transition"
@@ -1695,6 +1735,19 @@ function AnalysisPageContent() {
                                                     <div className="font-bold text-white leading-tight">{s.name}</div>
                                                     <div className="text-xs text-gray-400 mb-1.5">{s.code} · custo {s.cost}{s.color ? ` · ${s.color}` : ''}</div>
                                                     <div className="text-sm text-gray-300 leading-snug">{s.motivo}</div>
+                                                    {(() => {
+                                                        const r = teste?.candidatas?.[s.code]
+                                                        if (teste?.status === 'pending') return <div className="mt-2 flex items-center gap-2 text-xs text-sky-300"><span className="h-3 w-3 animate-spin rounded-full border-2 border-sky-400 border-t-transparent" />testando jogando contra o meta…</div>
+                                                        if (!r) return null
+                                                        const cor = r.veredito === 'ajuda' ? 'bg-emerald-900/60 text-emerald-200 border-emerald-700' : r.veredito === 'atrapalha' ? 'bg-red-900/50 text-red-200 border-red-800' : 'bg-gray-800 text-gray-300 border-gray-700'
+                                                        const pp = (x: number) => `${x >= 0 ? '+' : ''}${Math.round(x * 100)}%`
+                                                        return (
+                                                            <div className={`mt-2 rounded-lg border px-2 py-1.5 text-xs ${cor}`}>
+                                                                <div className="font-semibold">Testada: {r.veredito} · {pp(r.d_winrate)} de vitórias</div>
+                                                                <div className="opacity-80">{r.n} partidas · margem ±{Math.round(r.margem * 100)}% · sai {r.sai.length}x {r.sai[0]}</div>
+                                                            </div>
+                                                        )
+                                                    })()}
                                                 </div>
                                             </div>
                                         ))}

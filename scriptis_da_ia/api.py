@@ -305,6 +305,49 @@ def axes_measured(req: DeckRequest, background_tasks: BackgroundTasks):
     return {'status': 'pending'}
 
 
+class TesteSugestaoRequest(BaseModel):
+    cards: list[CardEntry]
+    candidatas: list[str]
+    sair: list[str] = []
+
+
+def _testar_em_fundo(cards, candidatas, sair, chave) -> None:
+    import measure_axes
+    pend = os.path.join(_EIXOS_CACHE_DIR, f'{chave}.pending')
+    try:
+        r = measure_axes.testar_candidatas(cards, candidatas, sair)
+        with open(os.path.join(_EIXOS_CACHE_DIR, f'{chave}.json'), 'w', encoding='utf-8') as f:
+            json.dump(r, f)
+    finally:
+        if os.path.exists(pend):
+            os.remove(pend)
+
+
+@app.post("/suggestions-tested")
+def suggestions_tested(req: TesteSugestaoRequest, background_tasks: BackgroundTasks):
+    """Testa cada carta sugerida JOGANDO: o deck com ela contra o deck atual,
+    mesmos oponentes e sementes (`measure_axes.testar_candidatas`). Mesmo
+    padrao de `/axes-measured`: `pending` ate ficar pronto, cache por
+    composicao + candidatas."""
+    os.makedirs(_EIXOS_CACHE_DIR, exist_ok=True)
+    cards = [{'code': e.code.split('_')[0], 'qty': e.qty} for e in req.cards]
+    # ate 8: cada uma custa ~160 partidas (o deck atual tambem joga 160)
+    cands = list(dict.fromkeys(c.split('_')[0] for c in req.candidatas))[:8]
+    sair = sorted({c.split('_')[0] for c in req.sair})
+    chave = 'teste_' + hashlib.sha256(json.dumps(
+        [sorted((c['code'], c['qty']) for c in cards), cands, sair]).encode()).hexdigest()[:24]
+    pronto = os.path.join(_EIXOS_CACHE_DIR, f'{chave}.json')
+    if os.path.exists(pronto):
+        with open(pronto, encoding='utf-8') as f:
+            return {'status': 'done', **json.load(f)}
+    pend = os.path.join(_EIXOS_CACHE_DIR, f'{chave}.pending')
+    velho = os.path.exists(pend) and time.time() - os.path.getmtime(pend) > 1200
+    if not os.path.exists(pend) or velho:
+        open(pend, 'w').close()
+        background_tasks.add_task(_testar_em_fundo, cards, cands, sair, chave)
+    return {'status': 'pending'}
+
+
 @app.get("/meta")
 def meta():
     """Lideres do meta (decks de torneio) e o perfil de cada um -- /meta do front."""

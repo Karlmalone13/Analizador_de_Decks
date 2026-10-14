@@ -27,7 +27,7 @@ import pandas as pd
 
 AQUI = os.path.dirname(os.path.abspath(__file__))
 MIN_DECKS_LIDER = 3
-POR_FRAQUEZA = 4
+POR_FRAQUEZA = 6   # candidatas por fraqueza; o teste jogando ordena
 
 # papel -> (rotulo, teste sobre o registro do card_analysis_db)
 PAPEIS = {
@@ -228,7 +228,7 @@ def _papel_conta(deck: dict, papel: str) -> int:
     return sum(q for c, q in deck.items() if teste(db.get(c) or {}))
 
 
-def sugerir(cards: list[dict], n: int = 3, benchmarks: dict | None = None,
+def sugerir(cards: list[dict], n: int = 6, benchmarks: dict | None = None,
             ratios: list | None = None) -> dict:
     """`cards` = [{code, qty}] com o lider. Devolve {modo, sugestoes:[...]}."""
     db = _db()
@@ -293,8 +293,10 @@ def sugerir(cards: list[dict], n: int = 3, benchmarks: dict | None = None,
             g = (a_ - r.get('count', 0)) / max(a_, 1)
             fraquezas[papel] = max(fraquezas.get(papel, (0, '')), (g, (
                 f'Golden Ratio de {PAPEIS[papel][0]}: {r.get("count")} (ideal {a_}-{b_}).')))
+    lista_fraquezas = [{'papel': p_, 'titulo': PAPEIS[p_][0], 'motivo': m_}
+                       for p_, (_, m_) in sorted(fraquezas.items(), key=lambda kv: -kv[1][0])]
     if not fraquezas:
-        return {'modo': 'sem_fraqueza', 'grupos': []}
+        return {'modo': 'sem_fraqueza', 'fraquezas': [], 'grupos': []}
 
     # De onde vem a carta: dos decks de torneio do PROPRIO lider quando eles
     # existem; senao, das cartas legais nas cores dele, preferindo o tipo do
@@ -313,13 +315,47 @@ def sugerir(cards: list[dict], n: int = 3, benchmarks: dict | None = None,
             return tem_tipo(c, regras['so_tipo']) or _sai_sozinho(c)
         return True
 
+    # COMBO com o deck (pedido do usuario, 14/10/2026): tipo que o deck cita ou
+    # tem, e estado de sinergia que o deck cria/exige (o mesmo dado parseado
+    # que o calculo de Sinergia usa -- `referenced_types` e `synergy_states`).
+    tipos_deck, citados_deck, cria_deck, exige_deck = Counter(), Counter(), Counter(), Counter()
+    for c, q in deck.items():
+        info = db.get(c) or {}
+        for x in _tipos(info):
+            tipos_deck[x] += q
+        for x in info.get('referenced_types') or []:
+            citados_deck[x.lower()] += q
+        for est, v in (info.get('synergy_states') or {}).items():
+            if v.get('creates'):
+                cria_deck[est] += q
+            if v.get('requires'):
+                exige_deck[est] += q
+
+    def combos(c) -> list[str]:
+        info = db[c]
+        out = []
+        for x in sorted(_tipos(info)):
+            if citados_deck[x] >= 2:
+                out.append(f'é {x.title()}, tipo que {citados_deck[x]} cartas do seu deck citam')
+                break
+        for x in info.get('referenced_types') or []:
+            if tipos_deck[x.lower()] >= 4:
+                out.append(f'aproveita os {tipos_deck[x.lower()]} {x.title()} do deck')
+                break
+        for est, v in (info.get('synergy_states') or {}).items():
+            if v.get('creates') and exige_deck[est] >= 2:
+                out.append(f'cria "{est.replace("_", " ")}", que {exige_deck[est]} cartas do deck exploram')
+            elif v.get('requires') and cria_deck[est] >= 2:
+                out.append(f'explora "{est.replace("_", " ")}", que {cria_deck[est]} cartas do deck criam')
+        return out
+
     def chave_do(papel):
         # Compra que TAMBEM defende vem primeiro (pedido do usuario: "counter
         # que me dao draw"): carta com valor de counter ou evento [Counter].
         def k(c):
             info = db[c]
             defende = (info.get('counter') or 0) > 0 or bool(info.get('has_counter_event'))
-            return ((0 if defende else 1) if papel == 'compra' else 0,) + chave(c)
+            return ((0 if defende else 1) if papel == 'compra' else 0, -len(combos(c))) + chave(c)
         return k
 
     def chave(c):
@@ -348,6 +384,7 @@ def sugerir(cards: list[dict], n: int = 3, benchmarks: dict | None = None,
             if papel == 'compra' and ((info.get('counter') or 0) > 0 or info.get('has_counter_event')):
                 porque.append(f'e ainda defende (counter {int(info.get("counter") or 0)})'
                               if (info.get('counter') or 0) > 0 else 'e ainda defende ([Counter])')
+            porque += combos(code)
             if regras['so_tipo'] and eh_personagem(code) and not tem_tipo(code, regras['so_tipo']):
                 porque.append('sai do campo sozinha depois do efeito, então não desliga o efeito do líder')
             elif regras['so_tipo'] and not eh_personagem(code):
@@ -380,7 +417,8 @@ def sugerir(cards: list[dict], n: int = 3, benchmarks: dict | None = None,
         aviso = (f'O efeito do seu líder pede no máximo {regras["poucos"]} personagens em campo: '
                  f'eventos e personagens que saem sozinhos vêm primeiro.')
     return {'modo': 'torneio_do_lider' if com_torneio else 'papel_em_falta',
-            'decks_do_lider': len(do_lider), 'regra_do_lider': aviso, 'grupos': grupos}
+            'decks_do_lider': len(do_lider), 'regra_do_lider': aviso,
+            'fraquezas': lista_fraquezas, 'grupos': grupos}
 
 
 if __name__ == '__main__':

@@ -125,6 +125,94 @@ def com_nota(medida: dict) -> dict:
             'n_base': len(base['ataque'])}
 
 
+COPIAS_TESTE = 2   # quantas copias da candidata entram (e quantas saem)
+
+
+def _variante(cards: list[dict], cand: str, sair: list[str]) -> tuple[list[dict], list[str]]:
+    """O deck com COPIAS_TESTE da candidata no lugar de cartas que pesam menos:
+    primeiro as que a analise aponta em EXCESSO (`sair`, ex.: blocker demais);
+    senao, as de maior custo. Mantem o tamanho do deck."""
+    import suggest_card as sc
+    db = sc._db()
+    lider, resto = cards[0], [dict(c) for c in cards[1:]]
+    custo = lambda code: db.get(code, {}).get('cost') or 0
+    c_cand = custo(cand)
+    teto = max(custo(c['code']) for c in resto)
+    # Sai: 1) o que a analise aponta em EXCESSO; 2) carta de custo PARECIDO
+    # com a candidata (troca dentro da mesma faixa da curva), com menos copias;
+    # NUNCA a carta mais cara do deck -- medido 14/10: tirar a bomba (Krieg
+    # OP15-008) derrubava 15% de vitoria em TODA candidata, e a carta que
+    # entrava nao fazia diferenca nenhuma no numero.
+    ordem = sorted((c for c in resto if c['code'] != cand),
+                   key=lambda c: (0 if c['code'] in sair else 1,
+                                  1 if custo(c['code']) >= teto else 0,
+                                  abs(custo(c['code']) - c_cand), c['qty']))
+    ordem += [c for c in resto if c['code'] == cand]
+    saiu, falta = [], COPIAS_TESTE
+    for c in ordem:
+        if falta == 0:
+            break
+        tira = min(c['qty'], falta)
+        c['qty'] -= tira
+        falta -= tira
+        saiu += [db.get(c['code'], {}).get('name', c['code'])] * tira
+    novo = [c for c in ordem if c['qty'] > 0]
+    ja = next((c for c in novo if c['code'] == cand), None)
+    if ja:
+        ja['qty'] = min(4, ja['qty'] + COPIAS_TESTE)
+    else:
+        novo.append({'code': cand, 'qty': COPIAS_TESTE})
+    return [lider] + novo, saiu
+
+
+PARTIDAS_TESTE = 160   # por variante: com 40 a diferenca ficava dentro do ruido
+
+
+def testar_candidatas(cards: list[dict], candidatas: list[str], sair: list[str],
+                      partidas: int = PARTIDAS_TESTE, seed: int = 7, workers: int = 4) -> dict:
+    """Cada candidata e testada JOGANDO (pedido do usuario, 14/10/2026): o deck
+    atual e cada variante jogam contra os MESMOS oponentes com as MESMAS
+    sementes (numeros aleatorios comuns), entao a diferenca de vitoria e de
+    dano vem da carta, nao da sorte do sorteio."""
+    opps = _oponentes(partidas // 2, seed)
+    decks = {'_base': (cards, [])}
+    for cand in candidatas:
+        decks[cand] = _variante(cards, cand, sair)
+    tasks, dono = [], []
+    for nome, (dk, _) in decks.items():
+        for i, o in enumerate(opps):
+            s = seed * 1_000_003 + i
+            tasks += [(dk, o, True, s), (dk, o, False, s)]
+            dono += [nome, nome]
+    res: dict = {}
+    with ProcessPoolExecutor(max_workers=workers) as ex:
+        for k, r in enumerate(ex.map(_uma, tasks, chunksize=4)):
+            if r:
+                res.setdefault(dono[k], []).append(r)
+
+    def resumo(rs):
+        n = len(rs) or 1
+        return {'n': len(rs), 'winrate': sum(r['win'] for r in rs) / n,
+                'ataque': sum(r['causado'] for r in rs) / n, 'defesa': sum(r['sofrido'] for r in rs) / n}
+    base = resumo(res.get('_base', []))
+    out = {'base': base, 'candidatas': {}}
+    for cand in candidatas:
+        v = resumo(res.get(cand, []))
+        # Margem (95%) da DIFERENCA de duas taxas de vitoria. CONTROLE medido
+        # 14/10/2026: o MESMO deck so com a lista embaralhada variou de 42% a
+        # 57% em 40 partidas -- a mudanca de uma carta precisa passar disso.
+        p = (v['winrate'] + base['winrate']) / 2
+        n = max(min(v['n'], base['n']), 1)
+        margem = 1.96 * (2 * p * (1 - p) / n) ** 0.5
+        d = v['winrate'] - base['winrate']
+        veredito = 'ajuda' if d > margem else 'atrapalha' if d < -margem else 'sem diferença clara'
+        out['candidatas'][cand] = {**v, 'sai': decks[cand][1], 'margem': margem, 'veredito': veredito,
+                                   'd_winrate': v['winrate'] - base['winrate'],
+                                   'd_ataque': v['ataque'] - base['ataque'],
+                                   'd_defesa': base['defesa'] - v['defesa']}   # + = sofre menos
+    return out
+
+
 def gerar_base(workers: int = 4) -> None:
     """Mede os 184 decks de torneio do mesmo jeito -> base da nota."""
     pool = _pool_meta()
