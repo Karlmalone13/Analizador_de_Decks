@@ -1305,7 +1305,7 @@ function AnalysisPageContent() {
     }
     for (const m of metricas) {
         if (m.motor && !motorOk) continue
-        if (!m.b || m.p >= m.b.p25) continue
+        if (!m.b || m.p >= m.b.p25 + 1e-3) continue
         const papel = PAPEL_DA_METRICA[m.label] ?? (m.label.startsWith('Trigger') ? 'trigger' : '')
         const temGrupo = !!analise?.sugestao_carta?.grupos?.some(g => g.papel === papel)
         dicas.push({
@@ -1683,7 +1683,7 @@ function AnalysisPageContent() {
                                         {g.cartas.map(s => (
                                             <div key={s.code} className="flex gap-3 rounded-xl border border-gray-800 bg-gray-950/60 p-3">
                                                 <CardImage src={s.image} alt={s.name}
-                                                    className="w-20 h-auto flex-shrink-0 rounded-lg border border-gray-700 cursor-pointer hover:brightness-110 transition"
+                                                    className="w-20 h-auto self-start flex-shrink-0 rounded-lg border border-gray-700 cursor-pointer hover:brightness-110 transition"
                                                     onClick={async () => {
                                                         // A carta sugerida nao esta no deck: busca a linha dela
                                                         // no banco pra abrir a MESMA janela de detalhe das outras.

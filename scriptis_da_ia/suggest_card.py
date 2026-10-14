@@ -160,6 +160,47 @@ def _sai_sozinho(code: str) -> bool:
     return False
 
 
+MIN_PECAS = 4   # pecas no deck pra um custo/filtro ser pagavel com regularidade
+
+
+def _pagavel(code: str, deck: dict) -> bool:
+    """O DECK do usuario consegue usar o efeito da carta? (14/10/2026: pro
+    Krieg saiam cartas de compra que pedem revelar personagem de 8000, mandar
+    personagem de 1000 pro fundo, ou jogar um [Land of Wano] -- pecas que o
+    deck nao tem). Le os CUSTOS e os FILTROS dos passos parseados e conta, no
+    deck, quantas cartas atendem; abaixo de MIN_PECAS, nao serve."""
+    db = _db()
+
+    def atende(c: dict, f: dict) -> bool:
+        if f.get('power_eq') is not None and (c.get('power') or 0) != f['power_eq']:
+            return False
+        if f.get('power_gte') is not None and (c.get('power') or 0) < f['power_gte']:
+            return False
+        if f.get('card_type') and (c.get('type') or '').upper() != str(f['card_type']).upper():
+            return False
+        if f.get('filter_type') and str(f['filter_type']).lower() not in (c.get('sub_types') or '').lower():
+            return False
+        return True
+
+    def pecas(f: dict) -> int:
+        return sum(q for cc, q in deck.items() if atende(db.get(cc) or {}, f))
+
+    for blk in ((_efeitos().get(code) or {}).get('effects') or {}).values():
+        if not isinstance(blk, dict):
+            continue
+        for custo in blk.get('costs') or []:
+            if isinstance(custo, dict) and custo.get('type') in (
+                    'reveal_from_hand', 'place_own_character_bottom_deck', 'trash_from_hand',
+                    'return_own_character_to_hand', 'trash_own_character') and \
+                    any(custo.get(k) is not None for k in ('power_eq', 'power_gte', 'card_type', 'filter_type')):
+                if pecas(custo) < MIN_PECAS:
+                    return False
+        for passo in blk.get('steps') or []:
+            if isinstance(passo, dict) and passo.get('filter_type') and pecas(passo) < MIN_PECAS:
+                return False
+    return True
+
+
 def _regras_do_lider(lider_code: str) -> dict:
     """O que o efeito do LIDER exige do proprio campo (pedido do usuario,
     14/10/2026: as cartas sugeridas pro Krieg desligavam o efeito dele, que so
@@ -239,7 +280,7 @@ def sugerir(cards: list[dict], n: int = 3, benchmarks: dict | None = None,
             continue
         K = _papel_conta(deck, papel)
         pr = _chance(N, K, mao)
-        if pr < faixa['p25']:
+        if pr < faixa['p25'] + 1e-3:
             onde = 'na vida (4 cartas)' if metrica == 'trigger_vida' else 'na mão inicial'
             g = (faixa['mediana'] - pr) / max(faixa['mediana'], 1e-9)
             fraquezas[papel] = max(fraquezas.get(papel, (0, '')), (g, (
@@ -272,6 +313,15 @@ def sugerir(cards: list[dict], n: int = 3, benchmarks: dict | None = None,
             return tem_tipo(c, regras['so_tipo']) or _sai_sozinho(c)
         return True
 
+    def chave_do(papel):
+        # Compra que TAMBEM defende vem primeiro (pedido do usuario: "counter
+        # que me dao draw"): carta com valor de counter ou evento [Counter].
+        def k(c):
+            info = db[c]
+            defende = (info.get('counter') or 0) > 0 or bool(info.get('has_counter_event'))
+            return ((0 if defende else 1) if papel == 'compra' else 0,) + chave(c)
+        return k
+
     def chave(c):
         info = db[c]
         fora_do_campo = (not eh_personagem(c)) or _sai_sozinho(c)
@@ -287,13 +337,17 @@ def sugerir(cards: list[dict], n: int = 3, benchmarks: dict | None = None,
     for papel, (_, motivo) in sorted(fraquezas.items(), key=lambda kv: -kv[1][0]):
         teste = PAPEIS[papel][1]
         cands = sorted((c for c in db if c not in deck and c not in usadas and legal(c) and teste(db[c])
-                        and db[c].get('name') not in nomes_no_deck and cabe_no_lider(c)), key=chave)
+                        and db[c].get('name') not in nomes_no_deck and cabe_no_lider(c)
+                        and _pagavel(c, deck)), key=chave_do(papel))
         cartas, nomes = [], set()
         for code in cands:
             info = db[code]
             if info.get('name') in nomes:      # mesma carta em outra impressao
                 continue
             porque = [PAPEIS[papel][2].capitalize()]
+            if papel == 'compra' and ((info.get('counter') or 0) > 0 or info.get('has_counter_event')):
+                porque.append(f'e ainda defende (counter {int(info.get("counter") or 0)})'
+                              if (info.get('counter') or 0) > 0 else 'e ainda defende ([Counter])')
             if regras['so_tipo'] and eh_personagem(code) and not tem_tipo(code, regras['so_tipo']):
                 porque.append('sai do campo sozinha depois do efeito, então não desliga o efeito do líder')
             elif regras['so_tipo'] and not eh_personagem(code):
