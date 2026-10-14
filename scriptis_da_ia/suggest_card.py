@@ -27,6 +27,7 @@ import pandas as pd
 
 AQUI = os.path.dirname(os.path.abspath(__file__))
 MIN_DECKS_LIDER = 3
+POR_FRAQUEZA = 4
 
 # papel -> (rotulo, teste sobre o registro do card_analysis_db)
 PAPEIS = {
@@ -36,6 +37,8 @@ PAPEIS = {
     'blocker':  ('Blocker', lambda c: bool(c.get('is_blocker')), 'um blocker'),
     'counter2k': ('Counter 2000', lambda c: (c.get('counter') or 0) >= 2000, 'um counter de 2000'),
     'trigger':  ('Trigger', lambda c: bool(c.get('has_trigger')), 'uma carta com [Trigger]'),
+    # custo <= 2, a mesma conta do tile 'Carta custo <=2 na mao'
+    'barata':   ('Jogadas baratas (custo até 2)', lambda c: (c.get('cost') or 0) <= 2, 'uma jogada barata'),
 }
 
 # Golden Ratio (nome em `analyze_deck`) -> papel
@@ -196,64 +199,74 @@ def sugerir(cards: list[dict], n: int = 3, benchmarks: dict | None = None,
     fraquezas = {}   # papel -> (gravidade, texto)
     for metrica, papel, mao in (('draw', 'compra', 5), ('searcher', 'busca', 5),
                                 ('counter2k', 'counter2k', 5), ('blocker', 'blocker', 5),
-                                ('trigger_vida', 'trigger', 4)):
+                                ('trigger_vida', 'trigger', 4), ('low2', 'barata', 5)):
         faixa = (benchmarks or {}).get(metrica)
         if not faixa:
             continue
         K = _papel_conta(deck, papel)
         pr = _chance(N, K, mao)
         if pr < faixa['p25']:
-            onde = 'na vida (4 cartas)' if metrica == 'trigger_vida' else 'na mao inicial'
+            onde = 'na vida (4 cartas)' if metrica == 'trigger_vida' else 'na mão inicial'
             g = (faixa['mediana'] - pr) / max(faixa['mediana'], 1e-9)
             fraquezas[papel] = max(fraquezas.get(papel, (0, '')), (g, (
-                f'Fraqueza apontada pela analise: {PAPEIS[papel][0]} {onde} em '
-                f'{pr:.1%} -- nos ultimos 25% do meta (mediana {faixa["mediana"]:.1%}; '
-                f'seu deck tem {K}).')))
+                f'{PAPEIS[papel][0]} {onde}: {pr:.1%} -- nos últimos 25% do meta '
+                f'(mediana {faixa["mediana"]:.1%}; seu deck tem {K}).')))
     for r in ratios or []:
         papel = RATIO_PAPEL.get(r.get('name'))
         if papel and r.get('status') == 'baixo':
             a_, b_ = r.get('ideal') or (0, 0)
             g = (a_ - r.get('count', 0)) / max(a_, 1)
             fraquezas[papel] = max(fraquezas.get(papel, (0, '')), (g, (
-                f'Fraqueza apontada pela analise: Golden Ratio de {PAPEIS[papel][0]} '
-                f'= {r.get("count")} (ideal {a_}-{b_}).')))
+                f'Golden Ratio de {PAPEIS[papel][0]}: {r.get("count")} (ideal {a_}-{b_}).')))
     if not fraquezas:
-        return {'modo': 'sem_fraqueza', 'sugestoes': []}
+        return {'modo': 'sem_fraqueza', 'grupos': []}
 
     # De onde vem a carta: dos decks de torneio do PROPRIO lider quando eles
-    # existem (o que quem joga o lider usa pra cobrir aquilo); senao, das cartas
-    # legais nas cores dele, preferindo o tipo do lider e as mais usadas em torneio.
+    # existem; senao, das cartas legais nas cores dele, preferindo o tipo do
+    # lider e as mais usadas em torneio. Ate POR_FRAQUEZA cartas por fraqueza
+    # (pedido do usuario, 14/10/2026: "1 carta so de sugestao" era pouco).
     do_lider = [d for url, d in torneio.items() if lideres.get(url) == lider]
     usa_lider = Counter(code for d in do_lider for code in d)
     com_torneio = len(do_lider) >= MIN_DECKS_LIDER
+    nomes_no_deck = {(db.get(c) or {}).get('name') for c in deck}
 
-    out, usadas = [], set()
+    def chave(c):
+        info = db[c]
+        return (-usa_lider[c] if com_torneio else 0,
+                -len(_tipos(info) & tipos_l),
+                0 if (info.get('type') or '').upper() == 'CHARACTER' else 1,
+                -uso_total[c],
+                info.get('cost') or 0)
+
+    grupos, usadas = [], set()
     for papel, (_, motivo) in sorted(fraquezas.items(), key=lambda kv: -kv[1][0]):
         teste = PAPEIS[papel][1]
-        cands = [c for c in db if c not in deck and c not in usadas and legal(c) and teste(db[c])]
-        if com_torneio and any(usa_lider[c] for c in cands):
-            cands = [c for c in cands if usa_lider[c]]
-            cands.sort(key=lambda c: -usa_lider[c])
-        else:
-            cands.sort(key=lambda c: (-len(_tipos(db[c]) & tipos_l), -uso_total[c], db[c].get('cost') or 0))
-        if not cands:
-            continue
-        code = cands[0]
-        info = db[code]
-        porque = f'{info.get("name")} e {PAPEIS[papel][2]}'
-        mesmo_tipo = sorted(_tipos(info) & tipos_l)
-        if mesmo_tipo:
-            porque += f', do tipo {mesmo_tipo[0].title()} como o seu lider'
-        if com_torneio and usa_lider[code]:
-            porque += f', e esta em {usa_lider[code]} de {len(do_lider)} decks de torneio deste lider'
-        elif uso_total[code]:
-            porque += f', e aparece em {uso_total[code]} decks de torneio'
-        out.append(carta(code, motivo + ' ' + porque + '.', {'papel': papel}))
-        usadas.add(code)
-        if len(out) >= n:
+        cands = sorted((c for c in db if c not in deck and c not in usadas and legal(c) and teste(db[c])
+                        and db[c].get('name') not in nomes_no_deck), key=chave)
+        cartas, nomes = [], set()
+        for code in cands:
+            info = db[code]
+            if info.get('name') in nomes:      # mesma carta em outra impressao
+                continue
+            porque = [PAPEIS[papel][2].capitalize()]
+            mesmo_tipo = sorted(_tipos(info) & tipos_l)
+            if mesmo_tipo:
+                porque.append(f'do tipo {mesmo_tipo[0].title()}, como o seu líder')
+            if com_torneio and usa_lider[code]:
+                porque.append(f'em {usa_lider[code]} de {len(do_lider)} decks de torneio deste líder')
+            elif uso_total[code]:
+                porque.append(f'em {uso_total[code]} decks de torneio')
+            cartas.append(carta(code, ', '.join(porque) + '.'))
+            nomes.add(info.get('name'))
+            usadas.add(code)
+            if len(cartas) >= POR_FRAQUEZA:
+                break
+        if cartas:
+            grupos.append({'papel': papel, 'titulo': PAPEIS[papel][0], 'motivo': motivo, 'cartas': cartas})
+        if len(grupos) >= n:
             break
     return {'modo': 'torneio_do_lider' if com_torneio else 'papel_em_falta',
-            'decks_do_lider': len(do_lider), 'sugestoes': out}
+            'decks_do_lider': len(do_lider), 'grupos': grupos}
 
 
 if __name__ == '__main__':

@@ -89,7 +89,12 @@ interface AnaliseResult {
     sugestao_carta?: {
         modo: 'torneio_do_lider' | 'papel_em_falta' | 'sem_fraqueza' | null
         decks_do_lider?: number
-        sugestoes: { code: string; name: string; cost: number; color?: string; image?: string; motivo: string }[]
+        grupos: {
+            papel: string
+            titulo: string
+            motivo: string
+            cartas: { code: string; name: string; cost: number; color?: string; image?: string; motivo: string }[]
+        }[]
     }
     axes?: Record<string, { bruto: number; detalhes: { tipo: string; desc: string; n?: number; pontos?: number }[] }>
     tribal_cohesion?: {
@@ -1223,14 +1228,21 @@ function AnalysisPageContent() {
     const FUNCAO_DO_RATIO: Record<string, string> = { blockers: 'Blocker', counters: 'Counter 2000', searchers: 'Searcher' }
     const irPara = (id: string) => document.getElementById(id)?.scrollIntoView({ behavior: 'smooth', block: 'start' })
     const dicas: { nivel: 'aviso' | 'info'; titulo: string; texto: string; botao: string; acao: () => void }[] = []
+    const PAPEL_DA_METRICA: Record<string, string> = {
+        'Searcher na mão': 'busca', 'Draw Power na mão': 'compra', 'Blocker na mão': 'blocker',
+        'Counter 2000 na mão': 'counter2k', 'Carta custo ≤2 na mão': 'barata', 'Carta custo 1 na mão': 'barata',
+    }
     for (const m of metricas) {
         if (m.motor && !motorOk) continue
         if (!m.b || m.p >= m.b.p25) continue
+        const papel = PAPEL_DA_METRICA[m.label] ?? (m.label.startsWith('Trigger') ? 'trigger' : '')
+        const temGrupo = !!analise?.sugestao_carta?.grupos?.some(g => g.papel === papel)
         dicas.push({
             nivel: 'aviso',
             titulo: TITULO_DICA[m.label] ?? (m.label.startsWith('Trigger') ? 'Poucos triggers na vida' : m.label),
             texto: `${m.label}: ${pct(m.p)} — nos últimos 25% do meta (mediana ${pct(m.b.mediana)}).`,
-            botao: 'Ver sugestão', acao: () => irPara('sec-sugestoes'),
+            botao: temGrupo ? 'Ver sugestões' : 'Ver detalhes',
+            acao: () => irPara(temGrupo ? `sug-${papel}` : 'sec-sugestoes'),
         })
     }
     for (const r of analise?.ratios ?? []) {
@@ -1537,7 +1549,7 @@ function AnalysisPageContent() {
                         </div>
                     </div>
                 )}
-                {(analise?.sugestao_carta?.sugestoes?.length ?? 0) > 0 && (
+                {(analise?.sugestao_carta?.grupos?.length ?? 0) > 0 && (
                     <div className="bg-gray-900 border border-gray-800 rounded-2xl p-6 mb-8">
                         <div className="flex items-baseline justify-between mb-1">
                             <div className="text-sm font-semibold text-gray-300 uppercase tracking-wide"><Icone size="text-2xl">💡</Icone>Cartas que podem faltar</div>
@@ -1550,22 +1562,32 @@ function AnalysisPageContent() {
                         <div className="text-xs text-gray-400 mb-5">
                             Sugestão a partir de dados, não regra: só você sabe se a carta cabe no plano do deck.
                         </div>
-                        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-                            {analise!.sugestao_carta!.sugestoes.map(s => (
-                                <div key={s.code} className="flex gap-4 rounded-xl border border-gray-800 bg-gray-950/60 p-3">
-                                    <CardImage src={s.image} alt={s.name}
-                                        className="w-24 h-auto flex-shrink-0 rounded-lg border border-gray-700 cursor-pointer hover:brightness-110 transition"
-                                        onClick={async () => {
-                                            // A carta sugerida nao esta no deck: busca a linha dela
-                                            // no banco pra abrir a MESMA janela de detalhe das outras.
-                                            const { data } = await supabase.from('cards').select('*')
-                                                .eq('card_set_id', s.code).limit(1)
-                                            if (data?.[0]) setSelectedCard(data[0] as Card)
-                                        }} />
-                                    <div className="min-w-0">
-                                        <div className="font-bold text-white leading-tight">{s.name}</div>
-                                        <div className="text-xs text-gray-400 mb-2">{s.code} · custo {s.cost}{s.color ? ` · ${s.color}` : ''}</div>
-                                        <div className="text-sm text-gray-300 leading-snug">{s.motivo}</div>
+                        <div className="space-y-6">
+                            {analise!.sugestao_carta!.grupos.map(g => (
+                                <div key={g.papel} id={`sug-${g.papel}`} className="scroll-mt-28">
+                                    <div className="mb-3 rounded-xl border border-amber-800/60 bg-amber-950/30 px-4 py-2.5">
+                                        <div className="font-semibold text-amber-200">{g.titulo}</div>
+                                        <div className="text-sm text-amber-100/80">{g.motivo}</div>
+                                    </div>
+                                    <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-3">
+                                        {g.cartas.map(s => (
+                                            <div key={s.code} className="flex gap-3 rounded-xl border border-gray-800 bg-gray-950/60 p-3">
+                                                <CardImage src={s.image} alt={s.name}
+                                                    className="w-20 h-auto flex-shrink-0 rounded-lg border border-gray-700 cursor-pointer hover:brightness-110 transition"
+                                                    onClick={async () => {
+                                                        // A carta sugerida nao esta no deck: busca a linha dela
+                                                        // no banco pra abrir a MESMA janela de detalhe das outras.
+                                                        const { data } = await supabase.from('cards').select('*')
+                                                            .eq('card_set_id', s.code).limit(1)
+                                                        if (data?.[0]) setSelectedCard(data[0] as Card)
+                                                    }} />
+                                                <div className="min-w-0">
+                                                    <div className="font-bold text-white leading-tight">{s.name}</div>
+                                                    <div className="text-xs text-gray-400 mb-1.5">{s.code} · custo {s.cost}{s.color ? ` · ${s.color}` : ''}</div>
+                                                    <div className="text-sm text-gray-300 leading-snug">{s.motivo}</div>
+                                                </div>
+                                            </div>
+                                        ))}
                                     </div>
                                 </div>
                             ))}
