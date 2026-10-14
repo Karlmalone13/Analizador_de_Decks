@@ -784,7 +784,7 @@ function AnalysisPageContent() {
     const [funcaoAberta, setFuncaoAberta] = useState<{ label: string; cards: DeckCard[] } | null>(null)
     // Abas Basico / Avancado / Area geek (14/10/2026, inspirado no DeckShop):
     // o resumo e as dicas primeiro; o detalhe tecnico so pra quem quiser.
-    const [aba, setAba] = useState<'basico' | 'avancado' | 'geek'>('basico')
+    const [aba, setAba] = useState<'basico' | 'avancado'>('basico')
     const [simDone, setSimDone] = useState(false)
     const [editando, setEditando] = useState(false)
     const [salvandoLista, setSalvandoLista] = useState(false)
@@ -812,7 +812,7 @@ function AnalysisPageContent() {
     // Ataque/Defesa MEDIDOS jogando contra o meta (14/10/2026, `measure_axes.py`):
     // a formula antiga ignorava o efeito do lider e inflava ataque.
     const [medido, setMedido] = useState<{
-        status: 'pending' | 'done'; n?: number; winrate?: number; turnos?: number
+        status: 'pending' | 'done' | 'erro'; n?: number; winrate?: number; turnos?: number
         ataque?: number; defesa?: number; nota_ataque?: number | null; nota_defesa?: number | null
     } | null>(null)
     const [analiseLoading, setAnaliseLoading] = useState(false)
@@ -889,7 +889,7 @@ function AnalysisPageContent() {
                     setMedido(d)
                     if (d.status === 'pending') timer = setTimeout(consulta, 4000)
                 })
-                .catch(() => { if (vivo) setMedido(null) })
+                .catch(() => { if (vivo) setMedido({ status: 'erro' }) })
         }
         queueMicrotask(() => setMedido({ status: 'pending' }))
         consulta()
@@ -1278,6 +1278,7 @@ function AnalysisPageContent() {
     const notasResumo = [
         ...eixos.filter(e => e.nota !== null).map(e => ({ label: e.label, nota: e.nota as number })),
         ...(medido?.status === 'pending' ? [{ label: 'Defesa e Ataque', nota: -1 }] : []),
+        ...(medido?.status === 'erro' || (medido?.status === 'done' && !medido.n) ? [{ label: 'Defesa e Ataque', nota: -2 }] : []),
         { label: 'Consistência', nota: consistScore },
     ]
     // Dicas: SO o que a analise ja aponta abaixo -- faixa do meta, Golden
@@ -1372,7 +1373,7 @@ function AnalysisPageContent() {
                 {/* ABAS (14/10/2026): Basico = resumo e dicas; Avancado = os numeros
                     do motor; Area geek = a matematica da mao inicial. */}
                 <nav className="sticky top-[57px] z-30 -mx-6 mb-6 flex gap-2 overflow-x-auto border-b border-gray-800 bg-gray-950/95 px-6 py-2 backdrop-blur">
-                    {([['basico', 'Básico'], ['avancado', 'Avançado'], ['geek', 'Área geek']] as const).map(([id, nome]) => (
+                    {([['basico', 'Básico'], ['avancado', 'Avançado']] as const).map(([id, nome]) => (
                         <button key={id} onClick={() => setAba(id)}
                             className={`whitespace-nowrap rounded-lg px-4 py-1.5 text-sm transition ${aba === id ? 'bg-orange-600 text-white' : 'bg-gray-800 text-gray-200 hover:bg-gray-700'}`}>
                             {nome}
@@ -1393,6 +1394,12 @@ function AnalysisPageContent() {
                         <div className="bg-gray-900 border border-gray-800 rounded-2xl p-6">
                             <div className="text-xs text-gray-400 uppercase tracking-wide mb-2">Nota do deck · comparada a {analise?.opening_benchmarks?.n_decks ?? 184} decks de torneio</div>
                             {notasResumo.map(n => {
+                                if (n.nota === -2) return (
+                                    <div key={n.label} className="flex items-center justify-between border-b border-gray-800 py-3 last:border-0">
+                                        <span className="text-gray-300">{n.label}</span>
+                                        <span className="text-sm text-yellow-300">indisponível — a medição não respondeu</span>
+                                    </div>
+                                )
                                 if (n.nota < 0) return (
                                     <div key={n.label} className="flex items-center justify-between border-b border-gray-800 py-3 last:border-0">
                                         <span className="text-gray-300">{n.label}</span>
@@ -1806,7 +1813,7 @@ function AnalysisPageContent() {
                 </div>
 
                 </>)}
-                {aba === 'geek' && (<>
+                {aba === 'avancado' && (<>
                 <div id="sec-abertura" className="scroll-mt-28" />
                 {/* ANALISADOR INTELIGENTE */}
                 <div className="bg-gray-900 border border-gray-800 rounded-2xl p-6 mb-8">
