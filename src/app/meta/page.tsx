@@ -100,12 +100,15 @@ export default function MetaPage() {
         setComp(null)
         const row = decks.find(d => d.id === id)
         if (!row) return
-        let parsed: { leader: string; cards: { code: string; qty: number }[] }
+        // Formato salvo pelo Deck Builder: { leader: Card, cards: [{ card: Card, quantity }] }
+        let parsed: { leader: { card_set_id: string } | null; cards: { card: { card_set_id: string }; quantity: number }[] }
         try { parsed = JSON.parse(row.cards) } catch { return }
+        if (!parsed.leader) return
         fetch(`${API_URL}/meta/compare`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ cards: [{ code: parsed.leader, qty: 1 }, ...parsed.cards] }),
+            body: JSON.stringify({ cards: [{ code: parsed.leader.card_set_id, qty: 1 },
+                ...parsed.cards.map(dc => ({ code: dc.card.card_set_id, qty: dc.quantity }))] }),
         })
             .then(r => r.ok ? r.json() : Promise.reject(r.status))
             .then(setComp)

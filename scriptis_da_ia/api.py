@@ -266,6 +266,45 @@ async def simulate(req: SimulateRequest, background_tasks: BackgroundTasks):
     return {"job_id": job_id, "status": "pending", "total_steps": total_steps}
 
 
+_EIXOS_CACHE_DIR = os.path.join(os.path.dirname(__file__), 'eixos_cache')
+
+
+def _medir_eixos_em_fundo(cards: list[dict], chave: str) -> None:
+    """Corpo de `/axes-measured`, em background: o motor joga o deck contra
+    o meta (~40 partidas) e grava o resultado no cache pela COMPOSICAO."""
+    import measure_axes
+    pend = os.path.join(_EIXOS_CACHE_DIR, f'{chave}.pending')
+    try:
+        r = measure_axes.com_nota(measure_axes.medir(cards))
+        with open(os.path.join(_EIXOS_CACHE_DIR, f'{chave}.json'), 'w', encoding='utf-8') as f:
+            json.dump(r, f)
+    finally:
+        if os.path.exists(pend):
+            os.remove(pend)
+
+
+@app.post("/axes-measured")
+def axes_measured(req: DeckRequest, background_tasks: BackgroundTasks):
+    """Ataque e Defesa MEDIDOS jogando contra o meta (`measure_axes.py`).
+    Nunca bloqueia: 1a chamada dispara o calculo e devolve `pending`; as
+    seguintes devolvem `done` com o resultado (cache pela composicao do deck,
+    entao editar o deck gera uma medicao nova)."""
+    os.makedirs(_EIXOS_CACHE_DIR, exist_ok=True)
+    cards = [{'code': e.code.split('_')[0], 'qty': e.qty} for e in req.cards]
+    chave = hashlib.sha256(json.dumps(sorted((c['code'], c['qty']) for c in cards)).encode()).hexdigest()[:24]
+    pronto = os.path.join(_EIXOS_CACHE_DIR, f'{chave}.json')
+    if os.path.exists(pronto):
+        with open(pronto, encoding='utf-8') as f:
+            return {'status': 'done', **json.load(f)}
+    pend = os.path.join(_EIXOS_CACHE_DIR, f'{chave}.pending')
+    # marcador velho (servidor reiniciado no meio da medicao) nao trava pra sempre
+    velho = os.path.exists(pend) and time.time() - os.path.getmtime(pend) > 600
+    if not os.path.exists(pend) or velho:
+        open(pend, 'w').close()
+        background_tasks.add_task(_medir_eixos_em_fundo, cards, chave)
+    return {'status': 'pending'}
+
+
 @app.get("/meta")
 def meta():
     """Lideres do meta (decks de torneio) e o perfil de cada um -- /meta do front."""

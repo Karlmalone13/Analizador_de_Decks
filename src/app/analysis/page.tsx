@@ -5,6 +5,7 @@ import { useSearchParams } from 'next/navigation'
 import { createClient } from '@/utils/supabase/client'
 import Navbar from '@/components/Navbar'
 import CardImage from '@/components/CardImage'
+import DeckEditor, { type EditorDeckCard } from '@/components/DeckEditor'
 
 interface Card {
     id: string
@@ -785,10 +786,35 @@ function AnalysisPageContent() {
     // o resumo e as dicas primeiro; o detalhe tecnico so pra quem quiser.
     const [aba, setAba] = useState<'basico' | 'avancado' | 'geek'>('basico')
     const [simDone, setSimDone] = useState(false)
+    const [editando, setEditando] = useState(false)
+    const [salvandoLista, setSalvandoLista] = useState(false)
+
+    // Salva a lista editada e troca o `deck`: todos os efeitos que dependem
+    // dele (analise do motor, Ataque/Defesa medidos, melhores maos) rodam de novo.
+    async function salvarLista(cards: EditorDeckCard[]) {
+        if (!deck) return
+        setSalvandoLista(true)
+        const novos = cards as unknown as DeckCard[]
+        const { error } = await supabase.from('decks').update({
+            cards: JSON.stringify({ leader: deck.leader, cards: novos }),
+            updated_at: new Date().toISOString(),
+        }).eq('id', deck.id)
+        setSalvandoLista(false)
+        if (error) { alert('Não foi possível salvar: ' + error.message); return }
+        setDeck({ ...deck, cards: novos })
+        setSimDone(false)
+        setEditando(false)
+    }
     const [melhoresMaosP1, setMelhoresMaosP1] = useState<MaoAvaliada[]>([])
     const [melhoresMaosP2, setMelhoresMaosP2] = useState<MaoAvaliada[]>([])
     const [arqDetectado, setArqDetectado] = useState<Arquetipo>('midrange')
     const [analise, setAnalise] = useState<AnaliseResult | null>(null)
+    // Ataque/Defesa MEDIDOS jogando contra o meta (14/10/2026, `measure_axes.py`):
+    // a formula antiga ignorava o efeito do lider e inflava ataque.
+    const [medido, setMedido] = useState<{
+        status: 'pending' | 'done'; n?: number; winrate?: number; turnos?: number
+        ataque?: number; defesa?: number; nota_ataque?: number | null; nota_defesa?: number | null
+    } | null>(null)
     const [analiseLoading, setAnaliseLoading] = useState(false)
     const [leaderStats, setLeaderStats] = useState<LeaderStats | null>(null)
 
@@ -839,6 +865,36 @@ function AnalysisPageContent() {
         // saida (`if (!deck || simDone) return`), entao reexecutar o efeito
         // quando ele vira true apenas cai no return -- nao regera as maos.
     }, [deck, analise, simDone])
+
+    // Ataque/Defesa medidos: a 1a chamada dispara a medicao (~40 partidas)
+    // e devolve `pending`; consulta de novo a cada 4s ate ficar pronta. Muda
+    // a composicao do deck -> mede de novo (o cache da API e por composicao).
+    useEffect(() => {
+        if (!deck || !deck.leader) return
+        const API_URL = process.env.NEXT_PUBLIC_ANALYZER_API || 'http://localhost:8000'
+        const cards = [
+            { code: deck.leader.card_set_id, qty: 1 },
+            ...deck.cards.map(dc => ({ code: dc.card.card_set_id, qty: dc.quantity })),
+        ]
+        let vivo = true
+        let timer: ReturnType<typeof setTimeout> | undefined
+        const consulta = () => {
+            fetch(`${API_URL}/axes-measured`, {
+                method: 'POST', headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ cards }),
+            })
+                .then(r => r.ok ? r.json() : Promise.reject(r.status))
+                .then(d => {
+                    if (!vivo) return
+                    setMedido(d)
+                    if (d.status === 'pending') timer = setTimeout(consulta, 4000)
+                })
+                .catch(() => { if (vivo) setMedido(null) })
+        }
+        queueMicrotask(() => setMedido({ status: 'pending' }))
+        consulta()
+        return () => { vivo = false; if (timer) clearTimeout(timer) }
+    }, [deck])
 
     // Análise de arquétipo/sinergia/coesão via API Python (fonte única)
     useEffect(() => {
@@ -1058,7 +1114,12 @@ function AnalysisPageContent() {
     ].map(e => {
         const dados = analise?.axes?.[e.chave]
         const b = bench(e.bench)
-        const nota = dados ? Math.round(posicaoNoMeta(dados.bruto, b) * 100) : null
+        // Defesa e Ataque: a nota e a MEDIDA jogando (posicao entre os decks de
+        // torneio medidos do mesmo jeito). Enquanto mede, fica null ("medindo").
+        const medidaNota = e.chave === 'ataque' ? medido?.nota_ataque : e.chave === 'defesa' ? medido?.nota_defesa : undefined
+        const nota = e.chave === 'sinergia'
+            ? (dados ? Math.round(posicaoNoMeta(dados.bruto, b) * 100) : null)
+            : (medidaNota ?? null)
         return { ...e, bruto: dados?.bruto ?? null, detalhes: dados?.detalhes ?? [], b, nota }
     })
 
@@ -1216,6 +1277,7 @@ function AnalysisPageContent() {
                   { txt: 'Muito fraco', cor: 'text-red-400' }
     const notasResumo = [
         ...eixos.filter(e => e.nota !== null).map(e => ({ label: e.label, nota: e.nota as number })),
+        ...(medido?.status === 'pending' ? [{ label: 'Defesa e Ataque', nota: -1 }] : []),
         { label: 'Consistência', nota: consistScore },
     ]
     // Dicas: SO o que a analise ja aponta abaixo -- faixa do meta, Golden
@@ -1291,9 +1353,22 @@ function AnalysisPageContent() {
                         <div className="text-gray-400 text-sm mb-1">Análise de Deck</div>
                         <h1 className="text-3xl font-bold">{deck.name}</h1>
                     </div>
-                    <a href="/deck" className="bg-gray-800 hover:bg-gray-700 px-4 py-2 rounded-xl text-sm transition">← Voltar ao Builder</a>
+                    <div className="flex gap-2">
+                        <button onClick={() => setEditando(v => !v)}
+                            className="bg-sky-700 hover:bg-sky-600 px-4 py-2 rounded-xl text-sm font-medium transition">✏️ Editar lista</button>
+                        <a href="/deck" className="bg-gray-800 hover:bg-gray-700 px-4 py-2 rounded-xl text-sm transition">← Voltar ao Builder</a>
+                    </div>
                 </div>
 
+                {editando && (
+                    <DeckEditor
+                        leaderColor={deck.leader?.card_color ?? null}
+                        cards={deck.cards as unknown as EditorDeckCard[]}
+                        salvando={salvandoLista}
+                        onSave={salvarLista}
+                        onCancel={() => setEditando(false)}
+                    />
+                )}
                 {/* ABAS (14/10/2026): Basico = resumo e dicas; Avancado = os numeros
                     do motor; Area geek = a matematica da mao inicial. */}
                 <nav className="sticky top-[57px] z-30 -mx-6 mb-6 flex gap-2 overflow-x-auto border-b border-gray-800 bg-gray-950/95 px-6 py-2 backdrop-blur">
@@ -1318,6 +1393,15 @@ function AnalysisPageContent() {
                         <div className="bg-gray-900 border border-gray-800 rounded-2xl p-6">
                             <div className="text-xs text-gray-400 uppercase tracking-wide mb-2">Nota do deck · comparada a {analise?.opening_benchmarks?.n_decks ?? 184} decks de torneio</div>
                             {notasResumo.map(n => {
+                                if (n.nota < 0) return (
+                                    <div key={n.label} className="flex items-center justify-between border-b border-gray-800 py-3 last:border-0">
+                                        <span className="text-gray-300">{n.label}</span>
+                                        <span className="flex items-center gap-2 text-sm text-gray-400">
+                                            <span className="h-4 w-4 animate-spin rounded-full border-2 border-sky-400 border-t-transparent" />
+                                            medindo: o motor está jogando o deck contra o meta…
+                                        </span>
+                                    </div>
+                                )
                                 const w = palavra(n.nota)
                                 return (
                                     <div key={n.label} className="flex items-center justify-between border-b border-gray-800 py-3 last:border-0">
@@ -1326,6 +1410,12 @@ function AnalysisPageContent() {
                                     </div>
                                 )
                             })}
+                            {medido?.status === 'done' && medido.n ? (
+                                <div className="text-xs text-gray-400 mt-3">
+                                    Defesa e Ataque medidos em {medido.n} partidas contra decks de torneio (metade começando, metade em segundo):
+                                    causa {medido.ataque?.toFixed(2)} e sofre {medido.defesa?.toFixed(2)} de dano por turno · vence {Math.round((medido.winrate ?? 0) * 100)}%.
+                                </div>
+                            ) : null}
                             {!motorOk && <div className="text-sm text-yellow-300 mt-3">Sinergia, Defesa e Ataque aparecem quando a análise do motor estiver disponível.</div>}
                         </div>
                     </div>

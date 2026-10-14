@@ -178,3 +178,5 @@ iniciar_bot.bat
 scriptis_da_ia/metrics/avaliacao_humana/
 # Config de launch do editor, por maquina.
 .claude/launch.json
+
+scriptis_da_ia/eixos_cache/
