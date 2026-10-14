@@ -775,6 +775,9 @@ function AnalysisPageContent() {
     // consumidor, o erro do bloco 751.
     const [cartasAbertas, setCartasAbertas] = useState<{ titulo: string; sub?: string; grupos: { rotulo: string; codes: string[] }[] } | null>(null)
     const [funcaoAberta, setFuncaoAberta] = useState<{ label: string; cards: DeckCard[] } | null>(null)
+    // Abas Basico / Avancado / Area geek (14/10/2026, inspirado no DeckShop):
+    // o resumo e as dicas primeiro; o detalhe tecnico so pra quem quiser.
+    const [aba, setAba] = useState<'basico' | 'avancado' | 'geek'>('basico')
     const [simDone, setSimDone] = useState(false)
     const [melhoresMaosP1, setMelhoresMaosP1] = useState<MaoAvaliada[]>([])
     const [melhoresMaosP2, setMelhoresMaosP2] = useState<MaoAvaliada[]>([])
@@ -1196,6 +1199,74 @@ function AnalysisPageContent() {
     ]
     const gruposFuncao = ['Ofensivo', 'Defensivo', 'Consistência']
 
+    // ── RESUMO (aba Basico) ────────────────────────────────────────────────
+    // Nota em PALAVRAS, nas mesmas faixas do indice que a tela ja usa
+    // (75/58/43/25 = posicao entre os decks de torneio).
+    const palavra = (n: number) =>
+        n >= 75 ? { txt: 'Ótimo', cor: 'text-emerald-400' } :
+        n >= 58 ? { txt: 'Bom', cor: 'text-sky-400' } :
+        n >= 43 ? { txt: 'Mediano', cor: 'text-yellow-400' } :
+        n >= 25 ? { txt: 'Fraco', cor: 'text-orange-400' } :
+                  { txt: 'Muito fraco', cor: 'text-red-400' }
+    const notasResumo = [
+        ...eixos.filter(e => e.nota !== null).map(e => ({ label: e.label, nota: e.nota as number })),
+        { label: 'Consistência', nota: consistScore },
+    ]
+    // Dicas: SO o que a analise ja aponta abaixo -- faixa do meta, Golden
+    // Ratio fora do ideal, custo medio acima do meta. Nada inventado aqui.
+    const TITULO_DICA: Record<string, string> = {
+        'Searcher na mão': 'Pouca busca', 'Draw Power na mão': 'Pouca compra de cartas',
+        'Blocker na mão': 'Poucos blockers', 'Counter 2000 na mão': 'Poucos counters de 2000',
+        'Counter 1000 na mão': 'Poucos counters de 1000', 'Carta custo ≤2 na mão': 'Poucas jogadas baratas',
+        'Carta custo 1 na mão': 'Poucas jogadas de custo 1',
+    }
+    const FUNCAO_DO_RATIO: Record<string, string> = { blockers: 'Blocker', counters: 'Counter 2000', searchers: 'Searcher' }
+    const irPara = (id: string) => document.getElementById(id)?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+    const dicas: { nivel: 'aviso' | 'info'; titulo: string; texto: string; botao: string; acao: () => void }[] = []
+    for (const m of metricas) {
+        if (m.motor && !motorOk) continue
+        if (!m.b || m.p >= m.b.p25) continue
+        dicas.push({
+            nivel: 'aviso',
+            titulo: TITULO_DICA[m.label] ?? (m.label.startsWith('Trigger') ? 'Poucos triggers na vida' : m.label),
+            texto: `${m.label}: ${pct(m.p)} — nos últimos 25% do meta (mediana ${pct(m.b.mediana)}).`,
+            botao: 'Ver sugestão', acao: () => irPara('sec-sugestoes'),
+        })
+    }
+    for (const r of analise?.ratios ?? []) {
+        if (r.status === 'ok') continue
+        const fn = funcoes.find(f => f.label === FUNCAO_DO_RATIO[r.name])
+        dicas.push({
+            nivel: 'aviso',
+            titulo: r.status === 'alto' ? `Excesso: ${r.name}` : `Falta: ${r.name}`,
+            texto: `${r.count} no deck (ideal ${r.ideal[0]}–${r.ideal[1]}) — ${r.advice}.`,
+            botao: r.status === 'alto' ? 'Ver quais tirar' : 'Ver as cartas',
+            acao: () => fn && setFuncaoAberta({ label: fn.label, cards: fn.cards }),
+        })
+    }
+    if (benchCusto && avgCostNum > benchCusto.p75) {
+        dicas.push({
+            nivel: 'info', titulo: 'Curva pesada',
+            texto: `Custo médio ${avgCost} contra ${benchCusto.mediana} da mediana do meta.`,
+            botao: 'Ver a curva', acao: () => irPara('sec-curva'),
+        })
+    }
+    const FUNCOES_BASICO: Record<string, string> = {
+        'Searcher': 'Encontra peças do deck.',
+        'Draw Power': 'Repõe a mão; sem ela o deck seca no meio do jogo.',
+        'Blocker': 'Protege a vida no turno do oponente.',
+        'Counter 2000': 'A defesa mais eficiente da mão.',
+        'Trigger': 'Vira jogada quando a vida é revelada.',
+        'Rush': 'Ataca no turno em que entra.',
+    }
+    const porCusto = [...allCards].sort((a, b) => (parseInt(a.card.card_cost || '0') || 0) - (parseInt(b.card.card_cost || '0') || 0))
+    const Miniatura = ({ dc }: { dc: DeckCard }) => (
+        <button onClick={() => setSelectedCard(dc.card)} className="relative w-16 flex-shrink-0" title={dc.card.card_name}>
+            <CardImage src={dc.card.card_image} alt={dc.card.card_name} className="w-16 h-auto rounded-md border border-gray-700 hover:brightness-110 transition" />
+            <span className="absolute bottom-1 right-1 rounded bg-black/80 px-1 text-[11px] font-bold">{dc.quantity}x</span>
+        </button>
+    )
+
     return (
         <div className="min-h-screen bg-gray-950 text-white flex flex-col">
             <Navbar />
@@ -1210,20 +1281,14 @@ function AnalysisPageContent() {
                     <a href="/deck" className="bg-gray-800 hover:bg-gray-700 px-4 py-2 rounded-xl text-sm transition">← Voltar ao Builder</a>
                 </div>
 
-                {/* INDICE (13/10/2026): a pagina tem uma duzia de blocos; o indice
-                    fixo leva direto a cada um. */}
+                {/* ABAS (14/10/2026): Basico = resumo e dicas; Avancado = os numeros
+                    do motor; Area geek = a matematica da mao inicial. */}
                 <nav className="sticky top-[57px] z-30 -mx-6 mb-6 flex gap-2 overflow-x-auto border-b border-gray-800 bg-gray-950/95 px-6 py-2 backdrop-blur">
-                    {[
-                        ['sec-visao', 'Visão geral'],
-                        ['sec-sugestoes', 'O que falta'],
-                        ['sec-perfil', 'Perfil de jogo'],
-                        ['sec-abertura', 'Mão inicial'],
-                        ['sec-estrutura', 'Estrutura e sinergias'],
-                    ].map(([id, nome]) => (
-                        <a key={id} href={`#${id}`}
-                            className="whitespace-nowrap rounded-lg bg-gray-800 px-3 py-1.5 text-sm text-gray-200 transition hover:bg-gray-700">
+                    {([['basico', 'Básico'], ['avancado', 'Avançado'], ['geek', 'Área geek']] as const).map(([id, nome]) => (
+                        <button key={id} onClick={() => setAba(id)}
+                            className={`whitespace-nowrap rounded-lg px-4 py-1.5 text-sm transition ${aba === id ? 'bg-orange-600 text-white' : 'bg-gray-800 text-gray-200 hover:bg-gray-700'}`}>
                             {nome}
-                        </a>
+                        </button>
                     ))}
                 </nav>
                 {!analiseLoading && !motorOk && (
@@ -1231,6 +1296,48 @@ function AnalysisPageContent() {
                         ⚠️ A análise do motor está indisponível agora (a API não respondeu). Os números que dependem do efeito das cartas — Rush, Blocker, Searcher, Draw Power, Trigger, sinergias e sugestões — aparecem como <b>—</b> até ela voltar. Custos, cores e counters continuam valendo.
                     </div>
                 )}
+                {aba === 'basico' && (<>
+                    <div className="grid grid-cols-1 lg:grid-cols-[240px_1fr] gap-6 mb-8">
+                        <div className="bg-gray-900 border border-gray-800 rounded-2xl p-4">
+                            {deck.leader && <CardImage src={deck.leader.card_image} alt={deck.leader.card_name}
+                                className="w-full h-auto rounded-xl cursor-pointer" onClick={() => setSelectedCard(deck.leader)} />}
+                        </div>
+                        <div className="bg-gray-900 border border-gray-800 rounded-2xl p-6">
+                            <div className="text-xs text-gray-400 uppercase tracking-wide mb-2">Nota do deck · comparada a {analise?.opening_benchmarks?.n_decks ?? 184} decks de torneio</div>
+                            {notasResumo.map(n => {
+                                const w = palavra(n.nota)
+                                return (
+                                    <div key={n.label} className="flex items-center justify-between border-b border-gray-800 py-3 last:border-0">
+                                        <span className="text-gray-300">{n.label}</span>
+                                        <span className={`text-xl font-bold ${w.cor}`}>{w.txt}<span className="ml-2 text-xs font-normal text-gray-400">{n.nota}/100</span></span>
+                                    </div>
+                                )
+                            })}
+                            {!motorOk && <div className="text-sm text-yellow-300 mt-3">Sinergia, Defesa e Ataque aparecem quando a análise do motor estiver disponível.</div>}
+                        </div>
+                    </div>
+
+                    <div className="mb-8">
+                        <div className="text-sm font-semibold text-gray-300 uppercase tracking-wide mb-1"><Icone size="text-2xl">🧭</Icone>Dicas para o deck</div>
+                        <div className="text-xs text-gray-400 mb-3">A partir dos números da análise. O deck pode funcionar bem do jeito que está.</div>
+                        {dicas.length === 0 && <div className="bg-gray-900 border border-gray-800 rounded-xl px-4 py-3 text-sm text-gray-300">Nenhum alerta: nada abaixo do meta nas peças que a análise mede.</div>}
+                        <div className="space-y-2">
+                            {dicas.map((d, i) => (
+                                <div key={i} className="flex items-stretch overflow-hidden rounded-xl border border-gray-800 bg-gray-900">
+                                    <div className={`flex w-20 flex-shrink-0 items-center justify-center text-sm font-bold ${d.nivel === 'aviso' ? 'bg-amber-900 text-amber-300' : 'bg-teal-900 text-teal-300'}`}>
+                                        {d.nivel === 'aviso' ? 'Aviso' : 'Info'}
+                                    </div>
+                                    <div className="flex-1 px-4 py-3">
+                                        <div className="font-semibold text-white">{d.titulo}</div>
+                                        <div className="text-sm text-gray-300">{d.texto}</div>
+                                    </div>
+                                    <button onClick={d.acao} className="m-3 self-center whitespace-nowrap rounded-lg bg-blue-600 px-3 py-2 text-sm text-white transition hover:bg-blue-500">{d.botao} →</button>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                </>)}
+                {aba === 'avancado' && (<>
                 <div id="sec-visao" className="scroll-mt-28" />
                 {/* TOP */}
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
@@ -1415,6 +1522,8 @@ function AnalysisPageContent() {
                     etc". Os tres eixos vem do motor (`deck_axes.py`), dos
                     efeitos parseados, e a nota 0-100 e a posicao do deck entre
                     os decks de torneio -- nao um teto inventado. */}
+                </>)}
+                {aba === 'basico' && (<>
                 <div id="sec-sugestoes" className="scroll-mt-28" />
                 {/* Carta que falta, e o motivo (13/10/2026). Calculada na API
                     (`suggest_card.py`): com decks de torneio do lider, a carta
@@ -1464,6 +1573,37 @@ function AnalysisPageContent() {
                     </div>
                 )}
 
+                    <div className="bg-gray-900 border border-gray-800 rounded-2xl p-6 mb-8">
+                        <div className="text-sm font-semibold text-gray-300 uppercase tracking-wide mb-1"><Icone size="text-2xl">🛡️</Icone>Cartas por função</div>
+                        <div className="text-xs text-gray-400 mb-5">O que cada carta faz, segundo o motor. Clique numa carta para ver maior.</div>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            {funcoes.filter(f => FUNCOES_BASICO[f.label]).map(f => {
+                                const qtd = countQty(f.cards)
+                                const semMotor = !f.impresso && !motorOk
+                                return (
+                                    <div key={f.label}>
+                                        <div className="flex items-baseline gap-3">
+                                            <span className="font-semibold text-white">{f.label}</span>
+                                            <span className="text-sm text-gray-400">{semMotor ? '—' : `${qtd} cartas`}{f.ratio ? ` · ideal ${f.ratio.ideal[0]}–${f.ratio.ideal[1]}` : ''}</span>
+                                        </div>
+                                        <div className="text-xs text-gray-400 mb-2">{FUNCOES_BASICO[f.label]}</div>
+                                        {semMotor ? <div className="text-sm text-gray-500">indisponível sem a análise do motor</div>
+                                            : f.cards.length === 0 ? <div className="text-sm text-red-400">Nenhuma carta</div>
+                                            : <div className="flex flex-wrap gap-2">{f.cards.map(dc => <Miniatura key={dc.card.id} dc={dc} />)}</div>}
+                                    </div>
+                                )
+                            })}
+                        </div>
+                    </div>
+
+                    <div id="sec-curva" className="scroll-mt-28" />
+                    <div className="bg-gray-900 border border-gray-800 rounded-2xl p-6 mb-8">
+                        <div className="text-sm font-semibold text-gray-300 uppercase tracking-wide mb-1"><Icone size="text-2xl">📈</Icone>Curva — cartas por custo</div>
+                        <div className="text-xs text-gray-400 mb-4">O deck inteiro em ordem de custo · custo médio {avgCost}{benchCusto ? ` (meta: ${benchCusto.mediana})` : ''}.</div>
+                        <div className="flex flex-wrap gap-2">{porCusto.map(dc => <Miniatura key={dc.card.id} dc={dc} />)}</div>
+                    </div>
+                </>)}
+                {aba === 'avancado' && (<>
                 <div id="sec-perfil" className="scroll-mt-28" />
                 {eixos.some(e => e.nota !== null) && (
                     <div className="bg-gray-900 border border-gray-800 rounded-2xl p-6 mb-8">
@@ -1547,6 +1687,8 @@ function AnalysisPageContent() {
                     ))}
                 </div>
 
+                </>)}
+                {aba === 'geek' && (<>
                 <div id="sec-abertura" className="scroll-mt-28" />
                 {/* ANALISADOR INTELIGENTE */}
                 <div className="bg-gray-900 border border-gray-800 rounded-2xl p-6 mb-8">
@@ -1651,6 +1793,8 @@ function AnalysisPageContent() {
                         </div>
                     </div>
                 )}
+                </>)}
+                {aba === 'avancado' && (<>
                 <div id="sec-estrutura" className="scroll-mt-28" />
                 {!analiseLoading && !analise && deck?.leader && (
                     <div className="bg-gray-900 border border-gray-800 rounded-2xl p-6 mb-8 flex items-center gap-3 text-yellow-400 text-sm">
@@ -1793,6 +1937,7 @@ function AnalysisPageContent() {
                         )}
                     </div>
                 )}
+                </>)}
                 {/* Bloco "Validação por Simulação" REMOVIDO em 06/09 a pedido do
                     usuário. Ele quebrava 24 partidas em 5 faixas de score de mão e
                     reportava win rate por faixa -- com 2 a 7 partidas por faixa, o
