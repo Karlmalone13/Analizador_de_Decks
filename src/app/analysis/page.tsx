@@ -877,6 +877,7 @@ function AnalysisPageContent() {
             ...deck.cards.map(dc => ({ code: dc.card.card_set_id, qty: dc.quantity })),
         ]
         let vivo = true
+        let falhas = 0
         let timer: ReturnType<typeof setTimeout> | undefined
         const consulta = () => {
             fetch(`${API_URL}/axes-measured`, {
@@ -889,7 +890,13 @@ function AnalysisPageContent() {
                     setMedido(d)
                     if (d.status === 'pending') timer = setTimeout(consulta, 4000)
                 })
-                .catch(() => { if (vivo) setMedido({ status: 'erro' }) })
+                // API fora por um instante (reiniciando, por exemplo): tenta de
+                // novo algumas vezes antes de dizer "indisponivel".
+                .catch(() => {
+                    if (!vivo) return
+                    if (++falhas <= 8) timer = setTimeout(consulta, 4000)
+                    else setMedido({ status: 'erro' })
+                })
         }
         queueMicrotask(() => setMedido({ status: 'pending' }))
         consulta()
