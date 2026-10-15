@@ -1335,7 +1335,9 @@ function AnalysisPageContent() {
         'Carta custo 1 na mão': 'Poucas jogadas de custo 1',
     }
     const FUNCAO_DO_RATIO: Record<string, string> = { blockers: 'Blocker', counters: 'Counter 2000', searchers: 'Searcher' }
-    const cartaDoDeck = (code: string) => allCards.find(dc => (dc.card.card_set_id || '').split('_')[0] === code)
+    // pelo codigo (formato atual) ou pelo nome (resposta antiga/cache)
+    const cartaDoDeck = (code: string) => allCards.find(dc =>
+        (dc.card.card_set_id || '').split('_')[0] === code || dc.card.card_name === code)
     const agrupaSai = (sai: string[]) => {
         const n = new Map<string, number>()
         for (const s of sai) n.set(s, (n.get(s) ?? 0) + 1)
