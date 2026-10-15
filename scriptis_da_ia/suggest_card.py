@@ -369,6 +369,8 @@ def sugerir(cards: list[dict], n: int = 6, benchmarks: dict | None = None,
                 -uso_total[c],
                 info.get('cost') or 0)
 
+    # sai primeiro o que a analise aponta em EXCESSO (mesmo criterio da tela)
+    sair_excesso = [c for r in ratios or [] if r.get('status') == 'alto' for c in r.get('codes') or []]
     grupos, usadas = [], set()
     for papel, (_, motivo) in sorted(fraquezas.items(), key=lambda kv: -kv[1][0]):
         teste = PAPEIS[papel][1]
@@ -399,7 +401,14 @@ def sugerir(cards: list[dict], n: int = 6, benchmarks: dict | None = None,
                 porque.append(f'em {usa_lider[code]} de {len(do_lider)} decks de torneio deste líder')
             elif uso_total[code]:
                 porque.append(f'em {uso_total[code]} decks de torneio')
-            cartas.append(carta(code, ', '.join(porque) + '.'))
+            # A TROCA proposta (pedido do usuario, 14/10/2026: "quantas copias, e no
+            # lugar de qual carta?"): a MESMA regra que o teste jogando usa
+            # (`measure_axes._variante`), entao o que a tela propoe e o que foi testado.
+            from measure_axes import COPIAS_TESTE, _variante
+            _, sai = _variante([{'code': lider, 'qty': 1}] + [{'code': k, 'qty': v} for k, v in deck.items()],
+                               code, sair_excesso)
+            cartas.append(carta(code, ', '.join(porque) + '.',
+                                {'copias': COPIAS_TESTE, 'sai': sai}))
             nomes.add(info.get('name'))
             usadas.add(code)
             if len(cartas) >= POR_FRAQUEZA:

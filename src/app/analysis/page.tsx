@@ -96,7 +96,7 @@ interface AnaliseResult {
             papel: string
             titulo: string
             motivo: string
-            cartas: { code: string; name: string; cost: number; color?: string; image?: string; motivo: string }[]
+            cartas: { code: string; name: string; cost: number; color?: string; image?: string; motivo: string; copias?: number; sai?: string[] }[]
         }[]
     }
     axes?: Record<string, { bruto: number; detalhes: { tipo: string; desc: string; n?: number; pontos?: number }[] }>
@@ -1335,6 +1335,11 @@ function AnalysisPageContent() {
         'Carta custo 1 na mão': 'Poucas jogadas de custo 1',
     }
     const FUNCAO_DO_RATIO: Record<string, string> = { blockers: 'Blocker', counters: 'Counter 2000', searchers: 'Searcher' }
+    const listaSai = (sai: string[]) => {
+        const n = new Map<string, number>()
+        for (const s of sai) n.set(s, (n.get(s) ?? 0) + 1)
+        return [...n.entries()].map(([nome, q]) => `${q}x ${nome}`).join(' e ')
+    }
     const irPara = (id: string) => document.getElementById(id)?.scrollIntoView({ behavior: 'smooth', block: 'start' })
     const dicas: { nivel: 'aviso' | 'info'; titulo: string; texto: string; botao: string; acao: () => void }[] = []
     const PAPEL_DA_METRICA: Record<string, string> = {
@@ -1734,6 +1739,11 @@ function AnalysisPageContent() {
                                                 <div className="min-w-0">
                                                     <div className="font-bold text-white leading-tight">{s.name}</div>
                                                     <div className="text-xs text-gray-400 mb-1.5">{s.code} · custo {s.cost}{s.color ? ` · ${s.color}` : ''}</div>
+                                                    {s.copias ? (
+                                                        <div className="mb-2 rounded-lg border border-sky-700/60 bg-sky-950/40 px-2 py-1.5 text-sm font-semibold text-sky-100">
+                                                            💡 Considere usar {s.copias} cópias desta carta{s.sai?.length ? ` no lugar de ${listaSai(s.sai)}` : ''}.
+                                                        </div>
+                                                    ) : null}
                                                     <div className="text-sm text-gray-300 leading-snug">{s.motivo}</div>
                                                     {(() => {
                                                         const r = teste?.candidatas?.[s.code]
@@ -1744,7 +1754,7 @@ function AnalysisPageContent() {
                                                         return (
                                                             <div className={`mt-2 rounded-lg border px-2 py-1.5 text-xs ${cor}`}>
                                                                 <div className="font-semibold">Testada: {r.veredito} · {pp(r.d_winrate)} de vitórias</div>
-                                                                <div className="opacity-80">{r.n} partidas · margem ±{Math.round(r.margem * 100)}% · sai {r.sai.length}x {r.sai[0]}</div>
+                                                                <div className="opacity-80">com essa troca, em {r.n} partidas · margem ±{Math.round(r.margem * 100)}%</div>
                                                             </div>
                                                         )
                                                     })()}
