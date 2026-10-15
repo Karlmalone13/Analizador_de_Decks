@@ -136,10 +136,10 @@ export default function DeckEditor({ leaderColor, cards, salvando, onSave, onCan
                 </div>
             )}
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 2xl:grid-cols-5 gap-2">
                 {ordenado.map(dc => (
                     <div key={dc.card.id} className="flex items-center gap-3 rounded-xl bg-gray-800 px-3 py-2">
-                        <CardImage src={dc.card.card_image} alt={dc.card.card_name} className="w-10 h-auto rounded border border-gray-700" />
+                        <CardImage src={dc.card.card_image} alt={dc.card.card_name} className="w-14 h-auto flex-shrink-0 rounded border border-gray-700" />
                         <div className="min-w-0 flex-1">
                             <div className="truncate text-sm text-white">{dc.card.card_name}</div>
                             <div className="text-xs text-gray-400">custo {custo(dc.card)} · {dc.card.card_set_id}</div>
