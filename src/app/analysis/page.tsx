@@ -789,6 +789,37 @@ function AnalysisPageContent() {
     const [simDone, setSimDone] = useState(false)
     const [editando, setEditando] = useState(false)
     const [salvandoLista, setSalvandoLista] = useState(false)
+    // abrir o editor vindo de "+ Adicionar" com o deck cheio
+    const [editorInicio, setEditorInicio] = useState<{ cards: EditorDeckCard[]; aviso: string; retirar: string[] } | null>(null)
+
+    // "+ Adicionar" numa carta sugerida (14/10/2026): deck com espaco -> entra
+    // e salva direto; deck cheio -> abre a lista ja com ela, pedindo pra tirar.
+    async function adicionarSugerida(code: string, copias: number, sai: string[]) {
+        if (!deck) return
+        const { data } = await supabase.from('cards').select('*').eq('card_set_id', code).limit(1)
+        const carta = data?.[0] as Card | undefined
+        if (!carta) { alert('Carta não encontrada no banco.'); return }
+        const base = (c: Card) => (c.card_set_id || '').split('_')[0]
+        const atual = deck.cards.map(dc => ({ ...dc }))
+        const ja = atual.find(dc => base(dc.card) === code)
+        const antes = ja?.quantity ?? 0
+        const entra = Math.max(0, Math.min(4, antes + copias) - antes)
+        if (entra === 0) { alert('O deck já tem 4 cópias desta carta.'); return }
+        if (ja) ja.quantity += entra
+        else atual.push({ card: carta, quantity: entra })
+        const total = atual.reduce((s, dc) => s + dc.quantity, 0)
+        if (total <= 50) {
+            await salvarLista(atual as unknown as EditorDeckCard[])
+            return
+        }
+        setEditorInicio({
+            cards: atual as unknown as EditorDeckCard[],
+            aviso: `${carta.card_name} entrou com ${entra} cópia(s). O deck passou de 50: retire ${total - 50} carta(s).`,
+            retirar: sai,
+        })
+        setEditando(true)
+        window.scrollTo({ top: 0, behavior: 'smooth' })
+    }
 
     // Salva a lista editada e troca o `deck`: todos os efeitos que dependem
     // dele (analise do motor, Ataque/Defesa medidos, melhores maos) rodam de novo.
@@ -1418,11 +1449,14 @@ function AnalysisPageContent() {
 
                 {editando && (
                     <DeckEditor
+                        key={editorInicio ? 'adicionar' : 'editar'}
                         leaderColor={deck.leader?.card_color ?? null}
-                        cards={deck.cards as unknown as EditorDeckCard[]}
+                        cards={editorInicio?.cards ?? (deck.cards as unknown as EditorDeckCard[])}
+                        aviso={editorInicio?.aviso}
+                        retirarSugeridas={editorInicio?.retirar}
                         salvando={salvandoLista}
-                        onSave={salvarLista}
-                        onCancel={() => setEditando(false)}
+                        onSave={async c => { await salvarLista(c); setEditorInicio(null) }}
+                        onCancel={() => { setEditando(false); setEditorInicio(null) }}
                     />
                 )}
                 {/* ABAS (14/10/2026): Basico = resumo e dicas; Avancado = os numeros
@@ -1730,8 +1764,9 @@ function AnalysisPageContent() {
                                     <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-3">
                                         {[...g.cartas].sort((a, b) => (teste?.candidatas?.[b.code]?.d_winrate ?? 0) - (teste?.candidatas?.[a.code]?.d_winrate ?? 0)).map(s => (
                                             <div key={s.code} className="flex gap-3 rounded-xl border border-gray-800 bg-gray-950/60 p-3">
+                                                <div className="flex w-20 flex-shrink-0 flex-col gap-1.5 self-start">
                                                 <CardImage src={s.image} alt={s.name}
-                                                    className="w-20 h-auto self-start flex-shrink-0 rounded-lg border border-gray-700 cursor-pointer hover:brightness-110 transition"
+                                                    className="w-20 h-auto rounded-lg border border-gray-700 cursor-pointer hover:brightness-110 transition"
                                                     onClick={async () => {
                                                         // A carta sugerida nao esta no deck: busca a linha dela
                                                         // no banco pra abrir a MESMA janela de detalhe das outras.
@@ -1739,6 +1774,12 @@ function AnalysisPageContent() {
                                                             .eq('card_set_id', s.code).limit(1)
                                                         if (data?.[0]) setSelectedCard(data[0] as Card)
                                                     }} />
+                                                    <button onClick={() => adicionarSugerida(s.code, s.copias ?? 1, s.sai ?? [])}
+                                                        disabled={salvandoLista}
+                                                        className="rounded-lg bg-emerald-600 px-1 py-1.5 text-xs font-semibold text-white transition hover:bg-emerald-500 disabled:opacity-50">
+                                                        + Adicionar
+                                                    </button>
+                                                </div>
                                                 <div className="min-w-0">
                                                     <div className="font-bold text-white leading-tight">{s.name}</div>
                                                     <div className="text-xs text-gray-400 mb-1.5">{s.code} · custo {s.cost}{s.color ? ` · ${s.color}` : ''}</div>

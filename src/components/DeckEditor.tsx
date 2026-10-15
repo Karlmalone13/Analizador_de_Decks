@@ -27,10 +27,14 @@ export interface EditorDeckCard {
 const MAX_COPIAS = 4
 const TAMANHO = 50
 
-export default function DeckEditor({ leaderColor, cards, salvando, onSave, onCancel }: {
+export default function DeckEditor({ leaderColor, cards, salvando, onSave, onCancel, aviso: avisoInicial, retirarSugeridas }: {
     leaderColor: string | null
     cards: EditorDeckCard[]
     salvando: boolean
+    /** mensagem de quem abriu o editor (ex.: "deck cheio, retire 2 cartas") */
+    aviso?: string
+    /** codigos que a sugestao propoe tirar -- vira um botao de um clique */
+    retirarSugeridas?: string[]
     onSave: (cards: EditorDeckCard[]) => void
     onCancel: () => void
 }) {
@@ -38,9 +42,18 @@ export default function DeckEditor({ leaderColor, cards, salvando, onSave, onCan
     const [rascunho, setRascunho] = useState<EditorDeckCard[]>(() => cards.map(dc => ({ ...dc })))
     const [busca, setBusca] = useState('')
     const [achadas, setAchadas] = useState<EditorCard[]>([])
-    const [aviso, setAviso] = useState('')
+    const [aviso, setAviso] = useState(avisoInicial ?? '')
 
     const total = rascunho.reduce((s, dc) => s + dc.quantity, 0)
+    const base = (c: EditorCard) => (c.card_set_id || '').split('_')[0]
+    function retiraSugeridas() {
+        let r = [...rascunho]
+        for (const code of retirarSugeridas ?? []) {
+            r = r.map(dc => base(dc.card) === code && dc.quantity > 0 ? { ...dc, quantity: dc.quantity - 1 } : dc)
+        }
+        setRascunho(r.filter(dc => dc.quantity > 0))
+        setAviso('')
+    }
     const coresLider = (leaderColor || '').split(/[\s/]/).filter(Boolean)
     const custo = (c: EditorCard) => parseInt(c.card_cost || '0') || 0
     const ordenado = [...rascunho].sort((a, b) => custo(a.card) - custo(b.card) || a.card.card_name.localeCompare(b.card.card_name))
@@ -87,16 +100,27 @@ export default function DeckEditor({ leaderColor, cards, salvando, onSave, onCan
                 <div className="flex items-center gap-3">
                     <span className={`text-sm font-bold ${total === TAMANHO ? 'text-emerald-400' : 'text-yellow-400'}`}>{total}/{TAMANHO}</span>
                     <button onClick={onCancel} className="rounded-xl bg-gray-800 px-4 py-2 text-sm hover:bg-gray-700">Cancelar</button>
-                    <button onClick={() => onSave(rascunho)} disabled={salvando}
+                    <button onClick={() => onSave(rascunho)} disabled={salvando || total > TAMANHO}
+                        title={total > TAMANHO ? `Retire ${total - TAMANHO} carta(s) para salvar` : undefined}
                         className="rounded-xl bg-sky-600 px-4 py-2 text-sm font-semibold hover:bg-sky-500 disabled:opacity-50">
                         {salvando ? 'Salvando…' : 'Salvar e recalcular'}
                     </button>
                 </div>
             </div>
-            {total !== TAMANHO && (
+            {total < TAMANHO && (
                 <div className="mb-3 text-sm text-yellow-300">O deck tem {total} cartas; o jogo exige {TAMANHO}. Dá para salvar assim, mas a análise compara com decks de 50.</div>
             )}
             {aviso && <div className="mb-3 text-sm text-red-300">{aviso}</div>}
+            {total > TAMANHO && (
+                <div className="mb-3 flex flex-wrap items-center gap-3 rounded-xl border border-amber-700/60 bg-amber-950/40 px-4 py-2.5 text-sm text-amber-100">
+                    <span>Deck cheio: retire {total - TAMANHO} carta(s) para salvar.</span>
+                    {(retirarSugeridas?.length ?? 0) > 0 && (
+                        <button onClick={retiraSugeridas} className="rounded-lg bg-amber-600 px-3 py-1.5 font-semibold text-white hover:bg-amber-500">
+                            Retirar as cartas sugeridas
+                        </button>
+                    )}
+                </div>
+            )}
 
             <input value={busca} onChange={e => procura(e.target.value)} placeholder="Adicionar carta: nome ou código (ex: Hiyori, OP15-015)"
                 className="mb-3 w-full rounded-xl border border-gray-700 bg-gray-950 px-4 py-2.5 text-white outline-none focus:border-sky-500" />
