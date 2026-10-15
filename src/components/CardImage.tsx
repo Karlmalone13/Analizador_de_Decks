@@ -63,6 +63,11 @@ export default function CardImage({
             src={src} alt={alt} width={W} height={H}
             className={className} style={style} onClick={onClick} title={title}
             sizes={sizes || '(max-width: 768px) 30vw, 200px'}
+            // Sem o otimizador do Next (14/10/2026): ele baixava cada arte do
+            // optcgapi NO SERVIDOR e dava timeout em lote ("The operation was
+            // aborted due to timeout"), deixando carta quebrada e a pagina lenta.
+            // O navegador busca direto, que e o que o <img> antigo fazia.
+            unoptimized
             onError={() => setFalhou(true)}
         />
     )
