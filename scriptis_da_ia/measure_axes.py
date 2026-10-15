@@ -155,7 +155,7 @@ def _variante(cards: list[dict], cand: str, sair: list[str]) -> tuple[list[dict]
         tira = min(c['qty'], falta)
         c['qty'] -= tira
         falta -= tira
-        saiu += [db.get(c['code'], {}).get('name', c['code'])] * tira
+        saiu += [c['code']] * tira   # codigos: a tela busca a arte/nome no proprio deck
     novo = [c for c in ordem if c['qty'] > 0]
     ja = next((c for c in novo if c['code'] == cand), None)
     if ja:

@@ -1335,10 +1335,11 @@ function AnalysisPageContent() {
         'Carta custo 1 na mão': 'Poucas jogadas de custo 1',
     }
     const FUNCAO_DO_RATIO: Record<string, string> = { blockers: 'Blocker', counters: 'Counter 2000', searchers: 'Searcher' }
-    const listaSai = (sai: string[]) => {
+    const cartaDoDeck = (code: string) => allCards.find(dc => (dc.card.card_set_id || '').split('_')[0] === code)
+    const agrupaSai = (sai: string[]) => {
         const n = new Map<string, number>()
         for (const s of sai) n.set(s, (n.get(s) ?? 0) + 1)
-        return [...n.entries()].map(([nome, q]) => `${q}x ${nome}`).join(' e ')
+        return [...n.entries()].map(([code, q]) => ({ code, q, dc: cartaDoDeck(code) }))
     }
     const irPara = (id: string) => document.getElementById(id)?.scrollIntoView({ behavior: 'smooth', block: 'start' })
     const dicas: { nivel: 'aviso' | 'info'; titulo: string; texto: string; botao: string; acao: () => void }[] = []
@@ -1740,24 +1741,25 @@ function AnalysisPageContent() {
                                                     <div className="font-bold text-white leading-tight">{s.name}</div>
                                                     <div className="text-xs text-gray-400 mb-1.5">{s.code} · custo {s.cost}{s.color ? ` · ${s.color}` : ''}</div>
                                                     {s.copias ? (
-                                                        <div className="mb-2 rounded-lg border border-sky-700/60 bg-sky-950/40 px-2 py-1.5 text-sm font-semibold text-sky-100">
-                                                            💡 Considere usar {s.copias} cópias desta carta{s.sai?.length ? ` no lugar de ${listaSai(s.sai)}` : ''}.
+                                                        <div className="rounded-lg border border-sky-700/60 bg-sky-950/40 px-2 py-2 text-sm font-semibold text-sky-100"
+                                                            title={(() => {
+                                                                const r = teste?.candidatas?.[s.code]
+                                                                return r ? `Testada com essa troca em ${r.n} partidas: ${r.veredito} (${r.d_winrate >= 0 ? '+' : ''}${Math.round(r.d_winrate * 100)}% de vitórias, margem ±${Math.round(r.margem * 100)}%)` : 'Teste jogando em andamento'
+                                                            })()}>
+                                                            💡 Considere usar {s.copias} cópias desta carta{s.sai?.length ? ' no lugar de:' : '.'}
+                                                            {s.sai?.length ? (
+                                                                <div className="mt-2 flex flex-wrap gap-2">
+                                                                    {agrupaSai(s.sai).map(x => (
+                                                                        <button key={x.code} onClick={() => x.dc && setSelectedCard(x.dc.card)}
+                                                                            className="flex items-center gap-2 rounded-md bg-gray-900/70 pr-2 text-left">
+                                                                            {x.dc && <CardImage src={x.dc.card.card_image} alt={x.dc.card.card_name} className="w-10 h-auto rounded border border-gray-700" />}
+                                                                            <span className="text-xs font-normal text-gray-200">{x.q}x {x.dc?.card.card_name ?? x.code}</span>
+                                                                        </button>
+                                                                    ))}
+                                                                </div>
+                                                            ) : null}
                                                         </div>
                                                     ) : null}
-                                                    <div className="text-sm text-gray-300 leading-snug">{s.motivo}</div>
-                                                    {(() => {
-                                                        const r = teste?.candidatas?.[s.code]
-                                                        if (teste?.status === 'pending') return <div className="mt-2 flex items-center gap-2 text-xs text-sky-300"><span className="h-3 w-3 animate-spin rounded-full border-2 border-sky-400 border-t-transparent" />testando jogando contra o meta…</div>
-                                                        if (!r) return null
-                                                        const cor = r.veredito === 'ajuda' ? 'bg-emerald-900/60 text-emerald-200 border-emerald-700' : r.veredito === 'atrapalha' ? 'bg-red-900/50 text-red-200 border-red-800' : 'bg-gray-800 text-gray-300 border-gray-700'
-                                                        const pp = (x: number) => `${x >= 0 ? '+' : ''}${Math.round(x * 100)}%`
-                                                        return (
-                                                            <div className={`mt-2 rounded-lg border px-2 py-1.5 text-xs ${cor}`}>
-                                                                <div className="font-semibold">Testada: {r.veredito} · {pp(r.d_winrate)} de vitórias</div>
-                                                                <div className="opacity-80">com essa troca, em {r.n} partidas · margem ±{Math.round(r.margem * 100)}%</div>
-                                                            </div>
-                                                        )
-                                                    })()}
                                                 </div>
                                             </div>
                                         ))}
