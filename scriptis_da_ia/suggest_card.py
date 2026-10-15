@@ -135,14 +135,21 @@ def _checa_lider(lider_code: str):
 
     def ok(code: str) -> bool:
         for blk in ((efs.get(code) or {}).get('effects') or {}).values():
-            conds = blk.get('conditions') if isinstance(blk, dict) else None
-            so_lider = {k: v for k, v in (conds or {}).items() if k.startswith('leader')}
-            if so_lider:
-                try:
-                    if not ee._check_conditions(so_lider, lider):
+            if not isinstance(blk, dict):
+                continue
+            # a condicao de lider aparece no BLOCO ou dentro de um PASSO (achado
+            # 14/10/2026: OP09-019 "If your Leader has the {Red-Haired Pirates}
+            # type" vem no passo do debuff, e passava pro Krieg)
+            todas = [blk.get('conditions')] + [s.get('conditions') for s in blk.get('steps') or []
+                                               if isinstance(s, dict)]
+            for conds in todas:
+                so_lider = {k: v for k, v in (conds or {}).items() if k.startswith('leader')}
+                if so_lider:
+                    try:
+                        if not ee._check_conditions(so_lider, lider):
+                            return False
+                    except Exception:
                         return False
-                except Exception:
-                    return False
         return True
     return ok
 
