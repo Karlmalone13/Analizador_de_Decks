@@ -1,5 +1,34 @@
 ﻿# HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-10-18 (964-966) - Front: simulador no motor real, analise medida jogando, sugestoes testadas
+
+Sessao de FRONT (pedido do usuario: "terminar o front"). Resumo por tema:
+
+**Motor no site (964)**: o `/simulate` usava o "modo guloso" de 05/09 (`search_top_k_override=0`), que com
+o Q no comando executava a PRIMEIRA jogada gerada (medido: 1,18 s/partida e 13-23 turnos x 0,11 s e 10-12 no
+motor normal). Removido do motor, do `simulation_worker` e do `/hand-stats` junto com os overrides de Monte Carlo.
+Replay removido do site (produto = analise de deck), com `/replay`, `/replay/demo` e `test-apitcg`.
+
+**Textos**: 595 `card_text` do Supabase atualizados com os do motor (`cards_rows.csv`); sobram 12 cartas so com
+o "DISCLAIMER" de reimpressao no site. O jogo NAO guarda texto de carta (so `CardDefinition`/actionV3s);
+a pasta do jogo tem as artes SEM "SAMPLE" (`OPTCGSim_Data/StreamingAssets/Cards`) -- pendente usar.
+
+**Analise (`/analysis`)**: abas Basico/Avancado; nota em palavras; dicas com botao; editor da lista
+(`DeckEditor.tsx`) que salva e refaz tudo; `/meta` novo (`meta_summary.py`). Marca TCG Analyzer (logo, icone).
+**Defesa e Ataque MEDIDOS** (`measure_axes.py`, `/axes-measured`): o motor joga o deck 40x contra decks de torneio
+estratificados (metade comecando), dano causado/sofrido por turno, nota = percentil entre os 184 decks medidos
+do mesmo jeito (`metrics/eixos_medidos_meta.json`, `python measure_axes.py --base`). Krieg dos logs: formula dava
+Ataque 90/Defesa 58; medido 42/40. A formula de `deck_axes.py` ficou so pra Sinergia.
+
+**Sugestao de carta (`suggest_card.py`)**: parte das MESMAS fraquezas da tela (faixas do meta + Golden Ratios);
+filtros: cor, condicao de lider (`leader_*` no bloco E no passo -- OP09-019 passava), regra de campo do lider
+(`only_field_type`/`chars_lte`/`chars_gte_type_filter`), custo/filtro PAGAVEL pelo deck (MIN_PECAS=4), combo
+(tipos citados, `synergy_states`). Cada candidata e TESTADA JOGANDO (`testar_candidatas`, `/suggestions-tested`):
+2 copias no lugar do excesso ou de custo parecido (nunca a carta mais cara -- tirar o Krieg 8 derrubava 15% em toda
+candidata), 160 partidas com as mesmas sementes, veredito com margem. CONTROLE: o mesmo deck so embaralhado variou
+42%-57% em 40 partidas -- por isso 160 e "sem diferenca clara" quando dentro da margem.
+Pendente: Consistencia medida jogando; margem de erro no Simular; trocar laranja pelo azul da marca; artes do jogo.
+
 ## 2026-10-12 (963) - Ciclos 75-76: dois PROMOVE com a defesa no estado depois
 
 Ciclo 75: 72x43 PROMOVE (91 min -- treino 2952s, o front em `next dev` compilava junto).
