@@ -1795,7 +1795,11 @@ function AnalysisPageContent() {
                                     {c.cartas.map(x => (
                                         <div key={x.code} className="flex gap-3 rounded-xl border border-gray-800 bg-gray-950/60 p-3">
                                             <div className="flex w-20 flex-shrink-0 flex-col gap-1.5 self-start">
-                                                <CardImage src={x.image} alt={x.name} className="w-20 h-auto rounded-lg border border-gray-700" />
+                                                {/* a carta ESTA no deck: arte e detalhe vem dela (a API nao tem arte
+                                                    de promo/colecao nova, ex.: P-093, ST36-002) */}
+                                                <CardImage src={cartaDoDeck(x.code)?.card.card_image || x.image} alt={x.name}
+                                                    className="w-20 h-auto rounded-lg border border-gray-700 cursor-pointer hover:brightness-110 transition"
+                                                    onClick={() => { const dc = cartaDoDeck(x.code); if (dc) setSelectedCard(dc.card) }} />
                                                 <button onClick={() => tirarSugerida(x.code, x.tirar)}
                                                     className="rounded-lg bg-rose-700 px-1 py-1.5 text-xs font-semibold text-white transition hover:bg-rose-600">− Tirar</button>
                                             </div>

@@ -486,12 +486,25 @@ def sugerir_cortes(cards: list[dict], ratios: list | None) -> list[dict]:
 
         do_papel.sort(key=lambda c: (0 if desliga(c) else 1, 1 if combina(c) else 0,
                                      deck[c], -(db.get(c, {}).get('cost') or 0)))
-        cartas, falta = [], sobra
+        # ESPALHA o corte (achado do usuario, 18/10/2026: com 5 em excesso saia
+        # "tirar 3 de 4" do Trafalgar Law 119, quase removendo a carta). 1a
+        # passada: no maximo 2 copias por carta; 2a, so se ainda faltar.
+        tira_de = {}
+        falta = sobra
+        for teto in (2, 4):
+            for c in do_papel:
+                if falta <= 0:
+                    break
+                pode = min(deck[c], teto) - tira_de.get(c, 0)
+                if pode > 0:
+                    t_ = min(pode, falta)
+                    tira_de[c] = tira_de.get(c, 0) + t_
+                    falta -= t_
+        cartas = []
         for c in do_papel:
-            if falta <= 0:
-                break
-            tira = min(deck[c], falta)
-            falta -= tira
+            tira = tira_de.get(c, 0)
+            if not tira:
+                continue
             info = db.get(c) or {}
             if desliga(c):
                 porque = f'desliga o efeito do líder (não é {regras["so_tipo"].title()})'
