@@ -61,6 +61,9 @@ def _oponentes(n: int, seed: int) -> list[list[dict]]:
     return out[:n]
 
 
+TURNOS_CONSISTENCIA = 6   # os primeiros turnos PROPRIOS, onde a curva decide
+
+
 def _uma(task):
     """Worker: 1 partida. `primeiro` = o deck analisado comeca."""
     cards, opp, primeiro, seed = task
@@ -70,7 +73,22 @@ def _uma(task):
         a = sw.load_deck(cards)
         b = sw.load_deck(opp)
         from optcg_engine.decision_engine import OPTCGMatch
-        m = OPTCGMatch(a, b, hide_opponent_info=True)
+
+        class _Medida(OPTCGMatch):
+            """CONSISTENCIA medida (14/10/2026): fim de cada turno PROPRIO do
+            deck analisado, nos primeiros turnos -- quanto DON ativo sobrou sem
+            uso (deck que curva bem gasta o DON) e se a mao secou (<= 1 carta).
+            So observa: nenhuma decisao le isto."""
+            def play_turn(self, p, opp_, *args, **kw):
+                r_ = super().play_turn(p, opp_, *args, **kw)
+                if p is self.state_a and len(self._cons) < TURNOS_CONSISTENCIA:
+                    total = max(10 - int(getattr(p, 'don_deck', 10) or 0), 0)   # DON em jogo (inclui o anexado)
+                    sobra = max(int(getattr(p, 'don_available', 0) or 0), 0)
+                    self._cons.append((sobra, total, len(p.hand) <= 1))
+                return r_
+
+        m = _Medida(a, b, hide_opponent_info=True)
+        m._cons = []
         m.state_a.is_first, m.state_b.is_first = primeiro, not primeiro
         r = m.simulate()
     except Exception:
@@ -78,8 +96,12 @@ def _uma(task):
     turnos = max(int(r.get('turns') or 0), 1)
     meus = (turnos + (1 if primeiro else 0)) // 2 or 1
     deles = turnos - meus or 1
+    don_total = sum(t for _, t, _ in m._cons)
     return {'win': r.get('winner') == 'A', 'causado': (r.get('dmg_a') or 0) / meus,
-            'sofrido': (r.get('dmg_b') or 0) / deles, 'turnos': turnos}
+            'sofrido': (r.get('dmg_b') or 0) / deles, 'turnos': turnos,
+            # fracao do DON dos primeiros turnos que o deck CONSEGUIU usar
+            'uso_don': (1 - sum(s for s, _, _ in m._cons) / don_total) if don_total else None,
+            'mao_seca': (sum(1 for *_, x in m._cons if x) / len(m._cons)) if m._cons else None}
 
 
 def medir(cards: list[dict], partidas: int = PARTIDAS, seed: int = 1, workers: int = 4) -> dict:
@@ -93,14 +115,19 @@ def medir(cards: list[dict], partidas: int = PARTIDAS, seed: int = 1, workers: i
             res = [r for r in ex.map(_uma, tasks) if r]
     else:
         res = [r for r in map(_uma, tasks) if r]
+    return agrega(res)
+
+
+def agrega(res: list[dict]) -> dict:
+    """Medias de um lote de partidas do MESMO deck."""
     if not res:
         return {'n': 0}
     n = len(res)
+    media = lambda k: (lambda v: sum(v) / len(v) if v else None)([r[k] for r in res if r.get(k) is not None])
     return {'n': n,
-            'ataque': sum(r['causado'] for r in res) / n,
-            'defesa': sum(r['sofrido'] for r in res) / n,
-            'winrate': sum(r['win'] for r in res) / n,
-            'turnos': sum(r['turnos'] for r in res) / n}
+            'ataque': media('causado'), 'defesa': media('sofrido'),
+            'winrate': media('win'), 'turnos': media('turnos'),
+            'uso_don': media('uso_don'), 'mao_seca': media('mao_seca')}
 
 
 def nota(valor: float, base: list[float], menor_e_melhor: bool = False) -> int:
@@ -118,10 +145,13 @@ def com_nota(medida: dict) -> dict:
     except (OSError, ValueError):
         base = None
     if not base or not medida.get('n'):
-        return {**medida, 'nota_ataque': None, 'nota_defesa': None}
+        return {**medida, 'nota_ataque': None, 'nota_defesa': None, 'nota_consistencia': None}
     return {**medida,
             'nota_ataque': nota(medida['ataque'], base['ataque']),
             'nota_defesa': nota(medida['defesa'], base['defesa'], menor_e_melhor=True),
+            # CONSISTENCIA medida: quanto do DON dos primeiros turnos o deck usou
+            'nota_consistencia': (nota(medida['uso_don'], base['uso_don'])
+                                  if base.get('uso_don') and medida.get('uso_don') is not None else None),
             'n_base': len(base['ataque'])}
 
 
@@ -216,7 +246,7 @@ def testar_candidatas(cards: list[dict], candidatas: list[str], sair: list[str],
 def gerar_base(workers: int = 4) -> None:
     """Mede os 184 decks de torneio do mesmo jeito -> base da nota."""
     pool = _pool_meta()
-    out = {'ataque': [], 'defesa': [], 'winrate': [], 'decks': []}
+    out = {'ataque': [], 'defesa': [], 'winrate': [], 'uso_don': [], 'decks': []}
     # UM pool de processos pra tudo: abrir um por deck custava ~8s de
     # carregamento de modelo por deck (medido 14/10/2026).
     tasks, dono = [], []
@@ -237,14 +267,12 @@ def gerar_base(workers: int = 4) -> None:
         res = por_deck.get(i) or []
         if not res:
             continue
-        n = len(res)
-        m = {'n': n, 'ataque': sum(r['causado'] for r in res) / n,
-             'defesa': sum(r['sofrido'] for r in res) / n,
-             'winrate': sum(r['win'] for r in res) / n,
-             'turnos': sum(r['turnos'] for r in res) / n}
+        m = agrega(res)
         out['ataque'].append(m['ataque'])
         out['defesa'].append(m['defesa'])
         out['winrate'].append(m['winrate'])
+        if m.get('uso_don') is not None:
+            out['uso_don'].append(m['uso_don'])
         out['decks'].append({'lider': lider, **m})
         print(f'[{i + 1}/{len(pool)}] {lider} ataque {m["ataque"]:.2f} defesa {m["defesa"]:.2f} '
               f'wr {m["winrate"]:.0%}', flush=True)

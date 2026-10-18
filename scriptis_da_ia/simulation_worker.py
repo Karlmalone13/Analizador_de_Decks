@@ -96,7 +96,8 @@ PER_MATCH_TIMEOUT_S = 90
 # Monte Carlo fixas, que nao tinham mais efeito.
 
 
-def run_single_match(deck_a: tuple, deck_b: tuple, hide_opponent_info: bool = True) -> dict:
+def run_single_match(deck_a: tuple, deck_b: tuple, hide_opponent_info: bool = True,
+                     primeiro: bool | None = None) -> dict:
     """
     Roda 1 partida e devolve o resultado bruto de OPTCGMatch.simulate().
 
@@ -115,6 +116,10 @@ def run_single_match(deck_a: tuple, deck_b: tuple, hide_opponent_info: bool = Tr
     usa a flag.
     """
     match = OPTCGMatch(deck_a, deck_b, hide_opponent_info=hide_opponent_info)
+    if primeiro is not None:
+        # partidas PAREADAS (14/10/2026): o mesmo confronto joga comecando e
+        # indo em segundo, pra tirar o peso de quem comeca da margem de erro
+        match.state_a.is_first, match.state_b.is_first = primeiro, not primeiro
     return match.simulate()
 
 
@@ -130,13 +135,27 @@ def _run_match_in_worker(task: tuple) -> tuple[int, dict | None]:
     proposito, pra quem agrega nao precisar mapear future->matchup por
     fora. `None` no resultado = partida falhou (some do agregado, nao
     derruba o job)."""
-    idx_matchup, deck_a_raw, deck_b_raw = task
+    idx_matchup, deck_a_raw, deck_b_raw, primeiro, seed = task
     try:
+        import random
+        random.seed(seed)   # mesma semente nas duas metades do par
         leader_a, cards_a = load_deck(deck_a_raw)
         leader_b, cards_b = load_deck(deck_b_raw)
-        return idx_matchup, run_single_match((leader_a, cards_a), (leader_b, cards_b))
+        return idx_matchup, run_single_match((leader_a, cards_a), (leader_b, cards_b), primeiro=primeiro)
     except Exception:
         return idx_matchup, None
+
+
+def intervalo_wilson(vitorias: int, n: int, z: float = 1.96) -> tuple[float, float]:
+    """Intervalo de 95% da taxa de vitoria (Wilson): 'entre X% e Y%'. Funciona
+    melhor que +-1,96*erro padrao com poucas partidas ou taxa perto de 0/100%."""
+    if n == 0:
+        return 0.0, 1.0
+    p = vitorias / n
+    den = 1 + z * z / n
+    centro = (p + z * z / (2 * n)) / den
+    meia = z * ((p * (1 - p) / n + z * z / (4 * n * n)) ** 0.5) / den
+    return max(0.0, centro - meia), min(1.0, centro + meia)
 
 
 def aggregate_results(results: list[dict]) -> dict:
@@ -159,6 +178,7 @@ def aggregate_results(results: list[dict]) -> dict:
         }
 
     wins_a = sum(1 for r in results if r.get('winner') == 'A')
+    lo, hi = intervalo_wilson(wins_a, n)
     avg_turns = sum(r.get('turns', 0) for r in results) / n
     avg_dmg_a = sum(r.get('dmg_a', 0) for r in results) / n
     avg_dmg_b = sum(r.get('dmg_b', 0) for r in results) / n
@@ -168,6 +188,7 @@ def aggregate_results(results: list[dict]) -> dict:
         'wins': wins_a,
         'losses': n - wins_a,
         'win_rate': round(wins_a / n, 4),
+        'ic95': [round(lo, 4), round(hi, 4)],
         'avg_turns': round(avg_turns, 2),
         'avg_dmg_dealt': round(avg_dmg_a, 2),
         'avg_dmg_taken': round(avg_dmg_b, 2),
@@ -242,8 +263,10 @@ async def run_simulation_job(job_id: str):
         # certo depois.
         tarefas = []
         for idx_matchup, (_nome, _lc, deck_b_cards) in enumerate(matchups):
-            for _ in range(n_sim):
-                tarefas.append((idx_matchup, job['deck_a'], deck_b_cards))
+            for i in range(n_sim):
+                # pareado: i par comeca, i impar vai em segundo, com a MESMA semente
+                tarefas.append((idx_matchup, job['deck_a'], deck_b_cards,
+                                i % 2 == 0, idx_matchup * 100_003 + i // 2))
 
         resultados_por_matchup: dict[int, list] = {i: [] for i in range(len(matchups))}
         loop = asyncio.get_running_loop()
@@ -301,8 +324,10 @@ async def run_simulation_job(job_id: str):
         total_wins = sum(b['wins'] for b in breakdown)
         total_n = sum(b['n_simulations'] for b in breakdown)
 
+        lo, hi = intervalo_wilson(total_wins, total_n)
         final_result = {
             'overall_win_rate': round(total_wins / total_n, 4) if total_n else None,
+            'overall_ic95': [round(lo, 4), round(hi, 4)],
             'total_simulations': total_n,
             'breakdown_by_matchup': breakdown,
         }

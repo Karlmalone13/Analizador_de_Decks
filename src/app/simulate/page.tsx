@@ -58,6 +58,7 @@ interface DeckRow {
 interface MatchupBreakdown {
     matchup: string
     win_rate: number
+    ic95?: [number, number]
     wins: number
     n_simulations: number
 }
@@ -69,6 +70,7 @@ interface SimulationJobStatus {
     error_message?: string
     result?: {
         overall_win_rate: number
+        overall_ic95?: [number, number]
         total_simulations: number
         breakdown_by_matchup?: MatchupBreakdown[]
     }
@@ -90,7 +92,7 @@ const colorClass: Record<string, string> = {
 }
 
 const API_URL = process.env.NEXT_PUBLIC_ANALYZER_API || 'http://localhost:8000'
-const MAX_N_SIMULATIONS = 10
+const MAX_N_SIMULATIONS = 50
 const MAX_N_META_DECKS = 20
 
 // ── Parser do formato "QTYxCODE" (um por linha) ────────────────────────────
@@ -153,7 +155,7 @@ function SimulatePageContent() {
     // custo caiu ~30x, e mais partidas = margem de erro menor no winrate
     // (o gargalo estatístico agora é o nº de decklists de meta cadastradas,
     // não o tempo de simulação).
-    const [nSimulations, setNSimulations] = useState(MAX_N_SIMULATIONS)
+    const [nSimulations, setNSimulations] = useState(20)
     const [nMetaDecks, setNMetaDecks] = useState(10)
     const [running, setRunning] = useState(false)
     const [jobId, setJobId] = useState<string | null>(null)
@@ -421,7 +423,7 @@ function SimulatePageContent() {
     // 50 partidas em 11s com 2 workers = ~0,22s/partida efetivo. 1s aqui dá
     // margem folgada; de todo jeito só vale até a 1ª partida terminar, daí
     // `projectedSeconds` assume com o ritmo REAL do job.
-    const SECONDS_PER_MATCH_GUESS = 1
+    const SECONDS_PER_MATCH_GUESS = 0.2
     const totalMatches = tab === 'meta' ? nSimulations * nMetaDecks : nSimulations
     const elapsedSeconds = simStartedAt ? (nowTick - simStartedAt) / 1000 : 0
 
@@ -659,14 +661,19 @@ function SimulatePageContent() {
                                 <div className="text-3xl font-bold text-white mb-1">
                                     {(jobStatus.result.overall_win_rate * 100).toFixed(1)}% de vitórias
                                 </div>
+                                {jobStatus.result.overall_ic95 && (
+                                    <div className="text-sm text-gray-300 mb-1">
+                                        margem de erro: entre <b>{Math.round(jobStatus.result.overall_ic95[0] * 100)}%</b> e <b>{Math.round(jobStatus.result.overall_ic95[1] * 100)}%</b> (95% de confiança)
+                                    </div>
+                                )}
                                 <div className="text-sm text-gray-400 mb-4">{jobStatus.result.total_simulations} simulações no total</div>
 
                                 {(jobStatus.result.breakdown_by_matchup?.length ?? 0) > 1 && (
                                     <div className="space-y-2 mb-4">
-                                        {jobStatus.result.breakdown_by_matchup!.map((b, i) => (
+                                        {[...jobStatus.result.breakdown_by_matchup!].sort((x, y) => (y.win_rate ?? 0) - (x.win_rate ?? 0)).map((b, i) => (
                                             <div key={i} className="flex items-center justify-between bg-gray-800 rounded-xl px-3 py-2">
                                                 <span className="text-sm text-gray-300">{b.matchup}</span>
-                                                <span className="text-sm font-bold text-white">{(b.win_rate * 100).toFixed(0)}% ({b.wins}/{b.n_simulations})</span>
+                                                <span className="text-sm font-bold text-white">{(b.win_rate * 100).toFixed(0)}% ({b.wins}/{b.n_simulations}){b.ic95 ? <span className="ml-2 font-normal text-gray-400">{Math.round(b.ic95[0] * 100)}–{Math.round(b.ic95[1] * 100)}%</span> : null}</span>
                                             </div>
                                         ))}
                                     </div>

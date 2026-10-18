@@ -846,6 +846,7 @@ function AnalysisPageContent() {
     const [medido, setMedido] = useState<{
         status: 'pending' | 'done' | 'erro'; n?: number; winrate?: number; turnos?: number
         ataque?: number; defesa?: number; nota_ataque?: number | null; nota_defesa?: number | null
+        uso_don?: number | null; mao_seca?: number | null; nota_consistencia?: number | null
     } | null>(null)
     const [analiseLoading, setAnaliseLoading] = useState(false)
     const [leaderStats, setLeaderStats] = useState<LeaderStats | null>(null)
@@ -1353,9 +1354,12 @@ function AnalysisPageContent() {
                   { txt: 'Muito fraco', cor: 'text-red-400' }
     const notasResumo = [
         ...eixos.filter(e => e.nota !== null).map(e => ({ label: e.label, nota: e.nota as number })),
-        ...(medido?.status === 'pending' ? [{ label: 'Defesa e Ataque', nota: -1 }] : []),
-        ...(medido?.status === 'erro' || (medido?.status === 'done' && !medido.n) ? [{ label: 'Defesa e Ataque', nota: -2 }] : []),
-        { label: 'Consistência', nota: consistScore },
+        ...(medido?.status === 'pending' ? [{ label: 'Defesa, Ataque e Consistência', nota: -1 }] : []),
+        ...(medido?.status === 'erro' || (medido?.status === 'done' && !medido.n) ? [{ label: 'Defesa, Ataque e Consistência', nota: -2 }] : []),
+        // Consistencia MEDIDA jogando (14/10/2026): quanto do DON dos primeiros
+        // 6 turnos o deck conseguiu usar. A conta antiga (so a mao inicial)
+        // segue no Avancado, com o nome do que ela mede: "Abertura".
+        ...(medido?.nota_consistencia != null ? [{ label: 'Consistência', nota: medido.nota_consistencia }] : []),
     ]
     // Dicas: SO o que a analise ja aponta abaixo -- faixa do meta, Golden
     // Ratio fora do ideal, custo medio acima do meta. Nada inventado aqui.
@@ -1508,8 +1512,10 @@ function AnalysisPageContent() {
                             })}
                             {medido?.status === 'done' && medido.n ? (
                                 <div className="text-xs text-gray-400 mt-3">
-                                    Defesa e Ataque medidos em {medido.n} partidas contra decks de torneio (metade começando, metade em segundo):
-                                    causa {medido.ataque?.toFixed(2)} e sofre {medido.defesa?.toFixed(2)} de dano por turno · vence {Math.round((medido.winrate ?? 0) * 100)}%.
+                                    Defesa, Ataque e Consistência medidos em {medido.n} partidas contra decks de torneio (metade começando, metade em segundo):
+                                    causa {medido.ataque?.toFixed(2)} e sofre {medido.defesa?.toFixed(2)} de dano por turno · vence {Math.round((medido.winrate ?? 0) * 100)}%
+                                    {medido.uso_don != null ? ` · usa ${Math.round(medido.uso_don * 100)}% do DON nos 6 primeiros turnos` : ''}
+                                    {medido.mao_seca != null ? ` · fica com mão ≤1 em ${Math.round(medido.mao_seca * 100)}% deles` : ''}.
                                 </div>
                             ) : null}
                             {!motorOk && <div className="text-sm text-yellow-300 mt-3">Sinergia, Defesa e Ataque aparecem quando a análise do motor estiver disponível.</div>}
@@ -1943,7 +1949,7 @@ function AnalysisPageContent() {
                             <div className="text-center bg-gray-800 rounded-2xl px-6 py-3">
                                 <div className={`text-5xl font-black ${scoreColor}`}>{consistScore}</div>
                                 <div className={`text-sm font-bold mt-1 ${scoreColor}`}>{scoreLabel}</div>
-                                <div className="text-xs text-gray-400 mt-0.5">Consistência da ABERTURA (0-100)</div>
+                                <div className="text-xs text-gray-400 mt-0.5">Abertura (0-100)</div>
                                 <div className="text-xs text-gray-400 mt-0.5">só a mão inicial · 50 = mediano</div>
                             </div>
                             <div className="bg-gray-800 rounded-2xl px-4 py-3 text-xs space-y-1.5">

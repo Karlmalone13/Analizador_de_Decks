@@ -116,7 +116,8 @@ class SimulateRequest(BaseModel):
     user_id: Optional[str] = None
 
 
-MAX_N_SIMULATIONS = 10   # partidas por matchup -- limite acordado em 23/06
+MAX_N_SIMULATIONS = 50   # partidas por matchup (era 10 em 23/06, com o motor a ~15 s/partida;
+                         # hoje ~0,1 s -- 14/10/2026: mais partidas = margem de erro menor)
 MAX_N_META_DECKS = 20    # decklists de meta por job -- limite acordado em 23/06
 
 
