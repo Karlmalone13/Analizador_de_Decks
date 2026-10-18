@@ -40,7 +40,7 @@ export default function Navbar({ email }: NavbarProps) {
               href={link.href}
               className={`whitespace-nowrap px-3 md:px-4 py-2 rounded-xl text-sm font-medium transition ${
                 pathname === link.href
-                  ? 'bg-orange-600 text-white'
+                  ? 'bg-sky-600 text-white'
                   : 'text-gray-400 hover:text-white hover:bg-gray-800'
               }`}
             >

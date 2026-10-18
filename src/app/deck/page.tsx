@@ -323,7 +323,7 @@ function DeckBuilderPageContent() {
         const blueKeywords = ['On Play', 'When Attacking', 'Activate: Main', 'End of Your Turn', 'Once Per Turn', 'Your Turn', "Opponent's Turn", 'On K.O.', 'On Block', 'DON!! x1', 'DON!! x2', 'DON!! x3', 'DON!! x4', 'DON!! x5']
         const isOrange = orangeKeywords.some(k => keyword.toLowerCase() === k.toLowerCase())
         const isBlue = blueKeywords.some(k => keyword.toLowerCase() === k.toLowerCase())
-        if (isOrange) return <span key={i} className="inline-block bg-orange-500 text-white text-xs font-bold px-2 py-0.5 rounded-full mx-0.5">{keyword}</span>
+        if (isOrange) return <span key={i} className="inline-block bg-sky-500 text-white text-xs font-bold px-2 py-0.5 rounded-full mx-0.5">{keyword}</span>
         if (isBlue) return <span key={i} className="inline-block bg-blue-600 text-white text-xs font-bold px-2 py-0.5 rounded-full mx-0.5">{keyword}</span>
         return <span key={i} className="inline-block bg-gray-600 text-white text-xs font-bold px-2 py-0.5 rounded-full mx-0.5">{keyword}</span>
       }
@@ -461,7 +461,7 @@ function DeckBuilderPageContent() {
             <div key={cost} className="flex flex-col items-center flex-1">
               <span className="text-xs text-gray-400 mb-1">{qty}</span>
               <div
-                className="w-full bg-orange-500 rounded-t transition-all"
+                className="w-full bg-sky-500 rounded-t transition-all"
                 style={{ height: `${(qty / maxVal) * 36}px` }}
               />
               <span className="text-xs text-gray-400 mt-1">{cost}</span>
@@ -489,17 +489,17 @@ function DeckBuilderPageContent() {
                 onChange={e => setSearch(e.target.value)}
                 onKeyDown={e => e.key === 'Enter' && searchCardsWithData(allCards, search, filters, sortBy)}
                 placeholder="Nome ou código da carta..."
-                className="flex-1 bg-gray-900 border border-gray-700 rounded-xl px-4 py-2 text-sm text-white outline-none focus:border-orange-500"
+                className="flex-1 bg-gray-900 border border-gray-700 rounded-xl px-4 py-2 text-sm text-white outline-none focus:border-sky-500"
               />
               <button
                 onClick={() => setShowFilters(f => !f)}
-                className={`px-3 py-2 rounded-xl text-sm transition border ${showFilters ? 'bg-orange-600 border-orange-600' : 'bg-gray-800 border-gray-700 hover:bg-gray-700'}`}
+                className={`px-3 py-2 rounded-xl text-sm transition border ${showFilters ? 'bg-sky-600 border-sky-600' : 'bg-gray-800 border-gray-700 hover:bg-gray-700'}`}
               >
                 🔽 Filtros
               </button>
               <button
                 onClick={() => searchCardsWithData(allCards, search, filters, sortBy)}
-                className="bg-orange-600 hover:bg-orange-500 px-4 py-2 rounded-xl text-sm font-medium transition"
+                className="bg-sky-600 hover:bg-sky-500 px-4 py-2 rounded-xl text-sm font-medium transition"
               >
                 {loadingAll ? 'Carregando...' : 'Buscar'}
               </button>
@@ -556,7 +556,7 @@ function DeckBuilderPageContent() {
                           onClick={() => toggleColor(c)}
                           className="flex items-center gap-2 px-2 py-1.5 rounded-lg hover:bg-gray-700 cursor-pointer"
                         >
-                          <div className={`w-4 h-4 rounded border flex items-center justify-center ${filters.colors.includes(c) ? 'bg-orange-600 border-orange-600' : 'border-gray-500'}`}>
+                          <div className={`w-4 h-4 rounded border flex items-center justify-center ${filters.colors.includes(c) ? 'bg-sky-600 border-sky-600' : 'border-gray-500'}`}>
                             {filters.colors.includes(c) && <span className="text-white text-xs">✓</span>}
                           </div>
                           <span className="text-sm text-white">{c}</span>
@@ -589,11 +589,11 @@ function DeckBuilderPageContent() {
                 const isDeckLeader = deck.leader?.id === card.id
                 return (
                   <div key={i} className={`relative group rounded-xl overflow-hidden border transition ${isDeckLeader ? 'border-yellow-500' :
-                      inDeck ? 'border-orange-500' :
-                        'border-gray-800 hover:border-orange-500'
+                      inDeck ? 'border-sky-500' :
+                        'border-gray-800 hover:border-sky-500'
                     }`}>
                     {inDeck && (
-                      <div className="absolute top-1 right-1 z-10 bg-orange-600 text-white text-xs font-bold w-5 h-5 rounded-full flex items-center justify-center shadow">
+                      <div className="absolute top-1 right-1 z-10 bg-sky-600 text-white text-xs font-bold w-5 h-5 rounded-full flex items-center justify-center shadow">
                         {inDeck.quantity}
                       </div>
                     )}
@@ -609,11 +609,11 @@ function DeckBuilderPageContent() {
                       onClick={() => addCard(card)}
                     />
                     <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition flex flex-col items-center justify-center gap-2 pointer-events-none group-hover:pointer-events-auto">
-                      <button onClick={() => addCard(card)} className="bg-orange-600 hover:bg-orange-500 text-white font-bold text-lg w-10 h-10 rounded-full transition">+</button>
+                      <button onClick={() => addCard(card)} className="bg-sky-600 hover:bg-sky-500 text-white font-bold text-lg w-10 h-10 rounded-full transition">+</button>
                       <button onClick={() => setSelectedCard(card)} className="bg-gray-800 hover:bg-gray-700 text-white text-sm px-4 py-1.5 rounded-full transition font-medium">Ver carta</button>
                     </div>
                     <div className="p-1.5 bg-gray-900">
-                      <div className="text-xs font-mono text-orange-400 truncate">{(card.card_set_id || '').split('_')[0]}</div>
+                      <div className="text-xs font-mono text-sky-400 truncate">{(card.card_set_id || '').split('_')[0]}</div>
                       <div className="text-xs text-white truncate">{card.card_name}</div>
                       <div className="flex items-center gap-1 mt-0.5 flex-wrap">
                         {(card.card_color || '').split(/[\s\/]/).filter(Boolean).map((c, ci) => (
@@ -641,12 +641,12 @@ function DeckBuilderPageContent() {
               <input
                 value={deck.name}
                 onChange={e => setDeck(d => ({ ...d, name: e.target.value }))}
-                className="flex-1 bg-gray-900 border border-gray-700 rounded-xl px-3 py-2 text-sm font-bold outline-none focus:border-orange-500"
+                className="flex-1 bg-gray-900 border border-gray-700 rounded-xl px-3 py-2 text-sm font-bold outline-none focus:border-sky-500"
               />
               <button
                 onClick={saveDeck}
                 disabled={saving}
-                className={`px-4 py-2 rounded-xl text-sm font-medium transition ${saved ? 'bg-green-600' : 'bg-orange-600 hover:bg-orange-500'}`}
+                className={`px-4 py-2 rounded-xl text-sm font-medium transition ${saved ? 'bg-green-600' : 'bg-sky-600 hover:bg-sky-500'}`}
               >
                 {saving ? 'Salvando...' : saved ? '✓ Salvo!' : 'Salvar'}
               </button>
@@ -732,7 +732,7 @@ function DeckBuilderPageContent() {
                       onClick={() => setSelectedCard(deck.leader)}
                     />
                     <div className="flex-1 min-w-0">
-                      <div className="text-xs font-mono text-orange-400">{(deck.leader.card_set_id || '').split('_')[0]}</div>
+                      <div className="text-xs font-mono text-sky-400">{(deck.leader.card_set_id || '').split('_')[0]}</div>
                       <div className="text-base font-bold truncate">{deck.leader.card_name}</div>
                       <div className="flex flex-wrap gap-1 mt-0.5">
                         {(deck.leader.card_color || '').split(/[\s\/]/).filter(Boolean).map((c, i) => (
@@ -759,7 +759,7 @@ function DeckBuilderPageContent() {
                 </div>
                 <div className="w-full bg-gray-800 rounded-full h-2">
                   <div
-                    className={`h-2 rounded-full transition-all ${totalCards === 50 ? 'bg-green-500' : 'bg-orange-500'}`}
+                    className={`h-2 rounded-full transition-all ${totalCards === 50 ? 'bg-green-500' : 'bg-sky-500'}`}
                     style={{ width: `${(totalCards / 50) * 100}%` }}
                   />
                 </div>
@@ -860,7 +860,7 @@ function DeckBuilderPageContent() {
                         <div className="text-xs text-gray-400">{new Date(d.updated_at).toLocaleDateString('pt-BR')}</div>
                       </div>
                       <div className="flex gap-2">
-                        <button onClick={() => loadDeck(d)} className="bg-orange-600 hover:bg-orange-500 px-3 py-1.5 rounded-lg text-xs transition">Abrir</button>
+                        <button onClick={() => loadDeck(d)} className="bg-sky-600 hover:bg-sky-500 px-3 py-1.5 rounded-lg text-xs transition">Abrir</button>
                         <button onClick={() => { setShowMyDecks(false); window.location.href = `/analysis?id=${d.id}` }} className="bg-blue-600 hover:bg-blue-500 px-3 py-1.5 rounded-lg text-xs transition">📊</button>
                         <button onClick={() => deleteDeck(d.id)} className="bg-gray-700 hover:bg-red-700 px-3 py-1.5 rounded-lg text-xs transition">🗑</button>
                       </div>
@@ -883,7 +883,7 @@ function DeckBuilderPageContent() {
             </div>
             <div className="p-5">
               <textarea readOnly value={exportDeck()} className="w-full bg-gray-800 border border-gray-700 rounded-xl p-3 text-sm text-white font-mono h-64 resize-none outline-none" />
-              <button onClick={() => { navigator.clipboard.writeText(exportDeck()); alert('Copiado!') }} className="w-full mt-3 bg-orange-600 hover:bg-orange-500 py-2.5 rounded-xl text-sm font-medium transition">
+              <button onClick={() => { navigator.clipboard.writeText(exportDeck()); alert('Copiado!') }} className="w-full mt-3 bg-sky-600 hover:bg-sky-500 py-2.5 rounded-xl text-sm font-medium transition">
                 📋 Copiar para área de transferência
               </button>
             </div>
@@ -901,9 +901,9 @@ function DeckBuilderPageContent() {
             </div>
             <div className="p-5">
               <p className="text-gray-400 text-sm mb-3">Cole a lista do simulador (formato: 4xOP01-025)</p>
-              <textarea value={importText} onChange={e => setImportText(e.target.value)} placeholder={"1xOP01-001\n4xOP01-025\n4xOP01-002\n..."} className="w-full bg-gray-800 border border-gray-700 rounded-xl p-3 text-sm text-white font-mono h-64 resize-none outline-none focus:border-orange-500" />
+              <textarea value={importText} onChange={e => setImportText(e.target.value)} placeholder={"1xOP01-001\n4xOP01-025\n4xOP01-002\n..."} className="w-full bg-gray-800 border border-gray-700 rounded-xl p-3 text-sm text-white font-mono h-64 resize-none outline-none focus:border-sky-500" />
               {importError && <p className="text-red-400 text-xs mt-2">{importError}</p>}
-              <button onClick={importDeck} className="w-full mt-3 bg-orange-600 hover:bg-orange-500 py-2.5 rounded-xl text-sm font-medium transition">
+              <button onClick={importDeck} className="w-full mt-3 bg-sky-600 hover:bg-sky-500 py-2.5 rounded-xl text-sm font-medium transition">
                 📥 Importar Deck
               </button>
             </div>
@@ -919,7 +919,7 @@ function DeckBuilderPageContent() {
               <CardImage src={selectedCard.card_image} alt={selectedCard.card_name} className="w-36 h-auto rounded-xl flex-shrink-0 object-contain" />
               <div className="flex-1 min-w-0">
                 <div className="flex items-center justify-between mb-1">
-                  <span className="text-orange-400 font-mono text-sm">{(selectedCard.card_set_id || '').split('_')[0]}</span>
+                  <span className="text-sky-400 font-mono text-sm">{(selectedCard.card_set_id || '').split('_')[0]}</span>
                   <span className="text-sm bg-gray-800 px-2 py-0.5 rounded-lg text-gray-300">{selectedCard.rarity}</span>
                 </div>
                 <h2 className="text-lg font-bold text-white leading-tight mb-0.5">{selectedCard.card_name}</h2>
@@ -956,7 +956,7 @@ function DeckBuilderPageContent() {
               </div>
             )}
             <div className="px-5 pb-5 flex gap-2">
-              <button onClick={() => { addCard(selectedCard); setSelectedCard(null) }} className="flex-1 bg-orange-600 hover:bg-orange-500 py-2 rounded-xl text-sm font-medium transition">
+              <button onClick={() => { addCard(selectedCard); setSelectedCard(null) }} className="flex-1 bg-sky-600 hover:bg-sky-500 py-2 rounded-xl text-sm font-medium transition">
                 + Adicionar ao deck
               </button>
               <button onClick={() => setSelectedCard(null)} className="bg-gray-700 hover:bg-gray-600 px-4 py-2 rounded-xl text-sm transition">

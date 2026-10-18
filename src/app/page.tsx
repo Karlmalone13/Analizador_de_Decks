@@ -48,7 +48,7 @@ export default async function Home() {
             A ferramenta definitiva para jogadores de One Piece TCG
           </p>
           <div className="flex gap-4 justify-center">
-            <a href="/cards" className="bg-orange-600 hover:bg-orange-500 px-8 py-3 rounded-xl font-semibold transition">
+            <a href="/cards" className="bg-sky-600 hover:bg-sky-500 px-8 py-3 rounded-xl font-semibold transition">
               Explorar Cartas
             </a>
             <a href="/deck" className="bg-gray-800 hover:bg-gray-700 px-8 py-3 rounded-xl font-semibold transition">
@@ -79,19 +79,19 @@ export default async function Home() {
         {/* Módulos */}
         <h2 className="text-2xl font-bold mb-6">Ferramentas</h2>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
-          <a href="/cards" className="bg-gray-900 border border-gray-800 rounded-2xl p-6 hover:border-orange-500 transition group">
+          <a href="/cards" className="bg-gray-900 border border-gray-800 rounded-2xl p-6 hover:border-sky-500 transition group">
             <div className="text-4xl mb-4">🃏</div>
-            <h3 className="text-xl font-bold mb-2 group-hover:text-orange-400 transition">Banco de Cartas</h3>
+            <h3 className="text-xl font-bold mb-2 group-hover:text-sky-400 transition">Banco de Cartas</h3>
             <p className="text-gray-400 text-sm">Busque e filtre todas as cartas do One Piece TCG com filtros avançados por cor, tipo, raridade e efeito.</p>
           </a>
-          <a href="/deck" className="bg-gray-900 border border-gray-800 rounded-2xl p-6 hover:border-orange-500 transition group">
+          <a href="/deck" className="bg-gray-900 border border-gray-800 rounded-2xl p-6 hover:border-sky-500 transition group">
             <div className="text-4xl mb-4">⚔️</div>
-            <h3 className="text-xl font-bold mb-2 group-hover:text-orange-400 transition">Deck Builder</h3>
+            <h3 className="text-xl font-bold mb-2 group-hover:text-sky-400 transition">Deck Builder</h3>
             <p className="text-gray-400 text-sm">Monte seus decks com drag and drop, contador automático de cartas e análise instantânea.</p>
           </a>
-          <a href="/meta" className="bg-gray-900 border border-gray-800 rounded-2xl p-6 hover:border-orange-500 transition group">
+          <a href="/meta" className="bg-gray-900 border border-gray-800 rounded-2xl p-6 hover:border-sky-500 transition group">
             <div className="text-4xl mb-4">📊</div>
-            <h3 className="text-xl font-bold mb-2 group-hover:text-orange-400 transition">Análise de Meta</h3>
+            <h3 className="text-xl font-bold mb-2 group-hover:text-sky-400 transition">Análise de Meta</h3>
             <p className="text-gray-400 text-sm">Quais líderes dominam os torneios, como eles são montados e onde o seu deck fica em relação a eles.</p>
           </a>
         </div>
@@ -102,7 +102,7 @@ export default async function Home() {
             <h2 className="text-2xl font-bold mb-6">Cartas Recentes</h2>
             <div className="grid grid-cols-3 md:grid-cols-6 gap-3">
               {(recentCards as CardThumb[]).map((card) => (
-                <a href="/cards" key={card.id} className="rounded-xl overflow-hidden border border-gray-800 hover:border-orange-500 transition hover:scale-105 cursor-pointer">
+                <a href="/cards" key={card.id} className="rounded-xl overflow-hidden border border-gray-800 hover:border-sky-500 transition hover:scale-105 cursor-pointer">
                   <CardImage
                     src={card.card_image}
                     alt={card.card_name}

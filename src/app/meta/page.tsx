@@ -187,7 +187,7 @@ export default function MetaPage() {
                                                 <span>{l.decks} decks</span><span>{(l.pct_meta * 100).toFixed(0)}% do meta</span>
                                             </div>
                                             <div className="h-2 rounded-full bg-gray-800">
-                                                <div className="h-2 rounded-full bg-orange-500" style={{ width: `${Math.min(100, l.pct_meta * 100 / (resumo.lideres[0]?.pct_meta || 1))}%` }} />
+                                                <div className="h-2 rounded-full bg-sky-500" style={{ width: `${Math.min(100, l.pct_meta * 100 / (resumo.lideres[0]?.pct_meta || 1))}%` }} />
                                             </div>
                                         </div>
                                         <div className="text-right w-24 flex-shrink-0">

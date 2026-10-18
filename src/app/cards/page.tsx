@@ -201,7 +201,7 @@ export default function CardsPage() {
         const blueKeywords = ['On Play', 'When Attacking', 'Activate: Main', 'End of Your Turn', 'Once Per Turn', 'Your Turn', "Opponent's Turn", 'On K.O.', 'On Block', 'DON!! x1', 'DON!! x2', 'DON!! x3', 'DON!! x4', 'DON!! x5']
         const isOrange = orangeKeywords.some(k => keyword.toLowerCase() === k.toLowerCase())
         const isBlue = blueKeywords.some(k => keyword.toLowerCase() === k.toLowerCase())
-        if (isOrange) return <span key={i} className="inline-block bg-orange-500 text-white text-xs font-bold px-2 py-0.5 rounded-full mx-0.5">{keyword}</span>
+        if (isOrange) return <span key={i} className="inline-block bg-sky-500 text-white text-xs font-bold px-2 py-0.5 rounded-full mx-0.5">{keyword}</span>
         if (isBlue) return <span key={i} className="inline-block bg-blue-600 text-white text-xs font-bold px-2 py-0.5 rounded-full mx-0.5">{keyword}</span>
         return <span key={i} className="inline-block bg-gray-600 text-white text-xs font-bold px-2 py-0.5 rounded-full mx-0.5">{keyword}</span>
       }
@@ -226,11 +226,11 @@ export default function CardsPage() {
             }}
             onKeyDown={e => e.key === 'Enter' && filterCards(allCards, search, filters, sortBy)}
             placeholder="Nome, código, subtipo ou efeito (ex: OP01-001, Zoro, Rush...)"
-            className="flex-1 bg-gray-900 border border-gray-700 rounded-xl px-4 py-2.5 text-white placeholder-gray-500 outline-none focus:border-orange-500 transition"
+            className="flex-1 bg-gray-900 border border-gray-700 rounded-xl px-4 py-2.5 text-white placeholder-gray-500 outline-none focus:border-sky-500 transition"
           />
           <button
             onClick={() => setShowFilters(f => !f)}
-            className={`px-4 py-2.5 rounded-xl text-sm transition border ${showFilters ? 'bg-orange-600 border-orange-600' : 'bg-gray-800 border-gray-700 hover:bg-gray-700'}`}
+            className={`px-4 py-2.5 rounded-xl text-sm transition border ${showFilters ? 'bg-sky-600 border-sky-600' : 'bg-gray-800 border-gray-700 hover:bg-gray-700'}`}
           >
             🔽 Filtros
           </button>
@@ -279,7 +279,7 @@ export default function CardsPage() {
                   <div className="absolute top-full left-0 mt-1 bg-gray-800 border border-gray-700 rounded-xl z-50 shadow-2xl p-2 min-w-40">
                     {COLORS.map(c => (
                       <div key={c} onClick={() => toggleColor(c)} className="flex items-center gap-2 px-2 py-1.5 rounded-lg hover:bg-gray-700 cursor-pointer">
-                        <div className={`w-4 h-4 rounded border flex items-center justify-center ${filters.colors.includes(c) ? 'bg-orange-600 border-orange-600' : 'border-gray-500'}`}>
+                        <div className={`w-4 h-4 rounded border flex items-center justify-center ${filters.colors.includes(c) ? 'bg-sky-600 border-sky-600' : 'border-gray-500'}`}>
                           {filters.colors.includes(c) && <span className="text-white text-xs">✓</span>}
                         </div>
                         <span className="text-sm text-white">{c}</span>
@@ -354,7 +354,7 @@ export default function CardsPage() {
             <div
               key={i}
               onClick={() => setSelected(card)}
-              className="cursor-pointer rounded-xl overflow-hidden border border-gray-800 hover:border-orange-500 transition hover:scale-105 group"
+              className="cursor-pointer rounded-xl overflow-hidden border border-gray-800 hover:border-sky-500 transition hover:scale-105 group"
             >
               <div className="relative">
                 <CardImage
@@ -369,7 +369,7 @@ export default function CardsPage() {
                 )}
               </div>
               <div className="p-1.5 bg-gray-900">
-                <div className="text-xs font-mono text-orange-400 truncate">{(card.card_set_id || '').split('_')[0]}</div>
+                <div className="text-xs font-mono text-sky-400 truncate">{(card.card_set_id || '').split('_')[0]}</div>
                 <div className="text-xs text-white truncate">{card.card_name}</div>
                 <div className="flex items-center gap-1 mt-0.5 flex-wrap">
                   {(card.card_color || '').split(/[\s\/]/).filter(Boolean).map((c, ci) => (
@@ -392,7 +392,7 @@ export default function CardsPage() {
                 <CardImage src={selected.card_image} alt={selected.card_name} className="w-36 h-auto rounded-xl flex-shrink-0 object-contain" />
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center justify-between mb-1">
-                    <span className="text-orange-400 font-mono text-sm">{(selected.card_set_id || '').split('_')[0]}</span>
+                    <span className="text-sky-400 font-mono text-sm">{(selected.card_set_id || '').split('_')[0]}</span>
                     <span className="text-sm bg-gray-800 px-2 py-0.5 rounded-lg text-gray-300">{rarityLabel[selected.rarity] || selected.rarity}</span>
                   </div>
                   <h2 className="text-lg font-bold text-white leading-tight mb-0.5">{selected.card_name}</h2>

@@ -111,7 +111,7 @@ export default function MeusDecksPage() {
                     </div>
                     <a
                         href="/deck"
-                        className="bg-orange-600 hover:bg-orange-500 px-5 py-2.5 rounded-xl text-sm font-medium transition"
+                        className="bg-sky-600 hover:bg-sky-500 px-5 py-2.5 rounded-xl text-sm font-medium transition"
                     >
                         ✚ Novo Deck
                     </a>
@@ -124,7 +124,7 @@ export default function MeusDecksPage() {
                         value={search}
                         onChange={e => setSearch(e.target.value)}
                         placeholder="Buscar por nome do deck ou leader..."
-                        className="w-full bg-gray-900 border border-gray-700 rounded-xl px-4 py-3 text-white placeholder-gray-500 outline-none focus:border-orange-500 transition"
+                        className="w-full bg-gray-900 border border-gray-700 rounded-xl px-4 py-3 text-white placeholder-gray-500 outline-none focus:border-sky-500 transition"
                     />
                 </div>
 
@@ -141,7 +141,7 @@ export default function MeusDecksPage() {
                         <div className="text-xs text-gray-400 mt-1">Decks completos</div>
                     </div>
                     <div className="bg-gray-900 border border-gray-800 rounded-2xl p-4 text-center">
-                        <div className="text-2xl font-bold text-orange-400">
+                        <div className="text-2xl font-bold text-sky-400">
                             {decks.filter(d => d.total_cards < 50).length}
                         </div>
                         <div className="text-xs text-gray-400 mt-1">Em construção</div>
@@ -158,7 +158,7 @@ export default function MeusDecksPage() {
                     <div className="text-center py-16">
                         <div className="text-5xl mb-4">🏴‍☠️</div>
                         <div className="text-gray-400 text-lg mb-4">Você ainda não tem decks salvos</div>
-                        <a href="/deck" className="bg-orange-600 hover:bg-orange-500 px-6 py-3 rounded-xl font-medium transition">
+                        <a href="/deck" className="bg-sky-600 hover:bg-sky-500 px-6 py-3 rounded-xl font-medium transition">
                             Criar primeiro deck
                         </a>
                     </div>
@@ -206,7 +206,7 @@ export default function MeusDecksPage() {
                                             <div className="flex-1 min-w-0">
                                                 <h3 className="font-bold text-white text-lg truncate mb-1">{deck.name}</h3>
                                                 {deck.leader_name && (
-                                                    <div className="text-sm text-orange-400 truncate mb-2">{deck.leader_name}</div>
+                                                    <div className="text-sm text-sky-400 truncate mb-2">{deck.leader_name}</div>
                                                 )}
                                                 <div className="flex flex-wrap gap-1 mb-3">
                                                     {colors.map((c, i) => (
@@ -225,7 +225,7 @@ export default function MeusDecksPage() {
                                                     </div>
                                                     <div className="w-full bg-gray-800 rounded-full h-1.5">
                                                         <div
-                                                            className={`h-1.5 rounded-full transition-all ${isComplete ? 'bg-green-500' : 'bg-orange-500'}`}
+                                                            className={`h-1.5 rounded-full transition-all ${isComplete ? 'bg-green-500' : 'bg-sky-500'}`}
                                                             style={{ width: `${(deck.total_cards / 50) * 100}%` }}
                                                         />
                                                     </div>

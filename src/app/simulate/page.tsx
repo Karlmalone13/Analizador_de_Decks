@@ -450,7 +450,7 @@ function SimulatePageContent() {
             <Navbar />
             <div className="flex-1 flex items-center justify-center flex-col gap-4">
                 <div className="text-red-400 text-lg">{error}</div>
-                <a href="/meus-decks" className="bg-orange-600 hover:bg-orange-500 px-6 py-2 rounded-xl text-sm transition">Voltar aos Meus Decks</a>
+                <a href="/meus-decks" className="bg-sky-600 hover:bg-sky-500 px-6 py-2 rounded-xl text-sm transition">Voltar aos Meus Decks</a>
             </div>
         </div>
     )
@@ -468,7 +468,7 @@ function SimulatePageContent() {
                     <div className="text-center py-16">
                         <div className="text-5xl mb-4">🏴‍☠️</div>
                         <div className="text-gray-400 mb-4">Você ainda não tem decks salvos.</div>
-                        <a href="/deck" className="bg-orange-600 hover:bg-orange-500 px-6 py-3 rounded-xl font-medium transition">Criar deck</a>
+                        <a href="/deck" className="bg-sky-600 hover:bg-sky-500 px-6 py-3 rounded-xl font-medium transition">Criar deck</a>
                     </div>
                 ) : (
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -476,7 +476,7 @@ function SimulatePageContent() {
                             const colors = d.leader_color?.split(/[\s\/]/).filter(Boolean) || []
                             return (
                                 <button key={d.id} onClick={() => selectDeckFromPicker(d)}
-                                    className="bg-gray-900 border border-gray-800 hover:border-orange-500 rounded-2xl overflow-hidden text-left transition group">
+                                    className="bg-gray-900 border border-gray-800 hover:border-sky-500 rounded-2xl overflow-hidden text-left transition group">
                                     <div className="flex h-1.5">
                                         {colors.length > 0 ? colors.map((c, i) => <div key={i} className={`flex-1 ${colorClass[c.trim()] || 'bg-gray-500'}`} />) : <div className="flex-1 bg-gray-700" />}
                                     </div>
@@ -486,7 +486,7 @@ function SimulatePageContent() {
                                             : <div className="w-14 h-20 bg-gray-800 rounded-lg border border-gray-700 flex-shrink-0 flex items-center justify-center text-gray-400 text-xl">🃏</div>}
                                         <div className="min-w-0">
                                             <div className="font-bold text-white truncate">{d.name}</div>
-                                            <div className="text-sm text-orange-400 truncate">{d.leader_name}</div>
+                                            <div className="text-sm text-sky-400 truncate">{d.leader_name}</div>
                                             <div className="text-xs text-gray-400 mt-1">{d.total_cards}/50 cartas</div>
                                         </div>
                                     </div>
@@ -526,7 +526,7 @@ function SimulatePageContent() {
                         <button
                             key={t.id}
                             onClick={() => setTab(t.id)}
-                            className={`px-4 py-2 rounded-xl text-sm font-medium transition ${tab === t.id ? 'bg-orange-600 text-white' : 'bg-gray-800 text-gray-400 hover:text-white'}`}
+                            className={`px-4 py-2 rounded-xl text-sm font-medium transition ${tab === t.id ? 'bg-sky-600 text-white' : 'bg-gray-800 text-gray-400 hover:text-white'}`}
                         >
                             {t.label}
                         </button>
@@ -541,7 +541,7 @@ function SimulatePageContent() {
                             value={pastedText}
                             onChange={e => setPastedText(e.target.value)}
                             placeholder={'1xOP16-080\n3xOP09-095\n1xOP09-091\n...'}
-                            className="w-full h-40 bg-gray-800 border border-gray-700 rounded-xl p-3 text-sm font-mono text-gray-200 resize-none focus:outline-none focus:border-orange-500"
+                            className="w-full h-40 bg-gray-800 border border-gray-700 rounded-xl p-3 text-sm font-mono text-gray-200 resize-none focus:outline-none focus:border-sky-500"
                         />
                         <div className="text-xs text-gray-400 mt-1">Formato: uma carta por linha, &quot;QUANTIDADExCÓDIGO&quot; (ex: 4xOP16-109). Inclua o Leader.</div>
 
@@ -588,7 +588,7 @@ function SimulatePageContent() {
                                     <button
                                         key={d.id}
                                         onClick={() => setSelectedOwnDeckId(d.id)}
-                                        className={`flex items-center gap-3 p-3 rounded-xl border transition text-left ${selectedOwnDeckId === d.id ? 'border-orange-500 bg-gray-800' : 'border-gray-800 bg-gray-850 hover:bg-gray-800'}`}
+                                        className={`flex items-center gap-3 p-3 rounded-xl border transition text-left ${selectedOwnDeckId === d.id ? 'border-sky-500 bg-gray-800' : 'border-gray-800 bg-gray-850 hover:bg-gray-800'}`}
                                     >
                                         {d.leader_image && <CardImage src={d.leader_image} alt={d.name} className="w-10 h-14 object-cover rounded border border-gray-700" />}
                                         <div className="min-w-0">
@@ -641,7 +641,7 @@ function SimulatePageContent() {
                         <button
                             onClick={startSimulation}
                             disabled={running || (tab === 'meta' && metaCount === 0)}
-                            className="flex-1 bg-orange-600 hover:bg-orange-500 disabled:opacity-50 disabled:cursor-not-allowed px-6 py-3 rounded-xl font-medium transition"
+                            className="flex-1 bg-sky-600 hover:bg-sky-500 disabled:opacity-50 disabled:cursor-not-allowed px-6 py-3 rounded-xl font-medium transition"
                         >
                             {running ? 'Simulando...' : '🎯 Iniciar Simulação'}
                         </button>
@@ -690,18 +690,18 @@ function SimulatePageContent() {
                 <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm">
                     <div className="bg-gray-900 border border-gray-700 rounded-2xl p-8 w-[90%] max-w-md shadow-2xl">
                         <div className="flex items-center gap-3 mb-5">
-                            <div className="w-6 h-6 border-2 border-orange-500 border-t-transparent rounded-full animate-spin" />
+                            <div className="w-6 h-6 border-2 border-sky-500 border-t-transparent rounded-full animate-spin" />
                             <span className="text-lg font-semibold text-white">Simulando partidas...</span>
                         </div>
 
                         <div className="text-center mb-4">
-                            <span className="text-5xl font-bold text-orange-400">
+                            <span className="text-5xl font-bold text-sky-400">
                                 {jobStatus?.total_steps ? Math.round((jobStatus.progress / jobStatus.total_steps) * 100) : 0}%
                             </span>
                         </div>
 
                         <div className="w-full bg-gray-800 rounded-full h-4 overflow-hidden mb-3">
-                            <div className="h-4 rounded-full bg-orange-500 transition-all duration-500"
+                            <div className="h-4 rounded-full bg-sky-500 transition-all duration-500"
                                 style={{ width: `${jobStatus?.total_steps ? (jobStatus.progress / jobStatus.total_steps) * 100 : 5}%` }} />
                         </div>
 
@@ -748,9 +748,9 @@ function SimulatePageContent() {
             {(running || jobStatus?.status === 'pending' || jobStatus?.status === 'running') && modalMinimized && (
                 <button
                     onClick={() => setModalMinimized(false)}
-                    className="fixed bottom-6 right-6 z-50 bg-gray-900 border border-gray-700 rounded-full shadow-2xl px-5 py-3 flex items-center gap-3 hover:border-orange-500 transition"
+                    className="fixed bottom-6 right-6 z-50 bg-gray-900 border border-gray-700 rounded-full shadow-2xl px-5 py-3 flex items-center gap-3 hover:border-sky-500 transition"
                 >
-                    <div className="w-4 h-4 border-2 border-orange-500 border-t-transparent rounded-full animate-spin" />
+                    <div className="w-4 h-4 border-2 border-sky-500 border-t-transparent rounded-full animate-spin" />
                     <span className="text-sm text-white font-medium">
                         Simulando... {jobStatus?.total_steps ? Math.round((jobStatus.progress / jobStatus.total_steps) * 100) : 0}%
                     </span>

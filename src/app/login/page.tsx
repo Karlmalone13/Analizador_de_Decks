@@ -85,14 +85,14 @@ export default function LoginPage() {
             placeholder="Email"
             value={email}
             onChange={e => setEmail(e.target.value)}
-            className="w-full bg-gray-800 border border-gray-700 rounded-xl px-4 py-3 text-white placeholder-gray-500 outline-none focus:border-orange-500 transition"
+            className="w-full bg-gray-800 border border-gray-700 rounded-xl px-4 py-3 text-white placeholder-gray-500 outline-none focus:border-sky-500 transition"
           />
           <input
             type="password"
             placeholder="Senha"
             value={password}
             onChange={e => setPassword(e.target.value)}
-            className="w-full bg-gray-800 border border-gray-700 rounded-xl px-4 py-3 text-white placeholder-gray-500 outline-none focus:border-orange-500 transition"
+            className="w-full bg-gray-800 border border-gray-700 rounded-xl px-4 py-3 text-white placeholder-gray-500 outline-none focus:border-sky-500 transition"
           />
 
           {error && <p className="text-sm text-red-400">{error}</p>}
@@ -100,7 +100,7 @@ export default function LoginPage() {
           <button
             onClick={loginWithEmail}
             disabled={loading}
-            className="w-full bg-orange-600 hover:bg-orange-500 text-white font-semibold py-3 rounded-xl transition disabled:opacity-50"
+            className="w-full bg-sky-600 hover:bg-sky-500 text-white font-semibold py-3 rounded-xl transition disabled:opacity-50"
           >
             {loading ? 'Entrando...' : 'Entrar'}
           </button>
