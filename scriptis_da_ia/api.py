@@ -220,6 +220,9 @@ def analyze(req: DeckRequest):
             [{'code': e.code, 'qty': e.qty} for e in req.cards],
             benchmarks=(_PERCENTIS_ABERTURA or {}).get('metricas'),
             ratios=result.get('ratios'))
+        # o lado inverso: o que TIRAR quando ha excesso (mesmos Golden Ratios)
+        result['sugestao_carta']['cortes'] = suggest_card.sugerir_cortes(
+            [{'code': e.code, 'qty': e.qty} for e in req.cards], result.get('ratios'))
     except Exception as e:
         result['sugestao_carta_error'] = str(e)
     if missing:

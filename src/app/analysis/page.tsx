@@ -92,6 +92,10 @@ interface AnaliseResult {
         decks_do_lider?: number
         regra_do_lider?: string | null
         fraquezas?: { papel: string; titulo: string; motivo: string }[]
+        cortes?: {
+            papel: string; titulo: string; motivo: string; tirar: number
+            cartas: { code: string; name: string; image?: string; no_deck: number; tirar: number; motivo: string }[]
+        }[]
         grupos: {
             papel: string
             titulo: string
@@ -792,6 +796,23 @@ function AnalysisPageContent() {
     // abrir o editor vindo de "+ Adicionar" com o deck cheio
     const [editorInicio, setEditorInicio] = useState<{ cards: EditorDeckCard[]; aviso: string; retirar: string[] } | null>(null)
 
+    // "− Tirar" num corte sugerido: abre a lista ja sem as copias (o deck fica
+    // com menos de 50 e a pessoa decide o que entra no lugar, ou salva assim).
+    function tirarSugerida(code: string, qtd: number) {
+        if (!deck) return
+        const base = (c: Card) => (c.card_set_id || '').split('_')[0]
+        const atual = deck.cards.map(dc => base(dc.card) === code ? { ...dc, quantity: dc.quantity - qtd } : { ...dc })
+            .filter(dc => dc.quantity > 0)
+        const nome = deck.cards.find(dc => base(dc.card) === code)?.card.card_name ?? code
+        setEditorInicio({
+            cards: atual as unknown as EditorDeckCard[],
+            aviso: `${qtd}x ${nome} saiu. Adicione outra carta no lugar (veja as sugestões) ou salve assim.`,
+            retirar: [],
+        })
+        setEditando(true)
+        window.scrollTo({ top: 0, behavior: 'smooth' })
+    }
+
     // "+ Adicionar" numa carta sugerida (14/10/2026): deck com espaco -> entra
     // e salva direto; deck cheio -> abre a lista ja com ela, pedindo pra tirar.
     async function adicionarSugerida(code: string, copias: number, sai: string[]) {
@@ -1407,7 +1428,11 @@ function AnalysisPageContent() {
             titulo: r.status === 'alto' ? `Excesso: ${r.name}` : `Falta: ${r.name}`,
             texto: `${r.count} no deck (ideal ${r.ideal[0]}–${r.ideal[1]}) — ${r.advice}.`,
             botao: r.status === 'alto' ? 'Ver quais tirar' : 'Ver as cartas',
-            acao: () => fn && setFuncaoAberta({ label: fn.label, cards: fn.cards }),
+            acao: () => {
+                const papelCorte = ({ blockers: 'blocker', counters: 'counter2k', searchers: 'busca' } as Record<string, string>)[r.name]
+                if (r.status === 'alto' && analise?.sugestao_carta?.cortes?.some(c => c.papel === papelCorte)) irPara(`corte-${papelCorte}`)
+                else if (fn) setFuncaoAberta({ label: fn.label, cards: fn.cards })
+            },
         })
     }
     if (benchCusto && avgCostNum > benchCusto.p75) {
@@ -1742,7 +1767,7 @@ function AnalysisPageContent() {
                         </div>
                     </div>
                 )}
-                {(analise?.sugestao_carta?.grupos?.length ?? 0) > 0 && (
+                {((analise?.sugestao_carta?.grupos?.length ?? 0) > 0 || (analise?.sugestao_carta?.cortes?.length ?? 0) > 0) && (
                     <div className="bg-gray-900 border border-gray-800 rounded-2xl p-6 mb-8">
                         <div className="flex items-baseline justify-between mb-1">
                             <div className="text-sm font-semibold text-gray-300 uppercase tracking-wide"><Icone size="text-2xl">💡</Icone>Cartas que podem faltar</div>
@@ -1760,6 +1785,32 @@ function AnalysisPageContent() {
                                 👑 {analise.sugestao_carta.regra_do_lider}
                             </div>
                         )}
+                        {(analise?.sugestao_carta?.cortes ?? []).map(c => (
+                            <div key={c.papel} id={`corte-${c.papel}`} className="mb-6 scroll-mt-28">
+                                <div className="mb-3 rounded-xl border border-rose-800/60 bg-rose-950/30 px-4 py-2.5">
+                                    <div className="font-semibold text-rose-200">Excesso de {c.titulo.toLowerCase()}: considere tirar {c.tirar}</div>
+                                    <div className="text-sm text-rose-100/80">{c.motivo}</div>
+                                </div>
+                                <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-3">
+                                    {c.cartas.map(x => (
+                                        <div key={x.code} className="flex gap-3 rounded-xl border border-gray-800 bg-gray-950/60 p-3">
+                                            <div className="flex w-20 flex-shrink-0 flex-col gap-1.5 self-start">
+                                                <CardImage src={x.image} alt={x.name} className="w-20 h-auto rounded-lg border border-gray-700" />
+                                                <button onClick={() => tirarSugerida(x.code, x.tirar)}
+                                                    className="rounded-lg bg-rose-700 px-1 py-1.5 text-xs font-semibold text-white transition hover:bg-rose-600">− Tirar</button>
+                                            </div>
+                                            <div className="min-w-0">
+                                                <div className="font-bold text-white leading-tight">{x.name}</div>
+                                                <div className="mt-2 rounded-lg border border-rose-800/60 bg-rose-950/40 px-2 py-1.5 text-sm font-semibold text-rose-100">
+                                                    Considere tirar {x.tirar} de {x.no_deck} cópia(s).
+                                                </div>
+                                                <div className="mt-1.5 text-xs text-gray-400">{x.motivo}</div>
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+                        ))}
                         <div className="space-y-6">
                             {analise!.sugestao_carta!.grupos.map(g => (
                                 <div key={g.papel} id={`sug-${g.papel}`} className="scroll-mt-28">

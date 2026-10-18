@@ -437,6 +437,76 @@ def sugerir(cards: list[dict], n: int = 6, benchmarks: dict | None = None,
             'fraquezas': lista_fraquezas, 'grupos': grupos}
 
 
+def sugerir_cortes(cards: list[dict], ratios: list | None) -> list[dict]:
+    """O que TIRAR quando a analise aponta EXCESSO (Golden Ratio 'alto', ex.:
+    blockers 10 com ideal 7-9) -- pedido do usuario, 14/10/2026.
+
+    Ordem de quem sai primeiro, todas lidas do dado do deck:
+      1. personagem que DESLIGA o efeito do lider (ex.: nao-East Blue no Krieg);
+      2. carta que nao combina com o deck (nao tem o tipo do lider nem tipo que
+         o deck cita);
+      3. menos copias (carta de 1-2 copias pesa menos no plano que uma de 4);
+      4. custo mais alto (pesa mais na curva).
+    """
+    db = _db()
+    lider, deck = None, {}
+    for c in cards:
+        code = _base(c.get('code', ''))
+        if (db.get(code, {}).get('type') or '').upper() == 'LEADER':
+            lider = code
+        else:
+            deck[code] = deck.get(code, 0) + int(c.get('qty', 1))
+    if not lider:
+        return []
+    regras = _regras_do_lider(lider)
+    tipos_l = _tipos(db.get(lider) or {})
+    citados = Counter(x.lower() for c, q in deck.items()
+                      for x in (db.get(c, {}).get('referenced_types') or []) for _ in range(q))
+    out = []
+    for r in ratios or []:
+        papel = RATIO_PAPEL.get(r.get('name'))
+        if not papel or r.get('status') != 'alto':
+            continue
+        a_, b_ = r.get('ideal') or (0, 0)
+        sobra = int(r.get('count', 0)) - int(b_)
+        if sobra <= 0:
+            continue
+        teste = PAPEIS[papel][1]
+        do_papel = [c for c in deck if teste(db.get(c) or {})]
+
+        def desliga(c):
+            info = db.get(c) or {}
+            return bool(regras['so_tipo'] and (info.get('type') or '').upper() == 'CHARACTER'
+                        and regras['so_tipo'] not in (info.get('sub_types') or '').lower()
+                        and not _sai_sozinho(c))
+
+        def combina(c):
+            t = _tipos(db.get(c) or {})
+            return bool(t & tipos_l) or any(citados[x] >= 2 for x in t)
+
+        do_papel.sort(key=lambda c: (0 if desliga(c) else 1, 1 if combina(c) else 0,
+                                     deck[c], -(db.get(c, {}).get('cost') or 0)))
+        cartas, falta = [], sobra
+        for c in do_papel:
+            if falta <= 0:
+                break
+            tira = min(deck[c], falta)
+            falta -= tira
+            info = db.get(c) or {}
+            if desliga(c):
+                porque = f'desliga o efeito do líder (não é {regras["so_tipo"].title()})'
+            elif not combina(c):
+                porque = 'não tem o tipo do líder nem um tipo que o deck cite'
+            else:
+                porque = f'{deck[c]} cópia(s) no deck, custo {info.get("cost")}'
+            cartas.append({'code': c, 'name': info.get('name'), 'image': _imagens().get(c),
+                           'no_deck': deck[c], 'tirar': tira, 'motivo': porque})
+        out.append({'papel': papel, 'titulo': PAPEIS[papel][0],
+                    'motivo': f'{r.get("count")} no deck (ideal {a_}-{b_}): sobram {sobra}. {r.get("advice", "")}',
+                    'tirar': sobra, 'cartas': cartas})
+    return out
+
+
 if __name__ == '__main__':
     import sys
     print(json.dumps(sugerir([{'code': a.split('x')[1], 'qty': int(a.split('x')[0])}
