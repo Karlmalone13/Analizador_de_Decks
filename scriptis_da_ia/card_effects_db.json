@@ -42856,7 +42856,9 @@
             "cost_lte": 8
           },
           {
-            "action": "gain_blocker"
+            "action": "gain_blocker",
+            "target": "selected",
+            "duration": "until_opp_turn_end"
           }
         ],
         "costs": [
@@ -43144,13 +43146,6 @@
             "action": "draw",
             "count": 2,
             "then_trash": 1
-          }
-        ]
-      },
-      "passive": {
-        "steps": [
-          {
-            "action": "keyword_blocker"
           }
         ]
       }
@@ -43506,13 +43501,6 @@
             "count": 1,
             "up_to": false,
             "face": "down"
-          }
-        ]
-      },
-      "passive": {
-        "steps": [
-          {
-            "action": "keyword_blocker"
           }
         ]
       }
@@ -53026,23 +53014,6 @@
     "sub_types": "Celestial Dragons Five Elders",
     "attribute": "Special",
     "effects": {
-      "on_play": {
-        "steps": [
-          {
-            "action": "look_top_deck",
-            "count": 5
-          },
-          {
-            "action": "add_to_hand",
-            "count": 1,
-            "revealed_to_opponent": true,
-            "filter_type": "five elders"
-          },
-          {
-            "action": "deck_bottom_rest"
-          }
-        ]
-      },
       "passive": {
         "steps": [
           {
@@ -85538,13 +85509,6 @@
         "conditions": {
           "opp_life_lte": 3
         }
-      },
-      "passive": {
-        "steps": [
-          {
-            "action": "keyword_blocker"
-          }
-        ]
       }
     }
   },

@@ -10071,6 +10071,12 @@
   "attribute": "",
   "effects": [
    {
+    "action": "bounce",
+    "trigger": "trigger",
+    "cost_lte": 5,
+    "target": "opp_character"
+   },
+   {
     "action": "lock_opp_character_attack",
     "trigger": "main",
     "power_lte": 10000
@@ -10079,8 +10085,13 @@
   "referenced_types": [
    "navy"
   ],
-  "synergy_states": {},
-  "text": "[Main] You may trash 1 card from your hand: If your Leader has the {Navy} type, up to 2 of your opponent's Characters with 10000 power or less cannot attack until the end of your opponent's next End Phase.",
+  "synergy_states": {
+   "vida_ganha": {
+    "creates": false,
+    "requires": true
+   }
+  },
+  "text": "[Main] You may trash 1 card from your hand: If your Leader has the {Navy} type, up to 2 of your opponent's Characters with 10000 power or less cannot attack until the end of your opponent's next End Phase.\r\n[Trigger] Return up to 1 Character with a cost of 5 or less to the owner's hand.",
   "is_searcher": false,
   "draws": false,
   "draws_ativo": false,
@@ -10090,7 +10101,7 @@
   "is_removal": true,
   "kos": false,
   "rests_opponent": false,
-  "bounces": false,
+  "bounces": true,
   "gives_don": false,
   "power_buff": false,
   "heals": false,
@@ -10101,7 +10112,7 @@
   "has_double_attack": false,
   "has_unblockable": false,
   "has_banish": false,
-  "has_trigger": false
+  "has_trigger": true
  },
  "EB04-029": {
   "name": "I Heard the Sound...of a Lady's Teardrops Falling",
@@ -66564,7 +66575,8 @@
    },
    {
     "action": "gain_blocker",
-    "trigger": "end_of_turn"
+    "trigger": "end_of_turn",
+    "target": "selected"
    }
   ],
   "referenced_types": [
@@ -67026,10 +67038,6 @@
    {
     "action": "draw",
     "trigger": "trigger"
-   },
-   {
-    "action": "keyword_blocker",
-    "trigger": "passive"
    }
   ],
   "referenced_types": [],
@@ -67039,13 +67047,13 @@
     "requires": true
    }
   },
-  "text": "[Blocker] (After your opponent declares an attack, you may rest this card to make it the new target of the attack.)[On K.O.] Trash up to 1 card from the top of your opponent's Life cards.\r\n[Trigger] Draw 2 cards and trash 1 card from your hand.",
+  "text": "[On K.O.] Trash up to 1 card from the top of your opponent's Life cards.\r\n[Trigger] Draw 2 cards and trash 1 card from your hand.",
   "is_searcher": false,
   "draws": true,
   "draws_ativo": false,
   "has_counter_value": true,
   "has_counter_event": false,
-  "is_blocker": true,
+  "is_blocker": false,
   "is_removal": false,
   "kos": false,
   "rests_opponent": false,
@@ -67546,10 +67554,6 @@
    {
     "action": "gain_life",
     "trigger": "on_play"
-   },
-   {
-    "action": "keyword_blocker",
-    "trigger": "passive"
    }
   ],
   "referenced_types": [],
@@ -67559,13 +67563,13 @@
     "requires": false
    }
   },
-  "text": "[Blocker] (After your opponent declares an attack, you may rest this card to make it the new target of the attack.)[On Play] Reveal up to 1 \"Supernovas\" type Character card from your hand and add it to the top of your Life cards face-down. Then, give up to 1 rested DON!! card to 1 of your \"Supernovas\" type Leader.",
+  "text": "[On Play] Reveal up to 1 \"Supernovas\" type Character card from your hand and add it to the top of your Life cards face-down. Then, give up to 1 rested DON!! card to 1 of your \"Supernovas\" type Leader.",
   "is_searcher": false,
   "draws": false,
   "draws_ativo": false,
   "has_counter_value": false,
   "has_counter_event": false,
-  "is_blocker": true,
+  "is_blocker": false,
   "is_removal": false,
   "kos": false,
   "rests_opponent": false,
@@ -82271,29 +82275,16 @@
   "attribute": "Special",
   "effects": [
    {
-    "action": "look_top_deck",
-    "trigger": "on_play"
-   },
-   {
-    "action": "add_to_hand",
-    "trigger": "on_play"
-   },
-   {
-    "action": "deck_bottom_rest",
-    "trigger": "on_play"
-   },
-   {
     "action": "immunity",
     "trigger": "passive"
    }
   ],
   "referenced_types": [
-   "five elders",
    "removal"
   ],
   "synergy_states": {},
-  "text": "If you have 7 or more cards in your trash, this Character cannot be removed from the field by your opponent's effects.\r\n[On Play] Look at 5 cards from the top of your deck; reveal up to 1 \"Five Elders\" type card and add it to your hand. Then, place the rest at the bottom of your deck in any order.",
-  "is_searcher": true,
+  "text": "If you have 7 or more cards in your trash, this Character cannot be removed from the field by your opponent's effects.\r\n[Your Turn] If you have 10 or more cards in your trash, set the base power of all of your \"Five Elders\" type Characters to 7000.",
+  "is_searcher": false,
   "draws": false,
   "draws_ativo": false,
   "has_counter_value": true,
@@ -107425,13 +107416,22 @@
   "attribute": "Strike",
   "effects": [
    {
+    "action": "play_card",
+    "trigger": "trigger"
+   },
+   {
     "action": "keyword_blocker",
     "trigger": "passive"
    }
   ],
   "referenced_types": [],
-  "synergy_states": {},
-  "text": "[Blocker] (After your opponent declares an attack, you may rest this card to make it the new target of the attack.)",
+  "synergy_states": {
+   "vida_ganha": {
+    "creates": false,
+    "requires": true
+   }
+  },
+  "text": "[Blocker] (After your opponent declares an attack, you may rest this card to make it the new target of the attack.)\r\n[Trigger] Play this card.",
   "is_searcher": false,
   "draws": false,
   "draws_ativo": false,
@@ -107452,7 +107452,7 @@
   "has_double_attack": false,
   "has_unblockable": false,
   "has_banish": false,
-  "has_trigger": false
+  "has_trigger": true
  },
  "P-015": {
   "name": "Sunny-Kun",
@@ -109212,6 +109212,10 @@
   "attribute": "",
   "effects": [
    {
+    "action": "activate_main_effect",
+    "trigger": "trigger"
+   },
+   {
     "action": "lock_opp_character_refresh",
     "trigger": "main",
     "cost_lte": 4
@@ -109222,9 +109226,13 @@
    "char_restado": {
     "creates": false,
     "requires": true
+   },
+   "vida_ganha": {
+    "creates": false,
+    "requires": true
    }
   },
-  "text": "[Main] If your Leader is [Uta], up to 2 of your opponent's rested Characters with a cost of 4 or less will not become active in your opponent's next Refresh Phase.",
+  "text": "[Main] If your Leader is [Uta], up to 2 of your opponent's rested Characters with a cost of 4 or less will not become active in your opponent's next Refresh Phase.\r\n[Trigger] Activate this card's [Main] effect.",
   "is_searcher": false,
   "draws": false,
   "draws_ativo": false,
@@ -109245,7 +109253,7 @@
   "has_double_attack": false,
   "has_unblockable": false,
   "has_banish": false,
-  "has_trigger": false
+  "has_trigger": true
  },
  "P-058": {
   "name": "Where the Wind Blows",
@@ -109260,6 +109268,11 @@
   "effects": [
    {
     "action": "set_active",
+    "trigger": "trigger",
+    "target": "own_character"
+   },
+   {
+    "action": "set_active",
     "trigger": "main",
     "target": "own_character"
    }
@@ -109267,8 +109280,13 @@
   "referenced_types": [
    "film"
   ],
-  "synergy_states": {},
-  "text": "[Main] If your Leader is [Uta], set all of your {FILM} type Characters as active at the end of this turn.",
+  "synergy_states": {
+   "vida_ganha": {
+    "creates": false,
+    "requires": true
+   }
+  },
+  "text": "[Main] If your Leader is [Uta], set all of your {FILM} type Characters as active at the end of this turn.\r\n[Trigger] Set all of your {FILM} type Characters as active.",
   "is_searcher": false,
   "draws": false,
   "draws_ativo": false,
@@ -109289,7 +109307,7 @@
   "has_double_attack": false,
   "has_unblockable": false,
   "has_banish": false,
-  "has_trigger": false
+  "has_trigger": true
  },
  "P-059": {
   "name": "The World's Continuation",
@@ -110553,10 +110571,22 @@
   "color": "Yellow",
   "sub_types": "Supernovas/Heart Pirates",
   "attribute": "Slash",
-  "effects": [],
-  "referenced_types": [],
-  "synergy_states": {},
-  "text": "-",
+  "effects": [
+   {
+    "action": "play_card",
+    "trigger": "trigger"
+   }
+  ],
+  "referenced_types": [
+   "supernovas"
+  ],
+  "synergy_states": {
+   "vida_ganha": {
+    "creates": false,
+    "requires": true
+   }
+  },
+  "text": "[Trigger] If your Leader has the {Supernovas} type and you and your opponent have a total of 5 or less Life cards, play this card.",
   "is_searcher": false,
   "draws": false,
   "draws_ativo": false,
@@ -110577,7 +110607,7 @@
   "has_double_attack": false,
   "has_unblockable": false,
   "has_banish": false,
-  "has_trigger": false
+  "has_trigger": true
  },
  "P-089": {
   "name": "Tony Tony.Chopper",
@@ -131883,10 +131913,6 @@
    {
     "action": "play_card",
     "trigger": "trigger"
-   },
-   {
-    "action": "keyword_blocker",
-    "trigger": "passive"
    }
   ],
   "referenced_types": [
@@ -131898,13 +131924,13 @@
     "requires": true
    }
   },
-  "text": "[Blocker] (After your opponent declares an attack, you may rest this card to make it the new target of the attack.)[Your Turn][On Play] If your Leader has the {Kid Pirates} type, you may add up to 1 card from the top of your deck to the top of your Life cards. [Trigger] If your opponent has 3 or less life, play this card.",
+  "text": "[Your Turn][On Play] If your Leader has the {Kid Pirates} type, you may add up to 1 card from the top of your deck to the top of your Life cards. [Trigger] If your opponent has 3 or less life, play this card.",
   "is_searcher": false,
   "draws": false,
   "draws_ativo": false,
   "has_counter_value": false,
   "has_counter_event": false,
-  "is_blocker": true,
+  "is_blocker": false,
   "is_removal": false,
   "kos": false,
   "rests_opponent": false,

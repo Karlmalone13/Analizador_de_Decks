@@ -8663,6 +8663,17 @@ def parse_block(block_text, trigger_name):
             dur = _duration_apos(m_b.end()) if m_b else None
             if dur:
                 step['duration'] = dur
+            # "THAT Character gains [Blocker]" -- o alvo e a carta escolhida
+            # por um passo ANTERIOR do mesmo bloco (ex.: "Set up to 1 of your
+            # {Supernovas} Characters ... as active. That Character gains
+            # [Blocker] until the end of your opponent's next turn" -- lider
+            # Kid OP10-099), NAO a propria carta-fonte. Achado 18/10/2026:
+            # o Blocker ia pro LIDER e os Supernovas que bloqueavam no jogo
+            # tinham ganho um [Blocker] FALSO no texto pra compensar.
+            if m_b and re.search(r'that character\s*$', t[max(0, m_b.start() - 20):m_b.start()]):
+                step['target'] = 'selected'
+                if 'the end of your opponent' in t[m_b.end():m_b.end() + 60]:
+                    step['duration'] = 'until_opp_turn_end'
             steps.append(step)
     # "All of your [Nome] cards and this Character gain [Unblockable]/
     # [Double Attack]" -- CONCESSAO EM MASSA (grupo nomeado + a propria

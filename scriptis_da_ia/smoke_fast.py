@@ -11019,6 +11019,7 @@ def main() -> int:
     test_escolha_um_passa_pelo_q_bloco_933()
     test_exploracao_guiada_pela_simulacao_bloco_935()
     test_defesa_ve_o_estado_depois_bloco_962()
+    test_lider_kid_da_blocker_ao_supernovas_18_10()
     test_regua_rapida_igual_ao_sklearn_bloco945()
     test_descarte_ao_vivo_protege_counter_bloco949()
     test_debuff_em_batalha_ve_o_atacante_bloco952()
@@ -11741,12 +11742,38 @@ def test_blocker_condicional_auditoria_global_28_07() -> None:
     check("Pearl com Lider East Blue ganha Blocker (bloco opp_turn agora escaneado)",
           pearl2.has_blocker)
 
-    # 6. Texto-fonte corrigido -- 4 cartas sem [Blocker] nenhum no
-    # card_text (confirmado nos combat logs reais que bloqueiam de
-    # verdade): agora nativas (keyword_blocker), sem precisar de condicao.
-    for code in ("OP10-119", "ST36-002", "OP10-109", "OP15-017"):
-        carta = real_card(code)
-        check(f"{code} agora tem [Blocker] nativo (fonte corrigida)", carta.has_blocker)
+    # 6. Morgan OP15-017 tem [Blocker] NA ARTE (conferido 18/10/2026).
+    # Os outros 3 que estavam aqui (OP10-119, ST36-002, OP10-109) NAO tem:
+    # bloqueavam no jogo porque o LIDER Kid OP10-099 da Blocker a um
+    # Supernovas -- ver test_lider_kid_da_blocker_ao_supernovas_18_10.
+    check("OP15-017 Morgan tem [Blocker] nativo", real_card("OP15-017").has_blocker)
+    for code in ("OP10-119", "ST36-002", "OP10-109"):
+        check(f"{code} NAO tem [Blocker] proprio (a arte nao tem)", not real_card(code).has_blocker)
+
+
+def test_lider_kid_da_blocker_ao_supernovas_18_10() -> None:
+    """Lider Kid OP10-099: '[End of Your Turn] ... Set up to 1 of your
+    {Supernovas} Characters with a cost of 3 to 8 as active. THAT Character
+    gains [Blocker] until the end of your opponent's next turn'. Achado
+    18/10/2026: o Blocker ia pro proprio lider; 3 Supernovas tinham ganho um
+    [Blocker] falso no texto pra compensar."""
+    from optcg_engine import decision_engine as de
+    print("\n=== lider Kid da Blocker ao Supernovas (18/10) ===")
+    kid = real_card("OP10-099")
+    law = real_card("OP10-119")          # Supernovas, custo 7
+    law.rested = True
+    me = GameState(leader=kid, field_chars=[law], life=[mk("V1", "Vida"), mk("V2", "Vida")])
+    opp = GameState(leader=mk("XKIDOPP", "Opp", card_type="LEADER"))
+    check("antes: Law sem Blocker", not (law.has_blocker or law.blocker_this_turn))
+    de.EffectExecutor(me, opp).execute(kid, 'end_of_turn')
+    check("Law ficou ativo e ganhou Blocker (temporario)", not law.rested and law.blocker_this_turn)
+    check("CONTROLE: o LIDER nao ganhou Blocker", not (kid.has_blocker or kid.blocker_this_turn))
+    # CONTROLE: personagem de outro tipo nao e escolhido
+    outro = mk("XKIDNS", "Nao Supernova", cost=5, sub_types="Navy")
+    outro.rested = True
+    me2 = GameState(leader=real_card("OP10-099"), field_chars=[outro], life=[mk("V3", "Vida")])
+    de.EffectExecutor(me2, opp).execute(me2.leader, 'end_of_turn')
+    check("CONTROLE: nao-Supernovas nao ganha Blocker", not (outro.has_blocker or outro.blocker_this_turn))
 
 
 def test_parse_combat_log_rastreia_rested_active_do_oponente() -> None:

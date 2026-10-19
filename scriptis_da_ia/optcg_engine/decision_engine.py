@@ -10935,6 +10935,8 @@ class EffectExecutor:
                 melhor.rested = False
                 remove_by_identity(candidatos, melhor)
                 ativados.append(melhor.name[:14])
+                # "That Character gains ..." no passo seguinte (lider Kid OP10-099)
+                self._last_selected = melhor
 
             if target == 'own_character_and_leader' and me.leader.rested:
                 me.leader.rested = False
@@ -11597,11 +11599,20 @@ class EffectExecutor:
                 granted.append(target.name[:15])
             return f'ganhou Rush: Character: {", ".join(granted)}' if granted else ''
         if action == 'gain_blocker':
-            if step.get('duration') == 'this_turn':
-                card.blocker_this_turn = True
-                return 'ganhou Blocker (so este turno)'
-            card.has_blocker = True
-            return 'ganhou Blocker'
+            # "THAT Character gains [Blocker]": a carta escolhida por um passo
+            # anterior do mesmo bloco (mesma memoria de gain_rush), nao a
+            # carta-fonte -- ex.: lider Kid OP10-099 da Blocker ao Supernovas
+            # que ele deixou ativo (achado 18/10/2026).
+            alvo = self._last_selected if step.get('target') == 'selected' else card
+            if alvo is None:
+                return ''
+            if step.get('duration') in ('this_turn', 'until_opp_turn_end', 'until_opp_end_phase'):
+                # blocker_this_turn so reseta no refresh do DONO, entao cobre
+                # tambem "ate o fim do proximo turno do oponente"
+                alvo.blocker_this_turn = True
+                return f'{alvo.name[:18]} ganhou Blocker (temporario)'
+            alvo.has_blocker = True
+            return f'{alvo.name[:18]} ganhou Blocker'
         if action == 'select_grant_blocker':
             # "Up to N of your [Tipo] Characters [com filtro de custo]
             # [other than [Nome]] gains [Blocker]" -- SELECIONA outro

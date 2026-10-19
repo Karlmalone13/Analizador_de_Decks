@@ -1,0 +1,41 @@
+{
+  "trigger_card": "OP10-119",
+  "problem": "Achado do USUARIO na analise de deck do front (18/10/2026): Trafalgar Law OP10-119 e Killer ST36-002 apareciam como BLOCKER (e eram sugeridos como corte de 'excesso de blocker'), mas a arte oficial nao tem [Blocker]. Causa: em cards_rows.csv o card_text da linha do CODIGO BASE vinha com '[Blocker] (After your opponent declares...)' prefixado, enquanto TODAS as outras impressoes da mesma carta (parallel, manga, reprint) nao tinham. Erro de DADO da fonte externa, nao de gramatica do parser -- o parser leu certo o texto errado. CAUSA RAIZ (apontada pelo usuario: 'deve estar havendo confusao com o efeito do lider Kid amarelo'): o [Blocker] falso tinha sido COLOCADO de proposito em 28/07, porque essas cartas bloqueavam nos combat logs reais (28 'Blocks' no banco). Elas bloqueiam porque o LIDER Kid OP10-099 diz 'Set up to 1 of your {Supernovas} Characters with a cost of 3 to 8 as active. That Character gains [Blocker]...' -- e no motor `gain_blocker` dava o Blocker a CARTA-FONTE (o proprio lider). O sintoma foi coberto no texto em vez de corrigido no motor.",
+  "grammar_family": "Nao e gramatica: e DIVERGENCIA DE PALAVRA-CHAVE entre a linha do codigo base e as outras impressoes da MESMA carta (mesma carta = mesmo texto pela regra do jogo). Forma do problema: palavra-chave ([Blocker], [On Play], [Trigger], [On K.O.], [Activate: Main]...) presente numa impressao e ausente na outra.",
+  "queries": [
+    "censo global: para cada codigo base com 2+ impressoes, conjunto de palavras-chave da base x conjunto majoritario das outras impressoes -> 24 divergencias; normalizando '[Activate:Main]' x '[Activate: Main]' (so formatacao) -> 15",
+    "ST36-002 entra a parte: nao tem outra impressao, conferido so pela arte enviada pelo usuario",
+    "CONFERENCIA PELA ARTE de cada uma das 15+1: tentativa com OCR (tesseract) -- CONTROLE FALHOU: devolveu texto vazio ate em OP10-109, onde a arte mostra 'On K.O.' e 'Trigger' com nitidez; os 15 'nao encontrado' do OCR foram DESCARTADOS. Conferencia refeita lendo cada imagem diretamente (recorte da caixa de texto, 3x)",
+    "busca global da gramatica do efeito correto de OP13-084 ('set the base power of all of your {T} type Characters to N'): 1 carta no banco (a propria) -- isolated_after_global_scan"
+  ],
+  "cards_found": [
+    "OP10-119",
+    "OP10-109",
+    "ST36-002",
+    "OP13-084",
+    "EB04-028",
+    "P-014",
+    "P-057",
+    "P-058",
+    "P-088",
+    "OP05-076",
+    "OP11-079",
+    "OP11-081",
+    "OP12-057",
+    "OP14-111",
+    "OP10-099",
+    "OP15-017"
+  ],
+  "resolution_scope": "global",
+  "decision": "Corrigido o card_text da LINHA DO CODIGO BASE (a que o motor usa) de 9 cartas, com o texto da arte / das outras impressoes, trocando so a coluna card_text via csv (4557 linhas intactas): [Blocker] inexistente removido de OP10-119, OP10-109, ST36-002; [On Play] de outra carta trocado pelo [Your Turn] real em OP13-084; [Trigger] que faltava no texto de EB04-028, P-014, P-057, P-058, P-088. As 5 de [Trigger] JA tinham o trigger no effects_db (a impressao que tem o efeito alimenta o codigo, auditoria 2026-09-24) -- para elas so o TEXTO exibido muda. As outras 6 suspeitas (OP05-076, OP11-079, OP11-081, OP12-057, OP14-111 e as de formatacao) estavam CERTAS no codigo base; o erro e das impressoes alternativas, que o motor nao usa -- nao mexidas. CORRECAO DA CAUSA: gerar_effects_db.py -- 'THAT Character gains [Blocker]' (forma, nao nome) emite target='selected' + duration until_opp_turn_end; decision_engine.py -- `set_active` grava `_last_selected` e `gain_blocker` usa o alvo selecionado (mesma memoria de gain_rush). Morgan OP15-017 TEM [Blocker] na arte (conferido) e fica como estava.",
+  "validated_by": [
+    "diff_parser.py: GANHOU=0, PERDEU=0, MUDOU=4 -- OP10-109/OP10-119/ST36-002 perdem so keyword_blocker; OP13-084 perde o on_play falso (look_top_deck/add_to_hand de outra carta); nenhuma colateral",
+    "gerar_dbs.py: 2839 cartas nos dois bancos",
+    "CONTROLE da conferencia visual: as 6 suspeitas em que a arte CONFIRMOU a base mostram que a leitura nao aprovava tudo cegamente",
+    "diff_parser.py apos a correcao do Kid: GANHOU=0, PERDEU=0, MUDOU=1 (so OP10-099: gain_blocker target=selected)",
+    "smoke_fast.py :: test_lider_kid_da_blocker_ao_supernovas_18_10 -- Law fica ativo e ganha Blocker; CONTROLES: o lider NAO ganha; nao-Supernovas NAO e escolhido",
+    "teste antigo que EXIGIA [Blocker] nativo em OP10-119/ST36-002/OP10-109 invertido (NAO tem); Morgan mantida",
+    "smoke_fast.py completo: 1949 OK, 0 falhas"
+  ],
+  "notes": "PENDENTE (lacuna de parser, nao corrigida aqui): o efeito real de OP13-084 -- '[Your Turn] If you have 10 or more cards in your trash, set the base power of all of your {Five Elders} type Characters to 7000' -- NAO e interpretado; `parse_set_base_power` so cobre a forma \"X's base power becomes N\". Exige acao continua nova no motor (aura de base power por tipo no proprio turno). Antes ela tinha um [On Play] FALSO (efeito de outra carta); agora tem so a imunidade, que e o que o texto confirma. A FONTE dos dados (APIs externas) pode reintroduzir o erro numa proxima sincronizacao -- a checagem de divergencia entre impressoes deveria rodar a cada sync."
+}

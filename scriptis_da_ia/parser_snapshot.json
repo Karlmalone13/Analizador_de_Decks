@@ -27209,7 +27209,9 @@
      "target": "own_character"
     },
     {
-     "action": "gain_blocker"
+     "action": "gain_blocker",
+     "duration": "until_opp_turn_end",
+     "target": "selected"
     }
    ]
   }
@@ -27373,13 +27375,6 @@
      "action": "attack_life",
      "count": 1,
      "up_to": true
-    }
-   ]
-  },
-  "passive": {
-   "steps": [
-    {
-     "action": "keyword_blocker"
     }
    ]
   },
@@ -27634,13 +27629,6 @@
      "face": "down",
      "source": "deck_top",
      "up_to": false
-    }
-   ]
-  },
-  "passive": {
-   "steps": [
-    {
-     "action": "keyword_blocker"
     }
    ]
   }
@@ -33612,23 +33600,6 @@
   }
  },
  "OP13-084": {
-  "on_play": {
-   "steps": [
-    {
-     "action": "look_top_deck",
-     "count": 5
-    },
-    {
-     "action": "add_to_hand",
-     "count": 1,
-     "filter_type": "five elders",
-     "revealed_to_opponent": true
-    },
-    {
-     "action": "deck_bottom_rest"
-    }
-   ]
-  },
   "passive": {
    "conditions": {
     "trash_gte": 7
@@ -54351,13 +54322,6 @@
      "dest": "life_top",
      "source": "deck_top",
      "up_to": true
-    }
-   ]
-  },
-  "passive": {
-   "steps": [
-    {
-     "action": "keyword_blocker"
     }
    ]
   },
