@@ -10,6 +10,9 @@ const nextConfig: NextConfig = {
     remotePatterns: [
       { protocol: 'https', hostname: 'optcgapi.com' },
       { protocol: 'https', hostname: 'en.onepiece-cardgame.com' },
+      // artes que faltavam na API, tiradas da pasta do OPTCGSim e enviadas pro
+      // Storage do Supabase (bucket `card-images`, 18/10/2026)
+      { protocol: 'https', hostname: '*.supabase.co', pathname: '/storage/v1/object/public/**' },
       // icone do botao 'entrar com Google' na tela de login
       { protocol: 'https', hostname: 'www.google.com' },
     ],
