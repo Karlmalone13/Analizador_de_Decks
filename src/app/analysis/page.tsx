@@ -795,6 +795,17 @@ function AnalysisPageContent() {
     const [salvandoLista, setSalvandoLista] = useState(false)
     // abrir o editor vindo de "+ Adicionar" com o deck cheio
     const [editorInicio, setEditorInicio] = useState<{ cards: EditorDeckCard[]; aviso: string; retirar: string[] } | null>(null)
+    // cada abertura vinda de "+ Adicionar"/"− Tirar" REMONTA o editor (sem isso,
+    // com ele ja aberto, o clique seguinte nao mudava nada -- achado 18/10/2026)
+    const [editorVersao, setEditorVersao] = useState(0)
+    // resposta visivel embaixo do botao clicado
+    const [retornoAdd, setRetornoAdd] = useState<{ code: string; msg: string; ok: boolean } | null>(null)
+    const avisaAdd = (code: string, msg: string, ok: boolean) => {
+        setRetornoAdd({ code, msg, ok })
+        setTimeout(() => setRetornoAdd(r => (r?.code === code ? null : r)), 5000)
+    }
+    const abreEditorNaTela = () => setTimeout(() =>
+        document.getElementById('editor-lista')?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 50)
 
     // "− Tirar" num corte sugerido: abre a lista ja sem as copias (o deck fica
     // com menos de 50 e a pessoa decide o que entra no lugar, ou salva assim).
@@ -809,8 +820,9 @@ function AnalysisPageContent() {
             aviso: `${qtd}x ${nome} saiu. Adicione outra carta no lugar (veja as sugestões) ou salve assim.`,
             retirar: [],
         })
+        setEditorVersao(v => v + 1)
         setEditando(true)
-        window.scrollTo({ top: 0, behavior: 'smooth' })
+        abreEditorNaTela()
     }
 
     // "+ Adicionar" numa carta sugerida (14/10/2026): deck com espaco -> entra
@@ -819,27 +831,34 @@ function AnalysisPageContent() {
         if (!deck) return
         const { data } = await supabase.from('cards').select('*').eq('card_set_id', code).limit(1)
         const carta = data?.[0] as Card | undefined
-        if (!carta) { alert('Carta não encontrada no banco.'); return }
+        if (!carta) { avisaAdd(code, 'Carta não encontrada no banco.', false); return }
         const base = (c: Card) => (c.card_set_id || '').split('_')[0]
-        const atual = deck.cards.map(dc => ({ ...dc }))
+        // editor ja aberto com mudancas: soma em cima delas, nao do deck salvo
+        const ponto = (editando && editorInicio ? (editorInicio.cards as unknown as DeckCard[]) : deck.cards)
+        const atual = ponto.map(dc => ({ ...dc }))
         const ja = atual.find(dc => base(dc.card) === code)
         const antes = ja?.quantity ?? 0
         const entra = Math.max(0, Math.min(4, antes + copias) - antes)
-        if (entra === 0) { alert('O deck já tem 4 cópias desta carta.'); return }
+        if (entra === 0) { avisaAdd(code, 'O deck já tem 4 cópias desta carta.', false); return }
         if (ja) ja.quantity += entra
         else atual.push({ card: carta, quantity: entra })
         const total = atual.reduce((s, dc) => s + dc.quantity, 0)
-        if (total <= 50) {
+        if (total <= 50 && !editando) {
             await salvarLista(atual as unknown as EditorDeckCard[])
+            avisaAdd(code, `✓ ${entra} cópia(s) adicionada(s) — análise refeita.`, true)
             return
         }
         setEditorInicio({
             cards: atual as unknown as EditorDeckCard[],
-            aviso: `${carta.card_name} entrou com ${entra} cópia(s). O deck passou de 50: retire ${total - 50} carta(s).`,
+            aviso: total > 50
+                ? `${carta.card_name} entrou com ${entra} cópia(s). O deck passou de 50: retire ${total - 50} carta(s).`
+                : `${carta.card_name} entrou com ${entra} cópia(s). Salve para refazer a análise.`,
             retirar: sai,
         })
+        setEditorVersao(v => v + 1)
         setEditando(true)
-        window.scrollTo({ top: 0, behavior: 'smooth' })
+        avisaAdd(code, total > 50 ? 'Deck cheio: termine na lista acima ↑' : 'Adicionada na lista acima ↑ — salve para recalcular', true)
+        abreEditorNaTela()
     }
 
     // Salva a lista editada e troca o `deck`: todos os efeitos que dependem
@@ -1476,9 +1495,10 @@ function AnalysisPageContent() {
                     </div>
                 </div>
 
+                <div id="editor-lista" className="scroll-mt-24" />
                 {editando && (
                     <DeckEditor
-                        key={editorInicio ? 'adicionar' : 'editar'}
+                        key={`editor-${editorVersao}`}
                         leaderColor={deck.leader?.card_color ?? null}
                         cards={editorInicio?.cards ?? (deck.cards as unknown as EditorDeckCard[])}
                         aviso={editorInicio?.aviso}
@@ -1840,6 +1860,9 @@ function AnalysisPageContent() {
                                                         className="rounded-lg bg-emerald-600 px-1 py-1.5 text-xs font-semibold text-white transition hover:bg-emerald-500 disabled:opacity-50">
                                                         + Adicionar
                                                     </button>
+                                                    {retornoAdd?.code === s.code && (
+                                                        <div className={`text-[11px] leading-tight ${retornoAdd.ok ? 'text-emerald-300' : 'text-rose-300'}`}>{retornoAdd.msg}</div>
+                                                    )}
                                                 </div>
                                                 <div className="min-w-0">
                                                     <div className="font-bold text-white leading-tight">{s.name}</div>
