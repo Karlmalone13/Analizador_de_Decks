@@ -2,6 +2,8 @@
 
 **Última atualização:** 9 de outubro de 2026 (blocos 943-960)
 
+> **967**: lider Kid OP10-099 agora da Blocker ao Supernovas escolhido (dava ao proprio lider); [Blocker] falso tirado de OP10-119/OP10-109/ST36-002; 9 textos corrigidos pela arte; 202 artes faltantes do OPTCGSim. PENDENTE: OP13-084 (base power Five Elders), checar divergencia entre impressoes a cada sync.
+
 > **964-966 (front)**: simulador do site no motor real (modo guloso removido); replay fora; Defesa/Ataque medidos jogando; sugestoes por fraqueza filtradas (lider, custo pagavel, combo) e testadas jogando; editor de lista; /meta; marca TCG Analyzer. PENDENTE: Consistencia medida, margem no Simular, cores, artes sem SAMPLE.
 
 > **963**: ciclos 75 (72x43) e 76 (51x25) PROMOVEM; counter_pos/block_pos ja aprendidas. PENDENTE: `sincroniza.py entrega` + push (leva o 962 junto). Acompanhar OP13-002 e OP04-019.

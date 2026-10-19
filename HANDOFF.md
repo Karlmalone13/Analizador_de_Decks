@@ -1,5 +1,24 @@
 ﻿# HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-10-19 (967) - Lider Kid dava Blocker a si mesmo; [Blocker] falso em 3 cartas; artes faltantes
+
+**Motor (afeta o bot e o treino)**: o lider Kid OP10-099 ("Set up to 1 of your {Supernovas} Characters ... as
+active. THAT Character gains [Blocker] until the end of your opponent's next turn") dava o Blocker ao PROPRIO
+lider. Em 28/07 uma sessao viu OP10-119/OP10-109/ST36-002 bloqueando nos logs e colocou um [Blocker] FALSO no
+texto delas pra compensar (cobriu o sintoma). Causa corrigida: parser emite `gain_blocker` com target='selected'
+quando o texto e "that character gains [Blocker]" (forma), `set_active` grava `_last_selected`, `gain_blocker`
+usa o alvo selecionado. [Blocker] falso removido das 3; Morgan OP15-017 TEM Blocker na arte e ficou.
+Teste novo `test_lider_kid_da_blocker_ao_supernovas_18_10` (controles: lider nao ganha; nao-Supernovas nao).
+Mais 6 textos de codigo base corrigidos pela arte (OP13-084 tinha [On Play] de outra carta; EB04-028, P-014,
+P-057, P-058, P-088 sem [Trigger] no texto -- o effects ja tinha). Registro:
+`parser_audits/2026-10-18_texto_do_codigo_base_diverge_da_arte.json`. OCR (tesseract) FALHOU no controle (texto
+vazio em carta legivel) -- conferencia feita lendo a imagem. PENDENTE: efeito real de OP13-084 ("[Your Turn] set
+the base power of all of your {Five Elders} Characters to 7000") nao e interpretado.
+
+**Front**: cortes de excesso (quais tirar) espalhados (max 2 por carta) e clicaveis; "+ Adicionar" corrigido
+(com o editor aberto nao fazia nada); 202 artes que faltavam na API vieram da pasta do OPTCGSim para o Supabase
+Storage (bucket publico `card-images`) -- sao arte oficial SEM "SAMPLE", decisao do usuario so pras faltantes.
+
 ## 2026-10-18 (964-966) - Front: simulador no motor real, analise medida jogando, sugestoes testadas
 
 Sessao de FRONT (pedido do usuario: "terminar o front"). Resumo por tema:
