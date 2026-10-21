@@ -307,11 +307,16 @@ def limite_inferior_wilson(vitorias: int, n: int, z: float = 1.96) -> float:
 
 
 def duelar_sprt(workers: int, seed: int, peso_camp: float, peso_desaf: float,
-                p0: float = 0.50, p1: float = 0.58,
+                p0: float = 0.50, p1: float = 0.55,
                 alpha: float = 0.05, beta: float = 0.05,
-                pares_por_lote: int = 20, max_pares: int = 1400,
+                pares_por_lote: int = 20, max_pares: int = 4000,
                 progresso=None, extras: dict = None) -> dict:
     """Portao por PARADA SEQUENCIAL (SPRT de Wald) -- default desde o bloco 762.
+
+    p1: 0.58 -> 0.55 e max_pares: 1400 -> 4000 (19/10, bloco 968, decisao do
+    usuario): ciclos 81 (175x155, 53%) e 82 (192x165, 54%) ficaram na frente e
+    sairam INCONCLUSIVO -- 7 ciclos sem promocao. Com p1=0.55 e ~25% de pares
+    decididos: ganho 57% -> ~1.000 pares, 55% -> ~2.360, 54% -> ~3.930.
 
     POR QUE SUBSTITUIU o portao de Wilson (medido, nao teorico): em 10/09 a
     geracao 4 PASSOU no portao de Wilson com 11x3 em 14 pares discordantes

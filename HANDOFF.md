@@ -1,5 +1,40 @@
 ﻿# HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-10-20 (968) - Plato do Q: portao 55%, rede maior REPROVADA, 20 colunas novas (o que da pra FAZER)
+
+**Ciclos 77-85**: nenhuma promocao desde o 76. 81 (175x155) e 82 (192x165) INCONCLUSIVOS no teto de pares; 83
+(198x187) equivalentes. Erro do Q fora da amostra subiu 0,186 (ciclos 75-77) -> 0,196 (80-83) com o corpus
+crescendo de 18 para 28 milhoes de linhas. Ciclos com 1000 partidas levaram 67-79 min no HD (2 nucleos fisicos).
+
+**Portao**: p1 0,58 -> 0,55, max_pares 1400 -> 4000 (decisao do usuario). Ganho de 54% fecha em ~3.900 pares.
+Teste `test_portao_enxerga_melhora_incremental_24_09` atualizado (54/55/57% cabem no teto; controles mantidos).
+
+**Rede maior REPROVADA** (ver REPROVADOS.md): 256,128 alargado do campeao perdeu 5x35 (treino 145 min, 60
+iteracoes sem convergir); 128,32 alargado com passo /3 perdeu 34x64. Default voltou a 64,32.
+
+**Diagnostico do plato** (dois scripts novos, ambos com controle que pode falhar):
+- `mede_ruido_rotulo.py`: posicoes repetidas (7,3% do corpus) tem piso 0,066 contra 0,191 de prever a media ->
+  piso estimado ~0,11 no corpus. O rotulo NAO e o limite. Controle embaralhado sobe o piso pra 0,217.
+- `mede_erro_por_grupo.py`: por lider 0,200 fora / 0,174 treino; por partida 0,190 / **0,183 no treino**. Lider
+  desconhecido custa so 0,01. A rede nao separa nem o proprio treino -> falta INFORMACAO na entrada.
+- Exploracao ja e 23% das escolhidas -- nao e o gargalo.
+
+**20 colunas novas** (`FEATURE_NAMES_PENSAR`, `value_net.py`): o que cabe no DON (agora e depois da acao), o que a
+mao faz (remocao/compra/blocker/evento de defesa, do efeito parseado), lider (poder, tem/pode ativar), oponente so
+pelo observavel (counter esperado = reveladas + populacao do deck menos o visto; chance de Trigger) e o estado
+logo apos a acao. Entram no FIM do vetor (138 -> 158). `linha_q()` e agora o UNICO montador da linha do Q -- eram
+6 montagens manuais (REGRA_SEM_DUPLICACAO). `regua_x_de_q` passou a ler a corrida pela posicao (deixou de ser a
+ultima coluna). `modelo_do_campeao` normaliza as colunas novas pelo dado (diferenca pro campeao 3e-16).
+`mede_pensar.py` (400 partidas, gen 9001, fora do corpus): treino 0,1257 -> 0,1069 COM as colunas; controle
+embaralhado 0,1261 (nao ajuda). Fora da amostra 0,2302 -> 0,2262 (pouco dado). smoke_fast: 1949 OK, 0 falhas.
+
+**Exportacao do corpus**: `corpus_git.py` agora le INCREMENTAL (marcos em `metrics/q_alvos_marcos.json`, gitignored; invalidado por tamanho/hash dos 64 KB antes do marco -- corpus truncado reconta do zero) e divide a fatia em partes de 85 MB (GitHub recusa > 100 MB; ciclos 77-85 deram 306 MB, dividida em 4 com hash conferido). Antes: 63 GB lidos e ~1h por entrega. 7 testes novos em `teste_corpus_git.py` (controle: truncado). ARMADILHA: `sincroniza.py entrega` em segundo plano pelo PowerShell (`*>`) travou parado em Wait sem CPU; pelo bash com saida em arquivo e `< /dev/null` terminou. Ao rodar viu-se um 2o processo python filho com a mesma linha de comando -- origem NAO esclarecida.
+
+**Corpus (decisao do usuario)**: reduzir com so escolhidas + alternativas das 3 ultimas gens, em binario; janela de geracoes em aberto.
+
+**Proximo**: ciclos de 500 partidas (pedido do usuario) com as colunas novas; acompanhar erro no treino, portao e
+recorte por lider. Se o erro cair e nao promover em 3 ciclos -> arvore do turno (Fase 3).
+
 ## 2026-10-19 (967) - Lider Kid dava Blocker a si mesmo; [Blocker] falso em 3 cartas; artes faltantes
 
 **Motor (afeta o bot e o treino)**: o lider Kid OP10-099 ("Set up to 1 of your {Supernovas} Characters ... as

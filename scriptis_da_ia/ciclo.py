@@ -511,7 +511,7 @@ def main() -> int:
     # 600 -> 1200 junto com p1 0.65 -> 0.58 (ver duelar_sprt): a barra mais
     # baixa detecta ganho de 57%, mas isso pede ~1.116 pares. Deixar o teto em
     # 600 com o p1 novo seria pagar a mudanca e nao colher.
-    ap.add_argument('--max-pares', dest='max_pares', type=int, default=1400)
+    ap.add_argument('--max-pares', dest='max_pares', type=int, default=4000)
     ap.add_argument('--ancora', type=int, default=150,
                     help='posicoes humanas reais na ancora da etapa 5')
     # MEDIDO em 24/09 (bloco 888), mesma carga e mesmo resultado (30 pares

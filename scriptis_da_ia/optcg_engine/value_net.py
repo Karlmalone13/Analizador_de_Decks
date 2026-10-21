@@ -420,7 +420,8 @@ def regua_x_de_q(feats_q, nomes) -> list:
     d = dict(zip(FEATURE_NAMES_ALUNO, feats_q[:na]))
     if len(feats_q) >= na + len(FEATURE_NAMES_ACAO) + nc:
         d['corr_presente'] = 1.0
-        d.update(zip(FEATURE_NAMES_CORRIDA, feats_q[-nc:]))
+        i0 = na + len(FEATURE_NAMES_ACAO)
+        d.update(zip(FEATURE_NAMES_CORRIDA, feats_q[i0:i0 + nc]))
     return [float(d.get(n, 0.0)) for n in nomes]
 
 
@@ -451,6 +452,189 @@ def corrida_features(p, opp) -> list:
                 rel_m, rel_o, rel_o - rel_m]
     except Exception:
         return [0.0] * len(FEATURE_NAMES_CORRIDA)
+
+
+# O QUE DA PRA FAZER COM A POSICAO (bloco 968, pedido do usuario: "alguma coisa
+# que esta faltando para o bot pensar melhor"). Medido antes: a rede errava 0,18
+# ATE NO PROPRIO TREINO, com piso de ruido do rotulo ~0,11 -- posicoes com
+# desfechos diferentes chegavam com o MESMO vetor. As 77+52+9 colunas contam o
+# que existe (vida, mao, DON) e nao o que da pra FAZER com aquilo. Tudo aqui e
+# observavel: a mao do oponente so entra pelo que foi REVELADO; o resto e a
+# populacao do deck dele menos o que ja apareceu (mesma regra do OpponentModel).
+# Entram no FIM do vetor: modelo antigo corta o excesso e ve o que sempre viu.
+FEATURE_NAMES_PENSAR = [
+    # 1. o que cabe no DON de agora
+    'mao_jogaveis', 'mao_custo_jogavel',
+    # 2. depois desta acao
+    'don_pos', 'mao_jogaveis_pos',
+    # 3. o que a mao faz
+    'mao_remocao', 'mao_compra', 'mao_blocker', 'mao_evento_defesa',
+    # 4-5. o lider
+    'lider_poder_mine', 'lider_poder_opp', 'lider_tem_ativar', 'lider_ativo',
+    'lider_ativavel_agora',
+    # 6-7. o oponente, so pelo observavel
+    'opp_counter_esperado', 'opp_trigger_chance',
+    # 8. o estado logo apos a acao, se ninguem responder
+    'pos_life_opp', 'pos_chars_opp', 'pos_chars_mine', 'pos_hand_mine', 'pos_power_mine',
+]
+
+_REMOCAO = {'ko', 'bounce', 'place_opp_character_bottom_deck', 'rest_opp_character',
+            'debuff_power', 'debuff_cost', 'place_opp_char_to_opp_life', 'deal_damage'}
+_COMPRA = {'draw', 'look_top_deck', 'add_to_hand', 'reveal_deck_top_conditional'}
+_PAPEIS_CACHE: dict = {}
+_POOL_CACHE: dict = {}
+
+
+def _acoes_do_efeito(o, acc):
+    if isinstance(o, dict):
+        a = o.get('action')
+        if isinstance(a, str):
+            acc.add(a)
+        for v in o.values():
+            _acoes_do_efeito(v, acc)
+    elif isinstance(o, list):
+        for v in o:
+            _acoes_do_efeito(v, acc)
+    return acc
+
+
+def _papeis(code: str) -> tuple:
+    """(remove, compra, blocker, evento_defesa, tem_ativar) da carta -- do
+    efeito PARSEADO (o mesmo que o motor executa), por codigo, em cache."""
+    r = _PAPEIS_CACHE.get(code)
+    if r is not None:
+        return r
+    try:
+        from optcg_engine.decision_engine import get_card_effects
+        ef = get_card_effects(code) or {}
+    except Exception:
+        ef = {}
+    acoes = _acoes_do_efeito(ef, set())
+    r = (bool(acoes & _REMOCAO), bool(acoes & _COMPRA),
+         'keyword_blocker' in acoes, 'counter' in ef,
+         'activate_main' in ef)
+    _PAPEIS_CACHE[code] = r
+    return r
+
+
+def _custo(c) -> float:
+    try:
+        return float(c.effective_cost())
+    except Exception:
+        return _prop(c, 'cost')
+
+
+def _jogavel(c, don) -> bool:
+    return (str(getattr(c, 'card_type', '') or '').upper() in ('CHARACTER', 'EVENT', 'STAGE')
+            and _custo(c) <= don)
+
+
+def _oponente_observavel(opp) -> tuple:
+    """(counter esperado na mao, chance de trigger na vida) do oponente, SO pelo
+    que da pra ver: cartas reveladas contam pelo valor real; as ocultas, pela
+    media da populacao (deck do lider menos o que ja apareceu)."""
+    lid = getattr(getattr(opp, 'leader', None), 'code', None)
+    if lid not in _POOL_CACHE:
+        try:
+            from optcg_engine.sim_bridge import deck_cards_for_leader
+            _POOL_CACHE[lid] = list(deck_cards_for_leader(lid) or [])
+        except Exception:
+            _POOL_CACHE[lid] = []
+    deck = _POOL_CACHE[lid]
+    try:
+        conhecidas = list(opp.known_hand_cards())
+    except Exception:
+        conhecidas = []
+    if not deck:
+        return sum(_prop(c, 'counter') for c in conhecidas) / 1000.0, 0.0
+    vistos = {}
+    for zona in (getattr(opp, 'trash', []) or [], _chars(opp), conhecidas):
+        for c in zona:
+            k = getattr(c, 'code', None)
+            vistos[k] = vistos.get(k, 0) + 1
+    pool = []
+    for c in deck:
+        k = getattr(c, 'code', None)
+        if vistos.get(k, 0) > 0:
+            vistos[k] -= 1
+            continue
+        pool.append(c)
+    if not pool:
+        pool = deck
+    media_counter = sum(_prop(c, 'counter') for c in pool) / len(pool)
+    n_oculta = max(0.0, _num(lambda: len(opp.hand)) - len(conhecidas))
+    esperado = sum(_prop(c, 'counter') for c in conhecidas) + n_oculta * media_counter
+    trig = sum(1 for c in pool if getattr(c, 'has_trigger', False)) / len(pool)
+    return esperado / 1000.0, float(trig)
+
+
+def pensar_features(p, opp, acao, acoes=None, opp_obs=None) -> list:
+    """Ver `FEATURE_NAMES_PENSAR`. `acoes` = as candidatas da MESMA decisao
+    (quando houver) -- so serve pra dizer se o lider ainda pode ativar.
+    `opp_obs` = `_oponente_observavel(opp)` ja calculado (e do estado, igual pra
+    todas as candidatas). Nunca derruba o motor: falha -> zeros."""
+    try:
+        mao = list(getattr(p, 'hand', []) or [])
+        don = _num(lambda: getattr(p, 'don_available', 0))
+        jog = [c for c in mao if _jogavel(c, don)]
+        kind = acao[1] if len(acao) > 1 else None
+        ator = acao[2] if len(acao) > 2 else None
+        alvo_tipo = acao[3] if len(acao) > 3 else None
+        alvo = acao[4] if len(acao) > 4 else None
+        don_acao = float(acao[5]) if len(acao) > 5 and acao[5] is not None else 0.0
+        gasto = _custo(ator) if kind == 'play' and ator is not None else (don_acao if kind == 'attach_don' else 0.0)
+        don_pos = max(0.0, don - gasto)
+        jog_pos = sum(1 for c in mao if c is not ator and _jogavel(c, don_pos))
+        pap = [_papeis(getattr(c, 'code', '')) for c in mao]
+        rem = sum(1 for x in pap if x[0]); com = sum(1 for x in pap if x[1])
+        blk = sum(1 for c, x in zip(mao, pap) if x[2] or _prop(c, 'has_blocker'))
+        evd = sum(1 for c, x in zip(mao, pap)
+                  if x[3] and str(getattr(c, 'card_type', '')).upper() == 'EVENT')
+        lm, lo = getattr(p, 'leader', None), getattr(opp, 'leader', None)
+        tem_at = 1.0 if lm is not None and _papeis(getattr(lm, 'code', ''))[4] else 0.0
+        ativo = 1.0 if lm is not None and not getattr(lm, 'rested', False) else 0.0
+        ativavel = 0.0
+        for a in (acoes or ()):
+            if len(a) > 2 and a[1] == 'activate' and a[2] is lm and lm is not None:
+                ativavel = 1.0
+                break
+        cnt, trig = opp_obs if opp_obs is not None else _oponente_observavel(opp)
+        vida_o = _num(opp.life_count)
+        ch_m, ch_o = _chars(p), _chars(opp)
+        pw_m = sum(_prop(c, 'power') for c in ch_m) / 1000.0
+        pos_life, pos_ch_o, pos_ch_m, pos_mao, pos_pw = vida_o, float(len(ch_o)), float(len(ch_m)), float(len(mao)), pw_m
+        if kind == 'attack' and ator is not None:
+            golpe = _poder(ator) + don_acao * 1000.0
+            if alvo_tipo == 'leader':
+                if golpe >= _poder(alvo if alvo is not None else lo):
+                    pos_life = max(0.0, vida_o - (2.0 if _prop(ator, 'has_double_attack') else 1.0))
+            elif alvo is not None and golpe >= _poder(alvo):
+                pos_ch_o -= 1.0
+        elif kind == 'play' and ator is not None:
+            pos_mao -= 1.0
+            if str(getattr(ator, 'card_type', '')).upper() == 'CHARACTER':
+                pos_ch_m += 1.0
+                pos_pw += _prop(ator, 'power') / 1000.0
+        return [float(len(jog)), sum(_custo(c) for c in jog), don_pos, float(jog_pos),
+                float(rem), float(com), float(blk), float(evd),
+                _poder(lm) / 1000.0, _poder(lo) / 1000.0, tem_at, ativo, ativavel,
+                float(cnt), float(trig),
+                pos_life, pos_ch_o, pos_ch_m, pos_mao, pos_pw]
+    except Exception:
+        return [0.0] * len(FEATURE_NAMES_PENSAR)
+
+
+def linha_q(p, opp, acao, base=None, corr=None, acoes=None, opp_obs=None) -> list:
+    """O vetor do Q de UMA acao -- UNICO lugar que monta a linha (bloco 968).
+    Antes eram 6 montagens manuais `base + acao_features + corr` espalhadas;
+    coluna nova tinha que ser lembrada em cada uma (REGRA_SEM_DUPLICACAO).
+    `base`/`corr`/`opp_obs` sao do estado: o chamador passa ja calculados
+    quando monta varias linhas do mesmo estado."""
+    if base is None:
+        base = state_features(p, opp, nomes=FEATURE_NAMES_ALUNO)
+    if corr is None:
+        corr = corrida_features(p, opp)
+    return base + acao_features(acao, opp) + corr + pensar_features(p, opp, acao, acoes, opp_obs)
 
 
 CLASSES_DE_PASSO = ('cartas', 'vida_ganhar', 'vida_espiar', 'vida_outro', 'dano', 'ko',
@@ -583,8 +767,7 @@ def q_features(p, opp, acao, nomes=None) -> list:
     101, porque `state_features(nomes=None)` cai nas 32 originais -- o Q teria
     nascido enxergando menos que o modelo que ele vem substituir.
     """
-    return (state_features(p, opp, nomes=nomes or FEATURE_NAMES_ALUNO)
-            + acao_features(acao, opp) + corrida_features(p, opp))
+    return linha_q(p, opp, acao, base=state_features(p, opp, nomes=nomes or FEATURE_NAMES_ALUNO))
 
 
 def q_valores(p, opp, acoes, bundle=None) -> list:
@@ -614,7 +797,8 @@ def q_valores(p, opp, acoes, bundle=None) -> list:
     try:
         base = state_features(p, opp, nomes=FEATURE_NAMES_ALUNO)
         corr = corrida_features(p, opp)
-        linhas = [base + acao_features(a, opp) + corr for a in acoes]
+        obs = _oponente_observavel(opp)
+        linhas = [linha_q(p, opp, a, base, corr, acoes, obs) for a in acoes]
         esperado = getattr(modelo, 'n_features_in_', None)
         if esperado is not None and len(linhas[0]) > esperado:
             # modelo ANTERIOR as colunas mais novas (bloco 910: defesa/alvo;
@@ -890,8 +1074,7 @@ def linhas_pos(p, opp, acoes, mudancas) -> list:
             linhas.append(DERROTA)
             continue
         try:
-            linhas.append(state_features(p, opp, nomes=FEATURE_NAMES_ALUNO)
-                          + acao_features(a, opp) + corrida_features(p, opp))
+            linhas.append(linha_q(p, opp, a, acoes=acoes))
         finally:
             desfaz()
     return linhas

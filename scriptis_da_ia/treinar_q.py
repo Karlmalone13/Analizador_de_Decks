@@ -147,7 +147,7 @@ FAMILIAS_APOSENTADAS = ('block', 'counter')
 SELFPLAY = RAIZ / 'metrics' / 'selfplay_v2.jsonl'
 
 
-def modelo_do_campeao(caminho, n_cols: int):
+def modelo_do_campeao(caminho, n_cols: int, X=None):
     """O campeao pronto pra CONTINUAR o treino (bloco 913, INSTRUCAO_MESTRA
     item 14.7: "o proximo treinamento obrigatoriamente parte do modelo
     promovido"). Copia o Pipeline(StandardScaler, MLP) dele; se ele foi
@@ -167,9 +167,18 @@ def modelo_do_campeao(caminho, n_cols: int):
         if 0 < k <= 40:
             mlp.coefs_[0] = np.vstack([mlp.coefs_[0], np.zeros((k, mlp.coefs_[0].shape[1]))])
             mlp.n_features_in_ = n_cols
-            sc.mean_ = np.concatenate([sc.mean_, np.zeros(k)])
-            sc.scale_ = np.concatenate([sc.scale_, np.ones(k)])
-            sc.var_ = np.concatenate([sc.var_, np.ones(k)])
+            # bloco 968: media/escala das colunas novas tiradas do DADO (antes
+            # 0/1 -- com peso zero a saida e a mesma, mas coluna de escala 11
+            # sem normalizar atrapalha o Adam a aprender a usa-la)
+            if X is not None and len(X):
+                novas = np.asarray(X, dtype=float)[:, -k:]
+                mu, dp = novas.mean(0), novas.std(0)
+                dp = np.where(dp > 0, dp, 1.0)
+            else:
+                mu, dp = np.zeros(k), np.ones(k)
+            sc.mean_ = np.concatenate([sc.mean_, mu])
+            sc.scale_ = np.concatenate([sc.scale_, dp])
+            sc.var_ = np.concatenate([sc.var_, dp ** 2])
             sc.n_features_in_ = n_cols
         elif k != 0:
             return None
@@ -425,7 +434,9 @@ def main() -> int:
                          'a usar so o bootstrap do juiz fixo. Default LIGADO: o '
                          'ML tem que aprender com o que as jogadas causaram.')
     ap.add_argument('--camadas', default='64,32',
-                    help='tamanho das camadas da rede (bloco 941: 128,64 do zero perdeu 5x23).')
+                    help='tamanho das camadas da rede (bloco 941: 128,64 do zero perdeu 5x23; '
+                         'bloco 968: 256,128 alargado perdeu 5x35 (60 iteracoes sem convergir, treino 145 min); '
+                         '128,32 alargado com passo /3 perdeu 34x64. Voltou a 64,32.')
     ap.add_argument('--lr', type=float, default=3e-4,
                     help='taxa de aprendizado do treino CONTINUADO (bloco 948): 3e-4. '
                          'Com 3e-3 (o da rede nova) o desafiante saia ~41%% em 15 '
@@ -472,7 +483,8 @@ def main() -> int:
     n_lidas = n_filtradas_modo = n_sem_consequencia = 0
     from optcg_engine import value_net as _vn
     i_ld_q = list(_vn.FEATURE_NAMES_ALUNO).index('life_diff')
-    n_cols = len(_vn.FEATURE_NAMES_ALUNO) + len(_vn.FEATURE_NAMES_ACAO) + len(_vn.FEATURE_NAMES_CORRIDA)
+    n_cols = (len(_vn.FEATURE_NAMES_ALUNO) + len(_vn.FEATURE_NAMES_ACAO)
+              + len(_vn.FEATURE_NAMES_CORRIDA) + len(_vn.FEATURE_NAMES_PENSAR))
     traj = {}
     if args.consequencia:
         _aval = None
@@ -754,7 +766,7 @@ def main() -> int:
     # degrada pra amostra UNIFORME -- nunca trava o treino por falta dele.
     X_treino, y_treino = X, y
     campeao = (None if (args.do_zero or args.modelo != 'rede')
-               else modelo_do_campeao(args.continua_de, X.shape[1]))
+               else modelo_do_campeao(args.continua_de, X.shape[1], X[-200000:]))
     if args.priorizar:
         pesos = None
         try:
@@ -869,7 +881,9 @@ def main() -> int:
               'simulacao (teto %.2f x %d reais)' % (n_alt, args.peso_alternativas,
                                                     len(X)))
 
+    _alargou = False
     if campeao is not None and tuple(campeao.steps[-1][1].hidden_layer_sizes) != CAMADAS:
+        _alargou = True
         # REDE MAIOR QUE O PROMOVIDO (bloco 941): ALARGA o campeao em vez de
         # treinar do zero (do zero perdeu 5x23 -- jogava sem o acumulo de
         # treinos do campeao). Os pesos dele sao copiados; os neuronios novos
@@ -890,6 +904,10 @@ def main() -> int:
         # recomeca com o passo cheio sobre um campeao ja treinado.
         if args.lr:
             _mlp.set_params(learning_rate_init=args.lr)
+        if _alargou and args.lr:
+            # bloco 968: 256,128 alargado com o passo cheio perdeu 5x35 -- os pesos
+            # novos mexem demais e o treino e cortado antes de assentar.
+            _mlp.set_params(learning_rate_init=args.lr / 3)
         if args.max_iter:
             _mlp.set_params(max_iter=args.max_iter)
         _mlp.fit(_sc.transform(X_treino), y_treino)

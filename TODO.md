@@ -2,6 +2,8 @@
 
 **Última atualização:** 9 de outubro de 2026 (blocos 943-960)
 
+> **968**: plato do Q (ciclos 77-85 sem promover). Portao p1 0,55 / 4000 pares. Rede maior REPROVADA (256,128: 5x35; 128,32: 34x64). Rotulo nao e o limite (piso ~0,11); rede erra 0,18 no proprio treino -> 20 colunas novas do que da pra FAZER (`FEATURE_NAMES_PENSAR`), `linha_q` unico montador. PENDENTE: ciclos de 500 com as colunas; apagar pasta antiga do SSD apos confirmacao; AS-IS da geracao. CORPUS (decisao do usuario 20/10): reduzir com (2) so escolhidas + alternativas das 3 ultimas gens e (3) formato binario -- 30 GB -> <1 GB, ~50-80 MB/ciclo; controle: treino com o binario tem que dar o MESMO modelo; apagar q_alvos.jsonl so com confirmacao. JANELA de geracoes (alternativa 1) em aberto: usuario teme perder informacao. Exportacao agora incremental (marcos em q_alvos_marcos.json).
+
 > **967**: lider Kid OP10-099 agora da Blocker ao Supernovas escolhido (dava ao proprio lider); [Blocker] falso tirado de OP10-119/OP10-109/ST36-002; 9 textos corrigidos pela arte; 202 artes faltantes do OPTCGSim. PENDENTE: OP13-084 (base power Five Elders), checar divergencia entre impressoes a cada sync.
 
 > **964-966 (front)**: simulador do site no motor real (modo guloso removido); replay fora; Defesa/Ataque medidos jogando; sugestoes por fraqueza filtradas (lider, custo pagavel, combo) e testadas jogando; editor de lista; /meta; marca TCG Analyzer. PENDENTE: Consistencia medida, margem no Simular, cores, artes sem SAMPLE.

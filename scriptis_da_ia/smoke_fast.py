@@ -17147,9 +17147,9 @@ def test_portao_enxerga_melhora_incremental_24_09() -> None:
     p1 = par['p1'].default
     teto = par['max_pares'].default
     check('p0 do portao segue 0.50 (hipotese nula: equivalentes)', p0 == 0.50)
-    check('p1 do portao e 0.58 -- barra que enxerga ganho incremental',
-          abs(p1 - 0.58) < 1e-9)
-    check('teto de pares acompanha a barra (>= 1200)', teto >= 1200)
+    check('p1 do portao e 0.55 -- barra que enxerga ganho incremental (bloco 968)',
+          abs(p1 - 0.55) < 1e-9)
+    check('teto de pares acompanha a barra (>= 4000)', teto >= 4000)
 
     lim = math.log((1 - 0.05) / 0.05)
     gv, gd = math.log(p1 / p0), math.log((1 - p1) / (1 - p0))
@@ -17161,7 +17161,7 @@ def test_portao_enxerga_melhora_incremental_24_09() -> None:
 
     # A faixa REAL medida (57-59%) tem que ser alcancavel dentro do teto,
     # com a taxa de pares decididos medida (~25%).
-    for taxa in (0.57, 0.58, 0.59):
+    for taxa in (0.54, 0.55, 0.57):
         dec = pares_para_promover(taxa)
         check(f'ganho de {taxa:.0%} e detectavel (llr esperado > 0)', dec is not None)
         check(f'ganho de {taxa:.0%} cabe no teto de {teto} pares '

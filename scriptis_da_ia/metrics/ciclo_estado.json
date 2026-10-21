@@ -13240,6 +13240,2336 @@
         "modelo_oponente_sem_observar": 25.2,
         "custo_incerteza": 0.0071
       }
+    },
+    {
+      "ciclo": 77,
+      "quando": "2026-10-19T08:14:23",
+      "partidas": 200,
+      "alvos_corpus": 18517872,
+      "erro_q": 0.18647303063360435,
+      "ganho_pct": 38.31963375446872,
+      "portao": {
+        "vitorias_desafiante": 188,
+        "derrotas_desafiante": 165,
+        "decididas": 353,
+        "pares_divididos": 1047,
+        "veredito": "INCONCLUSIVO (teto de pares)",
+        "llr": -0.8653479166529472
+      },
+      "promovido": false,
+      "winrate": 0.5325779036827195,
+      "portao_por_lider": {
+        "OP06-022": {
+          "vit": 8,
+          "der": 7,
+          "div": 28
+        },
+        "OP14-041": {
+          "vit": 10,
+          "der": 2,
+          "div": 92
+        },
+        "OP04-019": {
+          "vit": 7,
+          "der": 3,
+          "div": 37
+        },
+        "OP14-080": {
+          "vit": 13,
+          "der": 8,
+          "div": 43
+        },
+        "OP16-079": {
+          "vit": 23,
+          "der": 11,
+          "div": 68
+        },
+        "OP16-001": {
+          "vit": 14,
+          "der": 18,
+          "div": 77
+        },
+        "OP13-001": {
+          "vit": 17,
+          "der": 20,
+          "div": 88
+        },
+        "OP11-001": {
+          "vit": 3,
+          "der": 4,
+          "div": 49
+        },
+        "EB02-010": {
+          "vit": 8,
+          "der": 14,
+          "div": 26
+        },
+        "ST05-001": {
+          "vit": 6,
+          "der": 3,
+          "div": 45
+        },
+        "OP15-001": {
+          "vit": 7,
+          "der": 9,
+          "div": 29
+        },
+        "OP16-080": {
+          "vit": 18,
+          "der": 16,
+          "div": 64
+        },
+        "OP13-002": {
+          "vit": 16,
+          "der": 14,
+          "div": 78
+        },
+        "OP09-081": {
+          "vit": 4,
+          "der": 0,
+          "div": 43
+        },
+        "ST01-001": {
+          "vit": 9,
+          "der": 8,
+          "div": 42
+        },
+        "OP13-004": {
+          "vit": 9,
+          "der": 11,
+          "div": 36
+        },
+        "OP16-060": {
+          "vit": 6,
+          "der": 4,
+          "div": 44
+        },
+        "OP12-020": {
+          "vit": 11,
+          "der": 4,
+          "div": 37
+        },
+        "OP11-062": {
+          "vit": 7,
+          "der": 7,
+          "div": 34
+        },
+        "OP11-040": {
+          "vit": 5,
+          "der": 5,
+          "div": 32
+        },
+        "OP15-098": {
+          "vit": 4,
+          "der": 4,
+          "div": 44
+        },
+        "OP15-002": {
+          "vit": 8,
+          "der": 2,
+          "div": 32
+        },
+        "OP10-099": {
+          "vit": 2,
+          "der": 3,
+          "div": 48
+        },
+        "OP12-061": {
+          "vit": 5,
+          "der": 10,
+          "div": 38
+        },
+        "OP11-021": {
+          "vit": 7,
+          "der": 7,
+          "div": 39
+        },
+        "ST03-001": {
+          "vit": 10,
+          "der": 8,
+          "div": 44
+        },
+        "ST02-001": {
+          "vit": 10,
+          "der": 8,
+          "div": 41
+        },
+        "OP05-041": {
+          "vit": 7,
+          "der": 5,
+          "div": 30
+        },
+        "ST22-001": {
+          "vit": 7,
+          "der": 7,
+          "div": 28
+        },
+        "OP11-041": {
+          "vit": 8,
+          "der": 15,
+          "div": 86
+        },
+        "OP14-040": {
+          "vit": 4,
+          "der": 7,
+          "div": 41
+        },
+        "OP02-001": {
+          "vit": 10,
+          "der": 9,
+          "div": 40
+        },
+        "ST04-001": {
+          "vit": 7,
+          "der": 6,
+          "div": 38
+        },
+        "OP13-079": {
+          "vit": 5,
+          "der": 4,
+          "div": 40
+        },
+        "OP14-020": {
+          "vit": 16,
+          "der": 11,
+          "div": 79
+        },
+        "OP17-039": {
+          "vit": 9,
+          "der": 12,
+          "div": 31
+        },
+        "OP17-079": {
+          "vit": 5,
+          "der": 2,
+          "div": 43
+        },
+        "OP02-093": {
+          "vit": 8,
+          "der": 7,
+          "div": 51
+        },
+        "OP09-062": {
+          "vit": 6,
+          "der": 3,
+          "div": 38
+        },
+        "OP14-079": {
+          "vit": 4,
+          "der": 7,
+          "div": 33
+        },
+        "ST09-001": {
+          "vit": 9,
+          "der": 8,
+          "div": 36
+        },
+        "OP15-058": {
+          "vit": 9,
+          "der": 9,
+          "div": 72
+        },
+        "OP16-022": {
+          "vit": 8,
+          "der": 5,
+          "div": 44
+        },
+        "OP17-058": {
+          "vit": 1,
+          "der": 0,
+          "div": 53
+        },
+        "ST30-001": {
+          "vit": 6,
+          "der": 3,
+          "div": 33
+        }
+      },
+      "tempo_s": {
+        "gera": 278.5,
+        "treina_regua": 86.7,
+        "treina": 378.3,
+        "portao": 193.7,
+        "auditoria": 7.2,
+        "ancora": 7.5
+      },
+      "tempo_total_s": 951.9,
+      "guarda_corpo": {},
+      "ancora_humana": {
+        "modelo_oponente": 26.9,
+        "modelo_oponente_sem_observar": 25.2,
+        "custo_incerteza": 0.0079
+      }
+    },
+    {
+      "ciclo": 78,
+      "quando": "2026-10-19T08:58:16",
+      "partidas": 200,
+      "alvos_corpus": 19029872,
+      "erro_q": 0.18827880087379412,
+      "ganho_pct": 38.25325730268268,
+      "portao": {
+        "vitorias_desafiante": 83,
+        "derrotas_desafiante": 88,
+        "decididas": 171,
+        "pares_divididos": 509,
+        "veredito": "DESCARTA (equivalentes)",
+        "llr": -3.024237643923758
+      },
+      "promovido": false,
+      "winrate": 0.4853801169590643,
+      "portao_por_lider": {
+        "ST05-001": {
+          "vit": 4,
+          "der": 3,
+          "div": 22
+        },
+        "OP15-002": {
+          "vit": 1,
+          "der": 2,
+          "div": 18
+        },
+        "OP14-079": {
+          "vit": 6,
+          "der": 5,
+          "div": 22
+        },
+        "OP11-062": {
+          "vit": 2,
+          "der": 7,
+          "div": 21
+        },
+        "OP15-058": {
+          "vit": 6,
+          "der": 1,
+          "div": 45
+        },
+        "OP11-021": {
+          "vit": 2,
+          "der": 8,
+          "div": 14
+        },
+        "OP17-039": {
+          "vit": 5,
+          "der": 2,
+          "div": 15
+        },
+        "ST22-001": {
+          "vit": 7,
+          "der": 5,
+          "div": 16
+        },
+        "OP17-079": {
+          "vit": 6,
+          "der": 4,
+          "div": 25
+        },
+        "OP13-004": {
+          "vit": 3,
+          "der": 6,
+          "div": 18
+        },
+        "OP14-040": {
+          "vit": 3,
+          "der": 2,
+          "div": 16
+        },
+        "OP13-079": {
+          "vit": 0,
+          "der": 2,
+          "div": 28
+        },
+        "OP13-002": {
+          "vit": 10,
+          "der": 8,
+          "div": 35
+        },
+        "OP13-001": {
+          "vit": 6,
+          "der": 11,
+          "div": 29
+        },
+        "OP14-041": {
+          "vit": 0,
+          "der": 6,
+          "div": 41
+        },
+        "ST04-001": {
+          "vit": 5,
+          "der": 5,
+          "div": 20
+        },
+        "OP02-093": {
+          "vit": 4,
+          "der": 3,
+          "div": 15
+        },
+        "OP15-098": {
+          "vit": 2,
+          "der": 5,
+          "div": 21
+        },
+        "OP16-022": {
+          "vit": 2,
+          "der": 1,
+          "div": 22
+        },
+        "ST03-001": {
+          "vit": 7,
+          "der": 4,
+          "div": 24
+        },
+        "OP16-001": {
+          "vit": 8,
+          "der": 2,
+          "div": 44
+        },
+        "OP16-079": {
+          "vit": 4,
+          "der": 6,
+          "div": 36
+        },
+        "OP04-019": {
+          "vit": 1,
+          "der": 4,
+          "div": 21
+        },
+        "OP14-020": {
+          "vit": 7,
+          "der": 6,
+          "div": 35
+        },
+        "OP09-081": {
+          "vit": 2,
+          "der": 4,
+          "div": 22
+        },
+        "ST01-001": {
+          "vit": 6,
+          "der": 1,
+          "div": 21
+        },
+        "OP05-041": {
+          "vit": 1,
+          "der": 4,
+          "div": 17
+        },
+        "OP16-080": {
+          "vit": 6,
+          "der": 7,
+          "div": 40
+        },
+        "OP02-001": {
+          "vit": 4,
+          "der": 3,
+          "div": 17
+        },
+        "OP16-060": {
+          "vit": 5,
+          "der": 6,
+          "div": 20
+        },
+        "OP06-022": {
+          "vit": 2,
+          "der": 0,
+          "div": 19
+        },
+        "ST09-001": {
+          "vit": 6,
+          "der": 4,
+          "div": 17
+        },
+        "OP11-041": {
+          "vit": 1,
+          "der": 3,
+          "div": 42
+        },
+        "OP12-020": {
+          "vit": 4,
+          "der": 6,
+          "div": 16
+        },
+        "OP11-040": {
+          "vit": 2,
+          "der": 0,
+          "div": 11
+        },
+        "OP15-001": {
+          "vit": 2,
+          "der": 1,
+          "div": 15
+        },
+        "OP09-062": {
+          "vit": 5,
+          "der": 4,
+          "div": 11
+        },
+        "EB02-010": {
+          "vit": 2,
+          "der": 5,
+          "div": 26
+        },
+        "ST30-001": {
+          "vit": 3,
+          "der": 2,
+          "div": 17
+        },
+        "OP17-058": {
+          "vit": 0,
+          "der": 1,
+          "div": 27
+        },
+        "OP12-061": {
+          "vit": 2,
+          "der": 4,
+          "div": 18
+        },
+        "OP14-080": {
+          "vit": 5,
+          "der": 5,
+          "div": 13
+        },
+        "OP10-099": {
+          "vit": 2,
+          "der": 3,
+          "div": 20
+        },
+        "OP11-001": {
+          "vit": 3,
+          "der": 3,
+          "div": 17
+        },
+        "ST02-001": {
+          "vit": 2,
+          "der": 2,
+          "div": 9
+        }
+      },
+      "tempo_s": {
+        "gera": 278.3,
+        "treina_regua": 92.5,
+        "treina": 404.0,
+        "portao": 103.8,
+        "auditoria": 7.2,
+        "ancora": 7.6
+      },
+      "tempo_total_s": 893.4,
+      "guarda_corpo": {},
+      "ancora_humana": {
+        "modelo_oponente": 26.9,
+        "modelo_oponente_sem_observar": 25.2,
+        "custo_incerteza": 0.0062
+      }
+    },
+    {
+      "ciclo": 79,
+      "quando": "2026-10-19T09:18:59",
+      "partidas": 200,
+      "alvos_corpus": 19541029,
+      "erro_q": 0.18792659643640702,
+      "ganho_pct": 37.7491875929076,
+      "portao": {
+        "vitorias_desafiante": 130,
+        "derrotas_desafiante": 128,
+        "decididas": 258,
+        "pares_divididos": 682,
+        "veredito": "DESCARTA (equivalentes)",
+        "llr": -3.0226328891560215
+      },
+      "promovido": false,
+      "winrate": 0.5038759689922481,
+      "portao_por_lider": {
+        "ST22-001": {
+          "vit": 3,
+          "der": 3,
+          "div": 26
+        },
+        "ST01-001": {
+          "vit": 5,
+          "der": 6,
+          "div": 23
+        },
+        "ST03-001": {
+          "vit": 5,
+          "der": 8,
+          "div": 34
+        },
+        "OP11-001": {
+          "vit": 5,
+          "der": 5,
+          "div": 36
+        },
+        "OP13-002": {
+          "vit": 9,
+          "der": 12,
+          "div": 57
+        },
+        "ST05-001": {
+          "vit": 6,
+          "der": 0,
+          "div": 27
+        },
+        "OP15-058": {
+          "vit": 5,
+          "der": 8,
+          "div": 57
+        },
+        "OP13-001": {
+          "vit": 10,
+          "der": 14,
+          "div": 53
+        },
+        "OP11-062": {
+          "vit": 8,
+          "der": 5,
+          "div": 23
+        },
+        "OP12-061": {
+          "vit": 9,
+          "der": 6,
+          "div": 26
+        },
+        "OP16-080": {
+          "vit": 11,
+          "der": 6,
+          "div": 64
+        },
+        "OP14-041": {
+          "vit": 3,
+          "der": 3,
+          "div": 62
+        },
+        "OP14-040": {
+          "vit": 4,
+          "der": 6,
+          "div": 22
+        },
+        "OP09-081": {
+          "vit": 5,
+          "der": 7,
+          "div": 22
+        },
+        "OP15-002": {
+          "vit": 7,
+          "der": 1,
+          "div": 20
+        },
+        "OP09-062": {
+          "vit": 4,
+          "der": 5,
+          "div": 22
+        },
+        "OP05-041": {
+          "vit": 4,
+          "der": 1,
+          "div": 30
+        },
+        "EB02-010": {
+          "vit": 6,
+          "der": 7,
+          "div": 21
+        },
+        "OP17-079": {
+          "vit": 4,
+          "der": 7,
+          "div": 21
+        },
+        "OP16-079": {
+          "vit": 9,
+          "der": 15,
+          "div": 42
+        },
+        "OP11-040": {
+          "vit": 7,
+          "der": 5,
+          "div": 21
+        },
+        "ST09-001": {
+          "vit": 9,
+          "der": 6,
+          "div": 37
+        },
+        "OP13-004": {
+          "vit": 3,
+          "der": 5,
+          "div": 27
+        },
+        "OP16-001": {
+          "vit": 10,
+          "der": 8,
+          "div": 54
+        },
+        "OP06-022": {
+          "vit": 6,
+          "der": 6,
+          "div": 24
+        },
+        "OP14-020": {
+          "vit": 15,
+          "der": 8,
+          "div": 40
+        },
+        "ST02-001": {
+          "vit": 3,
+          "der": 7,
+          "div": 16
+        },
+        "OP15-001": {
+          "vit": 4,
+          "der": 6,
+          "div": 28
+        },
+        "ST04-001": {
+          "vit": 5,
+          "der": 4,
+          "div": 21
+        },
+        "OP13-079": {
+          "vit": 3,
+          "der": 5,
+          "div": 19
+        },
+        "OP02-093": {
+          "vit": 4,
+          "der": 6,
+          "div": 26
+        },
+        "OP14-079": {
+          "vit": 4,
+          "der": 1,
+          "div": 19
+        },
+        "OP16-022": {
+          "vit": 4,
+          "der": 2,
+          "div": 20
+        },
+        "OP04-019": {
+          "vit": 3,
+          "der": 6,
+          "div": 26
+        },
+        "OP17-039": {
+          "vit": 11,
+          "der": 7,
+          "div": 26
+        },
+        "ST30-001": {
+          "vit": 6,
+          "der": 4,
+          "div": 22
+        },
+        "OP02-001": {
+          "vit": 8,
+          "der": 8,
+          "div": 22
+        },
+        "OP17-058": {
+          "vit": 1,
+          "der": 1,
+          "div": 23
+        },
+        "OP10-099": {
+          "vit": 0,
+          "der": 4,
+          "div": 36
+        },
+        "OP11-021": {
+          "vit": 8,
+          "der": 2,
+          "div": 25
+        },
+        "OP16-060": {
+          "vit": 8,
+          "der": 6,
+          "div": 20
+        },
+        "OP11-041": {
+          "vit": 5,
+          "der": 8,
+          "div": 60
+        },
+        "OP12-020": {
+          "vit": 7,
+          "der": 8,
+          "div": 23
+        },
+        "OP14-080": {
+          "vit": 2,
+          "der": 7,
+          "div": 17
+        },
+        "OP15-098": {
+          "vit": 2,
+          "der": 1,
+          "div": 24
+        }
+      },
+      "tempo_s": {
+        "gera": 274.5,
+        "treina_regua": 127.8,
+        "treina": 557.0,
+        "portao": 138.3,
+        "auditoria": 7.2,
+        "ancora": 7.8
+      },
+      "tempo_total_s": 1112.6,
+      "guarda_corpo": {},
+      "ancora_humana": {
+        "modelo_oponente": 26.9,
+        "modelo_oponente_sem_observar": 25.2,
+        "custo_incerteza": 0.0067
+      }
+    },
+    {
+      "ciclo": 80,
+      "quando": "2026-10-19T09:37:52",
+      "partidas": 200,
+      "alvos_corpus": 20058840,
+      "erro_q": 0.19677940652325818,
+      "ganho_pct": 35.57723290240705,
+      "portao": {
+        "vitorias_desafiante": 52,
+        "derrotas_desafiante": 65,
+        "decididas": 117,
+        "pares_divididos": 343,
+        "veredito": "DESCARTA (equivalentes)",
+        "llr": -3.6151298982603413
+      },
+      "promovido": false,
+      "winrate": 0.4444444444444444,
+      "portao_por_lider": {
+        "OP15-098": {
+          "vit": 2,
+          "der": 1,
+          "div": 12
+        },
+        "OP11-041": {
+          "vit": 5,
+          "der": 3,
+          "div": 44
+        },
+        "OP16-080": {
+          "vit": 11,
+          "der": 5,
+          "div": 25
+        },
+        "OP13-001": {
+          "vit": 6,
+          "der": 8,
+          "div": 23
+        },
+        "OP14-041": {
+          "vit": 2,
+          "der": 0,
+          "div": 32
+        },
+        "OP16-022": {
+          "vit": 2,
+          "der": 0,
+          "div": 14
+        },
+        "OP10-099": {
+          "vit": 1,
+          "der": 1,
+          "div": 15
+        },
+        "OP12-020": {
+          "vit": 1,
+          "der": 3,
+          "div": 9
+        },
+        "OP02-001": {
+          "vit": 3,
+          "der": 4,
+          "div": 9
+        },
+        "OP16-079": {
+          "vit": 1,
+          "der": 5,
+          "div": 25
+        },
+        "OP14-020": {
+          "vit": 5,
+          "der": 1,
+          "div": 23
+        },
+        "OP16-001": {
+          "vit": 6,
+          "der": 5,
+          "div": 33
+        },
+        "OP02-093": {
+          "vit": 0,
+          "der": 3,
+          "div": 12
+        },
+        "OP15-001": {
+          "vit": 1,
+          "der": 2,
+          "div": 10
+        },
+        "OP09-062": {
+          "vit": 2,
+          "der": 4,
+          "div": 14
+        },
+        "ST30-001": {
+          "vit": 0,
+          "der": 3,
+          "div": 13
+        },
+        "OP11-021": {
+          "vit": 5,
+          "der": 4,
+          "div": 9
+        },
+        "OP17-039": {
+          "vit": 0,
+          "der": 0,
+          "div": 9
+        },
+        "ST22-001": {
+          "vit": 1,
+          "der": 5,
+          "div": 16
+        },
+        "ST02-001": {
+          "vit": 4,
+          "der": 2,
+          "div": 9
+        },
+        "OP11-040": {
+          "vit": 1,
+          "der": 4,
+          "div": 8
+        },
+        "OP14-080": {
+          "vit": 1,
+          "der": 4,
+          "div": 6
+        },
+        "OP15-058": {
+          "vit": 3,
+          "der": 6,
+          "div": 32
+        },
+        "OP11-062": {
+          "vit": 0,
+          "der": 3,
+          "div": 11
+        },
+        "EB02-010": {
+          "vit": 3,
+          "der": 6,
+          "div": 13
+        },
+        "OP14-040": {
+          "vit": 3,
+          "der": 1,
+          "div": 15
+        },
+        "OP13-002": {
+          "vit": 3,
+          "der": 6,
+          "div": 25
+        },
+        "ST09-001": {
+          "vit": 3,
+          "der": 5,
+          "div": 8
+        },
+        "OP16-060": {
+          "vit": 3,
+          "der": 3,
+          "div": 8
+        },
+        "ST01-001": {
+          "vit": 5,
+          "der": 2,
+          "div": 10
+        },
+        "OP13-079": {
+          "vit": 0,
+          "der": 2,
+          "div": 15
+        },
+        "OP04-019": {
+          "vit": 2,
+          "der": 0,
+          "div": 12
+        },
+        "ST04-001": {
+          "vit": 2,
+          "der": 1,
+          "div": 14
+        },
+        "OP15-002": {
+          "vit": 0,
+          "der": 2,
+          "div": 15
+        },
+        "OP05-041": {
+          "vit": 1,
+          "der": 4,
+          "div": 12
+        },
+        "OP09-081": {
+          "vit": 0,
+          "der": 2,
+          "div": 21
+        },
+        "OP14-079": {
+          "vit": 3,
+          "der": 2,
+          "div": 9
+        },
+        "OP17-079": {
+          "vit": 3,
+          "der": 2,
+          "div": 9
+        },
+        "OP17-058": {
+          "vit": 0,
+          "der": 2,
+          "div": 12
+        },
+        "OP06-022": {
+          "vit": 2,
+          "der": 1,
+          "div": 8
+        },
+        "OP13-004": {
+          "vit": 2,
+          "der": 4,
+          "div": 10
+        },
+        "ST05-001": {
+          "vit": 2,
+          "der": 3,
+          "div": 18
+        },
+        "ST03-001": {
+          "vit": 2,
+          "der": 1,
+          "div": 15
+        },
+        "OP12-061": {
+          "vit": 2,
+          "der": 4,
+          "div": 10
+        },
+        "OP11-001": {
+          "vit": 0,
+          "der": 1,
+          "div": 14
+        }
+      },
+      "tempo_s": {
+        "gera": 285.2,
+        "treina_regua": 128.8,
+        "treina": 450.3,
+        "portao": 74.3,
+        "auditoria": 10.3,
+        "ancora": 7.5
+      },
+      "tempo_total_s": 956.4,
+      "guarda_corpo": {},
+      "ancora_humana": {
+        "modelo_oponente": 26.9,
+        "modelo_oponente_sem_observar": 25.2,
+        "custo_incerteza": 0.0082
+      }
+    },
+    {
+      "ciclo": 81,
+      "quando": "2026-10-19T17:45:26",
+      "partidas": 1000,
+      "alvos_corpus": 22707464,
+      "erro_q": 0.1973495931689963,
+      "ganho_pct": 35.25523271141229,
+      "portao": {
+        "vitorias_desafiante": 175,
+        "derrotas_desafiante": 155,
+        "decididas": 330,
+        "pares_divididos": 1069,
+        "veredito": "INCONCLUSIVO (teto de pares)",
+        "llr": -1.0512741117427247
+      },
+      "promovido": false,
+      "winrate": 0.5303030303030303,
+      "portao_por_lider": {
+        "OP06-022": {
+          "vit": 7,
+          "der": 6,
+          "div": 30
+        },
+        "OP13-004": {
+          "vit": 8,
+          "der": 5,
+          "div": 43
+        },
+        "OP15-002": {
+          "vit": 4,
+          "der": 8,
+          "div": 36
+        },
+        "OP10-099": {
+          "vit": 2,
+          "der": 4,
+          "div": 50
+        },
+        "OP14-079": {
+          "vit": 8,
+          "der": 4,
+          "div": 40
+        },
+        "ST30-001": {
+          "vit": 5,
+          "der": 7,
+          "div": 46
+        },
+        "OP11-041": {
+          "vit": 9,
+          "der": 13,
+          "div": 88
+        },
+        "OP11-001": {
+          "vit": 5,
+          "der": 6,
+          "div": 37
+        },
+        "OP12-061": {
+          "vit": 9,
+          "der": 4,
+          "div": 39
+        },
+        "OP13-079": {
+          "vit": 5,
+          "der": 6,
+          "div": 47
+        },
+        "EB02-010": {
+          "vit": 7,
+          "der": 9,
+          "div": 39
+        },
+        "OP14-020": {
+          "vit": 15,
+          "der": 11,
+          "div": 78
+        },
+        "OP09-081": {
+          "vit": 3,
+          "der": 9,
+          "div": 47
+        },
+        "ST22-001": {
+          "vit": 4,
+          "der": 9,
+          "div": 52
+        },
+        "ST02-001": {
+          "vit": 9,
+          "der": 5,
+          "div": 28
+        },
+        "OP11-040": {
+          "vit": 7,
+          "der": 5,
+          "div": 25
+        },
+        "OP15-098": {
+          "vit": 6,
+          "der": 7,
+          "div": 39
+        },
+        "OP14-041": {
+          "vit": 15,
+          "der": 3,
+          "div": 102
+        },
+        "OP14-080": {
+          "vit": 5,
+          "der": 8,
+          "div": 33
+        },
+        "OP17-039": {
+          "vit": 0,
+          "der": 8,
+          "div": 47
+        },
+        "OP16-079": {
+          "vit": 16,
+          "der": 10,
+          "div": 87
+        },
+        "OP16-001": {
+          "vit": 7,
+          "der": 17,
+          "div": 74
+        },
+        "OP16-022": {
+          "vit": 7,
+          "der": 7,
+          "div": 41
+        },
+        "ST05-001": {
+          "vit": 9,
+          "der": 5,
+          "div": 42
+        },
+        "OP05-041": {
+          "vit": 6,
+          "der": 6,
+          "div": 42
+        },
+        "OP13-001": {
+          "vit": 17,
+          "der": 14,
+          "div": 67
+        },
+        "ST09-001": {
+          "vit": 5,
+          "der": 6,
+          "div": 30
+        },
+        "OP16-060": {
+          "vit": 7,
+          "der": 5,
+          "div": 42
+        },
+        "OP15-058": {
+          "vit": 11,
+          "der": 10,
+          "div": 82
+        },
+        "ST01-001": {
+          "vit": 12,
+          "der": 10,
+          "div": 31
+        },
+        "OP14-040": {
+          "vit": 5,
+          "der": 5,
+          "div": 42
+        },
+        "OP02-001": {
+          "vit": 10,
+          "der": 6,
+          "div": 34
+        },
+        "ST03-001": {
+          "vit": 7,
+          "der": 4,
+          "div": 40
+        },
+        "OP17-058": {
+          "vit": 0,
+          "der": 1,
+          "div": 52
+        },
+        "OP13-002": {
+          "vit": 14,
+          "der": 12,
+          "div": 68
+        },
+        "OP02-093": {
+          "vit": 6,
+          "der": 7,
+          "div": 41
+        },
+        "OP16-080": {
+          "vit": 12,
+          "der": 6,
+          "div": 79
+        },
+        "OP09-062": {
+          "vit": 7,
+          "der": 3,
+          "div": 51
+        },
+        "OP17-079": {
+          "vit": 12,
+          "der": 4,
+          "div": 37
+        },
+        "OP11-021": {
+          "vit": 10,
+          "der": 5,
+          "div": 39
+        },
+        "OP12-020": {
+          "vit": 6,
+          "der": 5,
+          "div": 31
+        },
+        "ST04-001": {
+          "vit": 7,
+          "der": 5,
+          "div": 37
+        },
+        "OP04-019": {
+          "vit": 9,
+          "der": 5,
+          "div": 33
+        },
+        "OP15-001": {
+          "vit": 5,
+          "der": 6,
+          "div": 42
+        },
+        "OP11-062": {
+          "vit": 10,
+          "der": 9,
+          "div": 28
+        }
+      },
+      "tempo_s": {
+        "gera": 2660.0,
+        "treina_regua": 106.7,
+        "treina": 1017.8,
+        "portao": 204.0,
+        "auditoria": 9.4,
+        "ancora": 10.4
+      },
+      "tempo_total_s": 4008.3,
+      "guarda_corpo": {},
+      "ancora_humana": {
+        "modelo_oponente": 26.9,
+        "modelo_oponente_sem_observar": 25.2,
+        "custo_incerteza": 0.0091
+      }
+    },
+    {
+      "ciclo": 82,
+      "quando": "2026-10-19T19:12:57",
+      "partidas": 1000,
+      "alvos_corpus": 25444562,
+      "erro_q": 0.19644993197538285,
+      "ganho_pct": 36.07816199700502,
+      "portao": {
+        "vitorias_desafiante": 192,
+        "derrotas_desafiante": 165,
+        "decididas": 357,
+        "pares_divididos": 1043,
+        "veredito": "INCONCLUSIVO (teto de pares)",
+        "llr": -0.2716678961798564
+      },
+      "promovido": false,
+      "winrate": 0.5378151260504201,
+      "portao_por_lider": {
+        "OP15-002": {
+          "vit": 6,
+          "der": 7,
+          "div": 43
+        },
+        "OP17-079": {
+          "vit": 10,
+          "der": 7,
+          "div": 33
+        },
+        "OP09-081": {
+          "vit": 5,
+          "der": 7,
+          "div": 38
+        },
+        "OP09-062": {
+          "vit": 12,
+          "der": 13,
+          "div": 32
+        },
+        "OP17-039": {
+          "vit": 4,
+          "der": 10,
+          "div": 42
+        },
+        "OP16-001": {
+          "vit": 14,
+          "der": 12,
+          "div": 78
+        },
+        "OP12-020": {
+          "vit": 9,
+          "der": 1,
+          "div": 32
+        },
+        "OP14-080": {
+          "vit": 9,
+          "der": 4,
+          "div": 34
+        },
+        "ST01-001": {
+          "vit": 5,
+          "der": 9,
+          "div": 45
+        },
+        "OP11-062": {
+          "vit": 7,
+          "der": 5,
+          "div": 37
+        },
+        "OP02-093": {
+          "vit": 4,
+          "der": 8,
+          "div": 43
+        },
+        "OP11-041": {
+          "vit": 8,
+          "der": 8,
+          "div": 80
+        },
+        "OP15-058": {
+          "vit": 11,
+          "der": 9,
+          "div": 71
+        },
+        "OP14-041": {
+          "vit": 10,
+          "der": 4,
+          "div": 88
+        },
+        "OP11-021": {
+          "vit": 11,
+          "der": 7,
+          "div": 36
+        },
+        "OP10-099": {
+          "vit": 2,
+          "der": 0,
+          "div": 40
+        },
+        "OP12-061": {
+          "vit": 8,
+          "der": 3,
+          "div": 29
+        },
+        "OP11-001": {
+          "vit": 5,
+          "der": 10,
+          "div": 47
+        },
+        "OP16-079": {
+          "vit": 19,
+          "der": 9,
+          "div": 86
+        },
+        "OP13-002": {
+          "vit": 13,
+          "der": 17,
+          "div": 88
+        },
+        "OP13-079": {
+          "vit": 5,
+          "der": 5,
+          "div": 42
+        },
+        "OP14-020": {
+          "vit": 13,
+          "der": 9,
+          "div": 78
+        },
+        "OP11-040": {
+          "vit": 11,
+          "der": 13,
+          "div": 29
+        },
+        "ST09-001": {
+          "vit": 7,
+          "der": 4,
+          "div": 38
+        },
+        "OP16-060": {
+          "vit": 5,
+          "der": 4,
+          "div": 27
+        },
+        "OP17-058": {
+          "vit": 0,
+          "der": 2,
+          "div": 41
+        },
+        "EB02-010": {
+          "vit": 10,
+          "der": 6,
+          "div": 34
+        },
+        "ST22-001": {
+          "vit": 16,
+          "der": 5,
+          "div": 33
+        },
+        "OP13-001": {
+          "vit": 20,
+          "der": 18,
+          "div": 89
+        },
+        "OP16-080": {
+          "vit": 10,
+          "der": 14,
+          "div": 67
+        },
+        "ST05-001": {
+          "vit": 7,
+          "der": 2,
+          "div": 39
+        },
+        "OP05-041": {
+          "vit": 7,
+          "der": 10,
+          "div": 48
+        },
+        "ST04-001": {
+          "vit": 5,
+          "der": 7,
+          "div": 30
+        },
+        "ST30-001": {
+          "vit": 5,
+          "der": 7,
+          "div": 46
+        },
+        "OP04-019": {
+          "vit": 6,
+          "der": 4,
+          "div": 32
+        },
+        "OP06-022": {
+          "vit": 14,
+          "der": 10,
+          "div": 25
+        },
+        "OP02-001": {
+          "vit": 7,
+          "der": 4,
+          "div": 38
+        },
+        "ST02-001": {
+          "vit": 7,
+          "der": 7,
+          "div": 41
+        },
+        "ST03-001": {
+          "vit": 5,
+          "der": 8,
+          "div": 47
+        },
+        "OP13-004": {
+          "vit": 5,
+          "der": 7,
+          "div": 49
+        },
+        "OP15-001": {
+          "vit": 10,
+          "der": 6,
+          "div": 37
+        },
+        "OP16-022": {
+          "vit": 12,
+          "der": 4,
+          "div": 32
+        },
+        "OP14-040": {
+          "vit": 4,
+          "der": 11,
+          "div": 43
+        },
+        "OP14-079": {
+          "vit": 7,
+          "der": 9,
+          "div": 45
+        },
+        "OP15-098": {
+          "vit": 14,
+          "der": 4,
+          "div": 34
+        }
+      },
+      "tempo_s": {
+        "gera": 2893.9,
+        "treina_regua": 154.1,
+        "treina": 1497.5,
+        "portao": 199.9,
+        "auditoria": 8.0,
+        "ancora": 7.9
+      },
+      "tempo_total_s": 4761.3,
+      "guarda_corpo": {},
+      "ancora_humana": {
+        "modelo_oponente": 26.9,
+        "modelo_oponente_sem_observar": 25.2,
+        "custo_incerteza": 0.0091
+      }
+    },
+    {
+      "ciclo": 83,
+      "quando": "2026-10-19T20:42:52",
+      "partidas": 1000,
+      "alvos_corpus": 28106939,
+      "erro_q": 0.19636032599084052,
+      "ganho_pct": 36.06192134746194,
+      "portao": {
+        "vitorias_desafiante": 198,
+        "derrotas_desafiante": 187,
+        "decididas": 385,
+        "pares_divididos": 975,
+        "veredito": "DESCARTA (equivalentes)",
+        "llr": -3.216922382655323
+      },
+      "promovido": false,
+      "winrate": 0.5142857142857142,
+      "portao_por_lider": {
+        "ST09-001": {
+          "vit": 4,
+          "der": 10,
+          "div": 35
+        },
+        "OP16-080": {
+          "vit": 16,
+          "der": 17,
+          "div": 63
+        },
+        "OP16-060": {
+          "vit": 8,
+          "der": 9,
+          "div": 43
+        },
+        "OP14-040": {
+          "vit": 8,
+          "der": 5,
+          "div": 40
+        },
+        "OP04-019": {
+          "vit": 4,
+          "der": 7,
+          "div": 38
+        },
+        "OP17-079": {
+          "vit": 5,
+          "der": 6,
+          "div": 39
+        },
+        "OP11-062": {
+          "vit": 11,
+          "der": 5,
+          "div": 37
+        },
+        "OP15-002": {
+          "vit": 8,
+          "der": 4,
+          "div": 32
+        },
+        "ST02-001": {
+          "vit": 9,
+          "der": 9,
+          "div": 32
+        },
+        "OP15-001": {
+          "vit": 2,
+          "der": 13,
+          "div": 42
+        },
+        "OP14-020": {
+          "vit": 20,
+          "der": 13,
+          "div": 59
+        },
+        "OP14-041": {
+          "vit": 10,
+          "der": 11,
+          "div": 72
+        },
+        "OP09-081": {
+          "vit": 9,
+          "der": 5,
+          "div": 50
+        },
+        "OP14-079": {
+          "vit": 9,
+          "der": 9,
+          "div": 43
+        },
+        "OP14-080": {
+          "vit": 10,
+          "der": 9,
+          "div": 33
+        },
+        "OP02-001": {
+          "vit": 10,
+          "der": 6,
+          "div": 33
+        },
+        "OP17-039": {
+          "vit": 11,
+          "der": 16,
+          "div": 29
+        },
+        "OP17-058": {
+          "vit": 0,
+          "der": 3,
+          "div": 49
+        },
+        "OP12-020": {
+          "vit": 11,
+          "der": 8,
+          "div": 38
+        },
+        "OP16-079": {
+          "vit": 9,
+          "der": 17,
+          "div": 62
+        },
+        "OP11-040": {
+          "vit": 10,
+          "der": 12,
+          "div": 37
+        },
+        "OP13-001": {
+          "vit": 16,
+          "der": 19,
+          "div": 66
+        },
+        "OP16-001": {
+          "vit": 9,
+          "der": 13,
+          "div": 74
+        },
+        "OP10-099": {
+          "vit": 4,
+          "der": 4,
+          "div": 38
+        },
+        "ST04-001": {
+          "vit": 5,
+          "der": 8,
+          "div": 40
+        },
+        "ST01-001": {
+          "vit": 10,
+          "der": 7,
+          "div": 28
+        },
+        "OP11-041": {
+          "vit": 10,
+          "der": 9,
+          "div": 60
+        },
+        "OP09-062": {
+          "vit": 12,
+          "der": 3,
+          "div": 41
+        },
+        "ST22-001": {
+          "vit": 7,
+          "der": 10,
+          "div": 30
+        },
+        "OP13-004": {
+          "vit": 10,
+          "der": 5,
+          "div": 38
+        },
+        "OP11-021": {
+          "vit": 9,
+          "der": 4,
+          "div": 39
+        },
+        "OP15-058": {
+          "vit": 15,
+          "der": 14,
+          "div": 78
+        },
+        "OP02-093": {
+          "vit": 5,
+          "der": 6,
+          "div": 49
+        },
+        "OP12-061": {
+          "vit": 9,
+          "der": 5,
+          "div": 41
+        },
+        "ST05-001": {
+          "vit": 6,
+          "der": 10,
+          "div": 29
+        },
+        "OP16-022": {
+          "vit": 11,
+          "der": 6,
+          "div": 28
+        },
+        "OP11-001": {
+          "vit": 4,
+          "der": 5,
+          "div": 49
+        },
+        "OP13-002": {
+          "vit": 14,
+          "der": 11,
+          "div": 72
+        },
+        "OP13-079": {
+          "vit": 3,
+          "der": 7,
+          "div": 39
+        },
+        "EB02-010": {
+          "vit": 8,
+          "der": 5,
+          "div": 31
+        },
+        "ST30-001": {
+          "vit": 12,
+          "der": 7,
+          "div": 31
+        },
+        "ST03-001": {
+          "vit": 6,
+          "der": 7,
+          "div": 32
+        },
+        "OP05-041": {
+          "vit": 9,
+          "der": 5,
+          "div": 50
+        },
+        "OP06-022": {
+          "vit": 10,
+          "der": 5,
+          "div": 32
+        },
+        "OP15-098": {
+          "vit": 8,
+          "der": 5,
+          "div": 29
+        }
+      },
+      "tempo_s": {
+        "gera": 2650.5,
+        "treina_regua": 176.3,
+        "treina": 1664.7,
+        "portao": 202.6,
+        "auditoria": 8.1,
+        "ancora": 8.0
+      },
+      "tempo_total_s": 4710.2,
+      "guarda_corpo": {},
+      "ancora_humana": {
+        "modelo_oponente": 26.9,
+        "modelo_oponente_sem_observar": 25.2,
+        "custo_incerteza": 0.0077
+      }
+    },
+    {
+      "ciclo": 84,
+      "quando": "2026-10-20T03:00:20",
+      "partidas": 1000,
+      "alvos_corpus": 30776348,
+      "erro_q": 0.19774674863690336,
+      "ganho_pct": 36.08134435301561,
+      "portao": {
+        "vitorias_desafiante": 5,
+        "derrotas_desafiante": 35,
+        "decididas": 40,
+        "pares_divididos": 40,
+        "veredito": "DESCARTA (equivalentes)",
+        "llr": -3.2110671490022993
+      },
+      "promovido": false,
+      "winrate": 0.125,
+      "portao_por_lider": {
+        "OP09-081": {
+          "vit": 0,
+          "der": 3,
+          "div": 2
+        },
+        "OP11-040": {
+          "vit": 0,
+          "der": 0,
+          "div": 1
+        },
+        "OP17-039": {
+          "vit": 0,
+          "der": 4,
+          "div": 2
+        },
+        "OP13-004": {
+          "vit": 0,
+          "der": 2,
+          "div": 0
+        },
+        "OP11-001": {
+          "vit": 0,
+          "der": 0,
+          "div": 3
+        },
+        "ST04-001": {
+          "vit": 0,
+          "der": 4,
+          "div": 2
+        },
+        "OP02-001": {
+          "vit": 0,
+          "der": 4,
+          "div": 1
+        },
+        "OP14-020": {
+          "vit": 0,
+          "der": 1,
+          "div": 6
+        },
+        "OP15-058": {
+          "vit": 0,
+          "der": 0,
+          "div": 3
+        },
+        "OP14-080": {
+          "vit": 0,
+          "der": 0,
+          "div": 3
+        },
+        "OP14-079": {
+          "vit": 0,
+          "der": 1,
+          "div": 2
+        },
+        "OP16-060": {
+          "vit": 0,
+          "der": 1,
+          "div": 1
+        },
+        "OP09-062": {
+          "vit": 0,
+          "der": 1,
+          "div": 2
+        },
+        "OP04-019": {
+          "vit": 1,
+          "der": 5,
+          "div": 1
+        },
+        "ST05-001": {
+          "vit": 0,
+          "der": 2,
+          "div": 3
+        },
+        "OP17-079": {
+          "vit": 0,
+          "der": 3,
+          "div": 5
+        },
+        "OP11-041": {
+          "vit": 0,
+          "der": 1,
+          "div": 4
+        },
+        "OP11-062": {
+          "vit": 2,
+          "der": 2,
+          "div": 3
+        },
+        "ST09-001": {
+          "vit": 0,
+          "der": 0,
+          "div": 1
+        },
+        "OP16-001": {
+          "vit": 1,
+          "der": 2,
+          "div": 1
+        },
+        "OP13-001": {
+          "vit": 2,
+          "der": 3,
+          "div": 2
+        },
+        "OP11-021": {
+          "vit": 0,
+          "der": 1,
+          "div": 2
+        },
+        "OP05-041": {
+          "vit": 0,
+          "der": 2,
+          "div": 1
+        },
+        "ST22-001": {
+          "vit": 1,
+          "der": 1,
+          "div": 2
+        },
+        "OP12-061": {
+          "vit": 0,
+          "der": 1,
+          "div": 2
+        },
+        "OP16-022": {
+          "vit": 0,
+          "der": 1,
+          "div": 1
+        },
+        "OP10-099": {
+          "vit": 0,
+          "der": 1,
+          "div": 2
+        },
+        "EB02-010": {
+          "vit": 1,
+          "der": 2,
+          "div": 4
+        },
+        "ST02-001": {
+          "vit": 0,
+          "der": 2,
+          "div": 1
+        },
+        "OP12-020": {
+          "vit": 1,
+          "der": 3,
+          "div": 2
+        },
+        "OP16-080": {
+          "vit": 0,
+          "der": 3,
+          "div": 1
+        },
+        "OP14-041": {
+          "vit": 0,
+          "der": 0,
+          "div": 4
+        },
+        "OP14-040": {
+          "vit": 0,
+          "der": 0,
+          "div": 1
+        },
+        "ST03-001": {
+          "vit": 1,
+          "der": 1,
+          "div": 0
+        },
+        "ST30-001": {
+          "vit": 0,
+          "der": 1,
+          "div": 2
+        },
+        "OP13-002": {
+          "vit": 0,
+          "der": 1,
+          "div": 3
+        },
+        "OP02-093": {
+          "vit": 0,
+          "der": 1,
+          "div": 2
+        },
+        "OP17-058": {
+          "vit": 0,
+          "der": 2,
+          "div": 1
+        },
+        "ST01-001": {
+          "vit": 0,
+          "der": 1,
+          "div": 0
+        },
+        "OP16-079": {
+          "vit": 0,
+          "der": 3,
+          "div": 0
+        },
+        "OP06-022": {
+          "vit": 0,
+          "der": 1,
+          "div": 1
+        },
+        "OP15-001": {
+          "vit": 0,
+          "der": 1,
+          "div": 0
+        },
+        "OP15-098": {
+          "vit": 0,
+          "der": 2,
+          "div": 0
+        }
+      },
+      "tempo_s": {
+        "gera": 2577.8,
+        "treina_regua": 132.6,
+        "treina": 8685.7,
+        "portao": 26.2,
+        "auditoria": 7.7,
+        "ancora": 8.2
+      },
+      "tempo_total_s": 11438.2,
+      "guarda_corpo": {},
+      "ancora_humana": {
+        "modelo_oponente": 26.9,
+        "modelo_oponente_sem_observar": 25.2,
+        "custo_incerteza": 0.0086
+      }
+    },
+    {
+      "ciclo": 85,
+      "quando": "2026-10-20T09:58:22",
+      "partidas": 1000,
+      "alvos_corpus": 33449613,
+      "erro_q": 0.1987319591207765,
+      "ganho_pct": 35.42407219552297,
+      "portao": {
+        "vitorias_desafiante": 34,
+        "derrotas_desafiante": 64,
+        "decididas": 98,
+        "pares_divididos": 222,
+        "veredito": "DESCARTA (equivalentes)",
+        "llr": -3.502526888753842
+      },
+      "promovido": false,
+      "winrate": 0.3469387755102041,
+      "portao_por_lider": {
+        "ST22-001": {
+          "vit": 1,
+          "der": 6,
+          "div": 8
+        },
+        "ST30-001": {
+          "vit": 3,
+          "der": 5,
+          "div": 3
+        },
+        "OP16-080": {
+          "vit": 2,
+          "der": 7,
+          "div": 20
+        },
+        "OP06-022": {
+          "vit": 2,
+          "der": 1,
+          "div": 15
+        },
+        "OP11-041": {
+          "vit": 2,
+          "der": 1,
+          "div": 23
+        },
+        "OP05-041": {
+          "vit": 0,
+          "der": 1,
+          "div": 12
+        },
+        "OP10-099": {
+          "vit": 0,
+          "der": 1,
+          "div": 14
+        },
+        "ST04-001": {
+          "vit": 3,
+          "der": 1,
+          "div": 9
+        },
+        "OP14-020": {
+          "vit": 3,
+          "der": 5,
+          "div": 17
+        },
+        "OP11-040": {
+          "vit": 0,
+          "der": 2,
+          "div": 8
+        },
+        "OP16-060": {
+          "vit": 0,
+          "der": 2,
+          "div": 6
+        },
+        "OP16-079": {
+          "vit": 3,
+          "der": 7,
+          "div": 15
+        },
+        "OP11-001": {
+          "vit": 2,
+          "der": 2,
+          "div": 11
+        },
+        "OP16-001": {
+          "vit": 3,
+          "der": 5,
+          "div": 11
+        },
+        "OP14-079": {
+          "vit": 2,
+          "der": 0,
+          "div": 13
+        },
+        "OP14-041": {
+          "vit": 0,
+          "der": 0,
+          "div": 31
+        },
+        "OP02-001": {
+          "vit": 2,
+          "der": 3,
+          "div": 9
+        },
+        "OP13-001": {
+          "vit": 3,
+          "der": 7,
+          "div": 14
+        },
+        "OP13-004": {
+          "vit": 2,
+          "der": 1,
+          "div": 8
+        },
+        "OP15-098": {
+          "vit": 1,
+          "der": 3,
+          "div": 9
+        },
+        "OP15-058": {
+          "vit": 4,
+          "der": 7,
+          "div": 14
+        },
+        "OP17-039": {
+          "vit": 1,
+          "der": 4,
+          "div": 2
+        },
+        "EB02-010": {
+          "vit": 2,
+          "der": 1,
+          "div": 5
+        },
+        "ST01-001": {
+          "vit": 1,
+          "der": 4,
+          "div": 9
+        },
+        "OP13-002": {
+          "vit": 1,
+          "der": 7,
+          "div": 17
+        },
+        "ST03-001": {
+          "vit": 2,
+          "der": 2,
+          "div": 6
+        },
+        "OP14-080": {
+          "vit": 1,
+          "der": 1,
+          "div": 9
+        },
+        "OP17-058": {
+          "vit": 0,
+          "der": 1,
+          "div": 13
+        },
+        "OP13-079": {
+          "vit": 2,
+          "der": 4,
+          "div": 8
+        },
+        "OP15-002": {
+          "vit": 0,
+          "der": 5,
+          "div": 5
+        },
+        "OP12-020": {
+          "vit": 0,
+          "der": 2,
+          "div": 7
+        },
+        "OP16-022": {
+          "vit": 3,
+          "der": 8,
+          "div": 10
+        },
+        "OP11-021": {
+          "vit": 5,
+          "der": 2,
+          "div": 8
+        },
+        "OP09-081": {
+          "vit": 2,
+          "der": 1,
+          "div": 6
+        },
+        "OP11-062": {
+          "vit": 2,
+          "der": 1,
+          "div": 8
+        },
+        "OP04-019": {
+          "vit": 2,
+          "der": 0,
+          "div": 9
+        },
+        "OP02-093": {
+          "vit": 0,
+          "der": 1,
+          "div": 7
+        },
+        "OP15-001": {
+          "vit": 1,
+          "der": 3,
+          "div": 8
+        },
+        "OP14-040": {
+          "vit": 0,
+          "der": 1,
+          "div": 6
+        },
+        "OP09-062": {
+          "vit": 3,
+          "der": 3,
+          "div": 6
+        },
+        "ST09-001": {
+          "vit": 0,
+          "der": 1,
+          "div": 5
+        },
+        "ST02-001": {
+          "vit": 1,
+          "der": 3,
+          "div": 5
+        },
+        "ST05-001": {
+          "vit": 1,
+          "der": 4,
+          "div": 6
+        },
+        "OP12-061": {
+          "vit": 0,
+          "der": 0,
+          "div": 5
+        },
+        "OP17-079": {
+          "vit": 0,
+          "der": 2,
+          "div": 4
+        }
+      },
+      "tempo_s": {
+        "gera": 2677.0,
+        "treina_regua": 140.8,
+        "treina": 5645.7,
+        "portao": 66.7,
+        "auditoria": 7.7,
+        "ancora": 8.0
+      },
+      "tempo_total_s": 8545.9,
+      "guarda_corpo": {},
+      "ancora_humana": {
+        "modelo_oponente": 26.9,
+        "modelo_oponente_sem_observar": 25.2,
+        "custo_incerteza": 0.0075
+      }
     }
   ],
   "checkpoint_humano_pendente": true,

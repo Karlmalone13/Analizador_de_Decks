@@ -1442,9 +1442,7 @@ def _q_escolhe_familia(me, opp, familia: str, opcoes: list, padrao_idx: int,
         try:
             from optcg_engine import value_net as _vn
             _f = (_vn.linhas_pos(me, opp, [opcoes[idx]], [mudancas[idx]])[0] if mudancas
-                  else (_vn.state_features(me, opp, nomes=_vn.FEATURE_NAMES_ALUNO)
-                        + _vn.acao_features(opcoes[idx], opp)
-                        + _vn.corrida_features(me, opp)))
+                  else _vn.linha_q(me, opp, opcoes[idx], acoes=opcoes))
             if _f is _vn.DERROTA:
                 return idx   # a partida acaba aqui; o desfecho ja e o rotulo
             cap.append({
@@ -20086,7 +20084,7 @@ class OPTCGMatch:
                     if _v is None:
                         continue
                     _cap.append({
-                        'feats': _vnq.q_features(p, opp, _a),
+                        'feats': _vnq.linha_q(p, opp, _a, acoes=[x for x, _ in pares]),
                         'alvo': float(_v),
                         'escolhida': bool(_a is melhor_acao),
                         'escolhida_por': 'busca',   # professor INDEPENDENTE
@@ -20212,6 +20210,7 @@ class OPTCGMatch:
                 return
             base = _vn.state_features(p, opp, nomes=_vn.FEATURE_NAMES_ALUNO)
             _corr = _vn.corrida_features(p, opp)
+            _obs = _vn._oponente_observavel(opp)
         except Exception:
             return
 
@@ -20244,7 +20243,7 @@ class OPTCGMatch:
                             lider = getattr(getattr(p, 'leader', None), 'code', None)
                             turno = int(getattr(p, 'turn', 0) or 0)
                             for a in candidatas:
-                                cap.append({'feats': base + _vn.acao_features(a, opp) + _corr,
+                                cap.append({'feats': _vn.linha_q(p, opp, a, base, _corr, candidatas, _obs),
                                             'alvo': None, 'escolhida': False,
                                             'decisao': _dec,
                                             'acao': a[1] if len(a) > 1 else None,
@@ -20339,7 +20338,7 @@ class OPTCGMatch:
         for i, a in enumerate(acoes):
             if not cont.get(i):
                 continue
-            cap.append({'feats': base + _vn2.acao_features(a, opp) + _corr,
+            cap.append({'feats': _vn2.linha_q(p, opp, a, base, _corr, acoes, _obs),
                         'alvo': soma[i] / cont[i], 'escolhida': False,
                         'decisao': _dec,
                         'acao': a[1] if len(a) > 1 else None,

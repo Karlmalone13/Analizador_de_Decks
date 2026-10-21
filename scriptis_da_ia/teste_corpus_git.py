@@ -122,6 +122,48 @@ cg.cmd_importa()
 ok((D/'metrics'/'q_alvos.jsonl').read_text(encoding='utf-8') == ''.join(com_repetida),
    'a reconciliacao respeita MULTIPLICIDADE (1 local + 1 faltando = 2, nao 1)')
 
+# --- MARCOS (bloco 968): leitura incremental tem que dar o MESMO que a completa
+import gzip as _gz, time as _t
+M = monta('marcos'); aponta(M)
+cg.origem_desta_maquina = lambda: 'M'
+cp = M/'metrics'/'q_alvos.jsonl'
+cp.write_bytes(''.join(linha('M', i, 1, 'a') for i in range(5)).encode())
+def completa():
+    return cg._conta_por_origem(cp, comprimido=False)
+ok(cg._conta_corpus() == completa(), 'marco: 1a contagem igual a completa')
+with open(cp, 'ab') as fh:
+    fh.write(''.join(linha('M', i, 2, 'b') for i in range(3)).encode())
+    fh.write(b'{"origem":"M","match":99')          # linha pela METADE (gerador escrevendo)
+ok(cg._conta_corpus()['M'] == 8, 'marco: le so o final e IGNORA a linha incompleta (8, nao 9)')
+cg.cmd_exporta(None)
+f1 = sorted(cg.FATIAS.glob('*.jsonl.gz'))
+ok(len(f1) == 1 and len(_gz.open(f1[0], 'rt').read().splitlines()) == 8, 'marco: 1a exportacao leva as 8')
+with open(cp, 'ab') as fh:
+    fh.write(b',"turn":1}' + bytes([10]))                      # a metade termina
+    fh.write(linha('M', 50, 3, 'c').encode())
+_t.sleep(1.1)
+cg.cmd_exporta(None)
+f2 = [f for f in sorted(cg.FATIAS.glob('*.jsonl.gz')) if f not in f1]
+ok(len(f2) == 1 and len(_gz.open(f2[0], 'rt').read().splitlines()) == 2,
+   'marco: 2a exportacao leva SO as 2 novas (inclusive a que estava pela metade)')
+ok(cg._conta_corpus() == completa(), 'marco: contagem incremental segue igual a completa')
+# PARTES: com limite minusculo a exportacao tem que dividir e nao perder linha
+with open(cp, 'ab') as fh:
+    import os as _os  # aleatorio: nao comprime, entao o .gz cresce de verdade
+    fh.write(''.join(linha('M', 100 + i, 4, _os.urandom(3000).hex()) for i in range(40)).encode())
+_lim = cg.LIMITE_PARTE; cg.LIMITE_PARTE = 50000
+_t.sleep(1.1)
+antes = set(cg.FATIAS.glob('*.jsonl.gz'))
+cg.cmd_exporta(None)
+cg.LIMITE_PARTE = _lim
+novas = sorted(set(cg.FATIAS.glob('*.jsonl.gz')) - antes)
+ok(len(novas) > 1 and sum(len(_gz.open(f, 'rt').read().splitlines()) for f in novas) == 40,
+   'partes: exportacao grande sai DIVIDIDA e soma as 40 linhas (%d partes)' % len(novas))
+# CONTROLE QUE PODE FALHAR: corpus TRUNCADO e reescrito -- o marco nao pode valer
+cp.write_bytes(''.join(linha('Z', i, 1, 'z') for i in range(2)).encode())
+ok(cg._conta_corpus() == completa() and cg._conta_corpus().get('M', 0) == 0,
+   'CONTROLE marco: corpus truncado invalida o marco (recontado do zero)')
+
 shutil.rmtree(base, ignore_errors=True)
 print()
 print('FALHAS:', len(falhas))

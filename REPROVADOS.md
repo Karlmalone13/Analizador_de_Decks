@@ -33,6 +33,18 @@ as entradas que dependiam dela saem ou vao pra "VALE RE-TESTAR" no TODO.
 
 ---
 
+## Aumentar a rede do Q (bloco 968, 20/10/2026)
+
+| tentativa | resultado medido | bloco |
+|---|---|---|
+| 128,64 treinada do zero | perdeu 5x23 | 941 |
+| 256,128 ALARGADA do campeao (pesos copiados, saida igual), passo cheio | **5x35**, erro fora 0,1977 x 0,1964; treino 145 min, 60 iteracoes sem convergir | 968 |
+| 128,32 alargada, passo /3 | **34x64**, erro fora 0,1987 | 968 |
+
+Por que nao era a capacidade: a rede 64,32 erra 0,183 **no proprio treino** e a maior nao previu melhor. Piso de
+ruido do rotulo ~0,11 (`mede_ruido_rotulo.py`). Faltava informacao na entrada, nao neuronio. Repropor rede maior
+so com treino longo fora do ciclo ou destilacao do campeao, e citando estes numeros.
+
 ## Treinar o Q so com o corpus do rotulo novo (gen >= 18) (bloco 922, 01/10/2026)
 
 Hipotese: o ~46% de corpus legado (gen 0, rotulo que espiava) puxa o treino

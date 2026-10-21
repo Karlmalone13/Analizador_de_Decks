@@ -96,6 +96,7 @@ import hashlib
 import io
 import json
 import os
+import re
 import sys
 from datetime import datetime
 from pathlib import Path
@@ -125,7 +126,13 @@ def _mil(n: int) -> str:
     return format(n, ',').replace(',', '.')
 
 
+_RE_ORIGEM = re.compile(r'"origem":\s*"([^"\\]*)"')
+
+
 def _origem_da_linha(linha: str) -> str:
+    m = _RE_ORIGEM.search(linha)
+    if m:
+        return m.group(1) or '(sem origem)'
     try:
         return json.loads(linha).get('origem') or '(sem origem)'
     except Exception:
@@ -141,6 +148,82 @@ def _conta_por_origem(caminho: Path, comprimido: bool) -> collections.Counter:
         for linha in fh:
             if linha.strip():
                 c[_origem_da_linha(linha)] += 1
+    return c
+
+
+# LEITURA INCREMENTAL do corpus local (bloco 968, combinado com o usuario). O
+# corpus passou de 30 GB e cada `entrega` o relia INTEIRO tres vezes (contar na
+# entrega, contar no exporta, escrever a fatia): 63 GB lidos e ~1h no HD. Mas o
+# arquivo so CRESCE no fim -- o que ja foi lido nao muda. Entao guarda-se um
+# MARCO (byte, contagem por origem ate ali) e a proxima leitura comeca dele.
+#
+# Um marco so vale se o comeco do arquivo for o MESMO de quando ele foi gravado:
+# o corpus ja foi TRUNCADO de volta (gen 81, disco cheio; o caso das 698.222
+# duplicadas). Conferido pelo tamanho (>= marco) e pelo hash dos ultimos 64 KB
+# antes do marco. Qualquer divergencia -> le do zero, como antes.
+_CAUDA = 65536
+LIMITE_PARTE = 85 * 1024 * 1024
+
+
+def _marcos_path() -> Path:
+    return CORPUS.with_name(CORPUS.stem + '_marcos.json')
+
+
+def _assinatura(fh, ate: int) -> str:
+    ini = max(0, ate - _CAUDA)
+    fh.seek(ini)
+    return hashlib.blake2b(fh.read(ate - ini), digest_size=16).hexdigest()
+
+
+def _marco(nome: str):
+    """(byte, Counter) do marco `nome`, ou (0, Counter()) se nao valer mais."""
+    try:
+        m = json.loads(_marcos_path().read_text(encoding='utf-8')).get(nome)
+        if not m or not CORPUS.exists() or CORPUS.stat().st_size < m['byte']:
+            return 0, collections.Counter()
+        with open(CORPUS, 'rb') as fh:
+            if _assinatura(fh, m['byte']) != m['assinatura']:
+                return 0, collections.Counter()
+        return int(m['byte']), collections.Counter(m['contagem'])
+    except Exception:
+        return 0, collections.Counter()
+
+
+def _grava_marco(nome: str, byte: int, contagem: collections.Counter) -> None:
+    try:
+        p = _marcos_path()
+        dados = json.loads(p.read_text(encoding='utf-8')) if p.exists() else {}
+    except Exception:
+        dados = {}
+    with open(CORPUS, 'rb') as fh:
+        dados[nome] = {'byte': byte, 'assinatura': _assinatura(fh, byte),
+                       'contagem': dict(contagem)}
+    _marcos_path().write_text(json.dumps(dados, indent=1, ensure_ascii=False), encoding='utf-8')
+
+
+def _linhas_desde(byte: int):
+    """(byte_fim, linha bytes) de cada linha COMPLETA a partir de `byte`. Linha
+    sem '\n' no fim (gerador escrevendo agora) fica pra proxima leitura."""
+    with open(CORPUS, 'rb') as fh:
+        fh.seek(byte)
+        pos = byte
+        for linha in fh:
+            if not linha.endswith(b'\n'):
+                return
+            pos += len(linha)
+            yield pos, linha
+
+
+def _conta_corpus() -> collections.Counter:
+    """Contagem por origem do corpus LOCAL, lendo so o que veio depois do marco."""
+    if not CORPUS.exists():
+        return collections.Counter()
+    byte, c = _marco('contado')
+    fim = byte
+    for fim, linha in _linhas_desde(byte):
+        if linha.strip():
+            c[_origem_da_linha(linha.decode('utf-8'))] += 1
+    _grava_marco('contado', fim, c)
     return c
 
 
@@ -234,7 +317,7 @@ def _a_exportar(locais: collections.Counter,
 
 
 def cmd_status() -> int:
-    locais = _conta_por_origem(CORPUS, comprimido=False)
+    locais = _conta_corpus()
     fatias = _nas_fatias()
     falta = pendentes()
 
@@ -275,7 +358,7 @@ def cmd_importa() -> int:
         print('nada a importar: toda fatia do git ja esta no corpus local.')
         return 0
 
-    locais = _conta_por_origem(CORPUS, comprimido=False)
+    locais = _conta_corpus()
     livro = _livro()
     ja = set(livro.get('aplicadas', []))
 
@@ -329,7 +412,7 @@ def cmd_exporta(rotulo: str | None) -> int:
         print(f'corpus local nao existe: {CORPUS}', file=sys.stderr)
         return 1
 
-    locais = _conta_por_origem(CORPUS, comprimido=False)
+    locais = _conta_corpus()
     fatias = _nas_fatias()
     faltando = _a_exportar(locais, fatias)
     if not faltando:
@@ -355,37 +438,55 @@ def cmd_exporta(rotulo: str | None) -> int:
     # Arthur_Trabalho CRLF -- sao 73.477 linhas CRLF em 698.838), entao
     # traduzir na leitura tambem apagaria a distincao. Preservar o byte
     # original e o que torna o round-trip exato.
-    with open(CORPUS, 'rt', encoding='utf-8', newline='') as fonte, \
-            gzip.GzipFile(destino, 'wb', compresslevel=9, mtime=0) as bruto, \
-            io.TextIOWrapper(bruto, encoding='utf-8', newline='') as saida:
-        for linha in fonte:
+    # Comeca do marco da ULTIMA exportacao (bloco 968): o que veio antes dele ja
+    # foi contado em `vistas`. Bytes copiados como estao (o round-trip exato).
+    inicio, vistas = _marco('exportado')
+    fim = inicio
+    # PARTES de ate ~85 MB (bloco 968): o GitHub recusa arquivo > 100 MB, e os
+    # ciclos 77-85 juntos deram uma fatia de 306 MB.
+    destinos, saida = [], None
+    try:
+        for fim, linha in _linhas_desde(inicio):
             if not linha.strip():
                 continue
-            o = _origem_da_linha(linha)
+            o = _origem_da_linha(linha.decode('utf-8'))
             vistas[o] += 1
             if vistas[o] <= pular.get(o, 0):
                 continue
-            saida.write(linha if linha.endswith('\n') else linha + '\n')
+            if saida is None or saida.fileobj.tell() > LIMITE_PARTE:
+                # 1a parte com o nome de sempre; as seguintes ganham _p2, _p3...
+                if saida is not None:
+                    saida.close()
+                    destino = FATIAS / f'{nome}_p{len(destinos) + 1}.jsonl.gz'
+                destinos.append(destino)
+                saida = gzip.GzipFile(destino, 'wb', compresslevel=9, mtime=0)
+            saida.write(linha)
             escritas[o] += 1
+    finally:
+        if saida is not None:
+            saida.close()
+    _grava_marco('exportado', fim, vistas)
 
     total = sum(escritas.values())
     if total == 0:
-        destino.unlink(missing_ok=True)
+        for d in destinos:
+            d.unlink(missing_ok=True)
         print('nada a exportar.')
         return 0
 
     livro = _livro()
-    livro['aplicadas'] = sorted(set(livro.get('aplicadas', [])) | {destino.name})
+    livro['aplicadas'] = sorted(set(livro.get('aplicadas', [])) | {d.name for d in destinos})
     _grava_livro(livro)
 
-    print(f'fatia criada: metrics/q_alvos/{destino.name}')
+    for d in destinos:
+        print(f'fatia criada: metrics/q_alvos/{d.name}  ({d.stat().st_size / 1e6:.1f} MB)')
     for o, n in sorted(escritas.items()):
         print(f'  {o:<28} {_mil(n):>10} linhas')
     print(f'  {"TOTAL":<28} {_mil(total):>10} linhas')
-    print(f'  tamanho: {destino.stat().st_size / 1e6:.1f} MB')
     print('')
-    print('Agora versione a fatia (a regra do projeto PROIBE `git add -A`):')
-    print(f'  git add scriptis_da_ia/metrics/q_alvos/{destino.name}')
+    print('Agora versione a(s) fatia(s) (a regra do projeto PROIBE `git add -A`):')
+    for d in destinos:
+        print(f'  git add scriptis_da_ia/metrics/q_alvos/{d.name}')
     return 0
 
 
