@@ -328,6 +328,24 @@ def _materializa(X, idx, Xa=None, ordem=None):
     return out
 
 
+def _fonte_do_corpus(caminho):
+    """As linhas do corpus como dicts. O indice das ESCOLHIDAS vem do BINARIO
+    (`corpus_bin.py`, bloco 968): `feats` ja em float32, sem decodificar 158
+    numeros em texto por linha. Qualquer outro arquivo (ou OPTCG_Q_TEXTO=1) e
+    lido como texto, como sempre."""
+    import os
+    if (not os.environ.get('OPTCG_Q_TEXTO')
+            and Path(caminho).resolve() == corpus_escolhidas.INDICE.resolve()):
+        import corpus_bin
+        yield from corpus_bin.linhas()
+        return
+    with open(caminho, encoding='utf-8') as fh:
+        for linha in fh:
+            linha = linha.strip()
+            if linha:
+                yield json.loads(linha)
+
+
 def _mem(etapa, arr=None):
     """AS-IS de MEMORIA por etapa do treino (bloco 968): RAM em uso e o PICO do
     processo ate aqui, e o tipo/tamanho da matriz da etapa. So mede; sem psutil
@@ -564,12 +582,8 @@ def main() -> int:
         traj = carrega_trajetorias(args.selfplay, avaliador=_aval)
     cobertura = {f: [0, 0, 0] for f in FAMILIAS_JOGO}   # linhas, escolhidas, consequencia
     ancora = {}
-    with caminho.open(encoding='utf-8') as fh:
-        for linha in fh:
-            linha = linha.strip()
-            if not linha:
-                continue
-            d = json.loads(linha)
+    if True:
+        for d in _fonte_do_corpus(caminho):
             n_lidas += 1
             if not passa_filtro_modo(d, args.modo):
                 n_filtradas_modo += 1
@@ -577,7 +591,7 @@ def main() -> int:
             if args.gen_min and (d.get('gen') or 0) < args.gen_min:
                 continue
             feats, alvo = d.get('feats'), d.get('alvo')
-            if not feats:
+            if feats is None or len(feats) == 0:
                 continue
             if n_cols - 40 - len(_vn.FEATURE_NAMES_PENSAR) <= len(feats) < n_cols:   # bloco 968: +20 colunas
                 # linha anterior as colunas mais novas (blocos 910/925): 0 e o
