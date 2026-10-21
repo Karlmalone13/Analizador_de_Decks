@@ -512,7 +512,7 @@ def main() -> int:
             feats, alvo = d.get('feats'), d.get('alvo')
             if not feats:
                 continue
-            if n_cols - 40 <= len(feats) < n_cols:
+            if n_cols - 40 - len(_vn.FEATURE_NAMES_PENSAR) <= len(feats) < n_cols:   # bloco 968: +20 colunas
                 # linha anterior as colunas mais novas (blocos 910/925): 0 e o
                 # valor certo -- aquela decisao nao existia quando foi gravada.
                 feats = feats + [0.0] * (n_cols - len(feats))
@@ -545,7 +545,10 @@ def main() -> int:
                     cob[2] += 1
             if alvo is None:
                 continue   # decisao de defesa/alvo sem continuacao registrada
-            X.append(feats)
+            # float32 por LINHA (bloco 968): lista de floats do Python custava ~24
+            # bytes por numero -- com 158 colunas e 2,27M linhas passou de 8 GB e o
+            # treino morreu (0xC0000005) numa maquina de 12 GB.
+            X.append(np.asarray(feats, dtype=np.float32))
             y.append(float(alvo))
             grupos.append(d.get('leader') or '?')
             # Quais linhas competiram na MESMA decisao, quem o professor
@@ -580,7 +583,7 @@ def main() -> int:
         raise SystemExit('corpus pequeno demais (%d alvos) -- gere mais antes, '
                          'ou use --modo todos/bootstrap se \'busca\' ainda nao '
                          'acumulou volume' % len(X))
-    X = np.asarray(X, dtype=float)
+    X = np.stack(X)
     y = np.asarray(y, dtype=float)
     grupos = np.asarray(grupos)
     decisoes = np.asarray([('%s|%s' % dc) for dc in decisoes])
@@ -859,7 +862,7 @@ def main() -> int:
                 a = anc[1] + (float(a) - anc[0])
                 if not passa_filtro_modo(d, args.modo):
                     continue
-                if n_cols - 40 <= len(f) < n_cols:
+                if n_cols - 40 - len(_vn.FEATURE_NAMES_PENSAR) <= len(f) < n_cols:
                     f = f + [0.0] * (n_cols - len(f))
                 if len(f) != X.shape[1]:
                     continue
@@ -867,7 +870,7 @@ def main() -> int:
                 ya.append(float(a))
         teto = int(args.peso_alternativas * len(X_treino))
         if Xa:
-            Xa, ya = np.asarray(Xa, dtype=float), np.asarray(ya, dtype=float)
+            Xa, ya = np.asarray(Xa, dtype=np.float32), np.asarray(ya, dtype=float)
             if len(Xa) > teto:
                 ia = np.random.RandomState(2).choice(len(Xa), size=teto, replace=False)
                 Xa, ya = Xa[ia], ya[ia]

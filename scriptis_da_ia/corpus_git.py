@@ -162,7 +162,7 @@ def _conta_por_origem(caminho: Path, comprimido: bool) -> collections.Counter:
 # duplicadas). Conferido pelo tamanho (>= marco) e pelo hash dos ultimos 64 KB
 # antes do marco. Qualquer divergencia -> le do zero, como antes.
 _CAUDA = 65536
-LIMITE_PARTE = 85 * 1024 * 1024
+LIMITE_PARTE = 45 * 1024 * 1024   # GitHub: recusa > 100 MB, avisa > 50 MB
 
 
 def _marcos_path() -> Path:
