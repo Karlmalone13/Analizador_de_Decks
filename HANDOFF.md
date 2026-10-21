@@ -1,5 +1,28 @@
 ﻿# HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-10-21 (969) - Ciclos 86-89 (87 PROMOVE), memoria do treino, escolhidas em binario
+
+**Ciclos**: 86 176x191 equivalente (erro 0,1960); **87 PROMOVE 202x154** (57%, recorte amplo: OP11-001 75%,
+OP15-058 69%, OP16-079 67%; perdem OP13-001 39%, ST22-001 41%, OP11-040 37%); 88 149x163 e 89 123x140
+equivalentes (erro sobe 0,1983 -> 0,2004). Ciclos de 500 partidas (pedido do usuario): 16-52 min.
+
+**Falhas pagas**: (1) 20 colunas novas tiraram linhas antigas da janela de completar (`n_cols - 40`) -> matriz
+irregular; janela agora `- 40 - len(PENSAR)`. (2) 0xC0000005 no treino = falta de memoria: lista de floats do
+Python (~24 B/numero) e a regua da priorizacao como lista de listas (5 GB). Corrigido com float32 e lotes.
+
+**AS-IS de memoria** (`_mem` em `treinar_q.py`, psutil): pico 7,73 GB -> 6,41 GB com modelo IDENTICO (diferenca
+de previsao 0,0; controle campeao 0,25). Leitura em blocos float32 (`_Blocos`), UMA copia da matriz de treino por
+vetor de indices (`_materializa`, mesmas sementes/ordem), normalizacao no lugar, auxiliares liberados. Medido:
+auxiliares por linha 1,5 GB, X 1,66 GB. NAO feito (muda o treino, exige portao): `sample_weight` no lugar de
+duplicar as 1,3M revisoes.
+
+**Escolhidas em binario** (`corpus_bin.py`, `metrics/q_bin/`, gitignored, incremental sobre o indice): treino
+9,0 -> 7,5 min, modelo IDENTICO. Disco quase igual (4,2 x 4,6 GB) -- a estimativa de <1 GB estava ERRADA (contei
+so as usadas e 2 bytes/numero). O ganho de disco real e nao guardar o `q_alvos.jsonl` de 30 GB, mas a
+exportacao/importacao entre maquinas conta linhas nele: exige redesenho e confirmacao do usuario.
+
+**Exportacao**: 1a com marcos levou 35 min (le tudo uma vez); proximas so o final. Fatias em partes de 45 MB.
+
 ## 2026-10-20 (968) - Plato do Q: portao 55%, rede maior REPROVADA, 20 colunas novas (o que da pra FAZER)
 
 **Ciclos 77-85**: nenhuma promocao desde o 76. 81 (175x155) e 82 (192x165) INCONCLUSIVOS no teto de pares; 83
