@@ -425,6 +425,25 @@ def regua_x_de_q(feats_q, nomes) -> list:
     return [float(d.get(n, 0.0)) for n in nomes]
 
 
+
+def regua_x_de_q_lote(X, nomes):
+    """`regua_x_de_q` para uma MATRIZ de linhas do Q, por coluna, sem lista de
+    listas do Python (bloco 968). Mesmo resultado linha a linha."""
+    import numpy as np
+    X = np.asarray(X)
+    na, nac, nc = len(FEATURE_NAMES_ALUNO), len(FEATURE_NAMES_ACAO), len(FEATURE_NAMES_CORRIDA)
+    tem_corr = X.shape[1] >= na + nac + nc
+    pos = {n: i for i, n in enumerate(FEATURE_NAMES_ALUNO)}
+    if tem_corr:
+        pos.update({n: na + nac + j for j, n in enumerate(FEATURE_NAMES_CORRIDA)})
+    out = np.zeros((X.shape[0], len(nomes)), dtype=np.float64)
+    for k, n in enumerate(nomes):
+        if n == 'corr_presente':
+            out[:, k] = 1.0 if tem_corr else 0.0
+        elif n in pos:
+            out[:, k] = X[:, pos[n]]
+    return out
+
 def _poder(c) -> float:
     return _prop(c, 'power') + _prop(c, 'power_buff') + 1000.0 * _prop(c, 'don_attached')
 

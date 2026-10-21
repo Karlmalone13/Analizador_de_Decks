@@ -783,9 +783,13 @@ def main() -> int:
                 __import__('optcg_engine.decision_engine', fromlist=['x']).MODELO_ORDENA_PATH)
             if _rg and _rg.get('feature_names'):
                 _m = _rg['modelo']
-                _Xr = np.asarray([_vn.regua_x_de_q(list(r), _rg['feature_names']) for r in X])
-                _v = (_m.predict_proba(_Xr)[:, 1] if hasattr(_m, 'predict_proba')
-                      else _m.predict(_Xr))
+                # EM LOTES e por COLUNA (bloco 968): a lista de listas de floats
+                # do Python com 2,4M linhas passava de 5 GB e derrubou o ciclo 88
+                # (0xC0000005). Mesmo vetor de `regua_x_de_q` (conferido no teste).
+                _v = np.concatenate([
+                    (_m.predict_proba(_Xr)[:, 1] if hasattr(_m, 'predict_proba') else _m.predict(_Xr))
+                    for _Xr in (_vn.regua_x_de_q_lote(X[i:i + 200000], _rg['feature_names'])
+                                for i in range(0, len(X), 200000))])
                 vantagem = y - np.asarray(_v, dtype=float)
                 prio = (np.abs(vantagem) + 1e-3) ** args.priorizar_alpha
                 pesos = prio / prio.sum()
