@@ -11,6 +11,7 @@ asyncpg==0.31.0
 # que puxe optcg_engine/decision_engine.py.
 pandas==3.0.5
 numpy==2.5.2
+psutil==7.2.2   # AS-IS de memoria do treino (bloco 968), opcional
 requests==2.34.2
 joblib==1.6.0
 # scikit-learn FALTAVA (achado 14/09/2026, ao planejar treinar em outra

@@ -277,6 +277,73 @@ def grava_vantagem(linhas: list, amostras: list, regua, hash_regua=None) -> int:
     return len(alvo)
 
 
+
+class _Blocos:
+    """Linhas do Q em blocos float32 PRE-ALOCADOS (bloco 968). A lista de 2,5M
+    arrays custava 5,1 GB medidos na leitura (objeto por linha); aqui o custo e
+    so o dado. `append` devolve False se a linha tem largura diferente."""
+
+    def __init__(self, bloco=131072):
+        self.bloco, self.blocos, self.k, self.n_cols = bloco, [], 0, None
+
+    def append(self, feats):
+        if self.n_cols is None:
+            self.n_cols = len(feats)
+        if len(feats) != self.n_cols:
+            return False
+        import numpy as np
+        if not self.blocos or self.k == self.bloco:
+            self.blocos.append(np.empty((self.bloco, self.n_cols), dtype=np.float32))
+            self.k = 0
+        self.blocos[-1][self.k] = feats
+        self.k += 1
+        return True
+
+    def __len__(self):
+        return 0 if not self.blocos else (len(self.blocos) - 1) * self.bloco + self.k
+
+    def matriz(self):
+        import numpy as np
+        if not self.blocos:
+            return np.empty((0, self.n_cols or 0), dtype=np.float32)
+        self.blocos[-1] = self.blocos[-1][:self.k]
+        m = np.concatenate(self.blocos) if len(self.blocos) > 1 else self.blocos[0].copy()
+        self.blocos = []
+        return m
+
+
+def _materializa(X, idx, Xa=None, ordem=None):
+    """A matriz de treino numa copia so: X[idx] (+ Xa), na `ordem` final."""
+    import numpy as np
+    if idx is None and Xa is None:
+        return X
+    base = np.arange(len(X)) if idx is None else idx
+    if Xa is None:
+        return X[base]
+    n = len(base)
+    out = np.empty((n + len(Xa), X.shape[1]), dtype=X.dtype)
+    de_x = ordem < n
+    out[de_x] = X[base[ordem[de_x]]]
+    out[~de_x] = Xa[ordem[~de_x] - n]
+    return out
+
+
+def _mem(etapa, arr=None):
+    """AS-IS de MEMORIA por etapa do treino (bloco 968): RAM em uso e o PICO do
+    processo ate aqui, e o tipo/tamanho da matriz da etapa. So mede; sem psutil
+    ou com erro, nao imprime nada e nao derruba o treino."""
+    try:
+        import psutil
+        mi = psutil.Process().memory_info()
+        pico = getattr(mi, 'peak_wset', 0) or getattr(mi, 'rss', 0)
+        extra = ''
+        if arr is not None:
+            extra = ' | matriz %s %s = %.2f GB' % (arr.dtype, 'x'.join(map(str, arr.shape)), arr.nbytes / 1e9)
+        print('  [MEM] %-26s em uso %.2f GB | pico %.2f GB%s' % (etapa, mi.rss / 1e9, pico / 1e9, extra), flush=True)
+    except Exception:
+        pass
+
+
 def alvo_consequencia(d: dict, traj: dict, n: int = 2, lam: float = 0.5,
                       modo: str = 'td'):
     """Rotulo pela CONSEQUENCIA da jogada escolhida (bloco 910): o que aconteceu
@@ -476,7 +543,7 @@ def main() -> int:
         # ordem, mesmos bytes) em vez de reler os 3 GB (bloco 931). Com
         # --sem-consequencia o treino usa as alternativas tambem -> corpus todo.
         caminho = corpus_escolhidas.atualiza()
-    X, y, grupos = [], [], []
+    X, y, grupos = _Blocos(), [], []
     decisoes, escolhidas, familias = [], [], []
     revisao = []
     mudou = []
@@ -548,7 +615,8 @@ def main() -> int:
             # float32 por LINHA (bloco 968): lista de floats do Python custava ~24
             # bytes por numero -- com 158 colunas e 2,27M linhas passou de 8 GB e o
             # treino morreu (0xC0000005) numa maquina de 12 GB.
-            X.append(np.asarray(feats, dtype=np.float32))
+            if not X.append(feats):
+                continue    # largura diferente do vetor atual: nunca entrava (np.stack quebrava)
             y.append(float(alvo))
             grupos.append(d.get('leader') or '?')
             # Quais linhas competiram na MESMA decisao, quem o professor
@@ -583,12 +651,17 @@ def main() -> int:
         raise SystemExit('corpus pequeno demais (%d alvos) -- gere mais antes, '
                          'ou use --modo todos/bootstrap se \'busca\' ainda nao '
                          'acumulou volume' % len(X))
-    X = np.stack(X)
+    _mem('lido (lista de linhas)')
+    X = X.matriz()
+    _mem('matriz montada', X)
     y = np.asarray(y, dtype=float)
     grupos = np.asarray(grupos)
     decisoes = np.asarray([('%s|%s' % dc) for dc in decisoes])
     escolhidas = np.asarray(escolhidas)
     familias = np.asarray(familias)
+    # bloco 968: listas por linha viram arrays ja (0,09 GB cada como lista)
+    revisao = np.asarray(revisao, dtype=bool)
+    mudou = np.asarray(mudou, dtype=bool)
     n_lideres = len(set(grupos.tolist()))
 
     print()
@@ -767,7 +840,18 @@ def main() -> int:
     # `_forward_rapido` (ganho de 3,1x medido no mesmo dia). Sem campeao
     # compativel (1o ciclo, cold start, ou dimensao de feature mudou),
     # degrada pra amostra UNIFORME -- nunca trava o treino por falta dele.
-    X_treino, y_treino = X, y
+    _mem('validacao feita', X)
+    # UMA COPIA SO (bloco 968): priorizacao, revisoes e embaralhamentos viram um
+    # VETOR DE INDICES; a matriz e copiada uma vez no fim. Antes cada etapa
+    # copiava a matriz inteira (pico medido 7,7 GB com 1,6 GB de dado). Mesmas
+    # sementes, mesma ordem: o X_treino resultante e identico linha a linha.
+    idx = None          # None = X inteiro, na ordem
+    # o que so a validacao usava sai antes das copias de treino (bloco 968)
+    _n_val = int(len(Xv))
+    _lideres = sorted(set(grupos.tolist()))
+    _top_lideres = Counter(grupos.tolist()).most_common(4)
+    del decisoes, escolhidas, familias, grupos, Xv
+    y_treino = y
     campeao = (None if (args.do_zero or args.modelo != 'rede')
                else modelo_do_campeao(args.continua_de, X.shape[1], X[-200000:]))
     if args.priorizar:
@@ -798,7 +882,7 @@ def main() -> int:
         if pesos is not None:
             idx_prio = np.random.RandomState(1).choice(
                 len(X), size=len(X), replace=True, p=pesos)
-            X_treino, y_treino = X[idx_prio], y[idx_prio]
+            idx, y_treino = idx_prio, y[idx_prio]
             print()
             print('  replay priorizado: reamostrado com peso na VANTAGEM de cada '
                   'jogada (alpha=%.2f, %d linhas unicas de %d)'
@@ -816,23 +900,28 @@ def main() -> int:
     n_rev = int(_rev.sum())
     if n_rev and args.peso_revisao > 1:
         _extra = int(round(args.peso_revisao)) - 1
-        X_treino = np.vstack([X_treino] + [X[_rev]] * _extra)
+        _base = np.arange(len(X)) if idx is None else idx
+        idx = np.concatenate([_base] + [np.flatnonzero(_rev)] * _extra)
         y_treino = np.concatenate([y_treino] + [y[_rev]] * _extra)
-        _o = np.random.RandomState(4).permutation(len(X_treino))
-        X_treino, y_treino = X_treino[_o], y_treino[_o]
+        _o = np.random.RandomState(4).permutation(len(idx))
+        idx, y_treino = idx[_o], y_treino[_o]
     print()
     print('  revisao da derrota: %d jogadas, peso %.0fx' % (n_rev, args.peso_revisao))
+    _mem('priorizado + revisao')
     # MUDOU O RESULTADO (bloco 942): mesmo ponto, jogada diferente, resultado
     # real diferente -- peso `--peso-mudou` (3 = ponto de partida).
     _mud = np.asarray(mudou, dtype=bool)
     n_mud = int(_mud.sum())
     if n_mud and args.peso_mudou > 1:
         _extra = int(round(args.peso_mudou)) - 1
-        X_treino = np.vstack([X_treino] + [X[_mud]] * _extra)
+        _base = np.arange(len(X)) if idx is None else idx
+        idx = np.concatenate([_base] + [np.flatnonzero(_mud)] * _extra)
         y_treino = np.concatenate([y_treino] + [y[_mud]] * _extra)
-        _o = np.random.RandomState(5).permutation(len(X_treino))
-        X_treino, y_treino = X_treino[_o], y_treino[_o]
+        _o = np.random.RandomState(5).permutation(len(idx))
+        idx, y_treino = idx[_o], y_treino[_o]
     print('  jogadas em que a revisao MUDOU o resultado: %d, peso %.0fx' % (n_mud, args.peso_mudou))
+    _mem('+ mudou')
+    Xa_extra, ordem_final = None, None
 
     # SIMULACAO COMO ENSINO (bloco 937, decisao do usuario 04/10/2026): as
     # jogadas que o bot NAO fez entram com a nota que a simulacao deu a elas
@@ -872,22 +961,27 @@ def main() -> int:
                     continue
                 Xa.append(f)
                 ya.append(float(a))
-        teto = int(args.peso_alternativas * len(X_treino))
+        teto = int(args.peso_alternativas * (len(X) if idx is None else len(idx)))
         if Xa:
             Xa, ya = np.asarray(Xa, dtype=np.float32), np.asarray(ya, dtype=float)
             if len(Xa) > teto:
                 ia = np.random.RandomState(2).choice(len(Xa), size=teto, replace=False)
                 Xa, ya = Xa[ia], ya[ia]
             n_alt = len(Xa)
-            X_treino = np.vstack([X_treino, Xa])
+            _n = len(X) if idx is None else len(idx)
             y_treino = np.concatenate([y_treino, ya])
-            ordem = np.random.RandomState(3).permutation(len(X_treino))
-            X_treino, y_treino = X_treino[ordem], y_treino[ordem]
+            ordem = np.random.RandomState(3).permutation(_n + len(Xa))
+            y_treino = y_treino[ordem]
+            Xa_extra, ordem_final = Xa, ordem
         print()
         print('  simulacao como ensino: +%d jogadas NAO feitas com a nota da '
               'simulacao (teto %.2f x %d reais)' % (n_alt, args.peso_alternativas,
                                                     len(X)))
 
+    _tem_traj = bool(traj)
+    del traj, ancora    # 0,5 GB que nao servem mais (bloco 968)
+    X_treino = _materializa(X, idx, Xa_extra, ordem_final)
+    _mem('X_treino (uma copia)', X_treino)
     _alargou = False
     if campeao is not None and tuple(campeao.steps[-1][1].hidden_layer_sizes) != CAMADAS:
         _alargou = True
@@ -917,7 +1011,11 @@ def main() -> int:
             _mlp.set_params(learning_rate_init=args.lr / 3)
         if args.max_iter:
             _mlp.set_params(max_iter=args.max_iter)
-        _mlp.fit(_sc.transform(X_treino), y_treino)
+        _Xs = _sc.transform(X_treino, copy=(X_treino is X))   # no lugar quando ja e copia
+        _mem('normalizada (vai pro fit)', _Xs)
+        _mlp.fit(_Xs, y_treino)
+        del _Xs
+        _mem('fit terminado')
         modelo = campeao
         print()
         print('  treino CONTINUADO do modelo promovido: %s' % args.continua_de)
@@ -941,17 +1039,17 @@ def main() -> int:
                                          'decisoes': v[1]}
                                      for k, v in conc_fam.items()},
         'por_lider': por_lider,
-        'amostra_validacao': int(len(Xv)),
+        'amostra_validacao': _n_val,
         'erro_da_media': eb,
         'ganho_pct': ganho,
         'dataset': args.dataset,
-        'lideres': sorted(set(grupos.tolist())),
-        'replay_priorizado': bool(args.priorizar and X_treino is not X),
+        'lideres': _lideres,
+        'replay_priorizado': bool(args.priorizar and idx is not None),
         'alternativas_simulacao': int(n_alt),
         'revisao_linhas': n_rev, 'peso_revisao': args.peso_revisao,
         'cobertura': {f: {'linhas': v[0], 'escolhidas': v[1], 'consequencia': v[2]}
                       for f, v in cobertura.items()},
-        'rotulo_consequencia': (args.rotulo if traj else None),
+        'rotulo_consequencia': (args.rotulo if _tem_traj else None),
         'continuado_de': (args.continua_de if campeao is not None else None),
     }
     import joblib
@@ -959,7 +1057,7 @@ def main() -> int:
     saida.parent.mkdir(parents=True, exist_ok=True)
     joblib.dump(bundle, saida)
     print('  modelo Q -> %s' % saida)
-    print('  alvos por lider: %s ...' % Counter(grupos.tolist()).most_common(4))
+    print('  alvos por lider: %s ...' % _top_lideres)
     print()
     print('  ISTO E ERRO DE PREVISAO, NAO E GANHO NO MOTOR. O que decide se o Q')
     print('  substitui a arvore e a medicao no jogo: velocidade E se ele escolhe')
