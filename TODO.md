@@ -4,6 +4,8 @@
 
 > **969**: ciclo 87 PROMOVE (202x154); 88-89 equivalentes. Treino: pico de memoria 7,73 -> 6,41 GB e escolhidas em binario (9,0 -> 7,5 min), modelo identico. PENDENTE: redesenhar export/import para nao guardar q_alvos.jsonl (30 GB) -- pedir confirmacao antes de apagar; `sample_weight` nas revisoes (com portao).
 
+> **972**: projeto agora SO em `E:\Projetos_TInalidador_de_decks_optcg` (pasta do SSD apagada, 26 GB liberados).
+
 > **971**: ciclos 90-92 nao promovem (32-42%); desafiante preve MELHOR e joga PIOR -> erro de previsao nao e a regua. `mede_escolha.py` mede ordem entre opcoes (62% dos pares). Treinar comparando opcoes ja reprovado (916/937). PROXIMO: desenhar a Fase 3 (arvore do turno) com o usuario.
 
 > **970**: 3 partidas contra o usuario feitas (bot perdeu as 3). Corrigidos: substituto pagavel (Ganzui) e counter de evento no estado depois (`counter_evento_pos`). PENDENTE: triagem de derrota trata nomes da mesma carta como diferentes; slug de cor 'B' ambiguo (Blue/Black); acompanhar descarte do Rocks 10.

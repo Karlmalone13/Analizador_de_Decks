@@ -1,5 +1,14 @@
 ﻿# HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-10-22 (972) - Projeto SO no HD (E:); pasta antiga do SSD apagada
+
+Usuario confirmou o HD (3 partidas ao vivo + ciclos 81-92 rodaram de E:). Antes de apagar
+`C:\Projetos_TInalidador_de_decks_optcg`: robocopy /L mostrou 104 arquivos so no SSD -- 94 do `.venv` antigo
+(recriado no E:) e 10 modelos de `metrics/q_net_pool/` de 11-19/10 (o pool guarda so os 10 mais recentes e
+descarta os velhos sozinho); os 2 stashes do git estao no E:; o HEAD do SSD (de57997) esta no E: e no GitHub.
+Apagado: 26,2 GB liberados (C: com 29,5 GB livres). Ficou so a pasta VAZIA (presa pela sessao que comecou nela).
+**Toda sessao nova abre em `E:\Projetos_TInalidador_de_decks_optcg`.** Servidor do bot: `iniciar_bot.bat` do E:.
+
 ## 2026-10-22 (971) - Ciclos 90-92 (desafiantes perdem) e a metrica de QUALIDADE DA ESCOLHA
 
 Ciclos 90 (25x52), 91 (60x83), 92 (61x85): desafiantes PIORES que o campeao do 87; erro sobe 0,1991 -> 0,2012.
