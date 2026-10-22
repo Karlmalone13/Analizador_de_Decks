@@ -9571,6 +9571,31 @@ def test_opp_combo_threat_detects_five_elders_style_reanimation() -> None:
           engine3.analyzer.analysis_priority() != "PREVENT_COMBO")
 
 
+def test_substituto_ganzui_so_aceita_se_pagavel_21_10() -> None:
+    """Ganzui OP17-043 ("removed from the field -> trash 2 cards from your hand
+    instead"), partida ao vivo 2026-10-21T22.20.24_p3: o prompt opcional caia no
+    `on_play` (sem custo) e o bot aceitava com 1 carta na mao -- o jogo nao
+    cobrava e o personagem ficava de graca, 2 vezes."""
+    def estado(n_mao):
+        me = GameState(leader=real_card("OP17-039"), turn=6)
+        me.is_active_turn = False
+        me.field_chars = [real_card("OP17-043")]
+        me.hand = [real_card("OP17-057") for _ in range(n_mao)]
+        opp = GameState(leader=real_card("OP13-079"), turn=6)
+        opp.is_active_turn = True
+        return me, opp
+    me, opp = estado(1)
+    tr = {}
+    check("Ganzui com 1 carta na mao RECUSA a substituicao (custo 2)",
+          not sim_bridge.resolve_optional_effect(me, opp, actor_code="OP17-043", trace_out=tr))
+    check("o motivo registrado e 'nao pagavel'", tr.get('substituicao', {}).get('pagavel') is False)
+    check("recusar nao mexe na mao real (pagamento testado num clone)", len(me.hand) == 1)
+    me, opp = estado(2)
+    check("CONTROLE: com 2 cartas na mao ACEITA",
+          sim_bridge.resolve_optional_effect(me, opp, actor_code="OP17-043"))
+    check("CONTROLE: aceitar tambem nao gasta a mao real", len(me.hand) == 2)
+
+
 def test_big_mom_optional_zero_parser_order_and_don_synergy() -> None:
     cracker = get_card_effects("ST34-002")["on_play"]["steps"]
     check("Cracker rampa antes do K.O. opcional",
@@ -10749,6 +10774,7 @@ def main() -> int:
     test_impressao_mais_completa_decide_o_effects_24_09()
     test_auto_bounce_e_custo_nao_efeito_24_09()
     test_portao_enxerga_melhora_incremental_24_09()
+    test_substituto_ganzui_so_aceita_se_pagavel_21_10()
     test_event_concede_unblockable_a_carta_nomeada_24_09()
     test_dialeto_de_transcricao_das_promos_bloco_871()
     test_quatro_formas_de_gatilho_ausente_bloco_871()
@@ -16021,7 +16047,7 @@ def test_treino_continua_do_campeao_27_09() -> None:
     orig = joblib.load(caminho)['modelo']
     n_orig = orig.n_features_in_
     n_cols = (len(vn.FEATURE_NAMES_ALUNO) + len(vn.FEATURE_NAMES_ACAO)
-              + len(vn.FEATURE_NAMES_CORRIDA))
+              + len(vn.FEATURE_NAMES_CORRIDA) + len(vn.FEATURE_NAMES_PENSAR))   # bloco 968
     exp = treinar_q.modelo_do_campeao(caminho, n_cols)
     check("campeao carregado pra continuar o treino", exp is not None)
     if exp is None:
@@ -17421,13 +17447,24 @@ def test_evento_de_counter_passa_pelo_q_bloco_927() -> None:
     chamadas = []
     orig = de._q_escolhe_familia
     try:
-        de._q_escolhe_familia = lambda m, o, fam, ops, pad: (chamadas.append((fam, len(ops), pad)) or pad)
+        de._q_escolhe_familia = lambda m, o, fam, ops, pad, mudancas=None: (chamadas.append((fam, len(ops), pad, mudancas)) or pad)
         r = ee._q_counter_evento(cands, me.leader, 'leader')
         check("2 eventos: opcoes = nao usar + cada um; padrao = a regra (menor excesso)",
-              chamadas == [('counter_evento', 3, 2)] and r is cands[1])
-        de._q_escolhe_familia = lambda m, o, fam, ops, pad: 0
+              [c[:3] for c in chamadas] == [('counter_evento_pos', 3, 2)] and r is cands[1])
+        # bloco 969: cada opcao no estado DEPOIS dela; sem vida, 'nao usar' e DERROTA
+        _muds = chamadas[0][3]
+        check("bloco 969: mudancas = golpe + uma por evento", _muds is not None and len(_muds) == 3)
+        me.life = []
+        check("bloco 969: com vida 0, 'nao usar o counter' e DERROTA", _muds[0]() is vn.DERROTA)
+        me.life = [real_card('OP17-057')]
+        _d = _muds[0]()
+        check("CONTROLE 969: com 1 vida, 'nao usar' tira a vida (nao e derrota)",
+              _d is not vn.DERROTA and len(me.life) == 0)
+        _d()
+        check("CONTROLE 969: desfazer devolve a vida", len(me.life) == 1)
+        de._q_escolhe_familia = lambda m, o, fam, ops, pad, mudancas=None: 0
         check("Q escolhe NAO usar -> None", ee._q_counter_evento(cands, me.leader, 'leader') is None)
-        de._q_escolhe_familia = lambda m, o, fam, ops, pad: 1
+        de._q_escolhe_familia = lambda m, o, fam, ops, pad, mudancas=None: 1
         check("Q escolhe o outro evento", ee._q_counter_evento(cands, me.leader, 'leader') is cands[0])
         n = len(chamadas)
         de._EM_SIMULACAO['on'] = True

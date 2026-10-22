@@ -1,0 +1,66 @@
+{
+  "cards": [
+    {
+      "code": "OP17-082",
+      "name": "OP17-082",
+      "count": 3
+    },
+    {
+      "code": "EB04-007",
+      "name": "Roronoa Zoro",
+      "count": 2
+    },
+    {
+      "code": "OP17-087",
+      "name": "OP17-087",
+      "count": 2
+    },
+    {
+      "code": "OP17-093",
+      "name": "OP17-093",
+      "count": 2
+    },
+    {
+      "code": "OP17-119",
+      "name": "Loki",
+      "count": 2
+    },
+    {
+      "code": "OP17-084",
+      "name": "OP17-084",
+      "count": 1
+    },
+    {
+      "code": "OP17-089",
+      "name": "Jaguar D. Saul",
+      "count": 1
+    },
+    {
+      "code": "OP17-086",
+      "name": "OP17-086",
+      "count": 1
+    },
+    {
+      "code": "ST01-011",
+      "name": "ST01-011",
+      "count": 1
+    },
+    {
+      "code": "OP17-080",
+      "name": "OP17-080",
+      "count": 1
+    },
+    {
+      "code": "OP01-016",
+      "name": "OP01-016",
+      "count": 1
+    },
+    {
+      "code": "OP17-081",
+      "name": "OP17-081",
+      "count": 1
+    }
+  ],
+  "total_seen": 18,
+  "leader": "OP13-004"
+}

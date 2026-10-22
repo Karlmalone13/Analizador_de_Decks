@@ -5912,8 +5912,16 @@ class EffectExecutor:
                             SimpleNamespace(cost=it[1], power=getattr(_ev, 'power', 0),
                                             power_buff=0, counter=it[3]),
                             alvo_tipo, alvo, None, True))
-        _i = _q_escolhe_familia(self.me, self.opp, 'counter_evento', _opcoes,
-                                1 + next(k for k, it in enumerate(candidates) if it is _padrao))
+        # ESTADO DEPOIS de cada opcao (bloco 969, mesma forma do 962): "nao usar"
+        # e o golpe passando -- sem vida e DERROTA; usar e o evento indo pro
+        # trash. Antes o Q via o estado ANTES do golpe: com vida 0 "nao usar"
+        # parecia so "guardei a carta", e o Xebec morreu com 3 Rocks Pirates
+        # (+2000 cada) na mao (ao vivo 2026-10-21T22.05.16_p2, 7000 x 6000).
+        _muds = [_muda_golpe(self.me, alvo if alvo_tipo == 'character' else None, 1, 0)] + [
+            _muda_gastar(self.me, [it[2]]) for it in candidates]
+        _i = _q_escolhe_familia(self.me, self.opp, 'counter_evento_pos', _opcoes,
+                                1 + next(k for k, it in enumerate(candidates) if it is _padrao),
+                                mudancas=_muds)
         return None if _i == 0 else candidates[_i - 1]
 
     def escolhe_counter_evento_power(self, target: Card, target_type: str, needed: int):

@@ -137,13 +137,14 @@ def passa_filtro_modo(linha: dict, modo: str = MODO_PADRAO) -> bool:
 # por familia sai em todo treino: familia com ZERO jogada rotulada pela
 # consequencia e familia que o ML NAO aprende -- o numero nao da pra fingir.
 FAMILIAS_JOGO = ('attack', 'play', 'pass', 'activate', 'attach_don',
-                 'block_pos', 'counter_pos', 'target', 'descarte', 'counter_evento',
+                 'block_pos', 'counter_pos', 'target', 'descarte', 'counter_evento_pos',
                  'custo_restar', 'custo_sacrificar', 'busca', 'pagar_custo', 'opcao_efeito',
                  'mulligan', 'jogar_gratis')
 # Bloco 962: `block`/`counter` gravavam o estado ANTES do golpe -- "nao defender"
 # com 5 vidas e com 1 vida eram a mesma linha. Viraram `block_pos`/`counter_pos`
 # (estado DEPOIS da opcao); as linhas antigas ensinariam o contrario e saem.
-FAMILIAS_APOSENTADAS = ('block', 'counter')
+# Bloco 969: `counter_evento` tinha o mesmo defeito -> `counter_evento_pos`.
+FAMILIAS_APOSENTADAS = ('block', 'counter', 'counter_evento')
 SELFPLAY = RAIZ / 'metrics' / 'selfplay_v2.jsonl'
 
 

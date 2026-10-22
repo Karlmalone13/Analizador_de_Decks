@@ -1,0 +1,175 @@
+{
+  "parsed_file": "Rocks.D.Xebec-B_x_Marshall.D.Teach-B_2026-10-21T22.05.16_p2.json",
+  "bot_side": "You",
+  "bot_leader": "Rocks D. Xebec",
+  "opp_leader": "Marshall D. Teach",
+  "turnos_auditados": 4,
+  "turnos": [
+    {
+      "turn": 3,
+      "don_available_estimado": 1,
+      "historical_actions": [
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP17-039",
+          "to_name": "Rocks D. Xebec",
+          "total": 1
+        },
+        {
+          "type": "attack",
+          "attacker": "Rocks D. Xebec",
+          "attacker_code": "OP17-039",
+          "target": "Marshall D. Teach [\"OP09-081\">OP09-081]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": [
+            "OP16-109"
+          ]
+        }
+      ],
+      "engine_hoje_narrativa": "  \u001b[90mComprou: Rocks Pirates\u001b[0m\n  \u001b[93mDON!! +2 rampados │ 3 ativos │ 0 restados\u001b[0m\n  -- Turno (Turn Planner: simula sequências) --\n  Banco de cartas: 2839 cartas carregadas\n    Rocks.D.Xebec (039)  (5000pwr) ataca Leader\n      🛡 Counter! +1000 -> defesa 6000\n      ✗ Ataque bloqueado (5000 < 6000)\n  > grátis -> Joga: Rocks Pirates (0pwr) [EVENT]\n    \u001b[90mefeito: [Main] You may rest 5 of your DON!! cards: Return up to 1 Character with a cost of 6 or le...\u001b[0m\n    ⚡ anexou 3 DON em Rocks.D.Xebec (039)  (banking -- nada mais pra fazer este turno)\n"
+    },
+    {
+      "turn": 5,
+      "don_available_estimado": 2,
+      "historical_actions": [
+        {
+          "type": "play",
+          "card": "OP17-049",
+          "card_name": "Charlotte Linlin",
+          "effects": [
+            "Draw 2 Card"
+          ]
+        },
+        {
+          "type": "attack",
+          "attacker": "Rocks D. Xebec",
+          "attacker_code": "OP17-039",
+          "target": "Marshall D. Teach [\"OP09-081\">OP09-081]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        }
+      ],
+      "engine_hoje_narrativa": "  \u001b[90mComprou: Fullalead\u001b[0m\n  \u001b[93mDON!! +2 rampados │ 5 ativos │ 0 restados\u001b[0m\n  -- Turno (Turn Planner: simula sequências) --\n  > gastou 5 DON -> Joga: Charlotte Linlin (049) (Altern (7000pwr) [CHARACTER]\n    \u001b[90mefeito: [On Play] Your opponent chooses one:\r • Draw 2 cards.\r • Your opponent trashes 2 cards fro...\u001b[0m\n    ↳ [Charlotte Linlin (04] comprou: Gloriosa (Al, Rocks.D.Xebe\n    Rocks.D.Xebec (039)  (5000pwr) ataca Jesus Burgess\n      🛡 Counter! +1000 -> defesa 6000\n      ✗ Ataque bloqueado (5000 < 6000)\n"
+    },
+    {
+      "turn": 7,
+      "don_available_estimado": 4,
+      "historical_actions": [
+        {
+          "type": "play",
+          "card": "OP17-048",
+          "card_name": "Shiki",
+          "effects": [
+            "Trash Gloriosa [\"OP17-046\">OP17-046]",
+            "Buff Jesus Burgess [\"OP16-107\">OP16-107] -3000"
+          ]
+        },
+        {
+          "type": "attack",
+          "attacker": "Shiki",
+          "attacker_code": "OP17-048",
+          "target": "Jesus Burgess [\"OP16-107\">OP16-107]",
+          "result": "hit",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "attack",
+          "attacker": "Charlotte Linlin",
+          "attacker_code": "OP17-049",
+          "target": "Marshall D. Teach [\"OP09-081\">OP09-081]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "attack",
+          "attacker": "Rocks D. Xebec",
+          "attacker_code": "OP17-039",
+          "target": "Laffitte [\"OP09-095\">OP09-095]",
+          "result": "hit",
+          "damage": null,
+          "blocked_by": "OP09-091",
+          "countered_by": []
+        }
+      ],
+      "engine_hoje_narrativa": "  \u001b[90mComprou: Shiki (048) (Alternate Art)\u001b[0m\n  \u001b[93mDON!! +2 rampados │ 7 ativos │ 0 restados\u001b[0m\n  -- Turno (Turn Planner: simula sequências) --\n  > gastou 7 DON -> Joga: Shiki (048) (Alternate Art) (9000pwr) [CHARACTER]\n    \u001b[90mefeito: [Rush: Character]\r [When Attacking]/[On Your Opponent's Attack] [Once Per Turn] You may tr...\u001b[0m\n    Rocks.D.Xebec (039)  (5000pwr) ataca Vasco Shot (Reprint)\n      ↳ [when attacking] custo: trashou da mão: Ganzui\n      ↳ [when attacking] revelou Rocks Pirates do topo do deck: bateu a condicao | comprou: Rocks Pirate, Kaido\n      💀 Vasco Shot (Reprint) foi KO!\n    Charlotte Linlin (04 (7000pwr) ataca Leader\n      💥 DANO! vida do oponente: 3\n      ⚡ [trigger] comprou: Doc Q, Zehahahahaha (e trashou: Zehahahahaha)\n    Shiki (048) (Alterna (9000pwr) ataca Jesus Burgess\n      ↳ [when attacking] custo: trashou da mão: Kaido\n      ↳ [when attacking] -3000 power em: Vasco Shot\n      💀 Jesus Burgess foi KO!\n      ↳ [on KO] -1 vida do oponente (dano, com trigger)\n  \u001b[90mpassa (busca preferiu nao agir)\u001b[0m\n"
+    },
+    {
+      "turn": 9,
+      "don_available_estimado": 6,
+      "historical_actions": [
+        {
+          "type": "attack",
+          "attacker": "Shiki",
+          "attacker_code": "OP17-048",
+          "target": "Marshall D. Teach [\"OP09-081\">OP09-081]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "activate",
+          "card": "OP17-048",
+          "card_name": "Shiki",
+          "effects": [
+            "Trash Ganzui [\"OP17-043\">OP17-043]",
+            "Buff Marshall D. Teach [\"OP16-119\">OP16-119] -3000"
+          ]
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP17-049",
+          "to_name": "Charlotte Linlin",
+          "total": 1
+        },
+        {
+          "type": "attack",
+          "attacker": "Charlotte Linlin",
+          "attacker_code": "OP17-049",
+          "target": "Marshall D. Teach [\"OP09-081\">OP09-081]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "attach_don",
+          "amount": 2,
+          "to": "OP17-039",
+          "to_name": "Rocks D. Xebec",
+          "total": 2
+        },
+        {
+          "type": "attack",
+          "attacker": "Rocks D. Xebec",
+          "attacker_code": "OP17-039",
+          "target": "Marshall D. Teach [\"OP09-081\">OP09-081]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "activate",
+          "card": "OP17-039",
+          "card_name": "Rocks D. Xebec",
+          "effects": [
+            "Trash Buckin [\"OP08-051\">OP08-051]",
+            "Draw 2 Card"
+          ]
+        }
+      ],
+      "engine_hoje_narrativa": "  \u001b[90mComprou: Shiki (048) (Alternate Art)\u001b[0m\n  \u001b[93mDON!! +2 rampados │ 9 ativos │ 0 restados\u001b[0m\n  -- Turno (Turn Planner: simula sequências) --\n    Shiki (048) (Alterna (9000pwr) ataca Leader\n      ↳ [when attacking] custo: trashou da mão: Shiki (048) (Al\n      ↳ [when attacking] -3000 power em: Laffitte (Repri\n      💥 DANO! vida do oponente: 2\n      ⚡ [trigger] comprou: Marshall.D.T\n      ⚡ [trigger] jogou do trash: Vasco Shot\n    anexou 1 DON em Charlotte Linlin (04\n    Charlotte Linlin (04 (8000pwr) ataca Leader\n      💥 DANO! vida do oponente: 1\n  > gastou 5 DON -> Joga: Ganzui (7000pwr) [CHARACTER]\n    \u001b[90mefeito: If this Character would be removed from the field, you may trash 2 cards from your hand in...\u001b[0m\n    ↳ [Ganzui] base power de Rocks.D.Xebec ( virou 6000\n    ⚡ anexou 2 DON em Rocks.D.Xebec (039)  para ligar [attack_power]\n    ⚡ anexou 1 DON em Rocks.D.Xebec (039)  para ligar [attack_power]\n    Rocks.D.Xebec (039)  (9000pwr) ataca Leader\n      ↳ [when attacking] custo: trashou da mão: Gloriosa (Alter\n      ↳ [when attacking] revelou Rocks Pirates do topo do deck: bateu a condicao | comprou: Rocks Pirate, Kyo\n      💥 DANO! vida do oponente: 0\n  \u001b[90mpassa (busca preferiu nao agir)\u001b[0m\n"
+    }
+  ]
+}

@@ -424,8 +424,13 @@ def _logs_do_bot_desde(quando_iso) -> int:
         for r in regs:
             if not r.get('bot_side'):
                 continue
+            # O index grava o horario so no `id` ('2026-10-21T21.43.02_p2'), nao em
+            # `added_at`/`timestamp` -- sem isto o contador dava SEMPRE 0 (bloco 970:
+            # 3 partidas bancadas e o aviso disse "nenhum log entrou").
             q = str(r.get('added_at') or r.get('timestamp') or '')
-            if q and q > str(quando_iso):
+            if not q and len(str(r.get('id', ''))) >= 19:
+                q = str(r['id'])[:10] + 'T' + str(r['id'])[11:19].replace('.', ':')
+            if q and q[:19] > str(quando_iso)[:19]:
                 n += 1
         return n
     except Exception:

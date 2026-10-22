@@ -1,5 +1,27 @@
 ﻿# HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-10-22 (970) - 3 partidas contra o usuario (bot perdeu as 3) e 2 bugs corrigidos
+
+Q promovido no ciclo 87, `q_fallback` 0 nas 3, efeitos todos concluidos. Bot: Sabo, Xebec, Xebec; usuario venceu
+as 3 (12, 10 e 14 turnos). `audit_real_losses` rodado: 4 MATCH, 11 DIVERGE (pelo menos 3 falsos: a triagem conta
+"stussy" x "missbuckingh" -- MESMA carta, OP17-054 -- como jogadas diferentes; corrigir a normalizacao do nome).
+
+**Bug 1 (Ganzui OP17-043, substituto "trash 2 instead")**: o prompt opcional caia no `on_play` (sem custo) dentro
+de `resolve_optional_effect` e o bot aceitava com 1 carta na mao; o jogo nao cobrava e o personagem ficava de
+graca (2x na partida 3). Mesma forma do bloco 953 (Newgate). Agora: carta com substituto e sem outro bloco de custo
+opcional -> paga como o motor paga (`_pay_substitute_cost` num CLONE) e so aceita se pagavel e
+`should_pay_removal_substitute`. Teste `test_substituto_ganzui_so_aceita_se_pagavel_21_10` (FALHA no codigo antigo).
+
+**Bug 2 (Xebec morreu com 3 Rocks Pirates +2000 na mao, vida 0, 7000 x 6000)**: `_q_counter_evento` decidia no
+estado ANTES do golpe -- o mesmo defeito do bloco 962, que so tinha corrigido counter de personagem e bloqueio.
+Familia nova `counter_evento_pos` com `mudancas` (golpe -> DERROTA sem vida; evento -> trash); `counter_evento`
+aposentada no treino. Ate o Q aprender a familia, vale a regra (usa o que cobre).
+
+**Nao e bug de regra**: o Rocks 10 (OP17-118) nunca jogado -- o bot o DESCARTOU cedo como custo (1o da ordem no
+turno 3 da partida 2) e as partidas acabaram antes de 10 DON. Valor de descarte e do Q (familia `descarte`):
+acompanhar. Observacao do usuario sobre carta amarela: era a mao do Teach (dele); OP09-081 consta Black no banco.
+Slug de cor usa 'B' para Blue E Black (ambiguo) -- pendente.
+
 ## 2026-10-21 (969) - Ciclos 86-89 (87 PROMOVE), memoria do treino, escolhidas em binario
 
 **Ciclos**: 86 176x191 equivalente (erro 0,1960); **87 PROMOVE 202x154** (57%, recorte amplo: OP11-001 75%,

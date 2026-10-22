@@ -1,0 +1,319 @@
+{
+  "parsed_file": "Rocks.D.Xebec-B_x_Imu-B_2026-10-21T22.20.24_p3.json",
+  "bot_side": "You",
+  "bot_leader": "Rocks D. Xebec",
+  "opp_leader": "Imu",
+  "turnos_auditados": 6,
+  "turnos": [
+    {
+      "turn": 3,
+      "don_available_estimado": 1,
+      "historical_actions": [
+        {
+          "type": "play",
+          "card": "OP17-054",
+          "card_name": "Stussy",
+          "effects": []
+        },
+        {
+          "type": "attack",
+          "attacker": "Rocks D. Xebec",
+          "attacker_code": "OP17-039",
+          "target": "Imu [\"OP13-079\">OP13-079]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "activate",
+          "card": "OP17-039",
+          "card_name": "Rocks D. Xebec",
+          "effects": [
+            "Trash Rocks D. Xebec [\"OP17-118\">OP17-118]",
+            "Draw 2 Card"
+          ]
+        }
+      ],
+      "engine_hoje_narrativa": "  \u001b[90mComprou: Captain John\u001b[0m\n  \u001b[93mDON!! +2 rampados │ 3 ativos │ 0 restados\u001b[0m\n  -- Turno (Turn Planner: simula sequências) --\n  Banco de cartas: 2839 cartas carregadas\n  > gastou 3 DON -> Joga: Miss Buckingham Stussy (Altern (5000pwr) [CHARACTER]\n    \u001b[90mefeito: [On Play] Up to 1 of your opponent's Characters with a base cost of 6 or less cannot attac...\u001b[0m\n    Rocks.D.Xebec (039)  (5000pwr) ataca Leader\n      ↳ [when attacking] custo: trashou da mão: Rocks.D.Xebec (\n      ↳ [when attacking] revelou Fullalead do topo do deck: bateu a condicao | comprou: Fullalead, Charlotte Li\n      🛡 Counter! +1000 -> defesa 6000\n      ✗ Ataque bloqueado (5000 < 6000)\n"
+    },
+    {
+      "turn": 5,
+      "don_available_estimado": 2,
+      "historical_actions": [
+        {
+          "type": "play",
+          "card": "OP17-049",
+          "card_name": "Charlotte Linlin",
+          "effects": [
+            "Draw 2 Card"
+          ]
+        },
+        {
+          "type": "attack",
+          "attacker": "Rocks D. Xebec",
+          "attacker_code": "OP17-039",
+          "target": "Imu [\"OP13-079\">OP13-079]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": [
+            "OP13-091"
+          ]
+        },
+        {
+          "type": "attack",
+          "attacker": "Stussy",
+          "attacker_code": "OP17-054",
+          "target": "Imu [\"OP13-079\">OP13-079]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        }
+      ],
+      "engine_hoje_narrativa": "  \u001b[90mComprou: Rocks.D.Xebec (118) (Super Alt\u001b[0m\n  \u001b[93mDON!! +2 rampados │ 5 ativos │ 0 restados\u001b[0m\n  -- Turno (Turn Planner: simula sequências) --\n  > gastou 5 DON -> Joga: Charlotte Linlin (049) (Altern (7000pwr) [CHARACTER]\n    \u001b[90mefeito: [On Play] Your opponent chooses one:\r • Draw 2 cards.\r • Your opponent trashes 2 cards fro...\u001b[0m\n    ↳ [Charlotte Linlin (04] comprou: Rocks Pirate, Miss Bucking\n    Miss Buckingham Stus (5000pwr) ataca Leader\n      🛡 Counter! +2000 -> defesa 7000\n      ✗ Ataque bloqueado (5000 < 7000)\n    Rocks.D.Xebec (039)  (5000pwr) ataca Leader\n      🛡 Counter! +1000 -> defesa 6000\n      ✗ Ataque bloqueado (5000 < 6000)\n  \u001b[90mpassa (busca preferiu nao agir)\u001b[0m\n"
+    },
+    {
+      "turn": 7,
+      "don_available_estimado": 4,
+      "historical_actions": [
+        {
+          "type": "play",
+          "card": "OP17-040",
+          "card_name": "Edward Newgate",
+          "effects": [
+            "Draw 1 Card",
+            "Trash Gloriosa [\"OP17-046\">OP17-046]",
+            "Buff Rocks D. Xebec [\"OP17-039\">OP17-039] 3000 for the Combat"
+          ]
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP17-039",
+          "to_name": "Rocks D. Xebec",
+          "total": 1
+        },
+        {
+          "type": "attack",
+          "attacker": "Rocks D. Xebec",
+          "attacker_code": "OP17-039",
+          "target": "Imu [\"OP13-079\">OP13-079]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "attack",
+          "attacker": "Stussy",
+          "attacker_code": "OP17-054",
+          "target": "Imu [\"OP13-079\">OP13-079]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": [
+            "OP13-084"
+          ]
+        }
+      ],
+      "engine_hoje_narrativa": "  \u001b[90mComprou: Buckin\u001b[0m\n  \u001b[93mDON!! +2 rampados │ 7 ativos │ 0 restados\u001b[0m\n  -- Turno (Turn Planner: simula sequências) --\n  > gastou 6 DON -> Joga: Edward.Newgate (8000pwr) [CHARACTER]\n    \u001b[90mefeito: [On Play] Draw 1 card.\r [Once Per Turn] When your Leader with a type including \"Rocks Pira...\u001b[0m\n    ↳ [Edward.Newgate] comprou: There's No A\n    Rocks.D.Xebec (039)  (5000pwr) ataca St. Marcus Mars (Par\n      ↳ [lider ataca: Edward.Newgate] custo: trashou da mão: Gloriosa (Alter\n      ↳ [lider ataca: Edward.Newgate] +3000 power em leader\n      🛡 Counter! +4000 -> defesa 9000\n      ✗ Ataque bloqueado (8000 < 9000)\n    anexou 1 DON em Miss Buckingham Stus\n    Miss Buckingham Stus (6000pwr) ataca St. Marcus Mars (Par\n      🛡 Counter Never Existed... i: +4000 power -> defesa 9000\n      ✗ Ataque bloqueado (6000 < 9000)\n  \u001b[90mpassa (busca preferiu nao agir)\u001b[0m\n"
+    },
+    {
+      "turn": 9,
+      "don_available_estimado": 6,
+      "historical_actions": [
+        {
+          "type": "play",
+          "card": "OP17-043",
+          "card_name": "Ganzui",
+          "effects": [
+            "Grant Rocks D. Xebec [\"OP17-039\">OP17-039] 1000 until opponent's next turn end"
+          ]
+        },
+        {
+          "type": "attack",
+          "attacker": "Edward Newgate",
+          "attacker_code": "OP17-040",
+          "target": "Imu [\"OP13-079\">OP13-079]",
+          "result": null,
+          "damage": null,
+          "blocked_by": "OP13-089",
+          "countered_by": []
+        },
+        {
+          "type": "play",
+          "card": "OP17-044",
+          "card_name": "Captain John",
+          "effects": [
+            "Draw 1 Card",
+            "Rest Captain John [\"OP17-044\">OP17-044]",
+            "Trash There's No Authority in the World [\"OP17-055\">OP17-055]"
+          ]
+        },
+        {
+          "type": "attack",
+          "attacker": "Rocks D. Xebec",
+          "attacker_code": "OP17-039",
+          "target": "St. Topman Warcury [\"OP13-089\">OP13-089]",
+          "result": "hit",
+          "damage": null,
+          "blocked_by": "OP13-091",
+          "countered_by": []
+        },
+        {
+          "type": "activate",
+          "card": "OP17-039",
+          "card_name": "Rocks D. Xebec",
+          "effects": [
+            "Trash Shiki [\"OP17-048\">OP17-048]",
+            "Draw 2 Card"
+          ]
+        },
+        {
+          "type": "activate",
+          "card": "OP17-040",
+          "card_name": "Edward Newgate",
+          "effects": [
+            "Trash Kaido [\"OP17-042\">OP17-042]",
+            "Buff Rocks D. Xebec [\"OP17-039\">OP17-039] 3000 for the Combat"
+          ]
+        },
+        {
+          "type": "attack",
+          "attacker": "Stussy",
+          "attacker_code": "OP17-054",
+          "target": "St. Topman Warcury [\"OP13-089\">OP13-089]",
+          "result": "hit",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": []
+        }
+      ],
+      "engine_hoje_narrativa": "  \u001b[90mComprou: Ganzui\u001b[0m\n  \u001b[93mDON!! +2 rampados │ 9 ativos │ 0 restados\u001b[0m\n  -- Turno (Turn Planner: simula sequências) --\n  > gastou 5 DON -> Joga: Ganzui (7000pwr) [CHARACTER]\n    \u001b[90mefeito: If this Character would be removed from the field, you may trash 2 cards from your hand in...\u001b[0m\n    ↳ [Ganzui] base power de Rocks.D.Xebec ( virou 6000\n  > gastou 4 DON -> Joga: Captain John (6000pwr) [CHARACTER]\n    \u001b[90mefeito: If your Leader's type includes \"Rocks Pirates\" and this Character is rested, your opponent...\u001b[0m\n    Edward.Newgate (8000pwr) ataca Leader\n      🛡 Blocker! St. Marcus Mars (Par intercepta\n      🛡 Counter Never Existed... i: +4000 power -> defesa 9000\n      ✗ Ataque bloqueado (8000 < 9000)\n    Rocks.D.Xebec (039)  (6000pwr) ataca Leader\n      ↳ [when attacking] custo: trashou da mão: Miss Buckingham\n      ↳ [when attacking] revelou Gloriosa (Alter do topo do deck: bateu a condicao | comprou: Gloriosa (Al, Streusen\n      ↳ [lider ataca: Edward.Newgate] custo: trashou da mão: Gloriosa (Alter\n      ↳ [lider ataca: Edward.Newgate] +3000 power em leader\n      💥 DANO! vida do oponente: 0\n    Miss Buckingham Stus (5000pwr) ataca St. Marcus Mars (Par\n      🛡 Counter! +1000 -> defesa 6000\n      ✗ Ataque bloqueado (5000 < 6000)\n  \u001b[90mpassa (busca preferiu nao agir)\u001b[0m\n"
+    },
+    {
+      "turn": 11,
+      "don_available_estimado": 8,
+      "historical_actions": [
+        {
+          "type": "attack",
+          "attacker": "Ganzui",
+          "attacker_code": "OP17-043",
+          "target": "St. Ethanbaron V. Nusjuro [\"OP13-080\">OP13-080]",
+          "result": null,
+          "damage": null,
+          "blocked_by": "OP13-089",
+          "countered_by": []
+        },
+        {
+          "type": "play",
+          "card": "OP17-042",
+          "card_name": "Kaido",
+          "effects": [
+            "Buff St. Shepherd Ju Peter [\"OP13-084\">OP13-084] -3000"
+          ]
+        },
+        {
+          "type": "play",
+          "card": "OP17-054",
+          "card_name": "Stussy",
+          "effects": [
+            "St. Marcus Mars [\"OP13-091\">OP13-091] can't attack next turn"
+          ]
+        },
+        {
+          "type": "play",
+          "card": "OP17-054",
+          "card_name": "Stussy",
+          "effects": [
+            "St. Ethanbaron V. Nusjuro [\"OP13-080\">OP13-080] can't attack next turn"
+          ]
+        },
+        {
+          "type": "attack",
+          "attacker": "Rocks D. Xebec",
+          "attacker_code": "OP17-039",
+          "target": "St. Ethanbaron V. Nusjuro [\"OP13-080\">OP13-080]",
+          "result": "hit",
+          "damage": null,
+          "blocked_by": "OP13-089",
+          "countered_by": []
+        }
+      ],
+      "engine_hoje_narrativa": "  \u001b[90mComprou: Kaido\u001b[0m\n  \u001b[93mDON!! +1 rampados │ 10 ativos │ 0 restados\u001b[0m\n  -- Turno (Turn Planner: simula sequências) --\n  > gastou 4 DON -> Joga: Kaido (6000pwr) [CHARACTER]\n    \u001b[90mefeito: [Blocker]\r [On Play] You may reveal 3 cards with a type including \"Rocks Pirates\" from you...\u001b[0m\n    ↳ [Kaido] custo: revelou 3 carta(s) com tipo rocks pirates\n    ↳ [Kaido] -3000 power em: St. Marcus Mars\n  > gastou 3 DON -> Joga: Miss Buckingham Stussy (Altern (5000pwr) [CHARACTER]\n    \u001b[90mefeito: [On Play] Up to 1 of your opponent's Characters with a base cost of 6 or less cannot attac...\u001b[0m\n    ↳ [Miss Buckingham Stus] travou (não pode atacar): St. Ethanbaron \n  > gastou 3 DON -> Joga: Miss Buckingham Stussy (Altern (5000pwr) [CHARACTER]\n    \u001b[90mefeito: [On Play] Up to 1 of your opponent's Characters with a base cost of 6 or less cannot attac...\u001b[0m\n    ↳ [Miss Buckingham Stus] travou (não pode atacar): St. Ethanbaron \n    Ganzui (7000pwr) ataca St. Topman Warcury (\n      🛡 Blocker! St. Marcus Mars (Par intercepta\n      💀 St. Marcus Mars (Par foi KO!\n    Rocks.D.Xebec (039)  (5000pwr) ataca St. Topman Warcury (\n      ↳ [when attacking] custo: trashou da mão: Gloriosa (Alter\n      ↳ [when attacking] revelou Streusen do topo do deck: bateu a condicao | comprou: Streusen, There's No A\n      💀 St. Topman Warcury ( foi KO!\n      ↳ [on KO] comprou: St. Topman W\n  \u001b[90mpassa (busca preferiu nao agir)\u001b[0m\n"
+    },
+    {
+      "turn": 13,
+      "don_available_estimado": 9,
+      "historical_actions": [
+        {
+          "type": "attack",
+          "attacker": "Ganzui",
+          "attacker_code": "OP17-043",
+          "target": "Imu [\"OP13-079\">OP13-079]",
+          "result": null,
+          "damage": null,
+          "blocked_by": "OP13-089",
+          "countered_by": []
+        },
+        {
+          "type": "play",
+          "card": "OP17-054",
+          "card_name": "Stussy",
+          "effects": [
+            "St. Marcus Mars [\"OP13-091\">OP13-091] can't attack next turn"
+          ]
+        },
+        {
+          "type": "attach_don",
+          "amount": 2,
+          "to": "OP17-039",
+          "to_name": "Rocks D. Xebec",
+          "total": 2
+        },
+        {
+          "type": "attach_don",
+          "amount": 2,
+          "to": "OP17-039",
+          "to_name": "Rocks D. Xebec",
+          "total": 4
+        },
+        {
+          "type": "attack",
+          "attacker": "Rocks D. Xebec",
+          "attacker_code": "OP17-039",
+          "target": "Imu [\"OP13-079\">OP13-079]",
+          "result": "hit",
+          "damage": null,
+          "blocked_by": "OP13-091",
+          "countered_by": []
+        },
+        {
+          "type": "attack",
+          "attacker": "Stussy",
+          "attacker_code": "OP17-054",
+          "target": "St. Ethanbaron V. Nusjuro [\"OP13-080\">OP13-080]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": [
+            "OP16-093"
+          ]
+        },
+        {
+          "type": "attack",
+          "attacker": "Stussy",
+          "attacker_code": "OP17-054",
+          "target": "Imu [\"OP13-079\">OP13-079]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": []
+        }
+      ],
+      "engine_hoje_narrativa": "  \u001b[90mComprou: Miss Buckingham Stussy (Altern\u001b[0m\n  \u001b[93mDON!! +0 rampados │ 10 ativos │ 0 restados\u001b[0m\n  -- Turno (Turn Planner: simula sequências) --\n    anexou 2 DON em Ganzui\n    Ganzui (9000pwr) ataca Leader\n      🛡 Blocker! St. Marcus Mars (Par intercepta\n      💀 St. Marcus Mars (Par foi KO!\n  > gastou 3 DON -> Joga: Miss Buckingham Stussy (Altern (5000pwr) [CHARACTER]\n    \u001b[90mefeito: [On Play] Up to 1 of your opponent's Characters with a base cost of 6 or less cannot attac...\u001b[0m\n    ↳ [Miss Buckingham Stus] travou (não pode atacar): St. Ethanbaron \n    anexou 2 DON em Rocks.D.Xebec (039) \n    Rocks.D.Xebec (039)  (7000pwr) ataca Leader\n      🛡 Blocker! St. Topman Warcury ( intercepta\n      🛡 Counter Never Existed... i: +4000 power -> defesa 9000\n      ✗ Ataque bloqueado (7000 < 9000)\n    Miss Buckingham Stus (5000pwr) ataca St. Topman Warcury (\n      🛡 Counter Ground Death (Alte: +4000 power -> defesa 9000\n      ✗ Ataque bloqueado (5000 < 9000)\n    Miss Buckingham Stus (5000pwr) ataca St. Topman Warcury (\n      🛡 Counter Never Existed... i: +4000 power -> defesa 9000\n      ✗ Ataque bloqueado (5000 < 9000)\n  \u001b[90mpassa (busca preferiu nao agir)\u001b[0m\n"
+    }
+  ]
+}

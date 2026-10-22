@@ -4,7 +4,7 @@
 
 > **969**: ciclo 87 PROMOVE (202x154); 88-89 equivalentes. Treino: pico de memoria 7,73 -> 6,41 GB e escolhidas em binario (9,0 -> 7,5 min), modelo identico. PENDENTE: redesenhar export/import para nao guardar q_alvos.jsonl (30 GB) -- pedir confirmacao antes de apagar; `sample_weight` nas revisoes (com portao).
 
-> **PENDENTE (usuario, 21/10)**: jogar 3 partidas contra o bot no OPTCGSim com o Q promovido no ciclo 87 (202x154) -- alarme contra vicio de auto-jogo. Bancar os logs com `parse_combat_log.py <log> --add-to-db --bepinex-log <LogOutput.log>`, ler a telemetria e depois `python ciclo.py --limpar-checkpoint`.
+> **970**: 3 partidas contra o usuario feitas (bot perdeu as 3). Corrigidos: substituto pagavel (Ganzui) e counter de evento no estado depois (`counter_evento_pos`). PENDENTE: triagem de derrota trata nomes da mesma carta como diferentes; slug de cor 'B' ambiguo (Blue/Black); acompanhar descarte do Rocks 10.
 
 > **968**: plato do Q (ciclos 77-85 sem promover). Portao p1 0,55 / 4000 pares. Rede maior REPROVADA (256,128: 5x35; 128,32: 34x64). Rotulo nao e o limite (piso ~0,11); rede erra 0,18 no proprio treino -> 20 colunas novas do que da pra FAZER (`FEATURE_NAMES_PENSAR`), `linha_q` unico montador. PENDENTE: ciclos de 500 com as colunas; apagar pasta antiga do SSD apos confirmacao; AS-IS da geracao. CORPUS (decisao do usuario 20/10): reduzir com (2) so escolhidas + alternativas das 3 ultimas gens e (3) formato binario -- 30 GB -> <1 GB, ~50-80 MB/ciclo; controle: treino com o binario tem que dar o MESMO modelo; apagar q_alvos.jsonl so com confirmacao. JANELA de geracoes (alternativa 1) em aberto: usuario teme perder informacao. Exportacao agora incremental (marcos em q_alvos_marcos.json).
 

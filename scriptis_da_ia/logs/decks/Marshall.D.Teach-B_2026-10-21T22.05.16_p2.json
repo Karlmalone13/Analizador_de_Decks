@@ -1,0 +1,66 @@
+{
+  "cards": [
+    {
+      "code": "OP09-093",
+      "name": "OP09-093",
+      "count": 3
+    },
+    {
+      "code": "OP06-115",
+      "name": "OP06-115",
+      "count": 2
+    },
+    {
+      "code": "OP16-109",
+      "name": "OP16-109",
+      "count": 2
+    },
+    {
+      "code": "OP16-110",
+      "name": "Vasco Shot",
+      "count": 2
+    },
+    {
+      "code": "OP09-095",
+      "name": "Laffitte",
+      "count": 1
+    },
+    {
+      "code": "OP09-096",
+      "name": "OP09-096",
+      "count": 1
+    },
+    {
+      "code": "OP16-106",
+      "name": "OP16-106",
+      "count": 1
+    },
+    {
+      "code": "OP16-107",
+      "name": "Jesus Burgess",
+      "count": 1
+    },
+    {
+      "code": "EB04-058",
+      "name": "EB04-058",
+      "count": 1
+    },
+    {
+      "code": "OP09-091",
+      "name": "Vasco Shot",
+      "count": 1
+    },
+    {
+      "code": "OP16-116",
+      "name": "OP16-116",
+      "count": 1
+    },
+    {
+      "code": "OP16-119",
+      "name": "Marshall D. Teach",
+      "count": 1
+    }
+  ],
+  "total_seen": 17,
+  "leader": "OP09-081"
+}

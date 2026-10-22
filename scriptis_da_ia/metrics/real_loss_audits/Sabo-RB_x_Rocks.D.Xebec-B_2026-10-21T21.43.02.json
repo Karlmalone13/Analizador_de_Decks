@@ -1,0 +1,185 @@
+{
+  "parsed_file": "Sabo-RB_x_Rocks.D.Xebec-B_2026-10-21T21.43.02.json",
+  "bot_side": "You",
+  "bot_leader": "Sabo",
+  "opp_leader": "Rocks D. Xebec",
+  "turnos_auditados": 5,
+  "turnos": [
+    {
+      "turn": 3,
+      "don_available_estimado": 1,
+      "historical_actions": [
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP13-004",
+          "to_name": "Sabo",
+          "total": 1
+        },
+        {
+          "type": "attach_don",
+          "amount": 2,
+          "to": "OP13-004",
+          "to_name": "Sabo",
+          "total": 3
+        },
+        {
+          "type": "attack",
+          "attacker": "Sabo",
+          "attacker_code": "OP13-004",
+          "target": "Rocks D. Xebec [\"OP17-039\">OP17-039]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        }
+      ],
+      "engine_hoje_narrativa": "  \u001b[90mComprou: Jaguar D. Saul\u001b[0m\n  \u001b[93mDON!! +2 rampados │ 3 ativos │ 0 restados\u001b[0m\n  -- Turno (Turn Planner: simula sequências) --\n  Banco de cartas: 2839 cartas carregadas\n    anexou 1 DON em Sabo (OP13-004)\n    Sabo (OP13-004) (6000pwr) ataca Leader\n      🛡 Counter Rocks Pirates: +2000 power -> defesa 7000\n      ✗ Ataque bloqueado (6000 < 7000)\n  > gastou 2 DON -> Joga: Nico Robin (Alternate Art) (2000pwr) [CHARACTER]\n    \u001b[90mefeito: If there is a Character with a cost of 12 or more, this Character gains +3000 power. [On P...\u001b[0m\n"
+    },
+    {
+      "turn": 5,
+      "don_available_estimado": 3,
+      "historical_actions": [
+        {
+          "type": "play",
+          "card": "OP17-089",
+          "card_name": "Jaguar D. Saul",
+          "effects": [
+            "<b>Reveal and Draw Monkey D. Luffy [\"OP17-093\">OP17-093]</b>",
+            "Trash 2 Remaining Cards"
+          ]
+        },
+        {
+          "type": "attack",
+          "attacker": "Sabo",
+          "attacker_code": "OP13-004",
+          "target": "Streusen [\"OP17-050\">OP17-050]",
+          "result": "hit",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": []
+        }
+      ],
+      "engine_hoje_narrativa": "  \u001b[90mComprou: Monkey.D.Luffy (093) (Alternat\u001b[0m\n  \u001b[93mDON!! +2 rampados │ 5 ativos │ 0 restados\u001b[0m\n  -- Turno (Turn Planner: simula sequências) --\n  > gastou 4 DON -> Joga: Jaguar D. Saul (6000pwr) [CHARACTER]\n    \u001b[90mefeito: This Character gains +12 cost.\r [On Play] Look at 3 cards from the top of your deck; revea...\u001b[0m\n    ↳ [Jaguar D. Saul] olhou 3 do topo -> pegou: Loki (Alternate\n    ↳ [Jaguar D. Saul] trash resto: Nico Robin (, Nami\n    Sabo (OP13-004) (5000pwr) ataca Streusen\n      💀 Streusen foi KO!\n  \u001b[90mpassa (busca preferiu nao agir)\u001b[0m\n"
+    },
+    {
+      "turn": 7,
+      "don_available_estimado": 2,
+      "historical_actions": [
+        {
+          "type": "play",
+          "card": "EB04-007",
+          "card_name": "Roronoa Zoro",
+          "effects": [
+            "Grant Sabo [\"OP13-004\">OP13-004] 2000 until opponent's next turn end"
+          ]
+        },
+        {
+          "type": "attack",
+          "attacker": "Sabo",
+          "attacker_code": "OP13-004",
+          "target": "Rocks D. Xebec [\"OP17-039\">OP17-039]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "attack",
+          "attacker": "Jaguar D. Saul",
+          "attacker_code": "OP17-089",
+          "target": "Rocks D. Xebec [\"OP17-039\">OP17-039]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": []
+        }
+      ],
+      "engine_hoje_narrativa": "  \u001b[90mComprou: Nami\u001b[0m\n  \u001b[93mDON!! +2 rampados │ 7 ativos │ 0 restados\u001b[0m\n  -- Turno (Turn Planner: simula sequências) --\n  > gastou 7 DON -> Joga: Roronoa Zoro (EB04-007) (SP) (9000pwr) [CHARACTER]\n    \u001b[90mefeito: [On Play] Your Leader gains +2000 power until the end of your opponent's next End Phase.[A...\u001b[0m\n    ↳ [Roronoa Zoro (EB04-0] +2000 power em leader\n    Sabo (OP13-004) (7000pwr) ataca Leader\n      ↳ [lider e atacado: Edward.Newgate] custo: trashou da mão: Kaido\n      ↳ [lider e atacado: Edward.Newgate] +3000 power em leader\n      ✗ Ataque bloqueado (7000 < 8000)\n  \u001b[90mpassa (busca preferiu nao agir)\u001b[0m\n"
+    },
+    {
+      "turn": 9,
+      "don_available_estimado": 4,
+      "historical_actions": [
+        {
+          "type": "play",
+          "card": "OP17-119",
+          "card_name": "Loki",
+          "effects": [
+            "Destroy Streusen [\"OP17-050\">OP17-050]"
+          ]
+        },
+        {
+          "type": "attack",
+          "attacker": "Roronoa Zoro",
+          "attacker_code": "EB04-007",
+          "target": "Shiki [\"OP17-048\">OP17-048]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "attach_don",
+          "amount": 2,
+          "to": "OP13-004",
+          "to_name": "Sabo",
+          "total": 2
+        },
+        {
+          "type": "attack",
+          "attacker": "Sabo",
+          "attacker_code": "OP13-004",
+          "target": "Rocks D. Xebec [\"OP17-039\">OP17-039]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        }
+      ],
+      "engine_hoje_narrativa": "  \u001b[90mComprou: Loki (Alternate Art)\u001b[0m\n  \u001b[93mDON!! +2 rampados │ 9 ativos │ 0 restados\u001b[0m\n  -- Turno (Turn Planner: simula sequências) --\n  > gastou 6 DON -> Joga: Loki (Alternate Art) (8000pwr) [CHARACTER]\n    \u001b[90mefeito: This Character gains +12 cost, and if it is your opponent's turn, this Character gains +30...\u001b[0m\n    ↳ [Loki (Alternate Art)] KO: Streusen\n    anexou 1 DON em Roronoa Zoro (EB04-0\n    Roronoa Zoro (EB04-0 (10000pwr) ataca Edward.Newgate\n      ↳ [on opp attack: Shiki (048) (Al] custo: trashou da mão: Rocks.D.Xebec (\n      ↳ [on opp attack: Shiki (048) (Al] -3000 power em: Loki (Alternate\n      💀 Edward.Newgate foi KO!\n  > gastou 2 DON -> Joga: Sanji (2000pwr) [CHARACTER]\n    \u001b[90mefeito: If there is a Character with a cost of 12 or more, this Character gains +3000 power.\r [On ...\u001b[0m\n    ↳ [Sanji] comprou: Bad Manners , Pirates Dock (e trashou: Gerd, Pirates Dock)\n    Sabo (OP13-004) (5000pwr) ataca Leader\n      🛡 Counter! +1000 -> defesa 6000\n      ✗ Ataque bloqueado (5000 < 6000)\n"
+    },
+    {
+      "turn": 11,
+      "don_available_estimado": 6,
+      "historical_actions": [
+        {
+          "type": "attack",
+          "attacker": "Roronoa Zoro",
+          "attacker_code": "EB04-007",
+          "target": "Rocks D. Xebec [\"OP17-039\">OP17-039]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "attach_don",
+          "amount": 2,
+          "to": "OP13-004",
+          "to_name": "Sabo",
+          "total": 2
+        },
+        {
+          "type": "attack",
+          "attacker": "Sabo",
+          "attacker_code": "OP13-004",
+          "target": "Rocks D. Xebec [\"OP17-039\">OP17-039]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "play",
+          "card": "EB04-007",
+          "card_name": "Roronoa Zoro",
+          "effects": [
+            "Grant Sabo [\"OP13-004\">OP13-004] 2000 until opponent's next turn end"
+          ]
+        }
+      ],
+      "engine_hoje_narrativa": "  \u001b[90mComprou: Loki (Alternate Art)\u001b[0m\n  \u001b[93mDON!! +1 rampados │ 10 ativos │ 0 restados\u001b[0m\n  -- Turno (Turn Planner: simula sequências) --\n  > gastou 2 DON -> Joga: Sanji (2000pwr) [CHARACTER]\n    \u001b[90mefeito: If there is a Character with a cost of 12 or more, this Character gains +3000 power.\r [On ...\u001b[0m\n    ↳ [Sanji] comprou: Usopp (Alter, Roronoa Zoro (e trashou: Monkey.D.Luf, Monkey.D.Luf)\n  > gastou 7 DON -> Joga: Roronoa Zoro (EB04-007) (SP) (9000pwr) [CHARACTER]\n    \u001b[90mefeito: [On Play] Your Leader gains +2000 power until the end of your opponent's next End Phase.[A...\u001b[0m\n    ↳ [Roronoa Zoro (EB04-0] +2000 power em leader\n    Loki (Alternate Art) (11000pwr) ataca Edward.Newgate\n      ↳ [on opp attack: Shiki (048) (Al] custo: trashou da mão: Rocks.D.Xebec (\n      ↳ [on opp attack: Shiki (048) (Al] -3000 power em: Roronoa Zoro (E\n      💀 Edward.Newgate foi KO!\n    ⚡ anexou 1 DON em Sabo (OP13-004) para ligar [attack_power]\n    Sabo (OP13-004) (8000pwr) ataca Leader\n      ↳ [on opp attack: Shiki (048) (Al] custo: trashou da mão: There's No Auth\n      ↳ [on opp attack: Shiki (048) (Al] -3000 power em: Roronoa Zoro (E\n      ↳ [lider e atacado: Edward.Newgate] custo: trashou da mão: There's No Auth\n      ↳ [lider e atacado: Edward.Newgate] +3000 power em leader\n      🛡 Counter Rocks Pirates: +2000 power -> defesa 10000\n      ✗ Ataque bloqueado (8000 < 10000)\n  \u001b[90mpassa (busca preferiu nao agir)\u001b[0m\n"
+    }
+  ]
+}

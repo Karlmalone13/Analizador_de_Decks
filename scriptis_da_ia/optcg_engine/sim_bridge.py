@@ -1976,6 +1976,41 @@ def resolve_optional_effect(gs: GameState, opp_gs: GameState,
             [{'type': 'trash_from_hand'}], card=None)
 
     effects = get_card_effects(actor_code)
+
+    # SUBSTITUICAO DE REMOCAO (bloco 969, achado ao vivo 21/10): Ganzui OP17-043
+    # ("If this Character would be removed from the field, you may trash 2 cards
+    # from your hand instead") perguntava o opcional e o laco abaixo achava o
+    # `on_play` dele (sem custo) -> "custo zero, vale" -> o bot aceitava com 1
+    # carta na mao, o jogo nao conseguia cobrar e o personagem ficava de graca,
+    # duas vezes na mesma partida. Mesma forma do bloco 953 (Newgate): decidia
+    # pelo bloco ERRADO da carta. Carta com substituto e sem outro bloco de
+    # custo opcional: o prompt E a substituicao. Paga como o MOTOR paga
+    # (`_pay_substitute_cost` num clone -- nada de checagem paralela) e so
+    # aceita se pagavel E se valer (`should_pay_removal_substitute`).
+    _subs = [st for t in ('passive', 'opp_turn', 'your_turn')
+             for st in (effects.get(t) or {}).get('steps', [])
+             if st.get('action') in ('substitute_ko', 'substitute_removal', 'substitute_rest')]
+    _outro_custo = any((effects.get(t) or {}).get('costs')
+                       for t in ('on_play', 'main', 'activate_main', 'when_attacking',
+                                 'on_opp_attack', 'leader_battle_reactive'))
+    if _subs and not _outro_custo:
+        from copy import deepcopy
+        _uid = getattr(card_obj, '_deck_uid', None)
+        for st in _subs:
+            custo = st.get('cost', {}) or {}
+            g2, o2 = deepcopy(gs), deepcopy(opp_gs)
+            pool2 = list(g2.hand) + list(g2.field_chars) + [g2.leader]
+            c2 = next((c for c in pool2 if c is not None and c.code == actor_code
+                       and getattr(c, '_deck_uid', None) == _uid), None) or next(
+                (c for c in pool2 if c is not None and c.code == actor_code), None)
+            pagavel = c2 is not None and EffectExecutor(g2, o2)._pay_substitute_cost(custo, c2) is not None
+            vale = pagavel and DecisionEngine(gs, opp_gs).should_pay_removal_substitute(card_obj, custo)
+            if trace_out is not None:
+                trace_out['substituicao'] = {'custo': custo, 'pagavel': pagavel, 'vale': bool(vale)}
+            if vale:
+                return True
+        return False
+
     # 'activate_main' incluido -- e o gatilho do lider Imu e de stages; o loop
     # anterior (on_play/main) nao achava nada e retornava False sempre.
     # 'when_attacking'/'on_opp_attack' incluidos 20/07 (achado ao vivo,
