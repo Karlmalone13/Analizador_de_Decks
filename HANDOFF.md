@@ -1,5 +1,23 @@
 ﻿# HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-10-22 (971) - Ciclos 90-92 (desafiantes perdem) e a metrica de QUALIDADE DA ESCOLHA
+
+Ciclos 90 (25x52), 91 (60x83), 92 (61x85): desafiantes PIORES que o campeao do 87; erro sobe 0,1991 -> 0,2012.
+`counter_evento_pos` ja tem 3.504 jogadas rotuladas. Hipotese "escala das colunas novas" REFUTADA (z tipico 0,5-1).
+
+**Achado**: o desafiante do 92 PREVE melhor que o campeao (erro -0,003 em toda geracao recente e em toda familia)
+e PERDE 42% no portao. Erro de previsao mede so as ESCOLHIDAS; o que decide e a ORDEM entre opcoes.
+`mede_escolha.py` (nova): nas 30.623 decisoes da gen 92 com >=2 opcoes notadas pela simulacao, campeao ordena
+62,7% dos pares e acerta a melhor 34,2%; desafiante 62,1% / 34,5%; controle embaralhado 49,9% / 16,4%. Reproduz o
+SENTIDO do portao pelos pares, fraco.
+
+**Nao repetir** (REPROVADOS): treinar na vantagem dentro da decisao (916: 58,9% x 61,8%) e simulacao das
+alternativas como ensino (937: 7x24, 6x26). O 916 ja tinha os mesmos ~62% e concluiu que o teto e o erro do
+PROPRIO professor nas escolhas proximas -- vale pra esta metrica tambem: ela mede contra uma regua ruidosa.
+
+**Direcao**: o que sobra e a Fase 3 (arvore do turno, modelo avaliando o FIM da sequencia). Desenhar com o usuario
+antes de codificar.
+
 ## 2026-10-22 (970) - 3 partidas contra o usuario (bot perdeu as 3) e 2 bugs corrigidos
 
 Q promovido no ciclo 87, `q_fallback` 0 nas 3, efeitos todos concluidos. Bot: Sabo, Xebec, Xebec; usuario venceu
