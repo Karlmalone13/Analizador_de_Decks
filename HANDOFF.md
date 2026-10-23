@@ -1,5 +1,20 @@
 ﻿# HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-10-23 (976) - Defesa como ramo da arvore: INCONCLUSIVO 483x428 (53%) -- fica DESLIGADA
+
+`_arvore_defesa` (OPTCGMatch): bloqueio/counter/evento de counter (`FAMILIAS_DEFESA`) julgados pelo FIM DO TURNO
+DO ATACANTE. Top-3 opcoes pelo Q-pos; a consequencia (`mudancas` do 962) e aplicada no estado real, clonado e
+desfeita; no clone cego o atacante termina o turno pelo proprio Q (ataques restantes; defesas seguintes pelo Q).
+Valor = 1 - Q do atacante no fim. `_continua_turno_q` extraido: ponto unico da arvore do turno e da defesa.
+Maquinaria: `_Q_CTX['match']` (auto-jogo) ou `_MAQUINA_VIVO` (registrada por `server._get_match`; fases
+blocker/counter/trigger chamam `_get_match()`).
+
+Medido: troca a defesa do Q em 28%, ~37 ms por defesa, 0 erros. **Portao** (`portao_arvore.py 4 defesa`, os dois
+com arvore+efeitos, mesmo Q): **483x428 = 53,0%, INCONCLUSIVO** no teto (4000 pares, 911 decididos, LLR 0,94 de
+2,94); lideres 31 na frente x 12 atras (piores OP16-079 35x51, ST01-001 18x28, OP17-079 13x19). p~0,03 unilateral
+-- provavelmente ajuda pouco, mas nao passou: **`arvore_defesa` default False** (codigo fica, liga por jogador).
+NAO e REPROVADO (nao perdeu). Ideias se voltar: mais mundos do atacante (1 so hoje), K maior, juntar bloqueio+counter.
+
 ## 2026-10-22 (975) - AO VIVO a arvore sorteava a mao do oponente do deck ERRADO -- corrigido
 
 O servidor usa um OPTCGMatch de FACHADA (deck qualquer) com os estados reais; `_arvore_q` (e `_coleta_bootstrap`)

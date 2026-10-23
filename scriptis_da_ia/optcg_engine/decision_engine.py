@@ -1252,6 +1252,12 @@ def _regra_na_simulacao() -> bool:
 # (bloqueio/counter no DecisionEngine do defensor, alvo no EffectExecutor).
 # Setado em `OPTCGMatch.play_turn`. Mesmo padrao de `_EM_SIMULACAO`.
 _Q_CTX = {'match': None, 'ativo': None}
+# Maquinaria de regras AO VIVO (bloco 976): o OPTCGMatch de fachada do servidor
+# (`server._get_match`), pra defesa simular o resto do turno do atacante. No
+# auto-jogo quem serve e `_Q_CTX['match']`.
+_MAQUINA_VIVO = {'match': None}
+# Decisoes de defesa que a arvore julga pelo fim do turno do atacante.
+FAMILIAS_DEFESA = frozenset({'block_pos', 'counter_pos', 'counter_evento_pos'})
 
 
 # Quantos mundos plausiveis por opcao no rotulo bootstrap (bloco 913).
@@ -1436,6 +1442,25 @@ def _q_escolhe_familia(me, opp, familia: str, opcoes: list, padrao_idx: int,
                 idx, _vmax = max(_ok, key=lambda t: t[1])
                 _marg = _margem_incerteza(me, _b)
                 incertos = [i for i, v in _ok if _vmax - v <= _marg]
+                # DEFESA NA ARVORE (bloco 976): fora de simulacao, com a
+                # maquinaria de regras do match (auto-jogo) ou a do servidor.
+                _maq = _Q_CTX.get('match') or _MAQUINA_VIVO.get('match')
+                if (mudancas and familia in FAMILIAS_DEFESA and _maq is not None
+                        and not _EM_SIMULACAO['on']
+                        # INCONCLUSIVO no portao (bloco 976): 483x428 (53%) no
+                        # teto de 4000 pares -> DESLIGADA por padrao ate passar.
+                        and getattr(me, 'arvore_defesa', False)):
+                    import time as _t
+                    _t0 = _t.perf_counter()
+                    _id = _maq._arvore_defesa(me, opp, _vals, mudancas)
+                    _ARVORE_STATS['defesas'] = _ARVORE_STATS.get('defesas', 0) + 1
+                    _ARVORE_STATS['seg_defesa'] = (_ARVORE_STATS.get('seg_defesa', 0.0)
+                                                   + _t.perf_counter() - _t0)
+                    if _id is not None:
+                        if _id != idx:
+                            _ARVORE_STATS['defesa_mudou'] = (
+                                _ARVORE_STATS.get('defesa_mudou', 0) + 1)
+                        idx = _id
     except Exception:
         idx = padrao_idx
     if _EM_SIMULACAO['on']:
@@ -22374,6 +22399,120 @@ class OPTCGMatch:
         except Exception:
             return None
 
+    def _continua_turno_q(self, p2, o2, e2, ee2, bundle, trans, valor):
+        """O PROPRIO Q termina o turno de `p2` no clone, guloso, pelas mesmas
+        funcoes do turno real. Devolve o valor (visto por `p2`) do fim da linha:
+        o Q de "passar", 1.0 se vence. `trans` = transposicao da decisao:
+        estados ja vistos por outra linha devolvem o valor dela. Ponto unico
+        da arvore do turno (`_arvore_q`) e da defesa (`_arvore_defesa`)."""
+        from optcg_engine import value_net as _vn
+        vistos = set()     # estados DESTA linha, gravados no fim
+        for _passo in range(ARVORE_PASSOS):
+            ch = None
+            try:
+                ch = _hashavel_fp(_vn.fingerprint_estado(p2, o2))
+            except Exception:
+                ch = None
+            if ch is not None and ch in trans:
+                self._arvore_hits = getattr(self, '_arvore_hits', 0) + 1
+                valor = trans[ch]
+                break
+            if ch is not None and ch in vistos:
+                break      # a linha voltou ao mesmo estado
+            self._arvore_nos = getattr(self, '_arvore_nos', 0) + 1
+            acts = self._generate_and_score_actions(p2, o2, e2, sem_pontuacao=True)
+            if not acts:
+                break
+            cands = self._candidatas_para_decidir(
+                p2, acts, self._top_k(), e2.analyzer.analysis_priority())
+            if not cands:
+                break
+            qv = _vn.q_valores(p2, o2, cands, bundle=bundle)
+            ok = [(c, v) for c, v in zip(cands, qv) if v is not None]
+            if not ok:
+                break
+            c_best, v_best = max(ok, key=lambda t: t[1])
+            valor = float(v_best)
+            if c_best[1] == 'pass':
+                break
+            if self._apply_action(c_best, p2, o2, ee2, e2, verbose=False):
+                valor = 1.0
+                break
+            if ch is not None:
+                vistos.add(ch)
+        for k in vistos:
+            trans[k] = valor
+        return valor
+
+    def _arvore_defesa(self, me, opp, vals, mudancas):
+        """DEFESA COMO RAMO DA ARVORE (bloco 976): bloqueio/counter julgados
+        pelo FIM DO TURNO DO ATACANTE, nao pelo estado logo depois do golpe.
+
+        `me` defende, `opp` ataca. Para as `ARVORE_K` melhores opcoes pelo Q
+        (`vals`, o Q no estado depois de cada uma): aplica a consequencia no
+        estado REAL, clona e DESFAZ (`mudancas`, as mesmas do bloco 962); no
+        clone CEGO (a mao do atacante sorteada do que `me` observa) o atacante
+        termina o turno pelo proprio Q -- os ataques que ainda faltam, e as
+        defesas seguintes de `me` tambem pelo Q (arvore ligada). Valor pra quem
+        defende = 1 - valor do atacante no fim. Devolve o indice ou None."""
+        from copy import deepcopy
+        from optcg_engine import value_net as _vn
+        _modelo_op = self._modelo_do_oponente(me, opp)
+        if _modelo_op is None:
+            return None
+        topo = sorted(((i, v) for i, v in enumerate(vals) if v is not None),
+                      key=lambda t: -t[1])[:ARVORE_K]
+        if len(topo) < 2:
+            return None
+        bundle = _vn.load_value_net(getattr(opp, 'q_net_path', None) or Q_NET_PATH)
+        if not (bundle and bundle.get('tipo') == 'q'):
+            return None
+        trans = {}
+        _rnd = random.getstate()
+        _sim = _EM_SIMULACAO['on']
+        _arv_antes = _EM_SIMULACAO.get('arvore', False)
+        _sup = getattr(self, '_suppress_replay_log', False)
+        _EM_SIMULACAO['on'] = True
+        _EM_SIMULACAO['arvore'] = True
+        self._suppress_replay_log = True
+        resultado = []
+        try:
+            for i, v in topo:
+                random.setstate(_rnd)      # mesmo mundo pra todas
+                try:
+                    desfaz = mudancas[i]()
+                    if desfaz is _vn.DERROTA:
+                        resultado.append((i, 0.0))
+                        continue
+                    try:
+                        _md, _od = me.deck, opp.deck
+                        me.deck, opp.deck = [], []
+                        try:
+                            m2, o2 = deepcopy(me), deepcopy(opp)
+                        finally:
+                            me.deck, opp.deck = _md, _od
+                    finally:
+                        desfaz()
+                    m2.deck, o2.deck = _SimDeck(_md), _SimDeck(_od)
+                    _cega_copia(m2, o2, _modelo_op)
+                    e2 = DecisionEngine(o2, m2)
+                    ee2 = EffectExecutor(o2, m2)
+                    v_at = self._continua_turno_q(o2, m2, e2, ee2, bundle, trans,
+                                                  1.0 - float(v))
+                    resultado.append((i, 1.0 - v_at))
+                except Exception as _e:
+                    _ARVORE_STATS['erros'] = _ARVORE_STATS.get('erros', 0) + 1
+                    _ARVORE_STATS['ultimo_erro'] = f'defesa {type(_e).__name__}: {_e}'
+                    continue
+        finally:
+            _EM_SIMULACAO['on'] = _sim
+            _EM_SIMULACAO['arvore'] = _arv_antes
+            self._suppress_replay_log = _sup
+            random.setstate(_rnd)
+        if not resultado:
+            return None
+        return max(resultado, key=lambda t: t[1])[0]
+
     def _arvore_q(self, p, opp, pares_q, bundle):
         """FASE 3 (bloco 973): a ARVORE DO TURNO volta a decidir, com o Q no
         lugar da rede antiga -- um cerebro so (bloco 811).
@@ -22439,46 +22578,9 @@ class OPTCGMatch:
                     if self._apply_action(a2, p2, o2, ee2, e2, verbose=False):
                         resultado.append((a, 1.0))
                         break                  # vitoria: nada supera
-                    valor = float(v_q)
-                    vistos = set()     # estados DESTA linha, gravados no fim
-                    for _passo in range(ARVORE_PASSOS):
-                        ch = None
-                        try:
-                            ch = _hashavel_fp(_vn.fingerprint_estado(p2, o2))
-                        except Exception:
-                            ch = None
-                        if ch is not None and ch in trans:
-                            self._arvore_hits += 1
-                            valor = trans[ch]
-                            break
-                        if ch is not None and ch in vistos:
-                            break      # a linha voltou ao mesmo estado
-                        self._arvore_nos += 1
-                        acts = self._generate_and_score_actions(p2, o2, e2,
-                                                                sem_pontuacao=True)
-                        if not acts:
-                            break
-                        cands = self._candidatas_para_decidir(
-                            p2, acts, self._top_k(), e2.analyzer.analysis_priority())
-                        if not cands:
-                            break
-                        qv = _vn.q_valores(p2, o2, cands, bundle=bundle)
-                        ok = [(c, v) for c, v in zip(cands, qv) if v is not None]
-                        if not ok:
-                            break
-                        c_best, v_best = max(ok, key=lambda t: t[1])
-                        valor = float(v_best)
-                        if c_best[1] == 'pass':
-                            break
-                        if self._apply_action(c_best, p2, o2, ee2, e2, verbose=False):
-                            valor = 1.0
-                            break
-                        # o valor desta linha a partir daqui so depende do estado
-                        if ch is not None:
-                            vistos.add(ch)
+                    valor = self._continua_turno_q(p2, o2, e2, ee2, bundle, trans,
+                                                   float(v_q))
                     resultado.append((a, valor))
-                    for k in vistos:
-                        trans[k] = valor
                 except Exception as _e:
                     _ARVORE_STATS['erros'] = _ARVORE_STATS.get('erros', 0) + 1
                     _ARVORE_STATS['ultimo_erro'] = f'{type(_e).__name__}: {_e}'

@@ -521,6 +521,10 @@ def _get_match():
         deck_tuple = bridge.load_sim_deck(decks[0])
         _match = OPTCGMatch(deck_tuple, deck_tuple)
         _match.setup()
+        # Defesa na arvore (bloco 976): o motor simula o resto do turno do
+        # atacante com esta maquinaria -- so registro, nenhuma decisao aqui.
+        from optcg_engine import decision_engine as _de
+        _de._MAQUINA_VIVO['match'] = _match
     return _match
 
 
@@ -1342,6 +1346,7 @@ def defense(req: DefenseRequest):
         # resolve_reaction/resolve_optional_effect corrigem via
         # actor_defending (defender_uid ja sabe distinguir, ver sim_bridge).
         if req.phase in ("blocker", "counter", "trigger"):
+            _get_match()   # garante a maquinaria registrada (bloco 976)
             gs.is_active_turn = False
             opp_gs.is_active_turn = True
             # Pondering (design bloco 478): blocker/counter/trigger so
