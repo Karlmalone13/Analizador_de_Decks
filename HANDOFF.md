@@ -1,5 +1,17 @@
 ﻿# HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-10-23 (977) - Triagem de derrota compara CODIGO, nao nome
+
+`triage_real_losses.py` comparava nomes normalizados cortados em 12 letras; o log do simulador chama OP17-054 de
+"Stussy" e o motor imprime "Miss Buckingham Stussy (Altern" -> DIVERGE falso (pendente do 970). Agora: lado
+historico usa o `card` que o relatorio ja traz; lado do motor converte o nome impresso (truncado, arte alternativa)
+em TODOS os codigos compativeis do `cards_rows.csv` (variante `_pN` = codigo base). AS-IS 22 MATCH / 330 DIVERGE ->
+27 / 325: 5 viraram MATCH, todos conferidos um a um (Stussy, Imu x "Imu Alternate", Laffitte x "Laffitte Reprint",
+Ace), 0 MATCH perdido. Limite: nome curto casa varios codigos (Ace: 17) -- triagem continua leniente, como o
+proprio arquivo ja avisa. Teste `test_triagem_compara_por_codigo_bloco_977` (com controle DIVERGE).
+**Atencao**: o marcador de falha do `smoke_fast` e `[FALHOU]` (nao `[FALHA]`); recontado: 0 falhas em todas as
+rodadas de 973-977 (1.958 OK; 1.962 com o teste novo).
+
 ## 2026-10-23 (976) - Defesa como ramo da arvore: INCONCLUSIVO 483x428 (53%) -- fica DESLIGADA
 
 `_arvore_defesa` (OPTCGMatch): bloqueio/counter/evento de counter (`FAMILIAS_DEFESA`) julgados pelo FIM DO TURNO

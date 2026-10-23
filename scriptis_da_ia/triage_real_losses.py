@@ -38,13 +38,51 @@ RE_ATTACK = re.compile(r'^\s*(.+?) \(\d+pwr\) ataca (Leader|.+?)\s*$', re.MULTIL
 
 
 def _norm(name: str) -> str:
-    return re.sub(r'[^a-z0-9]', '', name.lower())[:12]
+    return re.sub(r'[^a-z0-9]', '', name.lower())
+
+
+_INDICE_NOMES = None
+
+
+def _indice_nomes() -> list:
+    """[(nome normalizado, codigo BASE)] do banco de cartas -- variantes de
+    arte (`OP17-054_p1`) contam como o codigo base."""
+    global _INDICE_NOMES
+    if _INDICE_NOMES is None:
+        import pandas as pd
+        df = pd.read_csv('cards_rows.csv', usecols=['id', 'card_name'])
+        _INDICE_NOMES = sorted({(_norm(str(n)), str(i).split('_')[0])
+                                for i, n in zip(df['id'], df['card_name'])
+                                if isinstance(n, str) and _norm(n)})
+    return _INDICE_NOMES
+
+
+def _codigos_do_nome(nome: str) -> frozenset:
+    """Codigos compativeis com o nome que o MOTOR imprime (nome do banco,
+    as vezes da arte alternativa, as vezes TRUNCADO: "Miss Buckingham Stussy
+    (Altern"). Bloco 977: a triagem comparava NOMES cortados em 12 letras, e
+    o log do simulador chama a mesma carta de outro nome ("Stussy" x "Miss
+    Buckingham Stussy", OP17-054) -> DIVERGE falso. Agora a comparacao e por
+    CODIGO; o nome so serve pra achar os codigos possiveis do lado do motor."""
+    n = _norm(nome)
+    if not n:
+        return frozenset()
+    return frozenset(c for nm, c in _indice_nomes()
+                     if nm == n or nm.startswith(n) or n.startswith(nm))
+
+
+def _codigo_historico(a: dict) -> str:
+    """Codigo da acao historica (o log ja traz `card`); sem ele, o nome."""
+    c = a.get('card')
+    if c:
+        return str(c).split('_')[0]
+    return 'nome:' + _norm(a.get('card_name') or '')
 
 
 def parse_engine_narrative(text: str) -> dict:
     text = ANSI_RE.sub('', text)
-    plays = {_norm(m) for m in RE_PLAY.findall(text)}
-    activates = {_norm(m) for m in RE_ACTIVATE.findall(text)}
+    plays = [_codigos_do_nome(m) for m in RE_PLAY.findall(text)]
+    activates = [_codigos_do_nome(m) for m in RE_ACTIVATE.findall(text)]
     attacks = RE_ATTACK.findall(text)
     n_leader_atk = sum(1 for _, tgt in attacks if tgt.strip() == 'Leader')
     n_char_atk = sum(1 for _, tgt in attacks if tgt.strip() != 'Leader')
@@ -78,10 +116,10 @@ def _is_leader_target(target: str, leader_codes: set) -> bool:
 
 
 def parse_historical(actions: list, leader_codes: set) -> dict:
-    plays = {_norm(a['card_name']) for a in actions
-             if a.get('type') == 'play' and a.get('card_name')}
-    activates = {_norm(a['card_name']) for a in actions
-                 if a.get('type') == 'activate' and a.get('card_name')}
+    plays = {_codigo_historico(a) for a in actions
+             if a.get('type') == 'play' and (a.get('card') or a.get('card_name'))}
+    activates = {_codigo_historico(a) for a in actions
+                 if a.get('type') == 'activate' and (a.get('card') or a.get('card_name'))}
     atks = [a for a in actions if a.get('type') == 'attack']
     n_leader_atk = sum(1 for a in atks if _is_leader_target(a.get('target'), leader_codes))
     n_char_atk = len(atks) - n_leader_atk
@@ -90,10 +128,16 @@ def parse_historical(actions: list, leader_codes: set) -> dict:
             'n_attacks_total': len(atks)}
 
 
+def _contido(hist_codigos: set, hoje_opcoes: list) -> bool:
+    """Toda carta historica aparece entre as jogadas de hoje (cada jogada de
+    hoje e o CONJUNTO de codigos compativeis com o nome impresso)."""
+    return all(any(h in op for op in hoje_opcoes) for h in hist_codigos)
+
+
 def classify(hist: dict, hoje: dict) -> str:
-    plays_match = bool(hist['plays']) and hist['plays'] <= hoje['plays']
+    plays_match = bool(hist['plays']) and _contido(hist['plays'], hoje['plays'])
     plays_empty_ok = not hist['plays'] and not hoje['plays']
-    activates_match = bool(hist['activates']) and hist['activates'] <= hoje['activates']
+    activates_match = bool(hist['activates']) and _contido(hist['activates'], hoje['activates'])
     activates_empty_ok = not hist['activates'] and not hoje['activates']
     atk_leader_match = hist['n_leader_atk'] == hoje['n_leader_atk']
     atk_char_close = abs(hist['n_char_atk'] - hoje['n_char_atk']) <= 1
@@ -141,8 +185,10 @@ def main():
             counts[label] += 1
             row = {
                 'file': os.path.basename(path), 'turn': t['turn'],
-                'hist_plays': sorted(hist['plays']), 'hoje_plays': sorted(hoje['plays']),
-                'hist_activates': sorted(hist['activates']), 'hoje_activates': sorted(hoje['activates']),
+                'hist_plays': sorted(hist['plays']),
+                'hoje_plays': [sorted(op) for op in hoje['plays']],
+                'hist_activates': sorted(hist['activates']),
+                'hoje_activates': [sorted(op) for op in hoje['activates']],
                 'hist_leader_atk': hist['n_leader_atk'], 'hoje_leader_atk': hoje['n_leader_atk'],
                 'hist_char_atk': hist['n_char_atk'], 'hoje_char_atk': hoje['n_char_atk'],
             }

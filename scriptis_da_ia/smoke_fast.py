@@ -10763,6 +10763,7 @@ def main() -> int:
     test_opponent_model_ao_vivo_por_lider_e_fallback_seguro()
     test_contrafactual_ao_vivo_usa_monte_carlo_com_fallback_de_cor()
     test_decisao_e_busca_determinista_sem_monte_carlo_bloco_785()
+    test_triagem_compara_por_codigo_bloco_977()
     test_coleta_busca_roda_mesmo_com_q_decidindo_19_09()
     test_win_prob_lote_da_o_mesmo_que_uma_por_vez_bloco_787()
     test_regua_aprende_de_si_mesma_bloco_917()
@@ -16552,6 +16553,22 @@ def test_play_card_total_cost_lte_e_distinct_names_24_08() -> None:
           "-- a 2a copia do nome 'Fujitora' fica de fora por distinct_names",
           "SA1" in jogados2
           and len([c for c in jogados2 if c in ("SF1", "SF2")]) == 1)
+
+
+def test_triagem_compara_por_codigo_bloco_977() -> None:
+    """A triagem de derrota compara CODIGO, nao nome (bloco 977): o log do
+    simulador chama OP17-054 de "Stussy" e o motor imprime "Miss Buckingham
+    Stussy (Altern" -- era DIVERGE falso. Controle: outra carta continua
+    DIVERGE."""
+    import triage_real_losses as tr
+    hist = tr.parse_historical([{'type': 'play', 'card': 'OP17-054', 'card_name': 'Stussy'}],
+                               set())
+    hoje = tr.parse_engine_narrative('> gastou 3 DON -> Joga: Miss Buckingham Stussy (Altern (5000pwr) [CHARACTER]')
+    check('triagem: Stussy (log) e Miss Buckingham Stussy (motor) sao a MESMA carta',
+          tr.classify(hist, hoje) == 'MATCH')
+    outra = tr.parse_engine_narrative('> gastou 3 DON -> Joga: Ganzui (7000pwr) [CHARACTER]')
+    check('triagem CONTROLE: outra carta jogada continua DIVERGE',
+          tr.classify(hist, outra) == 'DIVERGE')
 
 
 def test_decisao_e_busca_determinista_sem_monte_carlo_bloco_785() -> None:

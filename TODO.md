@@ -2,6 +2,8 @@
 
 **Última atualização:** 9 de outubro de 2026 (blocos 943-960)
 
+> **977**: triagem de derrota compara codigo de carta (22 -> 27 MATCH, 0 perdidos). Falta do 970: slug de cor 'B' ambiguo.
+
 > **976**: defesa como ramo da arvore INCONCLUSIVA (483x428, 53%, teto 4000 pares) -> desligada por padrao (`arvore_defesa`). Ativos: 973 (arvore do turno) + 974 (efeitos pelo Q) + 975 (modelo do oponente ao vivo). PENDENTE: partidas contra o usuario.
 
 > **974**: escolhas de efeito dentro da arvore (counter, bloqueio, descarte, busca, alvo, custos) pelo Q -- PROMOVE 120x80 (60%), 30x9 lideres. PENDENTE: partidas contra o usuario; defesa como ramo da arvore.
