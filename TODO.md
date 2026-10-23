@@ -2,6 +2,8 @@
 
 **Última atualização:** 9 de outubro de 2026 (blocos 943-960)
 
+> **973**: FASE 3 -- arvore do turno com o Q (`_arvore_q`) PROMOVE 121x81 (60%), 26x7 lideres; default ligado. Custo ~3x/partida, 18-43 ms/decisao. PENDENTE: partidas contra o usuario; escolhas de efeito dentro da arvore pelo Q; defesa (bloqueio+counter) na arvore; medir tempo do proximo ciclo.
+
 > **969**: ciclo 87 PROMOVE (202x154); 88-89 equivalentes. Treino: pico de memoria 7,73 -> 6,41 GB e escolhidas em binario (9,0 -> 7,5 min), modelo identico. PENDENTE: redesenhar export/import para nao guardar q_alvos.jsonl (30 GB) -- pedir confirmacao antes de apagar; `sample_weight` nas revisoes (com portao).
 
 > **972**: projeto agora SO em `E:\Projetos_TInalidador_de_decks_optcg` (pasta do SSD apagada, 26 GB liberados).

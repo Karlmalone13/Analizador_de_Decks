@@ -1,5 +1,34 @@
 ﻿# HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-10-22 (973) - FASE 3: a arvore do turno volta a decidir, com o Q -- PROMOVE 121x81 (60%)
+
+**AS-IS**: desde o bloco 811 o Q decidia GULOSO (argmax de uma acao por vez); `_busca_determinista` so gerava
+rotulo no modo 'busca' (os ciclos usam 'bootstrap' -> nem era chamada). Em 811 a busca tinha GANHADO do Q 13x0 e
+saiu pela regra de um cerebro so, nao por forca.
+
+**Novo** (`_arvore_q`, decision_engine.py): as `ARVORE_K`=3 melhores pelo Q viram linha num clone CEGO
+(`_cega_copia`, mundo do oponente so do observavel, o MESMO mundo pra todas -- estado aleatorio salvo/restaurado,
+nao mexe no sorteio da partida); o proprio Q termina o turno guloso (`_generate_and_score_actions` +
+`_candidatas_para_decidir`, as mesmas do turno real, ate `ARVORE_PASSOS`=8); valor = Q de "passar" no fim.
+Transposicao por decisao. Um cerebro so (o Q ordena e julga o fim). `_top_k()` extraido (turno real e arvore).
+
+**Portao** (`portao_arvore.py`, mesmo Q campeao com x sem arvore): **121x81 = 60%, SPRT PROMOVE** em 740 pares;
+recorte por lider 26 na frente x 7 atras x 12 empate (piores OP14-080 3x8, OP15-001/OP13-079/OP12-020 2x4).
+1 erro em 1.480 partidas (sem mensagem no log). Default agora `arvore_q=True`; `smoke_fast` 0 falhas.
+
+**Custo** (`mede_arvore.py`, mesmas seeds com x sem): ~3x o tempo da partida (0,3-1 s -> 1-3 s), 18-43 ms por
+decisao (ao vivo o orcamento e 3 s), ~5 nos/decisao, a arvore troca a escolha do Q em 33%.
+**Corte por distancia da nota do Q (pedido do usuario) MEDIDO e NAO aplicado**: ramos 0,12-0,20 atras do melhor
+ainda sao escolhidos em 14%; so >0,20 da 0% (13 ramos em 2.291) -- cortar mudaria o resultado sem ganhar tempo.
+
+**Bugs meus pegos na medicao**: (1) `TOP_K` nao existia no escopo -> 188 excecoes engolidas, arvore rasa;
+(2) transposicao com marcador None lido pela propria linha -> 1-2 fallbacks `primeiro_candidato` por partida
+(o 1o portao rodou com isso e foi DESCARTADO). Contador de fallback agora no `mede_arvore.py`.
+
+**PENDENTE**: (a) CHECKPOINT humano (partidas contra o usuario); (b) escolhas de efeito DENTRO da arvore ainda
+pela regra (`_EM_SIMULACAO` em `_q_escolhe_familia`); (c) defesa (bloqueio+counter juntos) fora da arvore;
+(d) geracao dos ciclos ~3x mais lenta -- medir no proximo ciclo; (e) commit nao feito.
+
 ## 2026-10-22 (972) - Projeto SO no HD (E:); pasta antiga do SSD apagada
 
 Usuario confirmou o HD (3 partidas ao vivo + ciclos 81-92 rodaram de E:). Antes de apagar

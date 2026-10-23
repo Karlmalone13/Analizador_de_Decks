@@ -1559,6 +1559,27 @@ BUSCA_FEIXE = int(os.environ.get('OPTCG_BUSCA_FEIXE', '3') or 3)
 # jogada aparentemente ruim nunca chegava a ser avaliada.
 BUSCA_LARGURA = int(os.environ.get('OPTCG_BUSCA_LARGURA', '6') or 6)
 
+# ── FASE 3: ARVORE DO TURNO COM O Q (bloco 973, `_arvore_q`) ─────────────
+# Quantas candidatas (as melhores pelo Q) viram linha simulada ate o fim do
+# turno, e o teto de passos de cada linha. Promovida no portao do bloco 973
+# (121x81); `p.arvore_q=False` desliga POR JOGADOR so pra medir.
+ARVORE_K = int(os.environ.get('OPTCG_ARVORE_K', '3') or 3)
+ARVORE_PASSOS = int(os.environ.get('OPTCG_ARVORE_PASSOS', '8') or 8)
+# Medicao (AS-IS do custo): decisoes, segundos, nos expandidos, transposicoes
+# reusadas e quantas vezes a arvore trocou a escolha do Q. Por processo.
+_ARVORE_GAPS = []
+_ARVORE_STATS = {'decisoes': 0, 'seg': 0.0, 'nos': 0, 'hits': 0, 'mudou': 0}
+
+
+def _hashavel_fp(x):
+    """Impressao digital (dict aninhado) -> chave de dict. Ver o achado do
+    bloco 785 em `_busca_determinista`."""
+    if isinstance(x, dict):
+        return tuple(sorted((k, _hashavel_fp(v)) for k, v in x.items()))
+    if isinstance(x, (list, tuple, set)):
+        return tuple(_hashavel_fp(v) for v in x)
+    return x
+
 MODELO_ORDENA_PATH = os.environ.get(
     'OPTCG_MODELO_ORDENA_PATH',
     os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
@@ -20621,6 +20642,24 @@ class OPTCGMatch:
                                                c, p, opp, engine))]
                         if _segura:
                             _melhor, _v = max(_segura, key=lambda t: t[1])
+                        # FASE 3 (bloco 973): a arvore do turno decide entre
+                        # as melhores do Q, julgando o FIM da sequencia.
+                        # PROMOVIDA no portao (bloco 973): 121x81 (60%), 26 lideres
+                        # na frente x 7 atras. Default True; `p.arvore_q=False` so
+                        # existe pra medir no portao espelhado.
+                        if (getattr(p, 'arvore_q', True) and len(_segura) > 1
+                                and not _EM_SIMULACAO['on']):
+                            import time as _t
+                            _t0 = _t.perf_counter()
+                            _arv = self._arvore_q(p, opp, _segura, _qb)
+                            _ARVORE_STATS['decisoes'] += 1
+                            _ARVORE_STATS['seg'] += _t.perf_counter() - _t0
+                            _ARVORE_STATS['nos'] += getattr(self, '_arvore_nos', 0)
+                            _ARVORE_STATS['hits'] += getattr(self, '_arvore_hits', 0)
+                            if _arv is not None:
+                                if _arv[0] is not _melhor:
+                                    _ARVORE_STATS['mudou'] += 1
+                                _melhor, _v = _arv
                         if getattr(self, '_explora_eps', 0.0):
                             _melhor, _v = self._explorar(
                                 _pares_q, _margem_incerteza(p, _qb))
@@ -22295,6 +22334,131 @@ class OPTCGMatch:
             _EM_SIMULACAO['on'] = _old_sim
             _DEFESA['on'] = _old_defesa
 
+    def _top_k(self):
+        """Corte de candidatas do turno -- o MESMO no turno real e na arvore."""
+        return (self.search_top_k_override if self.search_top_k_override is not None
+                else (_k.get('TOP_K_COM_RESPOSTA') if USE_OPPONENT_RESPONSE_SEARCH
+                      else _k.get('TOP_K_SEM_RESPOSTA')))
+
+    def _arvore_q(self, p, opp, pares_q, bundle):
+        """FASE 3 (bloco 973): a ARVORE DO TURNO volta a decidir, com o Q no
+        lugar da rede antiga -- um cerebro so (bloco 811).
+
+        Para as `ARVORE_K` melhores candidatas pelo Q: aplica num clone CEGO
+        (`_cega_copia`, mundo do oponente sorteado so do observavel) e deixa o
+        PROPRIO Q terminar o turno, guloso, pelas mesmas funcoes do turno real
+        (`_generate_and_score_actions` + `_candidatas_para_decidir`). O valor
+        da linha e o Q de "passar" no fim do turno (o que o Q estima do estado
+        em que o turno acaba). O motor calcula a sequencia -- exato, sem sorte
+        dentro do turno --, o Q so julga o fim.
+
+        Velocidade: (1) poda pelo Q (so K linhas); (2) transposicao por
+        decisao -- linhas que convergem pro MESMO estado reusam o valor;
+        (3) uma consulta ao Q em lote por passo; (4) deck preguicoso
+        (`_SimDeck`); (5) o estado aleatorio global e salvo e restaurado: a
+        arvore nao mexe no sorteio da partida, e TODAS as candidatas veem o
+        MESMO mundo do oponente (comparacao justa).
+
+        Devolve `(acao, valor)` ou None (sem modelo do oponente / falha).
+        """
+        from copy import deepcopy
+        from optcg_engine import value_net as _vn
+        _modelo_op = getattr(self, 'model_for_a' if p is self.state_a else 'model_for_b', None)
+        if _modelo_op is None:
+            return None
+        topo = sorted(pares_q, key=lambda t: -t[1])[:ARVORE_K]
+        if len(topo) < 2:
+            return None
+        trans = {}
+        self._arvore_nos = 0
+        self._arvore_hits = 0
+        _rnd = random.getstate()
+        _sim = _EM_SIMULACAO['on']
+        _sup = self._suppress_replay_log
+        _EM_SIMULACAO['on'] = True
+        self._suppress_replay_log = True
+        resultado = []
+        try:
+            for a, v_q in topo:
+                random.setstate(_rnd)      # mesmo mundo pra todas
+                if a[1] == 'pass':
+                    resultado.append((a, float(v_q)))
+                    continue
+                try:
+                    _pd, _od = p.deck, opp.deck
+                    p.deck, opp.deck = [], []
+                    try:
+                        p2, o2 = deepcopy(p), deepcopy(opp)
+                    finally:
+                        p.deck, opp.deck = _pd, _od
+                    p2.deck, o2.deck = _SimDeck(_pd), _SimDeck(_od)
+                    a2 = self._remap_action(a, p, p2, opp, o2)
+                    if a2 is None:
+                        continue
+                    _cega_copia(p2, o2, _modelo_op)
+                    e2 = DecisionEngine(p2, o2)
+                    ee2 = EffectExecutor(p2, o2)
+                    if self._apply_action(a2, p2, o2, ee2, e2, verbose=False):
+                        resultado.append((a, 1.0))
+                        break                  # vitoria: nada supera
+                    valor = float(v_q)
+                    vistos = set()     # estados DESTA linha, gravados no fim
+                    for _passo in range(ARVORE_PASSOS):
+                        ch = None
+                        try:
+                            ch = _hashavel_fp(_vn.fingerprint_estado(p2, o2))
+                        except Exception:
+                            ch = None
+                        if ch is not None and ch in trans:
+                            self._arvore_hits += 1
+                            valor = trans[ch]
+                            break
+                        if ch is not None and ch in vistos:
+                            break      # a linha voltou ao mesmo estado
+                        self._arvore_nos += 1
+                        acts = self._generate_and_score_actions(p2, o2, e2,
+                                                                sem_pontuacao=True)
+                        if not acts:
+                            break
+                        cands = self._candidatas_para_decidir(
+                            p2, acts, self._top_k(), e2.analyzer.analysis_priority())
+                        if not cands:
+                            break
+                        qv = _vn.q_valores(p2, o2, cands, bundle=bundle)
+                        ok = [(c, v) for c, v in zip(cands, qv) if v is not None]
+                        if not ok:
+                            break
+                        c_best, v_best = max(ok, key=lambda t: t[1])
+                        valor = float(v_best)
+                        if c_best[1] == 'pass':
+                            break
+                        if self._apply_action(c_best, p2, o2, ee2, e2, verbose=False):
+                            valor = 1.0
+                            break
+                        # o valor desta linha a partir daqui so depende do estado
+                        if ch is not None:
+                            vistos.add(ch)
+                    resultado.append((a, valor))
+                    for k in vistos:
+                        trans[k] = valor
+                except Exception as _e:
+                    _ARVORE_STATS['erros'] = _ARVORE_STATS.get('erros', 0) + 1
+                    _ARVORE_STATS['ultimo_erro'] = f'{type(_e).__name__}: {_e}'
+                    continue
+        finally:
+            _EM_SIMULACAO['on'] = _sim
+            self._suppress_replay_log = _sup
+            random.setstate(_rnd)
+        if not resultado:
+            return None
+        escolha = max(resultado, key=lambda t: t[1])
+        # Medicao do corte por distancia (bloco 973): distancia de cada ramo
+        # pra melhor nota do Q, e se a arvore o escolheu.
+        _vtop = topo[0][1]
+        for a, v_q in topo:
+            _ARVORE_GAPS.append((float(_vtop - v_q), a is escolha[0]))
+        return escolha
+
     def _explorar(self, cand_valor: list, margem: 'float | None' = None):
         """EXPLORACAO epsilon-gulosa na escolha FINAL (bloco 767).
 
@@ -22863,9 +23027,7 @@ class OPTCGMatch:
         # cortando candidatas boas cedo demais. Teste: alarga pra 5.
         # override de instancia (ver docstring de __init__) checado ANTES
         # dos knobs globais -- so o simulador do front passa isso.
-        TOP_K = (self.search_top_k_override if self.search_top_k_override is not None
-                 else (_k.get('TOP_K_COM_RESPOSTA') if USE_OPPONENT_RESPONSE_SEARCH
-                       else _k.get('TOP_K_SEM_RESPOSTA')))
+        TOP_K = self._top_k()
         n = 0
 
         while n < MAX_ACOES:
