@@ -1,5 +1,15 @@
 ﻿# HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-10-22 (975) - AO VIVO a arvore sorteava a mao do oponente do deck ERRADO -- corrigido
+
+O servidor usa um OPTCGMatch de FACHADA (deck qualquer) com os estados reais; `_arvore_q` (e `_coleta_bootstrap`)
+pegavam `model_for_a/b` -> como `p` nao e `match.state_a`, caia no `model_for_b` da FACHADA. Auto-jogo/portao nao
+afetados (ali `p` e estado do proprio match). Agora um ponto so, `_modelo_do_oponente`: estado do match -> o
+modelo dele; senao `sim_bridge.opponent_model_for_leader` (o mesmo que o ao vivo ja usa). Teste (fachada OP15-058,
+oponente OP14-041): modelo = o do lider (42/50 cartas na lista real), 20 decisoes da arvore pelo `choose_action`,
+0 erros. `smoke_fast` 0 falhas. Proximo: defesa como ramo da arvore (ao vivo blocker e counter chegam em prompts
+separados e SEM o match -- `server.py` fase "blocker" cria `DecisionEngine` direto).
+
 ## 2026-10-22 (974) - Escolhas de efeito DENTRO da arvore pelo Q -- PROMOVE 120x80 (60%)
 
 **AS-IS**: em simulacao, toda familia que o Q aprendeu voltava pra regra (`_q_escolhe_familia` linha 1, e os

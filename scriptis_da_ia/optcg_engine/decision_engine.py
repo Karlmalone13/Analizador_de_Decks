@@ -20309,7 +20309,7 @@ class OPTCGMatch:
         # face-down reembaralhados -- e o alvo e a MEDIA. Antes a copia
         # carregava a mao REAL do oponente: o ataque parecia bom ou ruim
         # conforme o counter que ele de fato tinha.
-        _modelo_op = getattr(self, 'model_for_a' if p is self.state_a else 'model_for_b', None)
+        _modelo_op = self._modelo_do_oponente(p, opp)
         acoes, estados, dono, vitorias, mundos = [], [], [], {}, {}
         try:
             for i, a in enumerate(candidatas):
@@ -22355,6 +22355,25 @@ class OPTCGMatch:
                 else (_k.get('TOP_K_COM_RESPOSTA') if USE_OPPONENT_RESPONSE_SEARCH
                       else _k.get('TOP_K_SEM_RESPOSTA')))
 
+    def _modelo_do_oponente(self, p, opp):
+        """Quem sorteia a mao/vida/deck ESCONDIDOS de `opp` vistos por `p`.
+
+        No auto-jogo `p` e um dos estados do proprio match. AO VIVO o servidor
+        usa um OPTCGMatch de FACHADA (deck qualquer) com os estados reais da
+        partida -- `model_for_a/b` dali sorteia do deck ERRADO (achado do bloco
+        974). Ai vale o mesmo modelo que o caminho ao vivo ja usa pro oponente:
+        `sim_bridge.opponent_model_for_leader` (lista do lider dele)."""
+        if p is getattr(self, 'state_a', None):
+            return getattr(self, 'model_for_a', None)
+        if p is getattr(self, 'state_b', None):
+            return getattr(self, 'model_for_b', None)
+        try:
+            from optcg_engine import sim_bridge as _sb
+            return _sb.opponent_model_for_leader(
+                getattr(opp.leader, 'code', ''), getattr(opp.leader, 'color', ''))
+        except Exception:
+            return None
+
     def _arvore_q(self, p, opp, pares_q, bundle):
         """FASE 3 (bloco 973): a ARVORE DO TURNO volta a decidir, com o Q no
         lugar da rede antiga -- um cerebro so (bloco 811).
@@ -22378,7 +22397,7 @@ class OPTCGMatch:
         """
         from copy import deepcopy
         from optcg_engine import value_net as _vn
-        _modelo_op = getattr(self, 'model_for_a' if p is self.state_a else 'model_for_b', None)
+        _modelo_op = self._modelo_do_oponente(p, opp)
         if _modelo_op is None:
             return None
         topo = sorted(pares_q, key=lambda t: -t[1])[:ARVORE_K]
