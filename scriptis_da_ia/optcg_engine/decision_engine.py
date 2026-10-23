@@ -1239,7 +1239,14 @@ def _modelo_sacrificio_ativo(me) -> bool:
 # tem `self._suppress_replay_log` pra isso, mas ele e atributo da PARTIDA e as
 # funcoes de precificacao sao chamadas de classes que nao a enxergam
 # (`EffectExecutor`). Mesmo padrao de `_DEFESA['on']`, que ja existe.
-_EM_SIMULACAO = {'on': False}
+_EM_SIMULACAO = {'on': False, 'arvore': False}
+
+
+def _regra_na_simulacao() -> bool:
+    """Simulacao em que as escolhas aprendidas voltam pra regra: a ficcao
+    interna (coleta de alvo, lookahead). DENTRO DA ARVORE DO TURNO (bloco 974)
+    a simulacao E a decisao -- ali quem escolhe e o Q (`_q_escolhe_familia`)."""
+    return _EM_SIMULACAO['on'] and not _EM_SIMULACAO.get('arvore')
 
 # Partida em curso e jogador da VEZ, pra decisoes tomadas fora do OPTCGMatch
 # (bloqueio/counter no DecisionEngine do defensor, alvo no EffectExecutor).
@@ -1412,7 +1419,7 @@ def _q_escolhe_familia(me, opp, familia: str, opcoes: list, padrao_idx: int,
     - Registra a escolhida no corpus, sem rotulo: o `treinar_q.py` da o rotulo
       pela CONSEQUENCIA (o que aconteceu depois na partida).
     """
-    if _EM_SIMULACAO['on'] or not opcoes:
+    if _regra_na_simulacao() or not opcoes:
         return padrao_idx
     idx = padrao_idx
     incertos = list(range(len(opcoes)))   # sem opiniao do modelo: tudo incerto
@@ -1431,6 +1438,14 @@ def _q_escolhe_familia(me, opp, familia: str, opcoes: list, padrao_idx: int,
                 incertos = [i for i, v in _ok if _vmax - v <= _marg]
     except Exception:
         idx = padrao_idx
+    if _EM_SIMULACAO['on']:
+        # dentro da arvore: sem exploracao e sem registro. Contado por familia
+        # (prova de que a escolha passa pelo Q, e quanto difere da regra).
+        _c = _ARVORE_STATS.setdefault('efeitos', {})
+        _f = _c.setdefault(familia, [0, 0])
+        _f[0] += 1
+        _f[1] += int(idx != padrao_idx)
+        return idx
     m = _Q_CTX.get('match')
     _eps = float(getattr(m, '_explora_eps', 0.0) or 0.0) if m is not None else 0.0
     # Explora SO onde o modelo esta incerto (bloco 913, INSTRUCAO_MESTRA item 7).
@@ -1471,7 +1486,7 @@ def _q_escolhe_carta(me, opp, familia: str, cartas: list, padrao):
     escolha enquanto o Q nao aprendeu a familia, e como referencia pra
     exploracao. Em simulacao, ou com menos de 2 cartas, ou se o padrao nao esta
     na lista, devolve o padrao: nao ha decisao real a registrar."""
-    if (_EM_SIMULACAO['on'] or padrao is None or len(cartas) < 2
+    if (_regra_na_simulacao() or padrao is None or len(cartas) < 2
             or not any(c is padrao for c in cartas)):
         return padrao
     _opcoes = [(0.0, familia, c, None, None, 0, False) for c in cartas]
@@ -5255,7 +5270,7 @@ class EffectExecutor:
                 best_steps = steps
 
         if (chooser != 'opponent' and not avaliando and len(viaveis) > 1
-                and not _EM_SIMULACAO['on']):
+                and not _regra_na_simulacao()):
             from types import SimpleNamespace
             from optcg_engine import value_net as _vn
             _opcoes = [(0.0, 'opcao_efeito',
@@ -5923,7 +5938,7 @@ class EffectExecutor:
         escolhida, ou None se o Q preferir nao usar. A regra de hoje (o de menor
         excesso, depois menor custo) e o `padrao`. Em simulacao devolve a regra."""
         _padrao = min(candidates, key=lambda it: (it[0], it[1]))
-        if _EM_SIMULACAO['on']:
+        if _regra_na_simulacao():
             return _padrao
         from types import SimpleNamespace
         _opcoes = [(0.0, 'counter_evento_none', None, alvo_tipo, alvo, None, True)]
@@ -12297,7 +12312,7 @@ class EffectExecutor:
         quebraria o efeito. Fonte unica: `execute()` e o caminho ao vivo
         (`resolve_optional_effect`) passam por aqui."""
         pagar = self._vale_pagar_custos_regra(costs, card, steps)
-        if (not pagar or _EM_SIMULACAO['on']
+        if (not pagar or _regra_na_simulacao()
                 or not any(c.get('type') in self._SACRIFICE_COST_TYPES for c in costs)):
             return pagar
         _opcoes = [(0.0, 'pagar_custo_nao', None, None, None, 0, False),
@@ -16966,7 +16981,7 @@ class DecisionEngine:
         # (`pick_counters`); cada carta que sozinha ja cobre. Conjunto vira
         # uma "acao" descrita pelo que queima (soma de custo/poder/counter).
         self._counter_escolhido = None
-        if atk_power >= def_power and not _EM_SIMULACAO['on']:
+        if atk_power >= def_power and not _regra_na_simulacao():
             needed = atk_power - def_power + 1
             if pool is None:
                 pool = [(v, c) for v, c in
@@ -22375,7 +22390,11 @@ class OPTCGMatch:
         _rnd = random.getstate()
         _sim = _EM_SIMULACAO['on']
         _sup = self._suppress_replay_log
+        _arv_antes = _EM_SIMULACAO.get('arvore', False)
         _EM_SIMULACAO['on'] = True
+        # Escolhas DENTRO dos efeitos pelo Q (bloco 974). `arvore_efeitos_q`
+        # por jogador so pra medir no portao espelhado.
+        _EM_SIMULACAO['arvore'] = bool(getattr(p, 'arvore_efeitos_q', True))
         self._suppress_replay_log = True
         resultado = []
         try:
@@ -22447,6 +22466,7 @@ class OPTCGMatch:
                     continue
         finally:
             _EM_SIMULACAO['on'] = _sim
+            _EM_SIMULACAO['arvore'] = _arv_antes
             self._suppress_replay_log = _sup
             random.setstate(_rnd)
         if not resultado:

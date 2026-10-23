@@ -65,7 +65,7 @@ def main() -> int:
         antes = dict(de._ARVORE_STATS)
         com = joga(s, True)
         fb_com = dict(de._Q_FALLBACK)
-        st = {k: de._ARVORE_STATS[k] - antes[k] for k in antes if not isinstance(antes[k], str)}
+        st = {k: de._ARVORE_STATS[k] - antes[k] for k in antes if isinstance(antes[k], (int, float))}
         tot[False] += sem['seg']
         tot[True] += com['seg']
         print(f'seed {s} {com["lideres"]}: sem {sem["seg"]:.1f}s  com {com["seg"]:.1f}s  '

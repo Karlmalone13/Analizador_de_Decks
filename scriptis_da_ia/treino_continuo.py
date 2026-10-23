@@ -127,6 +127,7 @@ def _duelo(task) -> dict:
     # estourou no meio nao pode deixar a flag de simulacao ligada pra proxima.
     from optcg_engine import decision_engine as _de_reset
     _de_reset._EM_SIMULACAO['on'] = False
+    _de_reset._EM_SIMULACAO['arvore'] = False
     _de_reset._DEFESA['on'] = False
 
     deck_list = _load_deck_list()

@@ -1,5 +1,24 @@
 ﻿# HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-10-22 (974) - Escolhas de efeito DENTRO da arvore pelo Q -- PROMOVE 120x80 (60%)
+
+**AS-IS**: em simulacao, toda familia que o Q aprendeu voltava pra regra (`_q_escolhe_familia` linha 1, e os
+portoes de `_q_escolhe_carta`, opcao_efeito, `_q_counter_evento`, pagar_custo, `should_use_counter`). Fazia sentido
+com a simulacao como ficcao da busca; com a arvore (973) a simulacao E a decisao.
+
+**Novo**: `_regra_na_simulacao()` = simulacao fora da arvore. `_arvore_q` liga `_EM_SIMULACAO['arvore']`
+(`p.arvore_efeitos_q`, default True); dentro dela o Q escolhe por argmax, sem exploracao e sem registro no corpus.
+Coleta bootstrap (alvo do treino) NAO mudou. Contador por familia em `_ARVORE_STATS['efeitos']` (prova de que
+passa pelo Q): 4 partidas = counter_pos 336 (52% diferente da regra), block_pos 64 (28%), descarte 37 (70%), busca
+30 (47%), pagar_custo 14, custo_restar 10, jogar_gratis 7, target 5. Custo sem mudanca visivel (2,6x, 33 ms/dec).
+
+**Portao** (`portao_arvore.py 4 efeitos`, os dois com arvore, mesmo Q): **120x80 = 60%, PROMOVE** em 880 pares,
+0 erros, 0 fallback; lideres 30 na frente x 9 atras x 6 empate (piores OP11-021 2x7, OP17-039 1x6, OP11-041 3x8).
+`smoke_fast` 0 falhas. `treino_continuo._duelo` zera tambem a flag `arvore`.
+
+**PENDENTE**: partidas contra o usuario (agora com 973+974); defesa (bloqueio+counter juntos, ataques restantes)
+como ramo da arvore; geracao dos ciclos com a arvore -- medir tempo e se o corpus muda de natureza.
+
 ## 2026-10-22 (973) - FASE 3: a arvore do turno volta a decidir, com o Q -- PROMOVE 121x81 (60%)
 
 **AS-IS**: desde o bloco 811 o Q decidia GULOSO (argmax de uma acao por vez); `_busca_determinista` so gerava
