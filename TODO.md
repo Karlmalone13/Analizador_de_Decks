@@ -4,6 +4,8 @@
 
 > **980**: defesa na arvore com 3 mundos PROMOVE 271x214 (55,9%), ligada. PENDENTE: ST03-001 perde 3x14 com ela (investigar mecanismo); partidas contra o usuario (agora 973+974+980); acelerar o motor de regras pra portoes mais curtos.
 
+> **984**: corpus vira FILA -- `corpus_git.py consolida --esvazia --confirmo` pronto e testado; corpus real NAO esvaziado (confirmar). Indice e q_bin reconstruidos (4.588.122; o antigo tinha +101 mil linhas fora do corpus). PROXIMO: analises sem o jsonl; alternativas/meta em binario.
+
 > **983**: push 5+ min -> hook 1 s e contagem das fatias 378 s -> 1 s (cache local). Corpus jsonl segue 40 GB -- apagar depende de redesenhar importa (pedir confirmacao).
 
 > **982**: ao vivo o bot repetia evento de counter no mesmo ataque (jogo nao soma o bonus do evento no def) -- corrigido em `select_counter_cards`. PENDENTE: decisao de 45 s em tabuleiro cheio; ST03-001 com a defesa nova; partidas contra o usuario.

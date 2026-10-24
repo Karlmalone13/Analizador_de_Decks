@@ -70,13 +70,23 @@ def _consistente(m: dict | None, origem: Path) -> bool:
     off = int(m.get('offset', -1))
     if off < 0 or origem.stat().st_size < off:
         return False
-    if m.get('cabeca') != _hash(origem, 0, _CABECA):
+    # Impressao so dos bytes JA LIDOS (bloco 984): com o corpus < 1 MB (fila
+    # depois de `consolida --esvazia`) a impressao de 1 MB mudava a cada linha
+    # nova e forcava reconstrucao. Com offset >= 1 MB e a MESMA de antes.
+    if m.get('cabeca') != _hash(origem, 0, min(_CABECA, off)):
         return False
     return m.get('elo') == _hash(origem, off - _ELO, min(_ELO, off))
 
 
-def atualiza(origem: Path = ORIGEM, indice: Path = INDICE, reconstroi: bool = False) -> Path:
-    """Poe o indice em dia com o corpus e devolve o caminho dele."""
+def atualiza(origem: Path | None = None, indice: Path | None = None,
+             reconstroi: bool = False) -> Path:
+    """Poe o indice em dia com o corpus e devolve o caminho dele.
+
+    Padroes resolvidos NA CHAMADA (bloco 984): como `= ORIGEM` no `def`, eles
+    ficavam presos aos caminhos do momento do import -- um teste que redirecionou
+    `ORIGEM/INDICE` ainda leu o corpus REAL e apagou o `q_escolhidas.jsonl` real."""
+    origem = ORIGEM if origem is None else origem
+    indice = INDICE if indice is None else indice
     m = _meta()
     if reconstroi or not _consistente(m, origem):
         if indice.exists():
@@ -93,9 +103,19 @@ def atualiza(origem: Path = ORIGEM, indice: Path = INDICE, reconstroi: bool = Fa
     # reconstrucao: so as ultimas geracoes interessam -- descobre a maior
     # olhando o fim do arquivo (o corpus e append, a ultima linha e a mais nova)
     if recomecou and origem.exists():
+        # Linhas AO VIVO gravam gen 0 (bloco 984): com uma partida ao vivo no fim
+        # do corpus, os ultimos 64 KB davam gen_max 0 e a reconstrucao copiava as
+        # alternativas de TODAS as geracoes (35 GB) antes da poda. Recua a janela
+        # ate achar uma geracao > 0 (ou o comeco do arquivo).
+        tam = origem.stat().st_size
+        janela, gs = 1 << 16, []
         with open(origem, 'rb') as fh:
-            fh.seek(max(0, origem.stat().st_size - (1 << 16)))
-            gs = [int(g) for g in _GEN.findall(fh.read())]
+            while True:
+                fh.seek(max(0, tam - janela))
+                gs = [int(g) for g in _GEN.findall(fh.read(janela))]
+                if any(gs) or janela >= tam:
+                    break
+                janela <<= 2
         gen_max = max(gs) if gs else 0
     corte = gen_max - GERACOES_ALT + 1
     with open(origem, 'rb') as fi, open(indice, 'ab') as fo, open(ALTERNATIVAS, 'ab') as fa:
@@ -118,13 +138,31 @@ def atualiza(origem: Path = ORIGEM, indice: Path = INDICE, reconstroi: bool = Fa
     _poda_alternativas(gen_max - GERACOES_ALT + 1)
     META.write_text(json.dumps({
         'offset': offset, 'linhas': linhas, 'escolhidas': escolhidas, 'gen_max': gen_max,
-        'cabeca': _hash(origem, 0, _CABECA), 'elo': _hash(origem, offset - _ELO, min(_ELO, offset)),
+        'cabeca': _hash(origem, 0, min(_CABECA, offset)),
+        'elo': _hash(origem, offset - _ELO, min(_ELO, offset)),
     }), encoding='utf-8')
     if recomecou or novas:
         print('  indice das escolhidas: %s %d linhas escolhidas de %d (%.1f%%)'
               % ('RECONSTRUIDO:' if recomecou else '+%d novas ->' % novas,
                  escolhidas, linhas, 100.0 * escolhidas / max(1, linhas)), flush=True)
     return indice
+
+
+def no_fim(origem: Path | None = None) -> bool:
+    """O indice ja leu o corpus ate o ultimo byte?"""
+    origem = ORIGEM if origem is None else origem
+    m = _meta()
+    return bool(m) and origem.exists() and int(m.get('offset', -1)) == origem.stat().st_size
+
+
+def marca_esvaziado() -> None:
+    """Depois que `corpus_git.consolida` ESVAZIA o corpus (bloco 984): o indice
+    continua (acumulado em `linhas`/`escolhidas`/`gen_max`) e passa a ler a
+    fila do byte 0. Sem isto a impressao nao bateria e o indice seria
+    RECONSTRUIDO a partir da fila vazia -- perdendo o historico derivado."""
+    m = _meta() or {}
+    m.update(offset=0, cabeca=_hash(ORIGEM, 0, 0), elo=_hash(ORIGEM, 0, 0))
+    META.write_text(json.dumps(m), encoding='utf-8')
 
 
 def _poda_alternativas(corte: int) -> None:

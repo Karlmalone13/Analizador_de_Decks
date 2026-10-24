@@ -517,6 +517,67 @@ def cmd_exporta(rotulo: str | None) -> int:
     return 0
 
 
+def _tamanho_estavel(espera: float = 3.0) -> bool:
+    """Ninguem escrevendo no corpus agora (tamanho igual depois de `espera`)."""
+    import time
+    a = CORPUS.stat().st_size
+    time.sleep(espera)
+    return CORPUS.stat().st_size == a
+
+
+def cmd_consolida(esvazia: bool, confirmo: bool) -> int:
+    """FILA em vez de corpus gigante (bloco 984). O `q_alvos.jsonl` vira FILA:
+    o historico completo mora nas FATIAS do git e nos derivados do treino
+    (`q_escolhidas`/`q_bin`, `q_alternativas`). Aqui: (1) poe os derivados em
+    dia; (2) exporta o que falta; (3) confere que TUDO chegou ao ultimo byte;
+    (4) so com `--esvazia --confirmo`, zera o arquivo e regrava os marcos com
+    as contagens ACUMULADAS e byte 0 -- a proxima leitura continua da fila.
+    Os escritores nao mudam: continuam acrescentando no mesmo arquivo."""
+    import corpus_escolhidas as ce
+    if not CORPUS.exists():
+        print('corpus local nao existe: nada a consolidar.')
+        return 0
+    if pendentes():
+        print('BLOQUEADO: ha fatia do git ainda nao importada -- rode `importa` antes.',
+              file=sys.stderr)
+        return 1
+    ce.atualiza()
+    cmd_exporta('consolida')
+    locais = _conta_corpus()
+    faltando = _a_exportar(locais, _nas_fatias())
+    fim = CORPUS.stat().st_size
+    b_cont, _ = _marco('contado')
+    b_exp, _ = _marco('exportado')
+    estado = {'tamanho': fim, 'indice_no_fim': ce.no_fim(),
+              'contado_no_fim': b_cont == fim, 'exportado_no_fim': b_exp == fim,
+              'tudo_no_git': not faltando}
+    print('consolida:', json.dumps(estado))
+    if not esvazia:
+        return 0
+    if not all(v for k, v in estado.items() if k != 'tamanho'):
+        print('NAO esvaziado: nem tudo chegou ao fim (ver acima).', file=sys.stderr)
+        return 1
+    if not confirmo:
+        print(f'pronto para esvaziar {CORPUS} ({fim / 2**30:.2f} GB) -- '
+              f'repita com --confirmo.', file=sys.stderr)
+        return 1
+    if not _tamanho_estavel():
+        print('NAO esvaziado: o corpus esta sendo escrito agora.', file=sys.stderr)
+        return 1
+    _, cont = _marco('contado')
+    _, exp = _marco('exportado')
+    with open(CORPUS, 'r+b') as fh:
+        if fh.seek(0, 2) != fim:
+            print('NAO esvaziado: o corpus cresceu durante a conferencia.', file=sys.stderr)
+            return 1
+        fh.truncate(0)
+    _grava_marco('contado', 0, cont)
+    _grava_marco('exportado', 0, exp)
+    ce.marca_esvaziado()
+    print(f'esvaziado: {fim / 2**30:.2f} GB liberados; historico nas fatias e nos derivados.')
+    return 0
+
+
 def main() -> int:
     ap = argparse.ArgumentParser(
         description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
@@ -525,12 +586,17 @@ def main() -> int:
     sub.add_parser('importa', help='aplica as fatias do git no corpus local')
     ex = sub.add_parser('exporta', help='cria a fatia com o que so existe aqui')
     ex.add_argument('--rotulo', default=None, help='sufixo opcional no nome da fatia')
+    co = sub.add_parser('consolida', help='poe derivados e fatias em dia; --esvazia zera a fila')
+    co.add_argument('--esvazia', action='store_true')
+    co.add_argument('--confirmo', action='store_true')
     args = ap.parse_args()
 
     if args.cmd == 'importa':
         return cmd_importa()
     if args.cmd == 'exporta':
         return cmd_exporta(args.rotulo)
+    if args.cmd == 'consolida':
+        return cmd_consolida(args.esvazia, args.confirmo)
     return cmd_status()
 
 

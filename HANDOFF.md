@@ -1,5 +1,27 @@
 ﻿# HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-10-24 (984) - Corpus vira FILA (etapa 1): `corpus_git.py consolida [--esvazia --confirmo]`
+
+Decisao do usuario (opcao 1: trocar o formato SEM descartar nada). Mapa AS-IS: o treino NAO le o `q_alvos.jsonl`
+(40,2 GB) inteiro -- le `q_bin/` (escolhidas, binario) e `q_alternativas.jsonl` (3 ultimas gens), derivados
+INCREMENTAIS dele. O jsonl so serve de alvo dos escritores, fonte da derivacao, sincronizacao e 5 analises.
+Correcao de estimativa: binario do corpus INTEIRO daria ~27 GB (nao 5-10); o que encolhe e a compressao -- as
+fatias .gz ja guardam o corpus todo em 840 MB. Desenho: historico = fatias (git) + derivados; o jsonl vira FILA.
+**Etapa 1**: `consolida` poe derivados em dia, exporta, confere que tudo chegou ao ultimo byte e, so com
+`--esvazia --confirmo`, zera o arquivo regravando os marcos com contagens ACUMULADAS e byte 0
+(`corpus_escolhidas.marca_esvaziado`, `cabeca` sobre min(1 MB, offset)). Escritores NAO mudam.
+Teste `teste_corpus_fila.py` 11/11 (controle: truncar sem `marca_esvaziado` reconstroi e perde o historico);
+`teste_corpus_git.py` 0 falhas. **Corpus real AINDA NAO esvaziado** (pede confirmacao do usuario).
+**Acidente meu**: o 1o teste apagou o `q_escolhidas.jsonl` REAL -- `atualiza(origem=ORIGEM, ...)` fixava o caminho
+no import. Corrigido (padroes resolvidos na chamada) + trava no teste (caminho fora do tmp = aborta). Indice
+reconstruido do corpus: 4.588.122 escolhidas de 42.471.123; `q_bin` reconstruido igual (4.588.122).
+**Achado**: o `q_bin` ANTIGO tinha 4.689.282 linhas (~101 mil a mais que o corpus tem hoje -- provavel resto da
+truncagem da gen 81). Os treinos recentes viam essas linhas; agora o treino reflete o corpus. Medir no proximo ciclo.
+**Bug antigo corrigido**: reconstrucao achava gen_max nos ultimos 64 KB; linha AO VIVO tem gen 0 -> copiava as
+alternativas de TODAS as geracoes (35 GB) antes da poda. Agora recua a janela ate achar gen > 0.
+PROXIMO: (2) esvaziar com confirmacao; (3) as 5 analises leem q_bin/fatias; (4) alternativas e meta.jsonl em
+binario (todo treino); (5) banco de cartas sem pandas na abertura do processo.
+
 ## 2026-10-24 (983) - Push/exporta lentos: hook relia os 40 GB e as fatias eram descomprimidas inteiras
 
 Corpus `q_alvos.jsonl` = **40,2 GB** (nao foi reduzido: o 969 so moveu o TREINO pro binario `q_bin/` 4,3 GB; o
