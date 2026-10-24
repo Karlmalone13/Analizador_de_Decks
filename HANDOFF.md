@@ -1,5 +1,15 @@
 ﻿# HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-10-24 (985) - Corpus fila, etapa 3: ninguem mais conta o q_alvos.jsonl do zero
+
+Mapa: `porque_decisoes`/`qualidade_jogadas` ja leem o indice acumulado (`corpus_escolhidas.atualiza`);
+`analisa_rotulo` le outro arquivo; `oraculo_teto`/`otimizar_holdout` nao leem o corpus; `ciclo.py` ja usa
+`total_linhas()`. Corrigidos: `treino_continuo` (contava linhas do jsonl -> `total_linhas()` acumulado) e
+**`sincroniza entrega`** (contava do zero -> com o corpus esvaziado acharia "nada a exportar" e as linhas novas
+NUNCA sairiam da maquina; agora `_conta_corpus()` pelos marcos). teste_corpus_fila 0 falhas, teste_corpus_git 0.
+`qualidade_jogadas.py` no corpus real passou de 15 min (le 4,6 GB de texto do indice) e foi cortado pelo timeout --
+codigo nao mudou; e exatamente o que a etapa 4 (binario) acelera. Corpus real ainda NAO esvaziado.
+
 ## 2026-10-24 (984) - Corpus vira FILA (etapa 1): `corpus_git.py consolida [--esvazia --confirmo]`
 
 Decisao do usuario (opcao 1: trocar o formato SEM descartar nada). Mapa AS-IS: o treino NAO le o `q_alvos.jsonl`

@@ -651,7 +651,11 @@ def main() -> None:
         if not ok:
             break
 
-        n_estados = sum(1 for _ in Q_CORPUS.open(encoding='utf-8'))             if Q_CORPUS.exists() else 0
+        # Contagem ACUMULADA do indice (bloco 984): o q_alvos.jsonl virou fila e
+        # contar as linhas dele daria so o que ainda nao foi consolidado.
+        import corpus_escolhidas
+        corpus_escolhidas.atualiza()
+        n_estados = corpus_escolhidas.total_linhas()
         print(f'[2/4] TREINA o Q desafiante sobre {n_estados} alvos (acumulado)')
         ok = _rodar(['treinar_q.py', '--dataset', str(Q_CORPUS),
                      '--out', str(Q_DESAFIANTE)], 'treino do Q desafiante')

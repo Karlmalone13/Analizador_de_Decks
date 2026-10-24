@@ -156,7 +156,10 @@ def cmd_entrega() -> int:
 
     print('[1/2] corpus: exportando o que so existe aqui')
     cg = _corpus()
-    locais = cg._conta_por_origem(cg.CORPUS, comprimido=False)
+    # Contagem ACUMULADA pelos marcos (bloco 984): com o corpus virando fila,
+    # contar o arquivo do zero acharia 'nada a exportar' e as linhas novas
+    # nunca sairiam desta maquina. Tambem evita reler os 40 GB.
+    locais = cg._conta_corpus()
     faltando = cg._a_exportar(locais, cg._nas_fatias())
     if faltando:
         antes = {f.name for f in cg._fatias_no_git()}
