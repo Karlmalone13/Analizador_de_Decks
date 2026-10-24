@@ -1477,6 +1477,11 @@ def _q_escolhe_familia(me, opp, familia: str, opcoes: list, padrao_idx: int,
     _antes = idx
     if _eps and len(incertos) > 1 and random.random() < _eps:
         idx = incertos[random.randrange(len(incertos))]
+    # DIARIO de paridade (fase A): a escolha FINAL (depois da exploracao).
+    from optcg_engine import estado_canonico as _ec
+    if _ec.DIARIO['on']:
+        _ec.registra({'tipo': 'escolha', 'familia': familia,
+                      'n_opcoes': len(opcoes), 'escolhida': idx})
     cap = getattr(m, '_q_captura', None) if m is not None else None
     if cap is not None:
         try:
@@ -22169,8 +22174,24 @@ class OPTCGMatch:
         ON-POLICY: os estados que a politica de fato visita.
 
         Default: `_ml_captura` e None => custo zero, nada muda.
+
+        DIARIO de paridade (PLANO_MOTOR_FORTE, fase A): com `estado_canonico.DIARIO`
+        ligado e fora de simulacao, grava a jogada (por LUGAR) e o estado canonico
+        antes/depois. So grava; desligado nao custa nada.
         """
+        from optcg_engine import estado_canonico as _ec
+        _dia = (_ec.DIARIO['on'] and not _EM_SIMULACAO['on']
+                and not getattr(self, '_suppress_replay_log', False))
+        if _dia:
+            _antes = _ec.canonico(p, opp)
+            _desc = _ec.descreve_acao(action, p, opp)
+            _ec.registra({'tipo': 'jogada_inicio', 'acao': _desc,
+                          'lado': 'A' if p is self.state_a else 'B'})
         r = self._apply_action_inner(action, p, opp, ee, engine, verbose)
+        if _dia:
+            _ec.registra({'tipo': 'jogada', 'acao': _desc, 'antes': _antes,
+                          'depois': _ec.canonico(p, opp), 'venceu': bool(r),
+                          'lado': 'A' if p is self.state_a else 'B'})
         try:
             ee.reavalia_passivos_de_poder()      # bloco 958: passivo e continuo
         except Exception:

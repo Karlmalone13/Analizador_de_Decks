@@ -1,5 +1,19 @@
 ﻿# HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-10-24 (995) - Fase A.0: ESPEC do nucleo + estado canonico + DIARIO de paridade (deterministico)
+
+`optcg_core/ESPEC.md`: regras x decisoes (26 metodos do DecisionEngine chamados de dentro das regras: decisao de
+fato -> ponto de decisao; regra disfarcada -> nucleo; heuristica -> sai), estado (CardData 25, Card 36, GameState 39
+campos + 8 dinamicos), fluxo do turno/combate, catalogo de efeitos, desenho do teste diferencial.
+`optcg_engine/estado_canonico.py`: `canonico(p, opp)` (tudo que e REGRA; fora so estatistica/heuristica) e
+`DIARIO` (grava cada jogada principal por LUGAR com estado antes/depois, e cada escolha interna FINAL -- depois da
+exploracao -- com familia/n_opcoes/indice). Ganchos em `_apply_action` e `_q_escolhe_familia` (pontos unicos), so
+com o diario ligado e fora de simulacao. **Achado**: o motor guarda `revealed_deck/life/to_opponent` como `id()`
+de objeto (muda a cada execucao; RISCO de reuso de id apontar carta errada como revelada) -- no canonico viram o
+LUGAR das cartas. `teste_diario.py`: mesma partida 2x -> diario IDENTICO (seeds 1000/1001); diario desligado ->
+assinatura das partidas IDENTICA. Diario ~8 MB/partida em JSON (comprimir quando for armazenar).
+PROXIMO (A.1): estado + turno basico (refresh/draw/DON/end) + combate sem efeitos em Rust, validado pelo diario.
+
 ## 2026-10-24 (994) - PLANO DO MOTOR FORTE: arquitetura nova (Rust + ISMCTS + AlphaZero); toolchain pronta
 
 Usuario: o bot ainda joga mal ("ganho dele facilmente"), "tem que ser dificil de ganhar dele", urgente (o front-end
