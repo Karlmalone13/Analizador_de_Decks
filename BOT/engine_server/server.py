@@ -1406,7 +1406,8 @@ def defense(req: DefenseRequest):
             elif req.phase == "counter":
                 out["counterIds"] = bridge.select_counter_cards(
                     gs, req.attackerPower, req.defenderPower, opp_gs=opp_gs,
-                    defender_uid=req.defenderId, trace_out=decision_trace)
+                    defender_uid=req.defenderId, trace_out=decision_trace,
+                    attacker_code=req.attackerCode)
                 print(f"[DEF] counter {req.attackerCode or '?'} atk={req.attackerPower} def={req.defenderPower} "
                       f"-> {len(out['counterIds'])} cartas", flush=True)
 

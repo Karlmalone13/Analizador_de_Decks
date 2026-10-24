@@ -1,5 +1,23 @@
 ﻿# HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-10-24 (982) - CPU x CPU de 24/10 + bug AO VIVO: evento de counter repetido no mesmo ataque
+
+3 partidas CPU x CPU (Shift+C, decks trocados): Teach-KY x Newgate-R (Newgate), Ace-R x Sabo-RK (Ace, t6), Luffy-RG
+x Moria-KY (Luffy, t7) -- `51f7a68`. Removida do banco a partida so de turnos passados (servidor fora, 60 turnos/29
+acoes). Telemetria: q_fallback 0, execucao 99,8%; 4 decisoes > timeout (max 45,6 s) TODAS na partida removida
+(tabuleiro cheio, turnos 25-30) -- risco ao vivo em jogo longo, nao investigado. Moria OP14-080 "nao surtiu efeito"
+= so 2 cartas na mao pro custo de trash 3 (correto). Partida 02.42 do usuario (bot passou t2-3, servidor fora)
+ficou no banco -- avaliar remover.
+
+**Bug**: Newgate defendendo Sanjuan Wolf 6000 jogou 2 Radical Beam + Makino (lider 16000, bastava +1000). Causa: o
+jogo pede counter de novo a cada carta e o `defenderPower` do pedido NAO inclui bonus de EVENTO ja jogado (o de
+personagem inclui: 5000 -> 8000 visto no mesmo log). Server: `[DEF] counter OP16-106 atk=6000 def=6000` 2x seguidas.
+**Fix** (`sim_bridge.select_counter_cards`): `_EVENTOS_NA_BATALHA` lembra (turno, atacante, poder, alvo) e o bonus
+dos eventos que o bot jogou; pedido do MESMO ataque com poder lido que nao subiu soma esse bonus; se ja cobre,
+nao joga nada. `server.py` repassa `attacker_code=req.attackerCode` (so transporte). Teste
+`test_counter_evento_nao_repete_no_mesmo_ataque_bloco_982` (controle: outro atacante decide do zero); sem a memoria
+o mesmo cenario reproduz o bug ([-370] e depois [-350]). smoke 0 [FALHOU], 1.976 OK. Servidor reiniciado.
+
 ## 2026-10-24 (980) - Defesa na arvore com 3 MUNDOS: PROMOVE 271x214 (55,9%) -- ligada por padrao
 
 O 976 (1 mundo) deu 483x428 inconclusivo: um sorteio so da mao do atacante deixava a escolha refem da sorte.

@@ -4,6 +4,8 @@
 
 > **980**: defesa na arvore com 3 mundos PROMOVE 271x214 (55,9%), ligada. PENDENTE: ST03-001 perde 3x14 com ela (investigar mecanismo); partidas contra o usuario (agora 973+974+980); acelerar o motor de regras pra portoes mais curtos.
 
+> **982**: ao vivo o bot repetia evento de counter no mesmo ataque (jogo nao soma o bonus do evento no def) -- corrigido em `select_counter_cards`. PENDENTE: decisao de 45 s em tabuleiro cheio; ST03-001 com a defesa nova; partidas contra o usuario.
+
 > **981**: test_bot_efficiency_report 17/17 (baselines eram de parsers com bug; teste do banco passa `alvo`).
 
 > **979**: arvore 33% mais rapida com decisoes IDENTICAS (`pensar_estado` 1x por decisao); `mede_arvore.py --assinatura` e `--perfil` pra proximas otimizacoes.

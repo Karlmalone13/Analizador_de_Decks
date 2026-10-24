@@ -10765,6 +10765,7 @@ def main() -> int:
     test_decisao_e_busca_determinista_sem_monte_carlo_bloco_785()
     test_triagem_compara_por_codigo_bloco_977()
     test_cor_do_slug_sem_ambiguidade_bloco_978()
+    test_counter_evento_nao_repete_no_mesmo_ataque_bloco_982()
     test_coleta_busca_roda_mesmo_com_q_decidindo_19_09()
     test_win_prob_lote_da_o_mesmo_que_uma_por_vez_bloco_787()
     test_regua_aprende_de_si_mesma_bloco_917()
@@ -16554,6 +16555,32 @@ def test_play_card_total_cost_lte_e_distinct_names_24_08() -> None:
           "-- a 2a copia do nome 'Fujitora' fica de fora por distinct_names",
           "SA1" in jogados2
           and len([c for c in jogados2 if c in ("SF1", "SF2")]) == 1)
+
+
+def test_counter_evento_nao_repete_no_mesmo_ataque_bloco_982() -> None:
+    """Ao vivo (24/10, Newgate x Sanjuan Wolf 6000): o jogo pergunta o counter
+    de novo no MESMO ataque e o poder do defensor que chega nao inclui o bonus
+    do EVENTO ja jogado -- o bot jogava 2 Radical Beam. Agora o 2o pedido do
+    mesmo ataque soma o bonus ja jogado."""
+    def _mao():
+        me = GameState(leader=real_card("OP02-001"), don_available=5)
+        rb1, rb2 = real_card("OP01-029"), real_card("OP01-029")
+        rb1._deck_uid, rb2._deck_uid = -370, -350
+        me.hand = [rb1, rb2]
+        me.life = [real_card("OP02-015"), real_card("OP02-015")]
+        return me
+    opp = GameState(leader=real_card("OP16-080"))
+    sim_bridge._EVENTOS_NA_BATALHA.update(chave=None, def_lida=None, bonus=0)
+    me = _mao()
+    p1 = sim_bridge.select_counter_cards(me, 6000, 6000, opp_gs=opp, attacker_code="OP16-106")
+    me.hand = [c for c in me.hand if getattr(c, '_deck_uid', 0) not in p1]
+    p2 = sim_bridge.select_counter_cards(me, 6000, 6000, opp_gs=opp, attacker_code="OP16-106")
+    check("counter: 1o pedido usa um Radical Beam", len(p1) == 1)
+    check("counter: 2o pedido do MESMO ataque (def lida sem o bonus) nao joga outro evento",
+          p2 == [])
+    me2 = _mao()
+    p3 = sim_bridge.select_counter_cards(me2, 6000, 6000, opp_gs=opp, attacker_code="OP16-080")
+    check("counter CONTROLE: ataque de OUTRO atacante decide do zero", len(p3) == 1)
 
 
 def test_cor_do_slug_sem_ambiguidade_bloco_978() -> None:

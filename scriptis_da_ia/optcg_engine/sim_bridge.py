@@ -1524,10 +1524,19 @@ def resolve_trigger_choice(gs: GameState, card_code: str | None,
     return False  # draw seco / buff situacional / desconhecido: carta na mao
 
 
+# Eventos de counter ja jogados NESTE ataque (bloco 982). O jogo pergunta o
+# counter de novo a cada carta, e o poder do defensor que chega no pedido NAO
+# inclui o bonus de EVENTO ja jogado (o de personagem inclui): visto ao vivo em
+# 24/10, Newgate x Sanjuan Wolf 6000 -- dois pedidos com def=6000, o bot jogou
+# 2 Radical Beam + Makino e terminou com 16000 (bastava +1000).
+_EVENTOS_NA_BATALHA = {'chave': None, 'def_lida': None, 'bonus': 0}
+
+
 def select_counter_cards(gs: GameState, atk_power: int, def_power: int,
                          opp_gs: GameState | None = None,
                          defender_uid: int = 0,
-                         trace_out: Optional[dict] = None) -> list[int]:
+                         trace_out: Optional[dict] = None,
+                         attacker_code: str | None = None) -> list[int]:
     """
     Seleciona as cartas de counter (por _deck_uid) para defender um ataque.
     Mesma politica do DecisionEngine.use_counter: menores primeiro, minimo
@@ -1654,6 +1663,20 @@ def select_counter_cards(gs: GameState, atk_power: int, def_power: int,
     # do Luffy no lider do Mihawk passava 25/33 no motor e 17/33 ao vivo.
     # Ataque que ja perde sozinho: `should_use_counter` recusa e o passo (2)
     # so roda se o golpe ainda passa -- nao precisa de checagem propria aqui.
+    # Mesmo ataque (turno, atacante, poder, alvo) e o poder lido NAO subiu:
+    # soma o bonus dos eventos que este bot ja jogou nele (bloco 982).
+    _chave = (getattr(gs, 'turn', None), attacker_code, atk_power, defender_uid)
+    _mem = _EVENTOS_NA_BATALHA
+    _def_lida = def_power
+    if _mem['chave'] == _chave and def_power <= (_mem['def_lida'] or 0) and _mem['bonus']:
+        def_power += _mem['bonus']
+    elif _mem['chave'] != _chave:
+        _mem.update(chave=_chave, def_lida=def_power, bonus=0)
+    if trace_out is not None and def_power != _def_lida:
+        trace_out["counter_evento_ja_jogado"] = def_power - _def_lida
+    if atk_power < def_power:
+        _registra('ja_coberto_por_evento', False, bonus=def_power - _def_lida)
+        return []
     needed = atk_power - def_power + 1
     alvo = defender_char if defender_char is not None else gs.leader
     alvo_tipo = 'character' if defender_char is not None else 'leader'
@@ -1668,6 +1691,8 @@ def select_counter_cards(gs: GameState, atk_power: int, def_power: int,
         if _esc is not None:
             final.append(_esc[2])
             defesa += _esc[3]
+            _mem['bonus'] = _mem.get('bonus', 0) + _esc[3]
+            _mem['def_lida'] = _def_lida
     if not final:
         _registra('decisao_do_motor', False, needed=needed)
         return []
