@@ -1,0 +1,66 @@
+{
+  "cards": [
+    {
+      "code": "OP16-102",
+      "name": "Avalo Pizarro",
+      "count": 3
+    },
+    {
+      "code": "OP16-104",
+      "name": "OP16-104",
+      "count": 3
+    },
+    {
+      "code": "OP16-106",
+      "name": "Sanjuan Wolf",
+      "count": 2
+    },
+    {
+      "code": "OP09-095",
+      "name": "Laffitte",
+      "count": 2
+    },
+    {
+      "code": "OP09-093",
+      "name": "OP09-093",
+      "count": 1
+    },
+    {
+      "code": "OP16-109",
+      "name": "Doc Q",
+      "count": 1
+    },
+    {
+      "code": "OP16-110",
+      "name": "Vasco Shot",
+      "count": 1
+    },
+    {
+      "code": "PRB02-015",
+      "name": "Shiryu",
+      "count": 1
+    },
+    {
+      "code": "OP16-103",
+      "name": "OP16-103",
+      "count": 1
+    },
+    {
+      "code": "OP09-096",
+      "name": "OP09-096",
+      "count": 1
+    },
+    {
+      "code": "OP09-099",
+      "name": "OP09-099",
+      "count": 1
+    },
+    {
+      "code": "P-100",
+      "name": "P-100",
+      "count": 1
+    }
+  ],
+  "total_seen": 18,
+  "leader": "OP16-080"
+}

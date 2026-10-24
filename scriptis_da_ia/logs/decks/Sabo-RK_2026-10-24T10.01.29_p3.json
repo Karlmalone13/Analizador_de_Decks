@@ -1,0 +1,66 @@
+{
+  "cards": [
+    {
+      "code": "OP17-093",
+      "name": "OP17-093",
+      "count": 3
+    },
+    {
+      "code": "OP15-088",
+      "name": "Pirate Docking 6",
+      "count": 2
+    },
+    {
+      "code": "ST01-011",
+      "name": "ST01-011",
+      "count": 2
+    },
+    {
+      "code": "OP17-095",
+      "name": "OP17-095",
+      "count": 2
+    },
+    {
+      "code": "OP17-119",
+      "name": "Loki",
+      "count": 2
+    },
+    {
+      "code": "OP17-083",
+      "name": "Jinbe",
+      "count": 1
+    },
+    {
+      "code": "OP04-016",
+      "name": "OP04-016",
+      "count": 1
+    },
+    {
+      "code": "OP01-016",
+      "name": "OP01-016",
+      "count": 1
+    },
+    {
+      "code": "OP17-082",
+      "name": "OP17-082",
+      "count": 1
+    },
+    {
+      "code": "OP14-096",
+      "name": "OP14-096",
+      "count": 1
+    },
+    {
+      "code": "EB04-007",
+      "name": "EB04-007",
+      "count": 1
+    },
+    {
+      "code": "OP17-086",
+      "name": "OP17-086",
+      "count": 1
+    }
+  ],
+  "total_seen": 18,
+  "leader": "OP13-004"
+}

@@ -1,0 +1,46 @@
+{
+  "cards": [
+    {
+      "code": "OP01-016",
+      "name": "Nami",
+      "count": 2
+    },
+    {
+      "code": "OP13-027",
+      "name": "OP13-027",
+      "count": 2
+    },
+    {
+      "code": "OP05-038",
+      "name": "OP05-038",
+      "count": 2
+    },
+    {
+      "code": "OP13-040",
+      "name": "OP13-040",
+      "count": 2
+    },
+    {
+      "code": "OP15-035",
+      "name": "Laboon",
+      "count": 2
+    },
+    {
+      "code": "OP14-022",
+      "name": "Usopp",
+      "count": 2
+    },
+    {
+      "code": "EB04-007",
+      "name": "Roronoa Zoro",
+      "count": 1
+    },
+    {
+      "code": "ST31-005",
+      "name": "Thousand Sunny",
+      "count": 1
+    }
+  ],
+  "total_seen": 14,
+  "leader": "OP13-001"
+}

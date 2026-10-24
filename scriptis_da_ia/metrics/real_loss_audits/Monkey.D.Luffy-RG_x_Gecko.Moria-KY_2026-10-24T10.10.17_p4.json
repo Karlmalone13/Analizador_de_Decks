@@ -1,0 +1,300 @@
+{
+  "parsed_file": "Monkey.D.Luffy-RG_x_Gecko.Moria-KY_2026-10-24T10.10.17_p4.json",
+  "bot_side": "You",
+  "bot_leader": "Monkey D. Luffy",
+  "opp_leader": "Gecko Moria",
+  "turnos_auditados": 6,
+  "turnos": [
+    {
+      "turn": 3,
+      "don_available_estimado": 1,
+      "historical_actions": [
+        {
+          "type": "attach_don",
+          "amount": 2,
+          "to": "OP13-001",
+          "to_name": "Monkey D. Luffy",
+          "total": 2
+        },
+        {
+          "type": "attack",
+          "attacker": "Monkey D. Luffy",
+          "attacker_code": "OP13-001",
+          "target": "Gecko Moria [\"OP14-080\">OP14-080]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        }
+      ],
+      "engine_hoje_narrativa": "  \u001b[90mComprou: Charlestone\u001b[0m\n  \u001b[93mDON!! +2 rampados │ 3 ativos │ 0 restados\u001b[0m\n  -- Turno (Turn Planner: simula sequências) --\n  Banco de cartas: 2839 cartas carregadas\n    ⚡ anexou 2 DON em Monkey.D.Luffy (001) para ligar [attack_power]\n    Monkey.D.Luffy (001) (7000pwr) ataca Leader\n      💥 DANO! vida do oponente: 3\n      ⚡ [trigger] jogou do trash: Negative Hollow\n  \u001b[90mpassa (busca preferiu nao agir)\u001b[0m\n"
+    },
+    {
+      "turn": 5,
+      "don_available_estimado": 0,
+      "historical_actions": [
+        {
+          "type": "attack",
+          "attacker": "Monkey D. Luffy",
+          "attacker_code": "OP13-001",
+          "target": "Gecko Moria [\"OP14-080\">OP14-080]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": [
+            "OP15-084"
+          ]
+        },
+        {
+          "type": "play",
+          "card": "OP01-016",
+          "card_name": "Nami",
+          "effects": [
+            "<b>Reveal and Draw Usopp [\"OP14-022\">OP14-022]</b>"
+          ]
+        },
+        {
+          "type": "play",
+          "card": "OP14-022",
+          "card_name": "Usopp",
+          "effects": [
+            "Activate 1 Don",
+            "Activate 1 Don"
+          ]
+        }
+      ],
+      "engine_hoje_narrativa": "  \u001b[90mComprou: Usopp\u001b[0m\n  \u001b[93mDON!! +2 rampados │ 5 ativos │ 0 restados\u001b[0m\n  -- Turno (Turn Planner: simula sequências) --\n    anexou 1 DON em Monkey.D.Luffy (001)\n    Monkey.D.Luffy (001) (6000pwr) ataca Absalom\n      🛡 Counter! +2000 -> defesa 7000\n      ✗ Ataque bloqueado (6000 < 7000)\n  > gastou 4 DON -> Joga: Usopp (5000pwr) [CHARACTER]\n    \u001b[90mefeito: [End of Your Turn] If your Leader has the {FILM} or {Straw Hat Crew} type, set up to 2 of ...\u001b[0m\n  \u001b[90m[end] reativou 2 DON\u001b[0m\n"
+    },
+    {
+      "turn": 7,
+      "don_available_estimado": 4,
+      "historical_actions": [
+        {
+          "type": "play",
+          "card": "EB04-007",
+          "card_name": "Roronoa Zoro",
+          "effects": [
+            "Grant Monkey D. Luffy [\"OP13-001\">OP13-001] 2000 until opponent's next turn end"
+          ]
+        },
+        {
+          "type": "attack",
+          "attacker": "Monkey D. Luffy",
+          "attacker_code": "OP13-001",
+          "target": "Absalom [\"OP14-100\">OP14-100]",
+          "result": "hit",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "attack",
+          "attacker": "Usopp",
+          "attacker_code": "OP14-022",
+          "target": "Gecko Moria [\"OP14-080\">OP14-080]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "activate",
+          "card": "OP14-022",
+          "card_name": "Usopp",
+          "effects": [
+            "Activate 1 Don",
+            "Activate 1 Don"
+          ]
+        }
+      ],
+      "engine_hoje_narrativa": "  \u001b[90mComprou: Thousand Sunny\u001b[0m\n  \u001b[93mDON!! +2 rampados │ 7 ativos │ 0 restados\u001b[0m\n  -- Turno (Turn Planner: simula sequências) --\n    Usopp (5000pwr) ataca Leader\n      💥 DANO! vida do oponente: 4\n  > gastou 7 DON -> Joga: Roronoa Zoro (EB04-007) (SP) (9000pwr) [CHARACTER]\n    \u001b[90mefeito: [On Play] Your Leader gains +2000 power until the end of your opponent's next End Phase.[A...\u001b[0m\n    ↳ [Roronoa Zoro (EB04-0] +2000 power em leader\n    Monkey.D.Luffy (001) (7000pwr) ataca Leader\n      💥 DANO! vida do oponente: 3\n      ⚡ [trigger] jogou do trash: Perona - OP14-1\n  \u001b[90m[end] reativou 2 DON\u001b[0m\n"
+    },
+    {
+      "turn": 9,
+      "don_available_estimado": 7,
+      "historical_actions": [
+        {
+          "type": "attack",
+          "attacker": "Roronoa Zoro",
+          "attacker_code": "EB04-007",
+          "target": "Gecko Moria [\"OP14-080\">OP14-080]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "attack",
+          "attacker": "Monkey D. Luffy",
+          "attacker_code": "OP13-001",
+          "target": "Gecko Moria [\"OP14-080\">OP14-080]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": [
+            "OP15-092"
+          ]
+        },
+        {
+          "type": "attach_don",
+          "amount": 3,
+          "to": "OP01-016",
+          "to_name": "Nami",
+          "total": 3
+        },
+        {
+          "type": "attack",
+          "attacker": "Nami",
+          "attacker_code": "OP01-016",
+          "target": "Gecko Moria [\"OP14-080\">OP14-080]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": [
+            "EB04-058"
+          ]
+        },
+        {
+          "type": "play",
+          "card": "OP15-035",
+          "card_name": "Laboon",
+          "effects": []
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP13-001",
+          "to_name": "Monkey D. Luffy",
+          "total": 1
+        },
+        {
+          "type": "play",
+          "card": "ST31-005",
+          "card_name": "Thousand Sunny",
+          "effects": [
+            "<b>Reveal and Draw Sanji [\"OP13-027\">OP13-027]</b>"
+          ]
+        },
+        {
+          "type": "play",
+          "card": "OP15-035",
+          "card_name": "Laboon",
+          "effects": []
+        },
+        {
+          "type": "activate",
+          "card": "OP14-022",
+          "card_name": "Usopp",
+          "effects": [
+            "Activate 1 Don",
+            "Activate 1 Don"
+          ]
+        }
+      ],
+      "engine_hoje_narrativa": "  \u001b[90mComprou: Laboon\u001b[0m\n  \u001b[93mDON!! +2 rampados │ 9 ativos │ 0 restados\u001b[0m\n  -- Turno (Turn Planner: simula sequências) --\n    anexou 3 DON em Roronoa Zoro (EB04-0\n    Roronoa Zoro (EB04-0 (12000pwr) ataca Gecko Moria - OP14-1\n      💀 Gecko Moria - OP14-1 foi KO!\n    Usopp (5000pwr) ataca Leader\n      🛡 Counter! +1000 -> defesa 6000\n      ✗ Ataque bloqueado (5000 < 6000)\n    Monkey.D.Luffy (001) (5000pwr) ataca Leader\n      💥 DANO! vida do oponente: 3\n    ⚡ anexou 1 DON em Monkey.D.Luffy (001) para ligar [on_opp_attack]\n    ⚡ anexou 3 DON em Nami para ligar [attack_power]\n    anexou 2 DON em Nami\n    Nami (7000pwr) ataca Leader\n      💥 DANO! vida do oponente: 2\n      ⚡ [trigger] jogou do trash: Dr. Hogback\n"
+    },
+    {
+      "turn": 11,
+      "don_available_estimado": 4,
+      "historical_actions": [
+        {
+          "type": "attach_don",
+          "amount": 5,
+          "to": "OP13-001",
+          "to_name": "Monkey D. Luffy",
+          "total": 5
+        },
+        {
+          "type": "attack",
+          "attacker": "Monkey D. Luffy",
+          "attacker_code": "OP13-001",
+          "target": "Gecko Moria [\"OP14-104\">OP14-104]",
+          "result": "hit",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "attack",
+          "attacker": "Usopp",
+          "attacker_code": "OP14-022",
+          "target": "Perona [\"OP14-111\">OP14-111]",
+          "result": null,
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "attach_don",
+          "amount": 3,
+          "to": "OP15-035",
+          "to_name": "Laboon",
+          "total": 3
+        },
+        {
+          "type": "attack",
+          "attacker": "Laboon",
+          "attacker_code": "OP15-035",
+          "target": "Gecko Moria [\"OP14-080\">OP14-080]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "activate",
+          "card": "ST31-005",
+          "card_name": "Thousand Sunny",
+          "effects": [
+            "Rest Thousand Sunny [\"ST31-005\">ST31-005]"
+          ]
+        }
+      ],
+      "engine_hoje_narrativa": "  \u001b[90mComprou: Usopp\u001b[0m\n  \u001b[93mDON!! +1 rampados │ 10 ativos │ 0 restados\u001b[0m\n  -- Turno (Turn Planner: simula sequências) --\n    anexou 5 DON em Monkey.D.Luffy (001)\n    Monkey.D.Luffy (001) (10000pwr) ataca Gecko Moria - OP14-1\n      💀 Gecko Moria - OP14-1 foi KO!\n    Usopp (5000pwr) ataca Perona - OP14-111 (A\n      💀 Perona - OP14-111 (A foi KO!\n      ↳ [on KO] travou (não pode atacar): Usopp\n    ⚡ anexou 3 DON em Laboon para ligar [attack_power]\n    Laboon (5000pwr) ataca Leader\n      💥 DANO! vida do oponente: 2\n      ⚡ [trigger] jogou do trash: Dr. Hogback\n    ⚙ ativou [Activate:Main] de Thousand Sunny\n      ↳ custo: restou Thousand Sunny\n    ⚡ anexou 1 DON em Monkey.D.Luffy (001) (banking -- nada mais pra fazer este turno)\n"
+    },
+    {
+      "turn": 13,
+      "don_available_estimado": 1,
+      "historical_actions": [
+        {
+          "type": "attack",
+          "attacker": "Usopp",
+          "attacker_code": "OP14-022",
+          "target": "Gecko Moria [\"OP14-080\">OP14-080]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "attack",
+          "attacker": "Monkey D. Luffy",
+          "attacker_code": "OP13-001",
+          "target": "Gecko Moria [\"OP14-080\">OP14-080]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "attach_don",
+          "amount": 3,
+          "to": "OP15-035",
+          "to_name": "Laboon",
+          "total": 3
+        },
+        {
+          "type": "attack",
+          "attacker": "Laboon",
+          "attacker_code": "OP15-035",
+          "target": "Gecko Moria [\"OP14-080\">OP14-080]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        }
+      ],
+      "engine_hoje_narrativa": "  \u001b[90mComprou: Monkey.D.Luffy (118) (Wanted P\u001b[0m\n  \u001b[93mDON!! +0 rampados │ 10 ativos │ 0 restados\u001b[0m\n  -- Turno (Turn Planner: simula sequências) --\n    Monkey.D.Luffy (001) (5000pwr) ataca Leader\n      💥 DANO! vida do oponente: 1\n      ⚡ [trigger] jogou do trash: Absalom\n  > gastou 6 DON -> Joga: Monkey.D.Luffy (118) (Wanted P (7000pwr) [CHARACTER]\n    \u001b[90mefeito: [Double Attack][On Play] If your Leader is multicolored, set up to 4 of your DON!! cards a...\u001b[0m\n    ↳ [Monkey.D.Luffy (118)] auto-restrição: não pode jogar mais este turno\n    ↳ [Monkey.D.Luffy (118)] reativou 4 DON\n    anexou 1 DON em Usopp\n    Usopp (6000pwr) ataca Leader\n      💥 DANO! vida do oponente: 0\n      ⚡ [trigger] jogou do trash: Absalom\n    anexou 5 DON em Laboon\n    Laboon (7000pwr) ataca Leader\n      🏆 VITORIA! Laboon zera a vida do oponente\n"
+    }
+  ]
+}

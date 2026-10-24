@@ -8899,5 +8899,137 @@
       "Opponent": "decks_full/Imu-B_2026-10-21T22.20.24_p3.json"
     },
     "decision_log_file": "decisions/decisions_2026-10-21T22.20.24_p3.jsonl"
+  },
+  {
+    "id": "2026-10-24T02.42.34",
+    "impressao": "11496652249fc40d48c2939aaa4a1891",
+    "friendly_name": "Dracule.Mihawk-G_x_Marshall.D.Teach-KY",
+    "date": "2026-10-24",
+    "p1": {
+      "name": "You",
+      "leader_code": "OP14-020",
+      "leader_name": "Dracule Mihawk",
+      "slug": "Dracule.Mihawk-G"
+    },
+    "p2": {
+      "name": "Opponent",
+      "leader_code": "OP16-080",
+      "leader_name": "Marshall D. Teach",
+      "slug": "Marshall.D.Teach-KY"
+    },
+    "turns": 12,
+    "winner": "p2",
+    "bot_side": "p1",
+    "tipo": "com_bot",
+    "log_file": "raw/Dracule.Mihawk-G_x_Marshall.D.Teach-KY_2026-10-24T02.42.34.log",
+    "parsed_file": "parsed/Dracule.Mihawk-G_x_Marshall.D.Teach-KY_2026-10-24T02.42.34.json",
+    "deck_files": {
+      "You": "decks/Dracule.Mihawk-G_2026-10-24T02.42.34.json",
+      "Opponent": "decks/Marshall.D.Teach-KY_2026-10-24T02.42.34.json"
+    },
+    "deck_full_files": {
+      "You": "decks_full/Dracule.Mihawk-G_2026-10-24T02.42.34.json",
+      "Opponent": "decks_full/Marshall.D.Teach-KY_2026-10-24T02.42.34.json"
+    },
+    "decision_log_file": "decisions/decisions_2026-10-24T02.42.34.jsonl"
+  },
+  {
+    "id": "2026-10-24T09.54.37_p2",
+    "impressao": "29fbd31dfc1baf293cb57cb588a7cf3d",
+    "friendly_name": "Marshall.D.Teach-KY_x_Edward.Newgate-R",
+    "date": "2026-10-24",
+    "p1": {
+      "name": "You",
+      "leader_code": "OP16-080",
+      "leader_name": "Marshall D. Teach",
+      "slug": "Marshall.D.Teach-KY"
+    },
+    "p2": {
+      "name": "Opponent",
+      "leader_code": "OP02-001",
+      "leader_name": "Edward Newgate",
+      "slug": "Edward.Newgate-R"
+    },
+    "turns": 12,
+    "winner": "p2",
+    "bot_side": null,
+    "tipo": "cpu_vs_cpu",
+    "log_file": "raw/Marshall.D.Teach-KY_x_Edward.Newgate-R_2026-10-24T09.54.37_p2.log",
+    "parsed_file": "parsed/Marshall.D.Teach-KY_x_Edward.Newgate-R_2026-10-24T09.54.37_p2.json",
+    "deck_files": {
+      "You": "decks/Marshall.D.Teach-KY_2026-10-24T09.54.37_p2.json",
+      "Opponent": "decks/Edward.Newgate-R_2026-10-24T09.54.37_p2.json"
+    },
+    "deck_full_files": {
+      "You": "decks_full/Marshall.D.Teach-KY_2026-10-24T09.54.37_p2.json",
+      "Opponent": "decks_full/Edward.Newgate-R_2026-10-24T09.54.37_p2.json"
+    },
+    "decision_log_file": "decisions/decisions_2026-10-24T09.54.37_p2.jsonl"
+  },
+  {
+    "id": "2026-10-24T10.01.29_p3",
+    "impressao": "afa2346b56eb6784319fddb7c4e6f494",
+    "friendly_name": "Portgas.D.Ace-R_x_Sabo-RK",
+    "date": "2026-10-24",
+    "p1": {
+      "name": "You",
+      "leader_code": "OP16-001",
+      "leader_name": "Portgas D. Ace",
+      "slug": "Portgas.D.Ace-R"
+    },
+    "p2": {
+      "name": "Opponent",
+      "leader_code": "OP13-004",
+      "leader_name": "Sabo",
+      "slug": "Sabo-RK"
+    },
+    "turns": 11,
+    "winner": "p1",
+    "bot_side": null,
+    "tipo": "cpu_vs_cpu",
+    "log_file": "raw/Portgas.D.Ace-R_x_Sabo-RK_2026-10-24T10.01.29_p3.log",
+    "parsed_file": "parsed/Portgas.D.Ace-R_x_Sabo-RK_2026-10-24T10.01.29_p3.json",
+    "deck_files": {
+      "You": "decks/Portgas.D.Ace-R_2026-10-24T10.01.29_p3.json",
+      "Opponent": "decks/Sabo-RK_2026-10-24T10.01.29_p3.json"
+    },
+    "deck_full_files": {
+      "You": "decks_full/Portgas.D.Ace-R_2026-10-24T10.01.29_p3.json",
+      "Opponent": "decks_full/Sabo-RK_2026-10-24T10.01.29_p3.json"
+    },
+    "decision_log_file": "decisions/decisions_2026-10-24T10.01.29_p3.jsonl"
+  },
+  {
+    "id": "2026-10-24T10.10.17_p4",
+    "impressao": "2b579c2849f9b9e74871f4a6b07dbbb6",
+    "friendly_name": "Monkey.D.Luffy-RG_x_Gecko.Moria-KY",
+    "date": "2026-10-24",
+    "p1": {
+      "name": "You",
+      "leader_code": "OP13-001",
+      "leader_name": "Monkey D. Luffy",
+      "slug": "Monkey.D.Luffy-RG"
+    },
+    "p2": {
+      "name": "Opponent",
+      "leader_code": "OP14-080",
+      "leader_name": "Gecko Moria",
+      "slug": "Gecko.Moria-KY"
+    },
+    "turns": 13,
+    "winner": "p1",
+    "bot_side": null,
+    "tipo": "cpu_vs_cpu",
+    "log_file": "raw/Monkey.D.Luffy-RG_x_Gecko.Moria-KY_2026-10-24T10.10.17_p4.log",
+    "parsed_file": "parsed/Monkey.D.Luffy-RG_x_Gecko.Moria-KY_2026-10-24T10.10.17_p4.json",
+    "deck_files": {
+      "You": "decks/Monkey.D.Luffy-RG_2026-10-24T10.10.17_p4.json",
+      "Opponent": "decks/Gecko.Moria-KY_2026-10-24T10.10.17_p4.json"
+    },
+    "deck_full_files": {
+      "You": "decks_full/Monkey.D.Luffy-RG_2026-10-24T10.10.17_p4.json",
+      "Opponent": "decks_full/Gecko.Moria-KY_2026-10-24T10.10.17_p4.json"
+    },
+    "decision_log_file": "decisions/decisions_2026-10-24T10.10.17_p4.jsonl.gz"
   }
 ]

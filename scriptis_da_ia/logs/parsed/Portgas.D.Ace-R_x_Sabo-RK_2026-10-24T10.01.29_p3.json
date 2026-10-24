@@ -1,0 +1,1450 @@
+{
+  "meta": {
+    "players": {
+      "p1": {
+        "name": "You",
+        "leader": {
+          "name": "Portgas D. Ace",
+          "code": "OP16-001"
+        }
+      },
+      "p2": {
+        "name": "Opponent",
+        "leader": {
+          "name": "Sabo",
+          "code": "OP13-004"
+        }
+      }
+    },
+    "goes_first": null
+  },
+  "total_turns": 11,
+  "turns": [
+    {
+      "turn": 1,
+      "player": "You",
+      "card_drawn": null,
+      "don_drawn": 1,
+      "actions": [
+        {
+          "type": "play",
+          "card": "OP13-016",
+          "card_name": "Monkey D. Garp",
+          "effects": [
+            "<b>Reveal and Draw Thatch [\"OP16-005\">OP16-005]</b>"
+          ]
+        }
+      ],
+      "snapshot": {
+        "You": {
+          "hand": [
+            "EB01-002",
+            "OP16-021",
+            "OP14-018",
+            "OP10-005",
+            "OP16-005"
+          ],
+          "board": [
+            "OP13-016"
+          ],
+          "trash": [],
+          "life": 5,
+          "deck": [
+            "OP13-016",
+            "OP16-003",
+            "OP16-004"
+          ],
+          "life_cards": [
+            "EB01-002",
+            "OP13-016",
+            "OP14-018",
+            "OP16-014",
+            "OP16-017"
+          ],
+          "don_cost": [
+            "Don"
+          ],
+          "rested_rz1": {
+            "don_cost": [
+              "Don"
+            ]
+          },
+          "rested": {
+            "OP13-016": 1
+          }
+        },
+        "Opponent": {
+          "hand": [
+            "OP17-083",
+            "OP15-088",
+            "OP17-093",
+            "ST01-011",
+            "OP04-016"
+          ],
+          "trash": [],
+          "board": [],
+          "life": 5,
+          "deck": [
+            "OP14-096",
+            "OP17-080",
+            "OP17-081",
+            "OP17-082",
+            "OP17-084",
+            "OP17-086",
+            "OP17-087",
+            "OP17-089",
+            "OP17-095"
+          ],
+          "life_cards": [
+            "EB04-007",
+            "OP01-016",
+            "OP17-093",
+            "OP17-119",
+            "OP17-119"
+          ]
+        }
+      }
+    },
+    {
+      "turn": 2,
+      "player": "Opponent",
+      "card_drawn": null,
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "play",
+          "card": "OP17-083",
+          "card_name": "Jinbe",
+          "effects": []
+        }
+      ],
+      "snapshot": {
+        "Opponent": {
+          "hand": [
+            "OP15-088",
+            "OP17-093",
+            "ST01-011",
+            "OP04-016",
+            "OP17-095"
+          ],
+          "board": [
+            "OP17-083"
+          ],
+          "trash": [],
+          "life": 5,
+          "deck": [
+            "OP14-096",
+            "OP17-080",
+            "OP17-081",
+            "OP17-082",
+            "OP17-084",
+            "OP17-086",
+            "OP17-087",
+            "OP17-089"
+          ],
+          "life_cards": [
+            "EB04-007",
+            "OP01-016",
+            "OP17-093",
+            "OP17-119",
+            "OP17-119"
+          ],
+          "don_cost": [
+            "Don",
+            "Don"
+          ],
+          "rested_rz1": {
+            "don_cost": [
+              "Don"
+            ]
+          },
+          "rested": {
+            "OP17-083": 1
+          }
+        },
+        "You": {
+          "hand": [
+            "EB01-002",
+            "OP16-021",
+            "OP14-018",
+            "OP10-005",
+            "OP16-005"
+          ],
+          "trash": [],
+          "board": [
+            "OP13-016"
+          ],
+          "life": 5,
+          "deck": [
+            "OP13-016",
+            "OP16-003",
+            "OP16-004"
+          ],
+          "life_cards": [
+            "EB01-002",
+            "OP13-016",
+            "OP14-018",
+            "OP16-014",
+            "OP16-017"
+          ],
+          "don_cost": [
+            "Don"
+          ],
+          "rested_rz1": {
+            "don_cost": [
+              "Don"
+            ]
+          },
+          "rested": {
+            "OP13-016": 1
+          }
+        }
+      }
+    },
+    {
+      "turn": 3,
+      "player": "You",
+      "card_drawn": null,
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "attack",
+          "attacker": "Portgas D. Ace",
+          "attacker_code": "OP16-001",
+          "target": "Sabo [\"OP13-004\">OP13-004]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": [
+            "OP17-095"
+          ]
+        },
+        {
+          "type": "play",
+          "card": "OP10-005",
+          "card_name": "Sanji",
+          "effects": []
+        }
+      ],
+      "snapshot": {
+        "You": {
+          "hand": [
+            "EB01-002",
+            "OP16-021",
+            "OP14-018",
+            "OP16-005",
+            "OP16-005"
+          ],
+          "board": [
+            "OP13-016",
+            "OP10-005"
+          ],
+          "trash": [],
+          "life": 5,
+          "deck": [
+            "OP13-016",
+            "OP16-003",
+            "OP16-004"
+          ],
+          "life_cards": [
+            "EB01-002",
+            "OP13-016",
+            "OP14-018",
+            "OP16-014",
+            "OP16-017"
+          ],
+          "don_cost": [
+            "Don",
+            "Don",
+            "Don"
+          ],
+          "rested_rz1": {
+            "don_cost": [
+              "Don"
+            ]
+          },
+          "rested": {
+            "OP10-005": 1
+          }
+        },
+        "Opponent": {
+          "hand": [
+            "OP15-088",
+            "OP17-093",
+            "ST01-011",
+            "OP04-016"
+          ],
+          "trash": [
+            "OP17-095"
+          ],
+          "board": [
+            "OP17-083"
+          ],
+          "life": 5,
+          "deck": [
+            "OP14-096",
+            "OP17-080",
+            "OP17-081",
+            "OP17-082",
+            "OP17-084",
+            "OP17-086",
+            "OP17-087",
+            "OP17-089"
+          ],
+          "life_cards": [
+            "EB04-007",
+            "OP01-016",
+            "OP17-093",
+            "OP17-119",
+            "OP17-119"
+          ],
+          "don_cost": [
+            "Don",
+            "Don"
+          ],
+          "rested_rz1": {
+            "don_cost": [
+              "Don"
+            ]
+          },
+          "rested": {
+            "OP17-083": 1
+          }
+        }
+      }
+    },
+    {
+      "turn": 4,
+      "player": "Opponent",
+      "card_drawn": null,
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP13-004",
+          "to_name": "Sabo",
+          "total": 1
+        },
+        {
+          "type": "attack",
+          "attacker": "Sabo",
+          "attacker_code": "OP13-004",
+          "target": "Portgas D. Ace [\"OP16-001\">OP16-001]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": [
+            "OP16-005"
+          ]
+        },
+        {
+          "type": "attach_don",
+          "amount": 3,
+          "to": "OP17-083",
+          "to_name": "Jinbe",
+          "total": 3
+        },
+        {
+          "type": "attack",
+          "attacker": "Jinbe",
+          "attacker_code": "OP17-083",
+          "target": "Portgas D. Ace [\"OP16-001\">OP16-001]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        }
+      ],
+      "snapshot": {
+        "Opponent": {
+          "hand": [
+            "OP15-088",
+            "OP17-093",
+            "ST01-011",
+            "OP04-016",
+            "OP17-093"
+          ],
+          "board": [
+            "OP17-083"
+          ],
+          "trash": [
+            "OP17-095"
+          ],
+          "life": 5,
+          "deck": [
+            "OP14-096",
+            "OP17-080",
+            "OP17-081",
+            "OP17-082",
+            "OP17-084",
+            "OP17-086",
+            "OP17-087",
+            "OP17-089"
+          ],
+          "life_cards": [
+            "EB04-007",
+            "OP01-016",
+            "OP17-093",
+            "OP17-119",
+            "OP17-119"
+          ],
+          "attached_don": [
+            "Don",
+            "Don",
+            "Don",
+            "Don"
+          ],
+          "rested": {
+            "OP17-083": 1
+          }
+        },
+        "You": {
+          "hand": [
+            "EB01-002",
+            "OP16-021",
+            "OP14-018",
+            "OP16-005",
+            "EB01-002"
+          ],
+          "trash": [
+            "OP16-005"
+          ],
+          "board": [
+            "OP13-016",
+            "OP10-005"
+          ],
+          "life": 4,
+          "deck": [
+            "OP13-016",
+            "OP16-003",
+            "OP16-004"
+          ],
+          "life_cards": [
+            "OP13-016",
+            "OP14-018",
+            "OP16-014",
+            "OP16-017"
+          ],
+          "don_cost": [
+            "Don",
+            "Don",
+            "Don"
+          ],
+          "rested_rz1": {
+            "don_cost": [
+              "Don"
+            ]
+          },
+          "rested": {
+            "OP10-005": 1
+          }
+        }
+      }
+    },
+    {
+      "turn": 5,
+      "player": "You",
+      "card_drawn": null,
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "play",
+          "card": "EB01-002",
+          "card_name": "Izou",
+          "effects": [
+            "Attach 1 Rested Don to Portgas D. Ace [\"OP16-001\">OP16-001]"
+          ]
+        },
+        {
+          "type": "attack",
+          "attacker": "Monkey D. Garp",
+          "attacker_code": "OP13-016",
+          "target": "Jinbe [\"OP17-083\">OP17-083]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": [
+            "ST01-011"
+          ]
+        },
+        {
+          "type": "attack",
+          "attacker": "Portgas D. Ace",
+          "attacker_code": "OP16-001",
+          "target": "Sabo [\"OP13-004\">OP13-004]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "attack",
+          "attacker": "Sanji",
+          "attacker_code": "OP10-005",
+          "target": "Sabo [\"OP13-004\">OP13-004]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        }
+      ],
+      "snapshot": {
+        "You": {
+          "hand": [
+            "OP16-021",
+            "OP14-018",
+            "OP16-005",
+            "EB01-002",
+            "OP16-010"
+          ],
+          "board": [
+            "OP13-016",
+            "OP10-005",
+            "EB01-002"
+          ],
+          "trash": [
+            "OP16-005"
+          ],
+          "life": 4,
+          "deck": [
+            "OP13-016",
+            "OP16-003",
+            "OP16-004"
+          ],
+          "life_cards": [
+            "OP13-016",
+            "OP14-018",
+            "OP16-014",
+            "OP16-017"
+          ],
+          "don_cost": [
+            "Don",
+            "Don",
+            "Don",
+            "Don"
+          ],
+          "attached_don": [
+            "Don"
+          ],
+          "rested_rz1": {
+            "attached_don": [
+              "Don"
+            ]
+          },
+          "rested": {
+            "OP13-016": 1,
+            "OP10-005": 1,
+            "EB01-002": 1
+          }
+        },
+        "Opponent": {
+          "hand": [
+            "OP15-088",
+            "OP17-093",
+            "OP01-016"
+          ],
+          "trash": [
+            "OP17-095",
+            "ST01-011",
+            "OP17-093",
+            "OP04-016"
+          ],
+          "board": [
+            "OP17-083"
+          ],
+          "life": 4,
+          "deck": [
+            "OP14-096",
+            "OP17-080",
+            "OP17-081",
+            "OP17-082",
+            "OP17-084",
+            "OP17-086",
+            "OP17-087",
+            "OP17-089"
+          ],
+          "life_cards": [
+            "EB04-007",
+            "OP17-093",
+            "OP17-119",
+            "OP17-119"
+          ],
+          "attached_don": [
+            "Don",
+            "Don",
+            "Don",
+            "Don"
+          ],
+          "rested": {
+            "OP17-083": 1
+          }
+        }
+      }
+    },
+    {
+      "turn": 6,
+      "player": "Opponent",
+      "card_drawn": null,
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "play",
+          "card": "OP15-088",
+          "card_name": "Pirate Docking 6",
+          "effects": [
+            "Trash 3 Cards from Deck",
+            "Deployed Roronoa Zoro [\"OP17-095\">OP17-095] from Trash"
+          ]
+        },
+        {
+          "type": "attack",
+          "attacker": "Sabo",
+          "attacker_code": "OP13-004",
+          "target": "Sanji [\"OP10-005\">OP10-005]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": [
+            "OP16-010"
+          ]
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP17-083",
+          "to_name": "Jinbe",
+          "total": 1
+        },
+        {
+          "type": "attack",
+          "attacker": "Jinbe",
+          "attacker_code": "OP17-083",
+          "target": "Sanji [\"OP10-005\">OP10-005]",
+          "result": "hit",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": []
+        }
+      ],
+      "snapshot": {
+        "Opponent": {
+          "hand": [
+            "OP17-093",
+            "OP01-016",
+            "OP15-088"
+          ],
+          "board": [
+            "OP17-083",
+            "OP15-088",
+            "OP17-095"
+          ],
+          "trash": [
+            "ST01-011",
+            "OP17-093",
+            "OP04-016",
+            "OP17-082",
+            "ST01-011",
+            "OP14-096"
+          ],
+          "life": 4,
+          "deck": [
+            "OP17-080",
+            "OP17-081",
+            "OP17-084",
+            "OP17-086",
+            "OP17-087",
+            "OP17-089"
+          ],
+          "life_cards": [
+            "EB04-007",
+            "OP17-093",
+            "OP17-119",
+            "OP17-119"
+          ],
+          "don_cost": [
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don"
+          ],
+          "attached_don": [
+            "Don"
+          ],
+          "rested_rz1": {
+            "don_cost": [
+              "Don",
+              "Don",
+              "Don"
+            ]
+          },
+          "rested": {
+            "OP17-083": 1,
+            "OP15-088": 1
+          }
+        },
+        "You": {
+          "hand": [
+            "OP16-021",
+            "OP14-018",
+            "OP16-005",
+            "EB01-002",
+            "OP16-014"
+          ],
+          "trash": [
+            "OP16-005",
+            "OP16-010",
+            "OP10-005"
+          ],
+          "board": [
+            "OP13-016",
+            "EB01-002"
+          ],
+          "life": 4,
+          "deck": [
+            "OP13-016",
+            "OP16-003",
+            "OP16-004"
+          ],
+          "life_cards": [
+            "OP13-016",
+            "OP14-018",
+            "OP16-014",
+            "OP16-017"
+          ],
+          "don_cost": [
+            "Don",
+            "Don",
+            "Don",
+            "Don"
+          ],
+          "attached_don": [
+            "Don"
+          ],
+          "rested_rz1": {
+            "attached_don": [
+              "Don"
+            ]
+          },
+          "rested": {
+            "OP13-016": 1,
+            "EB01-002": 1
+          }
+        }
+      }
+    },
+    {
+      "turn": 7,
+      "player": "You",
+      "card_drawn": null,
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "play",
+          "card": "OP16-015",
+          "card_name": "Monkey D. Luffy",
+          "effects": []
+        },
+        {
+          "type": "attack",
+          "attacker": "Portgas D. Ace",
+          "attacker_code": "OP16-001",
+          "target": "Sabo [\"OP13-004\">OP13-004]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": [
+            "OP01-016"
+          ]
+        },
+        {
+          "type": "play",
+          "card": "EB01-002",
+          "card_name": "Izou",
+          "effects": [
+            "Attach 1 Rested Don to Portgas D. Ace [\"OP16-001\">OP16-001]"
+          ]
+        },
+        {
+          "type": "attack",
+          "attacker": "Izou",
+          "attacker_code": "EB01-002",
+          "target": "Sabo [\"OP13-004\">OP13-004]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "attack",
+          "attacker": "Monkey D. Garp",
+          "attacker_code": "OP13-016",
+          "target": "Jinbe [\"OP17-083\">OP17-083]",
+          "result": "hit",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": []
+        }
+      ],
+      "snapshot": {
+        "You": {
+          "hand": [
+            "OP16-021",
+            "OP14-018",
+            "OP16-005",
+            "OP16-014"
+          ],
+          "board": [
+            "OP13-016",
+            "EB01-002",
+            "OP16-015",
+            "EB01-002"
+          ],
+          "trash": [
+            "OP16-005",
+            "OP16-010",
+            "OP10-005"
+          ],
+          "life": 4,
+          "deck": [
+            "OP13-016",
+            "OP16-003",
+            "OP16-004"
+          ],
+          "life_cards": [
+            "OP13-016",
+            "OP14-018",
+            "OP16-014",
+            "OP16-017"
+          ],
+          "don_cost": [
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don"
+          ],
+          "attached_don": [
+            "Don"
+          ],
+          "rested_rz1": {
+            "attached_don": [
+              "Don"
+            ]
+          },
+          "rested": {
+            "OP13-016": 1,
+            "EB01-002": 2,
+            "OP16-015": 1
+          }
+        },
+        "Opponent": {
+          "hand": [
+            "OP17-093",
+            "OP15-088",
+            "OP17-093",
+            "OP17-119"
+          ],
+          "trash": [
+            "ST01-011",
+            "OP17-093",
+            "OP04-016",
+            "OP17-082",
+            "ST01-011",
+            "OP14-096",
+            "OP01-016",
+            "OP17-083"
+          ],
+          "board": [
+            "OP15-088",
+            "OP17-095"
+          ],
+          "life": 2,
+          "deck": [
+            "OP17-080",
+            "OP17-081",
+            "OP17-084",
+            "OP17-086",
+            "OP17-087",
+            "OP17-089"
+          ],
+          "life_cards": [
+            "EB04-007",
+            "OP17-119"
+          ],
+          "don_cost": [
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don"
+          ],
+          "rested_rz1": {
+            "don_cost": [
+              "Don",
+              "Don",
+              "Don",
+              "Don"
+            ]
+          },
+          "rested": {
+            "OP15-088": 1
+          }
+        }
+      }
+    },
+    {
+      "turn": 8,
+      "player": "Opponent",
+      "card_drawn": null,
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "attack",
+          "attacker": "Pirate Docking 6",
+          "attacker_code": "OP15-088",
+          "target": "Portgas D. Ace [\"OP16-001\">OP16-001]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "play",
+          "card": "OP17-119",
+          "card_name": "Loki",
+          "effects": [
+            "Destroy Monkey D. Garp [\"OP13-016\">OP13-016]"
+          ]
+        },
+        {
+          "type": "attach_don",
+          "amount": 2,
+          "to": "OP13-004",
+          "to_name": "Sabo",
+          "total": 2
+        },
+        {
+          "type": "attack",
+          "attacker": "Sabo",
+          "attacker_code": "OP13-004",
+          "target": "Izou [\"EB01-002\">EB01-002]",
+          "result": "hit",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": []
+        }
+      ],
+      "snapshot": {
+        "Opponent": {
+          "hand": [
+            "OP17-093",
+            "OP15-088",
+            "OP17-093",
+            "OP17-095"
+          ],
+          "board": [
+            "OP15-088",
+            "OP17-095",
+            "OP17-119"
+          ],
+          "trash": [
+            "ST01-011",
+            "OP17-093",
+            "OP04-016",
+            "OP17-082",
+            "ST01-011",
+            "OP14-096",
+            "OP01-016",
+            "OP17-083"
+          ],
+          "life": 2,
+          "deck": [
+            "OP17-080",
+            "OP17-081",
+            "OP17-084",
+            "OP17-086",
+            "OP17-087",
+            "OP17-089"
+          ],
+          "life_cards": [
+            "EB04-007",
+            "OP17-119"
+          ],
+          "don_cost": [
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don"
+          ],
+          "attached_don": [
+            "Don",
+            "Don"
+          ],
+          "rested_rz1": {
+            "don_cost": [
+              "Don",
+              "Don"
+            ]
+          },
+          "rested": {
+            "OP15-088": 1,
+            "OP17-119": 1
+          }
+        },
+        "You": {
+          "hand": [
+            "OP14-018",
+            "OP13-016"
+          ],
+          "trash": [
+            "OP16-005",
+            "OP16-010",
+            "OP10-005",
+            "OP16-014",
+            "OP16-021",
+            "OP13-016",
+            "OP16-005",
+            "EB01-002"
+          ],
+          "board": [
+            "OP16-015",
+            "EB01-002"
+          ],
+          "life": 3,
+          "deck": [
+            "OP13-016",
+            "OP16-003",
+            "OP16-004"
+          ],
+          "life_cards": [
+            "OP14-018",
+            "OP16-014",
+            "OP16-017"
+          ],
+          "don_cost": [
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don"
+          ],
+          "attached_don": [
+            "Don"
+          ],
+          "rested_rz1": {
+            "attached_don": [
+              "Don"
+            ]
+          },
+          "rested": {
+            "OP16-015": 1,
+            "EB01-002": 1
+          }
+        }
+      }
+    },
+    {
+      "turn": 9,
+      "player": "You",
+      "card_drawn": null,
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "EB01-002",
+          "to_name": "Izou",
+          "total": 1
+        },
+        {
+          "type": "attack",
+          "attacker": "Izou",
+          "attacker_code": "EB01-002",
+          "target": "Sabo [\"OP13-004\">OP13-004]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "attach_don",
+          "amount": 2,
+          "to": "OP16-001",
+          "to_name": "Portgas D. Ace",
+          "total": 2
+        },
+        {
+          "type": "attack",
+          "attacker": "Portgas D. Ace",
+          "attacker_code": "OP16-001",
+          "target": "Sabo [\"OP13-004\">OP13-004]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": [
+            "OP17-095"
+          ]
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP16-015",
+          "to_name": "Monkey D. Luffy",
+          "total": 1
+        },
+        {
+          "type": "attack",
+          "attacker": "Monkey D. Luffy",
+          "attacker_code": "OP16-015",
+          "target": "Sabo [\"OP13-004\">OP13-004]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "play",
+          "card": "OP13-016",
+          "card_name": "Monkey D. Garp",
+          "effects": [
+            "<b>Reveal and Draw LittleOars Jr. [\"OP16-017\">OP16-017]</b>"
+          ]
+        },
+        {
+          "type": "play",
+          "card": "OP16-017",
+          "card_name": "LittleOars Jr.",
+          "effects": []
+        }
+      ],
+      "snapshot": {
+        "You": {
+          "hand": [
+            "OP14-018",
+            "OP16-015"
+          ],
+          "board": [
+            "OP16-015",
+            "EB01-002",
+            "OP13-016",
+            "OP16-017"
+          ],
+          "trash": [
+            "OP16-005",
+            "OP16-010",
+            "OP10-005",
+            "OP16-014",
+            "OP16-021",
+            "OP13-016",
+            "OP16-005",
+            "EB01-002"
+          ],
+          "life": 3,
+          "deck": [
+            "OP13-016",
+            "OP16-003",
+            "OP16-004",
+            "OP16-011",
+            "OP16-014"
+          ],
+          "life_cards": [
+            "OP14-018",
+            "OP16-014",
+            "OP16-017"
+          ],
+          "don_cost": [
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don"
+          ],
+          "attached_don": [
+            "Don",
+            "Don",
+            "Don",
+            "Don"
+          ],
+          "rested_rz1": {
+            "don_cost": [
+              "Don"
+            ]
+          },
+          "rested": {
+            "OP16-015": 1,
+            "EB01-002": 1,
+            "OP13-016": 1,
+            "OP16-017": 1
+          }
+        },
+        "Opponent": {
+          "hand": [
+            "OP17-093",
+            "OP15-088",
+            "OP17-093",
+            "OP17-119",
+            "EB04-007"
+          ],
+          "trash": [
+            "ST01-011",
+            "OP17-093",
+            "OP04-016",
+            "OP17-082",
+            "ST01-011",
+            "OP14-096",
+            "OP01-016",
+            "OP17-083",
+            "OP17-095"
+          ],
+          "board": [
+            "OP15-088",
+            "OP17-095",
+            "OP17-119"
+          ],
+          "life": 0,
+          "deck": [
+            "OP17-080",
+            "OP17-081",
+            "OP17-084",
+            "OP17-086",
+            "OP17-087",
+            "OP17-089"
+          ],
+          "don_cost": [
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don"
+          ],
+          "attached_don": [
+            "Don",
+            "Don"
+          ],
+          "rested_rz1": {
+            "don_cost": [
+              "Don",
+              "Don"
+            ]
+          },
+          "rested": {
+            "OP15-088": 1,
+            "OP17-119": 1
+          }
+        }
+      }
+    },
+    {
+      "turn": 10,
+      "player": "Opponent",
+      "card_drawn": null,
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "attack",
+          "attacker": "Loki",
+          "attacker_code": "OP17-119",
+          "target": "Portgas D. Ace [\"OP16-001\">OP16-001]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "attack",
+          "attacker": "Pirate Docking 6",
+          "attacker_code": "OP15-088",
+          "target": "Portgas D. Ace [\"OP16-001\">OP16-001]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "attack",
+          "attacker": "Roronoa Zoro",
+          "attacker_code": "OP17-095",
+          "target": "Portgas D. Ace [\"OP16-001\">OP16-001]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "attach_don",
+          "amount": 4,
+          "to": "OP13-004",
+          "to_name": "Sabo",
+          "total": 4
+        },
+        {
+          "type": "attack",
+          "attacker": "Sabo",
+          "attacker_code": "OP13-004",
+          "target": "Izou [\"EB01-002\">EB01-002]",
+          "result": null,
+          "damage": null,
+          "blocked_by": "OP16-017",
+          "countered_by": []
+        },
+        {
+          "type": "play",
+          "card": "OP17-119",
+          "card_name": "Loki",
+          "effects": [
+            "Destroy Monkey D. Garp [\"OP13-016\">OP13-016]"
+          ]
+        }
+      ],
+      "snapshot": {
+        "Opponent": {
+          "hand": [
+            "OP17-093",
+            "OP15-088",
+            "OP17-093",
+            "EB04-007",
+            "OP17-086"
+          ],
+          "board": [
+            "OP15-088",
+            "OP17-095",
+            "OP17-119",
+            "OP17-119"
+          ],
+          "trash": [
+            "ST01-011",
+            "OP17-093",
+            "OP04-016",
+            "OP17-082",
+            "ST01-011",
+            "OP14-096",
+            "OP01-016",
+            "OP17-083",
+            "OP17-095"
+          ],
+          "life": 0,
+          "deck": [
+            "OP17-080",
+            "OP17-081",
+            "OP17-084",
+            "OP17-087",
+            "OP17-089"
+          ],
+          "don_cost": [
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don"
+          ],
+          "attached_don": [
+            "Don",
+            "Don",
+            "Don",
+            "Don"
+          ],
+          "rested_rz1": {
+            "don_cost": [
+              "Don"
+            ]
+          },
+          "rested": {
+            "OP15-088": 1,
+            "OP17-095": 1,
+            "OP17-119": 2
+          }
+        },
+        "You": {
+          "hand": [
+            "OP14-018",
+            "OP16-014",
+            "OP16-017"
+          ],
+          "trash": [
+            "OP16-005",
+            "OP16-010",
+            "OP10-005",
+            "OP16-014",
+            "OP16-021",
+            "OP13-016",
+            "OP16-005",
+            "EB01-002",
+            "OP16-015",
+            "OP14-018",
+            "OP16-017",
+            "OP13-016"
+          ],
+          "board": [
+            "OP16-015",
+            "EB01-002"
+          ],
+          "life": 0,
+          "deck": [
+            "OP13-016",
+            "OP16-003",
+            "OP16-004",
+            "OP16-011",
+            "OP16-014"
+          ],
+          "don_cost": [
+            "Don",
+            "Don",
+            "Don",
+            "Don",
+            "Don"
+          ],
+          "attached_don": [
+            "Don",
+            "Don",
+            "Don",
+            "Don"
+          ],
+          "rested_rz1": {
+            "don_cost": [
+              "Don"
+            ]
+          },
+          "rested": {
+            "OP16-015": 1,
+            "EB01-002": 1
+          }
+        }
+      }
+    },
+    {
+      "turn": 11,
+      "player": "You",
+      "card_drawn": null,
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "EB01-002",
+          "to_name": "Izou",
+          "total": 1
+        },
+        {
+          "type": "attack",
+          "attacker": "Izou",
+          "attacker_code": "EB01-002",
+          "target": "Sabo [\"OP13-004\">OP13-004]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        }
+      ],
+      "snapshot": {}
+    }
+  ]
+}
