@@ -1,5 +1,16 @@
 ﻿# HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-10-24 (981) - `test_bot_efficiency_report` volta a passar (17/17): baselines vinham de parsers com bug
+
+Pendente do 978 (2 FAIL + 1 ERROR, pre-existentes). **ERROR**: `_validate_bank_entry` mede o id da partida no log
+(`_id_da_partida_nova`, blocos 950/957) e o teste passava um log falso -> agora passa `alvo=` (o que o teste cobre,
+nome canonico + artefatos, nao mudou) + teste novo `test_id_da_partida_nova_conta_partidas_acumuladas` (1 cabecalho
+-> stem; 3 -> `_p3`). **FAILs**: os valores de 17/07 (113382b) se reproduzem EXATOS com os JSON daquele commit;
+mudaram por correcoes do parser: humano 2,031 -> 2,143 atk/turno pelo `1f3f4e9` (30/08, ultimo turno descartado);
+bot 0,88 -> 1,04 pelo reparse `0811b6a` (28/07): partidas 16.12.30 e 17.42.21 tinham 5 e 6 ataques do bot contados,
+hoje 8 e 15, log bruto 9 e 16 linhas "[You] ... attacking". Baselines atualizados com a origem no comentario, mesma
+precisao (places=3).
+
 ## 2026-10-23 (979) - Velocidade: parte do ESTADO de `pensar_features` 1x por decisao (decisoes IDENTICAS)
 
 AS-IS (`mede_arvore.py --perfil`, cProfile so dentro de `_arvore_q`, 4 partidas): arvore 18,6 s; `linha_q` 6,0 s

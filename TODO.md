@@ -2,6 +2,8 @@
 
 **Última atualização:** 9 de outubro de 2026 (blocos 943-960)
 
+> **981**: test_bot_efficiency_report 17/17 (baselines eram de parsers com bug; teste do banco passa `alvo`).
+
 > **979**: arvore 33% mais rapida com decisoes IDENTICAS (`pensar_estado` 1x por decisao); `mede_arvore.py --assinatura` e `--perfil` pra proximas otimizacoes.
 
 > **978**: Black no slug do log = 'K' (era 'B' igual a Blue). PENDENTE a parte: `test_bot_efficiency_report` com 2 FAIL + 1 ERROR antigos.

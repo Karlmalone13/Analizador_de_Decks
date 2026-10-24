@@ -24,19 +24,25 @@ class BotEfficiencyReportTests(unittest.TestCase):
     def metric(self, cohort, name):
         return self.results[cohort]["metrics"][name]["value"]
 
+    # Baselines REFEITOS no bloco 981. Os valores de 17/07 (113382b) ainda se
+    # reproduzem EXATOS com os JSON daquele commit, mas vinham de parsers com
+    # bug: o humano perdia o ULTIMO TURNO de cada partida (corrigido em
+    # 1f3f4e9, 30/08: 2,031 -> 2,143 atk/turno) e o bot perdia ataques
+    # (reparse de 0811b6a, 28/07: partida 17.42.21 tinha 6 ataques do bot
+    # contados, 15 hoje, 16 linhas "[You] ... attacking" no log bruto).
     def test_reproduces_historical_human_baseline(self):
-        self.assertAlmostEqual(self.metric("human_before", "atk_por_turno"), 2.031, places=3)
-        self.assertAlmostEqual(self.metric("human_before", "pct_atk_lider"), 81.538, places=3)
-        self.assertAlmostEqual(self.metric("human_before", "dano_por_jogo"), 4.2, places=3)
+        self.assertAlmostEqual(self.metric("human_before", "atk_por_turno"), 2.143, places=3)
+        self.assertAlmostEqual(self.metric("human_before", "pct_atk_lider"), 84.0, places=3)
+        self.assertAlmostEqual(self.metric("human_before", "dano_por_jogo"), 5.8, places=3)
         self.assertAlmostEqual(
             self.metric("human_before", "counters_arrancados_por_jogo"), 5.2, places=3
         )
 
     def test_reproduces_historical_bot_baseline(self):
-        self.assertAlmostEqual(self.metric("bot_before", "atk_por_turno"), 0.88, places=3)
-        self.assertAlmostEqual(self.metric("bot_before", "pct_atk_lider"), 42.424, places=3)
-        self.assertAlmostEqual(self.metric("bot_before", "dano_por_jogo"), 1.333, places=3)
-        self.assertAlmostEqual(self.metric("bot_before", "turnos_passivos_por_jogo"), 1.5, places=3)
+        self.assertAlmostEqual(self.metric("bot_before", "atk_por_turno"), 1.04, places=3)
+        self.assertAlmostEqual(self.metric("bot_before", "pct_atk_lider"), 39.744, places=3)
+        self.assertAlmostEqual(self.metric("bot_before", "dano_por_jogo"), 1.583, places=3)
+        self.assertAlmostEqual(self.metric("bot_before", "turnos_passivos_por_jogo"), 1.083, places=3)
 
     def test_unobservable_layers_are_not_fabricated(self):
         availability = self.results["bot_before"]["availability"]
@@ -264,14 +270,29 @@ class BotEfficiencyReportTests(unittest.TestCase):
                  "log_file": f"raw/Imu-B_x_Teach-BY_{log.stem}.log",
                  "parsed_file": f"parsed/Imu-B_x_Teach-BY_{log.stem}.json",
                  "deck_files": {"bot": f"decks/Imu-B_{log.stem}.json"}}
+        # `alvo` = id da partida, medido ANTES do parser desde o bloco 957 (o
+        # log do jogo acumula a sessao); a contagem tem teste proprio abaixo.
         with patch.object(Path, "is_file", return_value=True):
-            found, stem = _validate_bank_entry(log, [entry], Path("db"))
+            found, stem = _validate_bank_entry(log, [entry], Path("db"), alvo=log.stem)
         self.assertIs(found, entry)
         self.assertEqual(stem, f"Imu-B_x_Teach-BY_{log.stem}")
         bad = {**entry, "log_file": f"raw/{log.stem}.log"}
         with patch.object(Path, "is_file", return_value=True):
             with self.assertRaisesRegex(RuntimeError, "nome fora do padrao"):
-                _validate_bank_entry(log, [bad], Path("db"))
+                _validate_bank_entry(log, [bad], Path("db"), alvo=log.stem)
+
+    def test_id_da_partida_nova_conta_partidas_acumuladas(self):
+        """O arquivo do jogo acumula a sessao: com N cabecalhos "Version is"
+        a partida nova e `<stem>_pN`; com 1, o proprio stem (blocos 950/957)."""
+        import tempfile
+        from collect_latest_match import _id_da_partida_nova
+        with tempfile.TemporaryDirectory() as d:
+            log = Path(d) / "2026-07-18T12.00.00.log"
+            log.write_text("\n".join(["Version is 1", "turno"]), encoding="utf-8")
+            self.assertEqual(_id_da_partida_nova(log), log.stem)
+            log.write_text("\n".join(["Version is 1", "a", "Version is 1", "b",
+                                      "Version is 1", "c"]), encoding="utf-8")
+            self.assertEqual(_id_da_partida_nova(log), f"{log.stem}_p3")
 
 
 if __name__ == "__main__":
