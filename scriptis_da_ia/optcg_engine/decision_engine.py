@@ -8371,6 +8371,7 @@ class EffectExecutor:
         from optcg_engine import estado_canonico as _ec
         if _ec.DIARIO['on']:     # paridade (fase A): jogada "sem efeito" = 0 passos
             _ec.DIARIO['passos'] = _ec.DIARIO.get('passos', 0) + 1
+            _ec.DIARIO.setdefault('acoes', []).append(step.get('action', ''))
 
         action = step.get('action', '')
         self._fonte_em_curso = card   # quem aplica o efeito, pro alvo (bloco 910)
@@ -22193,6 +22194,7 @@ class OPTCGMatch:
             _antes = _ec.canonico(p, opp)
             _desc = _ec.descreve_acao(action, p, opp)
             _passos0 = _ec.DIARIO.get('passos', 0)
+            _acoes0 = len(_ec.DIARIO.get('acoes', []))
             _ec.registra({'tipo': 'jogada_inicio', 'acao': _desc,
                           'lado': 'A' if p is self.state_a else 'B'})
         r = self._apply_action_inner(action, p, opp, ee, engine, verbose)
@@ -22200,6 +22202,7 @@ class OPTCGMatch:
             _ec.registra({'tipo': 'jogada', 'acao': _desc, 'antes': _antes,
                           'depois': _ec.canonico(p, opp), 'venceu': bool(r),
                           'passos_efeito': _ec.DIARIO.get('passos', 0) - _passos0,
+                          'acoes_efeito': _ec.DIARIO.get('acoes', [])[_acoes0:],
                           'lado': 'A' if p is self.state_a else 'B'})
         try:
             ee.reavalia_passivos_de_poder()      # bloco 958: passivo e continuo
@@ -24914,11 +24917,13 @@ class OPTCGMatch:
             return 'A' if p is self.state_a else 'B'
         if _dia:
             _ec.registra({'tipo': 'fim_antes', 'lado': 'A' if p is self.state_a else 'B',
-                          'estado': _ec.canonico(p, opp)})
+                          'estado': _ec.canonico(p, opp),
+                          'passos': _ec.DIARIO.get('passos', 0)})
         self.end_phase(p, opp, verbose=verbose)
         if _dia:
             _ec.registra({'tipo': 'fim_depois', 'lado': 'A' if p is self.state_a else 'B',
-                          'estado': _ec.canonico(p, opp)})
+                          'estado': _ec.canonico(p, opp),
+                          'passos': _ec.DIARIO.get('passos', 0)})
         self._log_event(p, 'turn_end', phase='end',
                         description=f'Fim do turno {self.global_turn}')
         # deck_out_win_instead_of_loss (OP03-040 Nami lider): inverte o
@@ -25036,10 +25041,11 @@ def simular_matchup(deck_a: tuple, deck_b: tuple, n: int = 100) -> dict:
 # executar passo -- evento de [Counter] (resolvido por funcao propria), passivas
 # condicionais de keyword/poder e custo de jogar alterado por efeito. Embrulhados
 # AQUI, num ponto so: so CONTAM com o diario ligado; nao mudam nenhum resultado.
-def _diario_conta_efeito():
+def _diario_conta_efeito(rotulo='?'):
     from optcg_engine import estado_canonico as _ec
     if _ec.DIARIO['on']:
         _ec.DIARIO['passos'] = _ec.DIARIO.get('passos', 0) + 1
+        _ec.DIARIO.setdefault('acoes', []).append(rotulo)
 
 
 def _embrulha_metodo_que_age(cls, nome):
@@ -25048,7 +25054,7 @@ def _embrulha_metodo_que_age(cls, nome):
     def _emb(self, *a, **k):
         r = orig(self, *a, **k)
         if r:
-            _diario_conta_efeito()
+            _diario_conta_efeito('#' + nome)
         return r
     _emb.__wrapped__ = orig
     _emb.__doc__ = orig.__doc__
@@ -25073,7 +25079,7 @@ def apply_conditional_keyword_passives(gs, opp):   # noqa: F811 -- embrulho do d
     antes = _foto()
     r = _akp_orig(gs, opp)
     if _foto() != antes:
-        _diario_conta_efeito()
+        _diario_conta_efeito('#passiva_keyword')
     return r
 
 
@@ -25084,7 +25090,7 @@ def effective_hand_play_cost(p, card, opp=None):   # noqa: F811 -- embrulho do d
     c = _ehpc_orig(p, card, opp)
     from optcg_engine import estado_canonico as _ec
     if _ec.DIARIO['on'] and c != max(0, card.effective_cost()):
-        _diario_conta_efeito()
+        _diario_conta_efeito('#custo_jogar')
     return c
 
 
@@ -25094,7 +25100,8 @@ _pay_costs_orig = EffectExecutor._pay_costs
 def _pay_costs_com_diario(self, costs, card):
     """Custo de efeito (ex.: `don_minus`) muda o estado sem `_execute_step`."""
     if costs:
-        _diario_conta_efeito()
+        for _c in costs:
+            _diario_conta_efeito('custo:' + str((_c or {}).get('type')))
     return _pay_costs_orig(self, costs, card)
 
 
