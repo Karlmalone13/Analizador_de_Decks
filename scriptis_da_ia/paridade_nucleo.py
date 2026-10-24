@@ -91,7 +91,7 @@ def diario_de(seed: int) -> list:
     rng = random.Random(seed)
     ia, ib = rng.sample(range(len(dl)), 2)
     random.seed(seed)
-    ec.DIARIO.update(on=True, eventos=[])
+    ec.DIARIO.update(on=True, eventos=[], passos=0, acoes=[])
     try:
         m = de.OPTCGMatch(dl[ia][1], dl[ib][1])
         m.setup()

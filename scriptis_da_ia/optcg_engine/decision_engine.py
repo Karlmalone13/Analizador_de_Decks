@@ -25107,3 +25107,95 @@ def _pay_costs_com_diario(self, costs, card):
 
 _pay_costs_com_diario.__wrapped__ = _pay_costs_orig
 EffectExecutor._pay_costs = _pay_costs_com_diario
+
+
+# ── DIARIO DE PARIDADE: DECISOES dentro dos efeitos, pelo LUGAR ────────────────
+# O nucleo Rust aplica a REGRA do efeito; o que o motor Python DECIDE no meio
+# (alvo, carta descartada/sacrificada no custo, pagar ou nao o custo opcional)
+# chega pronto, em ordem, como fila. Lugar com lado: ['eu'|'oponente', zona, i]
+# do ponto de vista de quem executa o efeito. Fora de simulacao, so com diario.
+def _diario_lugar_com_lado(c, me, opp):
+    from optcg_engine import estado_canonico as _ec
+    if c is None:
+        return None
+    for lado, s in (('eu', me), ('oponente', opp)):
+        w = _ec._onde(c, s)
+        if w and w[0] != '?':
+            return [lado] + w
+    return ['?', getattr(getattr(c, 'data', None), 'code', None)]
+
+
+def _diario_decisao_efeito(tipo, **campos):
+    from optcg_engine import estado_canonico as _ec
+    if _ec.DIARIO['on'] and not _EM_SIMULACAO['on']:
+        _ec.registra(dict(tipo=tipo, **campos))
+
+
+def _embrulha_escolha_de_carta(nome, rotulo, pula=None):
+    orig = getattr(EffectExecutor, nome)
+
+    def _emb(self, *a, **k):
+        r = orig(self, *a, **k)
+        if not (pula and pula(a, k)):
+            _diario_decisao_efeito('escolha_efeito', qual=rotulo,
+                                   carta=_diario_lugar_com_lado(r, self.me, self.opp))
+        return r
+    _emb.__wrapped__ = orig
+    _emb.__doc__ = orig.__doc__
+    setattr(EffectExecutor, nome, _emb)
+
+
+_embrulha_escolha_de_carta('_pick_effect_target', 'alvo')
+_embrulha_escolha_de_carta('_choose_to_trash', 'descarte',
+                           pula=lambda a, k: k.get('avaliando', a[1] if len(a) > 1 else False))
+_qec_orig = _q_escolhe_carta
+
+
+def _q_escolhe_carta(me, opp, familia, cartas, padrao):   # noqa: F811 -- embrulho do diario
+    """Busca, jogar de graca e custos que sacrificam carta: a carta escolhida
+    (o descarte ja e gravado pelo embrulho de `_choose_to_trash`, em todo caminho)."""
+    r = _qec_orig(me, opp, familia, cartas, padrao)
+    if familia != 'descarte':
+        _diario_decisao_efeito('escolha_efeito', qual=familia,
+                               carta=_diario_lugar_com_lado(r, me, opp))
+    return r
+
+
+_q_escolhe_carta.__wrapped__ = _qec_orig
+
+
+def _embrulha_veredito(nome):
+    orig = getattr(EffectExecutor, nome)
+
+    def _emb(self, *a, **k):
+        r = orig(self, *a, **k)
+        _diario_decisao_efeito('paga_custo', qual=nome, valor=(None if r is None else bool(r)))
+        return r
+    _emb.__wrapped__ = orig
+    _emb.__doc__ = orig.__doc__
+    setattr(EffectExecutor, nome, _emb)
+
+
+_embrulha_veredito('_worth_paying_optional_costs')
+_embrulha_veredito('_combat_buff_worth_paying')
+
+_execute_orig = EffectExecutor.execute
+
+
+def _execute_com_diario(self, card, trigger, *a, **k):
+    """Fronteiras do gatilho: o nucleo sabe de qual carta/gatilho e a fila de
+    decisoes seguinte, e se ele rodou (passos de efeito dentro)."""
+    from optcg_engine import estado_canonico as _ec
+    if not _ec.DIARIO['on'] or _EM_SIMULACAO['on']:
+        return _execute_orig(self, card, trigger, *a, **k)
+    p0 = _ec.DIARIO.get('passos', 0)
+    _ec.registra({'tipo': 'efeito_inicio', 'gatilho': trigger,
+                  'fonte': _diario_lugar_com_lado(card, self.me, self.opp)})
+    r = _execute_orig(self, card, trigger, *a, **k)
+    _ec.registra({'tipo': 'efeito_fim', 'gatilho': trigger,
+                  'passos': _ec.DIARIO.get('passos', 0) - p0})
+    return r
+
+
+_execute_com_diario.__wrapped__ = _execute_orig
+EffectExecutor.execute = _execute_com_diario

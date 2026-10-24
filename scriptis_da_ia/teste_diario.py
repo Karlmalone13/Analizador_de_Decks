@@ -12,7 +12,7 @@ from gerar_selfplay_dataset import _load_deck_list
 def joga(seed):
     dl = _load_deck_list()
     rng = random.Random(seed); ia, ib = rng.sample(range(len(dl)), 2); random.seed(seed)
-    ec.DIARIO.update(on=True, eventos=[])
+    ec.DIARIO.update(on=True, eventos=[], passos=0, acoes=[])
     m = de.OPTCGMatch(dl[ia][1], dl[ib][1]); m.setup()
     for n in range(m.MAX_TURNS * 2):
         p = (m.state_a if m.state_a.is_first else m.state_b) if n % 2 == 0 \
