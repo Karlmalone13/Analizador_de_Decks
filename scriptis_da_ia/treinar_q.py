@@ -402,6 +402,89 @@ def alvo_consequencia(d: dict, traj: dict, n: int = 2, lam: float = 0.5,
     return (1 - lam) / (1 + math.exp(-vant)) + lam * float(t[j][2])
 
 
+def escolhidas_vetorizado(rec, mm, vocab, traj, modo, rotulo, gen_min, queda_forte,
+                          n_cols, i_ld_q, cobertura, ancora):
+    """O laco das escolhidas do treino sobre COLUNAS (bloco 989). Mesmas regras,
+    mesma ordem e mesmos contadores do laco linha a linha (`for d in
+    _fonte_do_corpus`), sem `json.loads` nem dict por linha: filtros simples
+    viram mascara numpy; a consequencia usa a MESMA conta de
+    `alvo_consequencia`. Preenche `cobertura`/`ancora` no lugar.
+    Devolve (X float32, y, grupos, decisoes, escolhidas, familias, revisao,
+    mudou, n_lidas, n_filtradas_modo, n_sem_consequencia)."""
+    import math
+    import numpy as np
+    L, A, M = vocab['leader'], vocab['acao'], vocab['modo']
+    n = len(rec)
+    W = mm.shape[1] if mm is not None else 0
+    modo_ok = np.array([passa_filtro_modo({'modo': (m or None)}, modo) for m in M] or [False])
+    m_modo = modo_ok[rec['modo']] if n else np.zeros(0, bool)
+    m = m_modo.copy()
+    if gen_min:
+        m &= rec['gen'] >= gen_min
+    m &= rec['largura_ok'] == 1
+    if W != n_cols:
+        m &= False              # largura diferente do vetor atual: nunca entrava
+    fam_nome = [(a or None) or '?' for a in A]
+    apos = np.array([f in FAMILIAS_APOSENTADAS for f in fam_nome] or [False])
+    m &= ~apos[rec['acao']]
+    idx = np.nonzero(m)[0]
+    gen, mat, tur = rec['gen'].tolist(), rec['match'].tolist(), rec['turn'].tolist()
+    dec, decn = rec['decisao'].tolist(), rec['dec_none'].tolist()
+    esc, vez = rec['escolhida'].tolist(), rec['vez'].tolist()
+    alv, alvn = rec['alvo'].tolist(), rec['alvo_none'].tolist()
+    lid, aca = rec['leader'].tolist(), rec['acao'].tolist()
+    rev, mud, qd = rec['revisao'].tolist(), rec['mudou'].tolist(), rec['queda'].tolist()
+    ld_col = mm[:, i_ld_q] if (traj and n) else None
+    sel, y, grupos, decisoes, escolhidas, familias, revisao, mudou = ([] for _ in range(8))
+    n_sem = 0
+    for i in idx.tolist():
+        fam = fam_nome[aca[i]]
+        cob = cobertura.get(fam)
+        if cob is not None:
+            cob[0] += 1
+            cob[1] += 1 if esc[i] else 0
+        alvo = None if alvn[i] else alv[i]
+        lider = L[lid[i]] or None
+        d_dec = None if decn[i] else dec[i]
+        if traj:
+            _c = None
+            if esc[i] and d_dec is not None:
+                t = traj.get((gen[i], mat[i], lider))
+                k = tur[i]
+                ld_agora = ld_col[i]
+                base = k - 1 if vez[i] else k
+                if t and 0 <= base < len(t):
+                    if rotulo == 'td':
+                        j = base + 2 - 1
+                        _c = float(t[-1][2]) if j >= len(t) else t[j][3]
+                    else:
+                        j = min(base + 2 - 1, len(t) - 1)
+                        vant = t[j][1] - ld_agora
+                        _c = (1 - 0.5) / (1 + math.exp(-vant)) + 0.5 * float(t[j][2])
+            if _c is None:
+                n_sem += 1
+                continue
+            if esc[i] and alvo is not None:
+                ancora[(gen[i], mat[i], lider, d_dec)] = (float(alvo), float(_c))
+            alvo = _c
+            if cob is not None:
+                cob[2] += 1
+        if alvo is None:
+            continue
+        sel.append(i)
+        y.append(float(alvo))
+        grupos.append(lider or '?')
+        decisoes.append(('%s:%s' % (gen[i], mat[i]), d_dec))
+        escolhidas.append(bool(esc[i]))
+        familias.append(fam)
+        revisao.append(bool(rev[i]))
+        mudou.append(bool(mud[i]) and qd[i] >= queda_forte)
+    X = np.asarray(mm[np.asarray(sel, dtype=np.int64)], dtype=np.float32) if sel \
+        else np.empty((0, n_cols), dtype=np.float32)
+    return (X, y, grupos, decisoes, escolhidas, familias, revisao, mudou,
+            n, int((~m_modo).sum()), n_sem)
+
+
 CAMADAS = (64, 32)
 
 
@@ -591,7 +674,32 @@ def main() -> int:
         traj = traj_bin.trajetorias(Path(args.selfplay), avaliador=_aval)
     cobertura = {f: [0, 0, 0] for f in FAMILIAS_JOGO}   # linhas, escolhidas, consequencia
     ancora = {}
-    if True:
+    import os as _os
+    _vetor = (not _os.environ.get('OPTCG_Q_TEXTO') and not _os.environ.get('OPTCG_Q_LACO')
+              and Path(caminho).resolve() == corpus_escolhidas.INDICE.resolve())
+    if _vetor:
+        # COLUNAS (bloco 989): mesmas regras do laco abaixo, sem dict por linha.
+        # `OPTCG_Q_LACO=1` forca o laco linha a linha (conferencia).
+        import corpus_bin
+        _rec, _mm, _voc = corpus_bin.colunas()
+        (_Xv, y, grupos, decisoes, escolhidas, familias, revisao, mudou,
+         n_lidas, n_filtradas_modo, n_sem_consequencia) = escolhidas_vetorizado(
+            _rec, _mm, _voc, traj, args.modo, args.rotulo, args.gen_min, args.queda_forte,
+            n_cols, i_ld_q, cobertura, ancora)
+        del _rec
+
+        class _Pronto:
+            def __init__(self, m):
+                self.m = m
+
+            def __len__(self):
+                return len(self.m)
+
+            def matriz(self):
+                return self.m
+        X = _Pronto(_Xv)
+        del _Xv
+    if not _vetor:
         for d in _fonte_do_corpus(caminho):
             n_lidas += 1
             if not passa_filtro_modo(d, args.modo):

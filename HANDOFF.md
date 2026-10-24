@@ -1,5 +1,21 @@
 ﻿# HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-10-24 (989) - Escolhidas em COLUNAS (`corpus_bin` `meta.rec`) + laco vetorizado; REGRA_DADOS_BINARIOS
+
+**Regra nova do usuario**: linhas/colunas sao matriz; todo dado que puder ser binario e binario --
+`scriptis_da_ia/REGRA_DADOS_BINARIOS.md` (CLAUDE/AGENTS, hook pre-commit, memoria), commit 12b9767.
+**Escolhidas**: `corpus_bin` grava `meta.rec` (registro fixo COL: gen, match, turn, decisao(+nulo), escolhida, vez
+(ausente=True), revisao(existe), mudou, largura_ok, alvo(+nulo), queda(ausente=0), indices de lider/acao/modo) no
+MESMO laco do `meta.jsonl` (que fica pras analises). `treinar_q.escolhidas_vetorizado`: mesmas regras, ordem e
+contadores do laco linha a linha (mascaras numpy pro modo/gen_min/largura/aposentadas; consequencia com a MESMA
+conta). `OPTCG_Q_LACO=1` forca o laco antigo. **Prova**: contagens impressas IDENTICAS e modelo identico (dif 0,0,
+erro fora 0,19877). **Tempo**: medido isolado sem perfil, so LER as escolhidas linha a linha = 235 s; caminho novo
+inteiro = 108 s (colunas 4 + laco 104). MAS o treino completo deu 367 s x 369 s do anterior -- divergencia NAO
+explicada (suspeita: carga da maquina diferente); recronometrar em condicao limpa. O perfil (cProfile) INFLA laco
+Python -- os "280 s" do 988 eram sob perfil. Resto do laco (104 s) = consequencia linha a linha (4,6 mi consultas
+as trajetorias) -- vetorizar depois. Usuario: cache de propriedades por carta NAO serve (poder/custo/keywords mudam
+por efeito de turno) -- descartado; proximo e `linhas_pos` so recalculando o que a opcao de defesa muda.
+
 ## 2026-10-24 (988) - Perfil do treino + cache das trajetorias (`traj_bin.py`): modelo IDENTICO, treino 369 s
 
 **AS-IS** (cProfile de um treino inteiro, 627 s com o perfil): rede aprendendo (`fit`) so 95 s; ler as escolhidas
