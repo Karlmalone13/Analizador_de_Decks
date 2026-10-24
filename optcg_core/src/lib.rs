@@ -5,6 +5,7 @@ use std::collections::HashMap;
 
 pub mod acoes;
 pub mod cartas;
+pub mod efeitos;
 pub mod estado;
 pub mod turno;
 

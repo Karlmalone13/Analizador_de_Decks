@@ -25,6 +25,11 @@ from optcg_engine import decision_engine as de, estado_canonico as ec  # noqa: E
 from gerar_selfplay_dataset import _load_deck_list  # noqa: E402
 
 _REATIVAS = de.OPTCGMatch._OPP_TURN_REACTIVE_ACTIONS
+# Onda de efeitos 1 no nucleo: jogadas cujos passos de efeito estao TODOS aqui
+# vao para o Rust com a fila de decisoes do efeito.
+_ONDA = {'look_top_deck', 'add_to_hand', 'deck_bottom_rest', 'trash_rest', 'draw',
+         'gain_life', 'add_don', 'set_don_active',
+         'custo:trash_from_hand', 'custo:don_minus', 'custo:rest_don'}
 
 
 def _tem_efeito_de_inicio(estado: dict) -> bool:
@@ -82,7 +87,12 @@ def tabela_de_cartas(m) -> dict:
                            'counter': int(c.data.counter), 'card_type': c.data.card_type,
                            'has_trigger': bool(c.data.has_trigger),
                            'don_cond': c.data.don_cond_keywords_dict(),
-                           'custo_por_efeito': custo_ef, 'reduz_custo_mao': reduz}
+                           'custo_por_efeito': custo_ef, 'reduz_custo_mao': reduz,
+                           'name': c.data.name or '', 'sub_types': c.data.sub_types or '',
+                           'color': c.data.color or '', 'card_text': c.data.card_text or '',
+                           'attribute': getattr(c.data, 'attribute', '') or '',
+                           'alternate_names': list(getattr(c.data, 'alternate_names', ()) or ()),
+                           'efeitos': ef}
     return out
 
 
@@ -174,12 +184,20 @@ def main() -> int:
                 dec['counter_cartas'] = e['cartas']
             elif e['tipo'] == 'campo_cheio':
                 dec['campo_cheio'] = e['sai']
+            elif e['tipo'] in ('escolha_efeito', 'paga_custo'):
+                dec.setdefault('efeito', []).append(e)
             elif e['tipo'] == 'jogada':
                 t = e['acao']['tipo']
                 c = jog.setdefault(t, [0, 0, 0, 0])
                 if e.get('passos_efeito', 0):
-                    c[3] += 1
-                    continue
+                    if not (t == 'play' and set(e.get('acoes_efeito', [])) <= _ONDA):
+                        c[3] += 1
+                        continue
+                    t = 'play+efeito'
+                    c = jog.setdefault(t, [0, 0, 0, 0])
+                elif t == 'play':
+                    # sem passo de efeito: as decisoes de efeito (veredito sem custo) ficam
+                    dec.setdefault('efeito', [])
                 d = dict(dec)
                 if 'bloqueio' in d and d['bloqueio'] is None:
                     d['bloqueio'] = 'nenhum'      # null viraria "sem registro" no Rust

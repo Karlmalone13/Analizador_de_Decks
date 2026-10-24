@@ -25075,7 +25075,9 @@ def apply_conditional_keyword_passives(gs, opp):   # noqa: F811 -- embrulho do d
     def _foto():
         return [(id(c), c.has_blocker, c.has_rush, c.has_rush_character, c.has_double_attack,
                  c.has_banish, c.has_unblockable, c.power_buff, c.base_power_override)
-                for s in (gs, opp) for c in [s.leader] + list(s.field_chars)]
+                for s in (gs, opp)
+                for c in [s.leader, s.field_stage] + list(s.field_chars) + list(s.hand)
+                if c is not None]   # a passiva varre a MAO tambem
     antes = _foto()
     r = _akp_orig(gs, opp)
     if _foto() != antes:

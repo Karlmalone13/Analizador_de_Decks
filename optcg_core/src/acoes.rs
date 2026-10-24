@@ -8,6 +8,7 @@
 //! prontas em `Decisoes` -- no nucleo final sao pontos de decisao da busca.
 //! O que depende de efeito ainda fora do nucleo devolve `NaoSuportado`.
 use crate::cartas::{info, InfoCarta};
+use crate::efeitos::Executor;
 use crate::estado::{Carta, Estado, Jogador};
 use serde::Deserialize;
 use serde_json::Value;
@@ -20,6 +21,9 @@ pub struct Decisoes {
     #[serde(default)]
     pub counter_cartas: Vec<(String, usize)>,
     pub campo_cheio: Option<(String, usize)>,
+    /// decisoes DENTRO dos efeitos (escolha_efeito / paga_custo), na ordem
+    #[serde(default)]
+    pub efeito: Vec<Value>,
 }
 
 #[derive(Debug)]
@@ -96,6 +100,8 @@ fn anexar_don(e: &mut Estado, acao: &Value) -> Result<Resultado, Resultado> {
 }
 
 fn jogar(e: &mut Estado, acao: &Value, d: &Decisoes) -> Result<Resultado, Resultado> {
+    // reativos de "jogou personagem"/"ativou evento" e passivas de keyword ainda
+    // fora do nucleo: o teste so manda jogadas cujos passos estao na onda
     let (z, i) = lugar(&acao["ator"]).ok_or_else(|| ns("play sem ator"))?;
     if z != "hand" {
         return Err(ns("play fora da mao"));
@@ -116,6 +122,8 @@ fn jogar(e: &mut Estado, acao: &Value, d: &Decisoes) -> Result<Resultado, Result
     }
     let custo = custo_efetivo(carta, &inf);
     let mut carta = p.hand.remove(i);
+    let mut fonte = carta.clone();
+    let mut fila_resto: Option<std::collections::VecDeque<Value>> = None;
     p.don_rested += custo;
     p.don_available -= custo;
     match inf.card_type.as_str() {
@@ -133,10 +141,15 @@ fn jogar(e: &mut Estado, acao: &Value, d: &Decisoes) -> Result<Resultado, Result
             carta.rush_character_only_this_turn =
                 is_rush_character(&carta, &inf) && !is_rush(&carta, &inf);
             p.field_chars.push(carta);
+            fonte = p.field_chars.last().unwrap().clone();
+            let mut ex = Executor { fila: d.efeito.iter().cloned().collect() };
+            ex.dispara_jogou_personagem(&mut e.ativo, &mut e.oponente, &fonte)?;
+            fila_resto = Some(ex.fila);
         }
         "EVENT" => {
             p.trash.push(carta);
             p.events_activated_costs_this_turn.push(Value::from(inf.cost));
+            Executor { fila: Default::default() }.confere_evento_ativado(&e.ativo, &e.oponente)?;
         }
         "STAGE" => {
             if let Some(velho) = p.stage.take() {
@@ -145,6 +158,14 @@ fn jogar(e: &mut Estado, acao: &Value, d: &Decisoes) -> Result<Resultado, Result
             p.stage = Some(carta);
         }
         _ => return Err(ns("tipo de carta inesperado")),
+    }
+    // efeito ao jogar: on_play e depois main (os dois disparam)
+    let mut ex = Executor { fila: fila_resto.unwrap_or_else(|| d.efeito.iter().cloned().collect()) };
+    let (p, opp) = (&mut e.ativo, &mut e.oponente);
+    ex.executa(p, opp, &fonte, "on_play")?;
+    ex.executa(p, opp, &fonte, "main")?;
+    if !ex.fila.is_empty() {
+        return Err(ns("sobrou decisao de efeito na fila"));
     }
     Ok(Resultado::Feito { venceu: false })
 }

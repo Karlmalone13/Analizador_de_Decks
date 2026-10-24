@@ -21,6 +21,22 @@ pub struct InfoCarta {
     /// Stage que reduz custo de jogar da mao (buff_cost own_play_hand)
     #[serde(default)]
     pub reduz_custo_mao: bool,
+    // --- texto impresso usado por filtros/condicoes de efeito ---
+    #[serde(default)]
+    pub name: String,
+    #[serde(default)]
+    pub sub_types: String,
+    #[serde(default)]
+    pub color: String,
+    #[serde(default)]
+    pub card_text: String,
+    #[serde(default)]
+    pub attribute: String,
+    #[serde(default)]
+    pub alternate_names: Vec<String>,
+    /// blocos de efeito do `card_effects_db` (gatilho -> bloco), na ordem do banco
+    #[serde(default)]
+    pub efeitos: serde_json::Map<String, serde_json::Value>,
 }
 
 static TABELA: RwLock<Option<HashMap<String, InfoCarta>>> = RwLock::new(None);
