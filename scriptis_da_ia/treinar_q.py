@@ -355,17 +355,21 @@ def _mem(etapa, arr=None):
     """AS-IS de MEMORIA por etapa do treino (bloco 968): RAM em uso e o PICO do
     processo ate aqui, e o tipo/tamanho da matriz da etapa. So mede; sem psutil
     ou com erro, nao imprime nada e nao derruba o treino."""
+    # O RELOGIO sai SEMPRE (bloco 990): sem psutil o bloco 988 nao imprimia
+    # nada e o tempo por etapa ficou sem medida -- a otimizacao foi escolhida
+    # pelo cProfile, que infla laco Python.
+    import time as _t
+    extra = ''
+    if arr is not None:
+        extra = ' | matriz %s %s = %.2f GB' % (arr.dtype, 'x'.join(map(str, arr.shape)), arr.nbytes / 1e9)
     try:
         import psutil
         mi = psutil.Process().memory_info()
         pico = getattr(mi, 'peak_wset', 0) or getattr(mi, 'rss', 0)
-        extra = ''
-        if arr is not None:
-            extra = ' | matriz %s %s = %.2f GB' % (arr.dtype, 'x'.join(map(str, arr.shape)), arr.nbytes / 1e9)
-        import time as _t
-        print('  [MEM] %-26s %6.0fs | em uso %.2f GB | pico %.2f GB%s' % (etapa, _t.perf_counter() - _T0, mi.rss / 1e9, pico / 1e9, extra), flush=True)
+        mem = ' | em uso %.2f GB | pico %.2f GB' % (mi.rss / 1e9, pico / 1e9)
     except Exception:
-        pass
+        mem = ''
+    print('  [MEM] %-26s %6.0fs%s%s' % (etapa, _t.perf_counter() - _T0, mem, extra), flush=True)
 
 
 def alvo_consequencia(d: dict, traj: dict, n: int = 2, lam: float = 0.5,
@@ -671,7 +675,9 @@ def main() -> int:
         # Cache binario dos estados (bloco 988, `traj_bin.py`): mesmo dict, sem
         # reler/decodificar o selfplay a cada treino (57 s -> 16 s).
         import traj_bin
+        _mem('inicio das trajetorias')
         traj = traj_bin.trajetorias(Path(args.selfplay), avaliador=_aval)
+        _mem('trajetorias carregadas')
     cobertura = {f: [0, 0, 0] for f in FAMILIAS_JOGO}   # linhas, escolhidas, consequencia
     ancora = {}
     import os as _os
@@ -686,7 +692,13 @@ def main() -> int:
          n_lidas, n_filtradas_modo, n_sem_consequencia) = escolhidas_vetorizado(
             _rec, _mm, _voc, traj, args.modo, args.rotulo, args.gen_min, args.queda_forte,
             n_cols, i_ld_q, cobertura, ancora)
-        del _rec
+        # Solta o MAPA do arquivo de features (2,9 GB) e os auxiliares (bloco
+        # 990): com `_mm` vivo o Windows conta as paginas lidas no processo e,
+        # na maquina de 12 GB, as etapas seguintes passavam a paginar em disco
+        # (medido: fit 145 s -> 358 s, validacao 55 -> 87 s).
+        del _rec, _mm, _voc
+        import gc
+        gc.collect()
 
         class _Pronto:
             def __init__(self, m):

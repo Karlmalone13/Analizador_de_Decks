@@ -1,5 +1,17 @@
 ﻿# HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-10-24 (990) - Corpus ESVAZIADO (40,19 GB) + relogio por etapa explica o "treino nao caiu"
+
+**Corpus**: `corpus_git.py consolida --esvazia --confirmo` (confirmado pelo usuario): 40,19 GB liberados;
+indice/q_bin/alt_bin intactos (4.588.122 escolhidas, 42.471.123 linhas acumuladas), "nada a exportar".
+**Relogio**: `_mem` agora imprime o tempo SEMPRE (sem psutil nao imprimia nada no 988). Medido, mesma sessao:
+antigo (`OPTCG_Q_LACO=1`) 848 s -- escolhidas 452 s; novo 775 s -- escolhidas 73 s MAS fit 145 -> 358 s,
+validacao 55 -> 87: o `_mm` (mapa do feats.f32, 2,9 GB) ficava vivo e o processo paginava (maquina de 12 GB).
+Corrigido (`del _rec, _mm, _voc` + gc): **novo 422 s** -- escolhidas 43, validacao 42, priorizado+revisao 128,
+fit 140. O cProfile do 988 inflava laco Python (era a regua errada pra escolher alvo). Totais desta sessao maiores
+que os 367 s de antes (carga da maquina diferente); comparar so dentro da mesma sessao.
+PROXIMO: priorizacao+revisao (128 s, subiu de 90) e o fit (140 s).
+
 ## 2026-10-24 (989) - Escolhidas em COLUNAS (`corpus_bin` `meta.rec`) + laco vetorizado; REGRA_DADOS_BINARIOS
 
 **Regra nova do usuario**: linhas/colunas sao matriz; todo dado que puder ser binario e binario --
