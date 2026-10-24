@@ -8901,39 +8901,6 @@
     "decision_log_file": "decisions/decisions_2026-10-21T22.20.24_p3.jsonl"
   },
   {
-    "id": "2026-10-24T02.42.34",
-    "impressao": "11496652249fc40d48c2939aaa4a1891",
-    "friendly_name": "Dracule.Mihawk-G_x_Marshall.D.Teach-KY",
-    "date": "2026-10-24",
-    "p1": {
-      "name": "You",
-      "leader_code": "OP14-020",
-      "leader_name": "Dracule Mihawk",
-      "slug": "Dracule.Mihawk-G"
-    },
-    "p2": {
-      "name": "Opponent",
-      "leader_code": "OP16-080",
-      "leader_name": "Marshall D. Teach",
-      "slug": "Marshall.D.Teach-KY"
-    },
-    "turns": 12,
-    "winner": "p2",
-    "bot_side": "p1",
-    "tipo": "com_bot",
-    "log_file": "raw/Dracule.Mihawk-G_x_Marshall.D.Teach-KY_2026-10-24T02.42.34.log",
-    "parsed_file": "parsed/Dracule.Mihawk-G_x_Marshall.D.Teach-KY_2026-10-24T02.42.34.json",
-    "deck_files": {
-      "You": "decks/Dracule.Mihawk-G_2026-10-24T02.42.34.json",
-      "Opponent": "decks/Marshall.D.Teach-KY_2026-10-24T02.42.34.json"
-    },
-    "deck_full_files": {
-      "You": "decks_full/Dracule.Mihawk-G_2026-10-24T02.42.34.json",
-      "Opponent": "decks_full/Marshall.D.Teach-KY_2026-10-24T02.42.34.json"
-    },
-    "decision_log_file": "decisions/decisions_2026-10-24T02.42.34.jsonl"
-  },
-  {
     "id": "2026-10-24T09.54.37_p2",
     "impressao": "29fbd31dfc1baf293cb57cb588a7cf3d",
     "friendly_name": "Marshall.D.Teach-KY_x_Edward.Newgate-R",
