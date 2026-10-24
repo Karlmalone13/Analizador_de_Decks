@@ -58,13 +58,18 @@ def carta(c) -> dict | None:
     return out
 
 
-# Conjuntos de `id()` de objeto (memoria) -- viram o LUGAR das cartas.
-_IDS = {'revealed_deck', 'revealed_life', 'revealed_to_opponent'}
+# Conjuntos de `id()` de objeto (memoria) -- viram o LUGAR das cartas, e SO na
+# zona a que se referem: o motor limpa estes conjuntos de forma PREGUICOSA
+# (`known_hand_cards`/`known_life_cards`/`known_deck_cards`), entao o conteudo
+# cru depende de quando alguem LEU a informacao. A regra: revelada na mao deixa de
+# ser conhecida ao sair da mao (idem vida e deck).
+_IDS = {'revealed_deck': ('deck',), 'revealed_life': ('life',),
+        'revealed_to_opponent': ('hand',)}
 
 
-def _lugares_de_ids(s, ids) -> list:
+def _lugares_de_ids(s, ids, zonas=None) -> list:
     out = []
-    for z in ('leader', 'stage') + _ZONAS:
+    for z in (zonas or (('leader', 'stage') + _ZONAS)):
         cs = ([s.leader] if z == 'leader' else [s.field_stage] if z == 'stage'
               else list(getattr(s, z) or []))
         for i, c in enumerate(cs):
@@ -83,7 +88,7 @@ def jogador(s) -> dict:
         v = getattr(s, f.name)
         if f.name in _IDS:
             # `id()` muda a cada execucao: guarda ONDE estao as cartas reveladas
-            out[f.name] = _lugares_de_ids(s, set(v or ()))
+            out[f.name] = _lugares_de_ids(s, set(v or ()), _IDS[f.name])
         else:
             out[f.name] = _valor(v)
     return out

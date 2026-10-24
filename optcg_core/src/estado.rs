@@ -31,6 +31,17 @@ pub struct Carta {
     pub battled_opp_character_this_turn: bool,
     pub cannot_attack_opp_chars_cost_lte: i64,
     pub own_effect_negated_this_turn: bool,
+    pub cost_buff_permanent: i64,
+    pub base_power_override: Option<i64>,
+    pub base_power_override_opp_turn: Option<i64>,
+    pub has_rush: bool,
+    pub has_rush_character: bool,
+    pub has_double_attack: bool,
+    pub has_banish: bool,
+    pub has_unblockable: bool,
+    pub has_blocker: bool,
+    pub life_face_up: bool,
+    pub rush_character_only_this_turn: bool,
     /// Revelada ao oponente (bit 0 = revealed_deck, 1 = revealed_life,
     /// 2 = revealed_to_opponent). Marca DA CARTA: viaja com ela entre zonas.
     /// No canonico do Python sao listas de LUGARES (ver `estado_canonico.py`).
@@ -67,6 +78,8 @@ pub struct Jogador {
     pub revealed_deck: Vec<(String, usize)>,
     pub revealed_life: Vec<(String, usize)>,
     pub revealed_to_opponent: Vec<(String, usize)>,
+    pub face_up_life_to_deck: bool,
+    pub blocker_lock_battle: serde_json::Value,
     #[serde(flatten)]
     pub extras: Map<String, Value>,
 }
@@ -105,13 +118,21 @@ impl Jogador {
     }
 
     /// Marca nas cartas -> lugares (na ordem do canonico). Chamar antes de gravar.
+    /// Cada marca so vale na zona a que se refere (bit 0 deck, 1 vida, 2 mao):
+    /// carta que saiu da zona perde a marca (mesma regra do canonico do Python).
     pub fn recalcula_reveladas(&mut self) {
+        const ZONA_DO_BIT: [&str; 3] = ["deck", "life", "hand"];
         let mut out: [Vec<(String, usize)>; 3] = [vec![], vec![], vec![]];
         for z in ZONAS {
             for (i, c) in self.zona_mut(z).into_iter().enumerate() {
                 for (bit, lista) in out.iter_mut().enumerate() {
-                    if c.revelada & (1 << bit) != 0 {
+                    if c.revelada & (1 << bit) == 0 {
+                        continue;
+                    }
+                    if ZONA_DO_BIT[bit] == z {
                         lista.push((z.to_string(), i));
+                    } else {
+                        c.revelada &= !(1 << bit);
                     }
                 }
             }

@@ -1,5 +1,28 @@
 ﻿# HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-10-24 (997) - Nucleo Rust: jogadas sem efeito com 100% de paridade (30 partidas)
+
+`optcg_core/src/acoes.rs` + `cartas.rs` (tabela de dados impressos): anexar DON, jogar carta (personagem/evento/
+stage, campo cheio) e combate (DON do ataque, bloqueio, counter de personagem, dano na vida c/ banish/face-up,
+KO com DON voltando restado). Decisoes que o motor esconde DENTRO da regra viram registro no diario
+(`don_ataque`, `bloqueio`, `counter_cartas`, `campo_cheio`) -- no nucleo final serao pontos de decisao.
+Jogada "sem efeito" = `passos_efeito` 0 no diario; embrulhos no FIM do decision_engine contam tambem os efeitos
+que nao passam por `_execute_step`: eventos de [Counter] (`try_counter_event_*`), passiva condicional de keyword
+(`apply_conditional_keyword_passives`, por mudanca), custo de jogar alterado por efeito
+(`effective_hand_play_cost`) e custo de efeito (`_pay_costs`). Assinatura das partidas IDENTICA (so contam).
+**Paridade (30 partidas)**: ida e volta 3.910/3.910, inicio de turno 326/326, anexar DON 128/128, jogar carta
+123/123, ataque 300/300. Fora desta onda: jogadas com efeito (650), `activate` (13), trigger na vida (3).
+**ACHADOS no motor Python (revisar -- valem pros dois motores)**:
+1. `_pay_costs`: custo opcional `don_minus` 2 com 1 DON disponivel TIROU 1 DON e o efeito nao rodou (custo pago
+   pela metade). Ex.: OP15-078 [Main]. Regra: custo que nao da pra pagar inteiro nao e pago.
+2. Poder do DEFENSOR = `card.power + power_buff` -- ignora `base_power_override` (atacante usa).
+3. Counter de personagem soma o counter IMPRESSO (`c.counter`), nao o `effective_counter` usado na decisao.
+4. `revealed_*` sao conjuntos de `id()` limpos de forma PREGUICOSA (so quando alguem chama `known_*_cards`): o
+   conteudo depende de leitura, e carta que sai e volta pra zona pode reaparecer revelada. No canonico (e no
+   Rust) cada marca vale so na propria zona.
+PROXIMO: fim de turno (fim_antes->fim_depois), depois a 1a ONDA DE EFEITOS (buff_power, draw, play_card,
+keyword_blocker, ko, look_top_deck, add_to_hand, deck_bottom_rest...).
+
 ## 2026-10-24 (996) - Fase A.1 (1o passo): nucleo Rust com 100% de paridade no INICIO DE TURNO
 
 `optcg_core/src/estado.rs`: Carta/Jogador/Estado tipados nos campos que as regras ja usam; o resto passa intacto

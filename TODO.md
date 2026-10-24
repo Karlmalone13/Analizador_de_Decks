@@ -4,6 +4,8 @@
 
 > **980**: defesa na arvore com 3 mundos PROMOVE 271x214 (55,9%), ligada. PENDENTE: ST03-001 perde 3x14 com ela (investigar mecanismo); partidas contra o usuario (agora 973+974+980); acelerar o motor de regras pra portoes mais curtos.
 
+> **997**: nucleo Rust 100% nas jogadas sem efeito (DON 128/128, jogar 123/123, ataque 300/300; 30 partidas). 4 achados no motor Python (custo don_minus pago pela metade; defensor ignora base_power_override; counter soma impresso; revealed por id limpo preguicoso). Proximo: fim de turno + 1a onda de efeitos.
+
 > **996**: nucleo Rust 100% de paridade no inicio de turno (213/213, 20 partidas); ida e volta do estado 2.550/2.550. Proximo: fim de turno + jogadas sem efeito.
 
 > **995**: A.0 -- ESPEC do nucleo, estado canonico e DIARIO de paridade deterministico (teste_diario OK). Proximo: A.1 (estado + turno basico + combate em Rust contra o diario). Risco anotado: revealed_* por id() no motor Python.

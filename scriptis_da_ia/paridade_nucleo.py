@@ -64,6 +64,28 @@ def _primeira_diferenca(a, b, cam=''):
     return None if a == b else (cam, a, b)
 
 
+def tabela_de_cartas(m) -> dict:
+    """Dados IMPRESSOS das cartas da partida, no formato `optcg_core::cartas::InfoCarta`."""
+    out = {}
+    for s in (m.state_a, m.state_b):
+        for c in [s.leader] + list(s.deck) + list(s.hand) + list(s.life) + list(s.field_chars) +                 list(s.trash) + ([s.field_stage] if s.field_stage else []):
+            if c is None or c.code in out:
+                continue
+            ef = de.get_card_effects(c.code)
+            pas = ef.get('passive', {})
+            custo_ef = any(st.get('target') == 'own_play_self'
+                           and st.get('action') in ('debuff_cost', 'set_play_cost')
+                           for st in pas.get('steps', []))
+            reduz = any(st.get('action') == 'buff_cost' and st.get('target') == 'own_play_hand'
+                        for b in ef.values() if isinstance(b, dict) for st in b.get('steps', []))
+            out[c.code] = {'cost': int(c.data.cost), 'power': int(c.data.power),
+                           'counter': int(c.data.counter), 'card_type': c.data.card_type,
+                           'has_trigger': bool(c.data.has_trigger),
+                           'don_cond': c.data.don_cond_keywords_dict(),
+                           'custo_por_efeito': custo_ef, 'reduz_custo_mao': reduz}
+    return out
+
+
 def diario_de(seed: int) -> list:
     dl = _load_deck_list()
     rng = random.Random(seed)
@@ -73,6 +95,7 @@ def diario_de(seed: int) -> list:
     try:
         m = de.OPTCGMatch(dl[ia][1], dl[ib][1])
         m.setup()
+        optcg_core.carrega_cartas(json.dumps(tabela_de_cartas(m)))
         for n in range(m.MAX_TURNS * 2):
             p = (m.state_a if m.state_a.is_first else m.state_b) if n % 2 == 0 \
                 else (m.state_b if m.state_a.is_first else m.state_a)
@@ -91,6 +114,8 @@ def main() -> int:
     ap.add_argument('--seed', type=int, default=1000)
     a = ap.parse_args()
     tot = {'ida_volta': [0, 0], 'inicio_turno': [0, 0], 'pulados': 0}
+    jog = {}      # tipo -> [identicas, conferidas, nao_suportadas, com_efeito]
+    motivos = {}
     divs = []
     for i in range(a.partidas):
         ev = diario_de(a.seed + i)
@@ -120,6 +145,44 @@ def main() -> int:
                 tot['inicio_turno'][0] += 1
             elif len(divs) < 12:
                 divs.append(('inicio_turno', a.seed + i, d))
+        dec = {}
+        for e in ev:
+            if e['tipo'] == 'jogada_inicio':
+                dec = {}
+            elif e['tipo'] == 'don_ataque':
+                dec['don_ataque'] = e['qtd']
+            elif e['tipo'] == 'bloqueio':
+                dec['bloqueio'] = e['carta']
+            elif e['tipo'] == 'counter_cartas':
+                dec['counter_cartas'] = e['cartas']
+            elif e['tipo'] == 'campo_cheio':
+                dec['campo_cheio'] = e['sai']
+            elif e['tipo'] == 'jogada':
+                t = e['acao']['tipo']
+                c = jog.setdefault(t, [0, 0, 0, 0])
+                if e.get('passos_efeito', 0):
+                    c[3] += 1
+                    continue
+                d = dict(dec)
+                if 'bloqueio' in d and d['bloqueio'] is None:
+                    d['bloqueio'] = 'nenhum'      # null viraria "sem registro" no Rust
+                st, r, venceu = optcg_core.aplica_jogada(json.dumps(e['antes']), json.dumps(e['acao']),
+                                                          json.dumps(d))
+                if st != 'ok':
+                    c[2] += 1
+                    motivos[r] = motivos.get(r, 0) + 1
+                    continue
+                c[1] += 1
+                dif = _primeira_diferenca(e['depois'], json.loads(r))
+                if dif is None and venceu == e['venceu']:
+                    c[0] += 1
+                elif len(divs) < 15:
+                    divs.append((f'jogada {t}', a.seed + i, dif or ('venceu', e['venceu'], venceu)))
+    for t, (ok, n, nao, efe) in sorted(jog.items()):
+        print(f'jogada {t:11s} {ok}/{n} identicas ({100 * ok / max(n, 1):.1f}%) | '
+              f'nao suportadas {nao} | com efeito {efe} (fora desta onda)')
+    for m_, n_ in sorted(motivos.items(), key=lambda x: -x[1]):
+        print(f'   nao suportado: {m_} ({n_})')
     for k in ('ida_volta', 'inicio_turno'):
         ok, n = tot[k]
         print(f'{k:14s} {ok}/{n} identicos ({100 * ok / max(n, 1):.1f}%)')
@@ -127,7 +190,8 @@ def main() -> int:
     for d in divs:
         print('DIVERGE', d[0], 'seed', d[1], 'campo', d[2][0], '| python', repr(d[2][1])[:60],
               '| rust', repr(d[2][2])[:60])
-    return 0 if all(tot[k][0] == tot[k][1] for k in ('ida_volta', 'inicio_turno')) else 1
+    return 0 if (all(tot[k][0] == tot[k][1] for k in ('ida_volta', 'inicio_turno'))
+                 and all(v[0] == v[1] for v in jog.values())) else 1
 
 
 if __name__ == '__main__':

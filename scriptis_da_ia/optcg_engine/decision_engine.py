@@ -8368,6 +8368,9 @@ class EffectExecutor:
 
     def _execute_step(self, step: dict, card: Card) -> str:
         from optcg_engine.rules_facade import eligible_cards
+        from optcg_engine import estado_canonico as _ec
+        if _ec.DIARIO['on']:     # paridade (fase A): jogada "sem efeito" = 0 passos
+            _ec.DIARIO['passos'] = _ec.DIARIO.get('passos', 0) + 1
 
         action = step.get('action', '')
         self._fonte_em_curso = card   # quem aplica o efeito, pro alvo (bloco 910)
@@ -17246,6 +17249,10 @@ class DecisionEngine:
         if not (escolha and all(any(x is h for h in self.me.hand) for x in escolha)
                 and sum(effective_counter(x, self.me) for x in escolha) >= needed):
             escolha, _, total = self.pick_counters(needed)
+        from optcg_engine import estado_canonico as _ec
+        if _ec.DIARIO['on'] and not _EM_SIMULACAO['on']:
+            _ec.registra({'tipo': 'counter_cartas',
+                          'cartas': [_ec._onde(c, self.me) for c in escolha]})
         for c in escolha:
             remove_by_identity(self.me.hand, c)
             self.me.trash.append(c)
@@ -22185,12 +22192,14 @@ class OPTCGMatch:
         if _dia:
             _antes = _ec.canonico(p, opp)
             _desc = _ec.descreve_acao(action, p, opp)
+            _passos0 = _ec.DIARIO.get('passos', 0)
             _ec.registra({'tipo': 'jogada_inicio', 'acao': _desc,
                           'lado': 'A' if p is self.state_a else 'B'})
         r = self._apply_action_inner(action, p, opp, ee, engine, verbose)
         if _dia:
             _ec.registra({'tipo': 'jogada', 'acao': _desc, 'antes': _antes,
                           'depois': _ec.canonico(p, opp), 'venceu': bool(r),
+                          'passos_efeito': _ec.DIARIO.get('passos', 0) - _passos0,
                           'lado': 'A' if p is self.state_a else 'B'})
         try:
             ee.reavalia_passivos_de_poder()      # bloco 958: passivo e continuo
@@ -22299,6 +22308,9 @@ class OPTCGMatch:
                     self._lethal_don_forcado = _ant
             else:
                 attached = self._attach_don_for_attack(attacker, ttype, tgt, p, opp, engine, verbose)
+            from optcg_engine import estado_canonico as _ec
+            if _ec.DIARIO['on'] and not _EM_SIMULACAO['on']:
+                _ec.registra({'tipo': 'don_ataque', 'qtd': int(attached or 0)})
             if verbose:
                 tgt_name = 'Leader' if ttype == 'leader' else (tgt.name[:20] if tgt else '?')
                 print(f'    {attacker.name[:20]} ({attack_time_power(attacker, opp)}pwr) ataca {tgt_name}')
@@ -23789,6 +23801,9 @@ class OPTCGMatch:
         if card.card_type == 'CHARACTER':
             if len(p.field_chars) >= 5:
                 worst = quem_sai_do_campo_cheio(p.field_chars)
+                from optcg_engine import estado_canonico as _ec
+                if _ec.DIARIO['on'] and not _EM_SIMULACAO['on']:
+                    _ec.registra({'tipo': 'campo_cheio', 'sai': _ec._onde(worst, p)})
                 remove_character_from_field(p, worst, 'trash')
                 if verbose:
                     print(f'    campo cheio -> descartou {worst.name[:25]}')
@@ -24025,6 +24040,10 @@ class OPTCGMatch:
         opp_engine = DecisionEngine(opp, p)
         blocker = opp_engine.should_use_blocker(
             atk_power, alvo=(target if target_type != 'leader' else None), dano=damage)
+        from optcg_engine import estado_canonico as _ec
+        if _ec.DIARIO['on'] and not _EM_SIMULACAO['on']:
+            _ec.registra({'tipo': 'bloqueio',
+                          'carta': _ec._onde(blocker, opp) if blocker is not None else None})
         opp.blocker_lock_battle = None   # trava era so pra ESTA batalha -- limpa already-consumida
         if blocker and not attacker.has_unblockable and not attacker.unblockable_this_turn:
             target_type = 'character'
@@ -25009,3 +25028,75 @@ def simular_matchup(deck_a: tuple, deck_b: tuple, n: int = 100) -> dict:
         'triggers_pg_a':  round(triggers_a  / total, 1) if total > 0 else 0,
         'triggers_pg_b':  round(triggers_b  / total, 1) if total > 0 else 0,
     }
+
+
+# ── DIARIO DE PARIDADE: efeitos que NAO passam por `_execute_step` ─────────────
+# (PLANO_MOTOR_FORTE fase A). O teste diferencial confere no nucleo Rust so as
+# jogadas "sem efeito" (0 passos). Estes caminhos mudam o estado por efeito sem
+# executar passo -- evento de [Counter] (resolvido por funcao propria), passivas
+# condicionais de keyword/poder e custo de jogar alterado por efeito. Embrulhados
+# AQUI, num ponto so: so CONTAM com o diario ligado; nao mudam nenhum resultado.
+def _diario_conta_efeito():
+    from optcg_engine import estado_canonico as _ec
+    if _ec.DIARIO['on']:
+        _ec.DIARIO['passos'] = _ec.DIARIO.get('passos', 0) + 1
+
+
+def _embrulha_metodo_que_age(cls, nome):
+    orig = getattr(cls, nome)
+
+    def _emb(self, *a, **k):
+        r = orig(self, *a, **k)
+        if r:
+            _diario_conta_efeito()
+        return r
+    _emb.__wrapped__ = orig
+    _emb.__doc__ = orig.__doc__
+    setattr(cls, nome, _emb)
+
+
+for _n in ('try_counter_event_power', 'try_counter_event_debuff',
+           'try_counter_event_ko_attacker', 'try_counter_event_substitute'):
+    _embrulha_metodo_que_age(EffectExecutor, _n)
+
+_akp_orig = apply_conditional_keyword_passives
+
+
+def apply_conditional_keyword_passives(gs, opp):   # noqa: F811 -- embrulho do diario
+    from optcg_engine import estado_canonico as _ec
+    if not _ec.DIARIO['on']:
+        return _akp_orig(gs, opp)
+    def _foto():
+        return [(id(c), c.has_blocker, c.has_rush, c.has_rush_character, c.has_double_attack,
+                 c.has_banish, c.has_unblockable, c.power_buff, c.base_power_override)
+                for s in (gs, opp) for c in [s.leader] + list(s.field_chars)]
+    antes = _foto()
+    r = _akp_orig(gs, opp)
+    if _foto() != antes:
+        _diario_conta_efeito()
+    return r
+
+
+_ehpc_orig = effective_hand_play_cost
+
+
+def effective_hand_play_cost(p, card, opp=None):   # noqa: F811 -- embrulho do diario
+    c = _ehpc_orig(p, card, opp)
+    from optcg_engine import estado_canonico as _ec
+    if _ec.DIARIO['on'] and c != max(0, card.effective_cost()):
+        _diario_conta_efeito()
+    return c
+
+
+_pay_costs_orig = EffectExecutor._pay_costs
+
+
+def _pay_costs_com_diario(self, costs, card):
+    """Custo de efeito (ex.: `don_minus`) muda o estado sem `_execute_step`."""
+    if costs:
+        _diario_conta_efeito()
+    return _pay_costs_orig(self, costs, card)
+
+
+_pay_costs_com_diario.__wrapped__ = _pay_costs_orig
+EffectExecutor._pay_costs = _pay_costs_com_diario
