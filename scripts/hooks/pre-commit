@@ -55,6 +55,18 @@ if [ -f "$REPO_ROOT/scriptis_da_ia/REGRA_SEM_DUPLICACAO.md" ]; then
     echo ""
 fi
 
+# DADOS BINARIOS / MATRIZ (24/10/2026, regra do usuario): "colunas e linha tem
+# de ser matriz, e todos os dados que puderem ser binarios devem ser binarios".
+if [ -f "$REPO_ROOT/scriptis_da_ia/REGRA_DADOS_BINARIOS.md" ]; then
+    echo "=============================================================="
+    echo " OBRIGATORIO: scriptis_da_ia/REGRA_DADOS_BINARIOS.md"
+    echo "=============================================================="
+    head -n 24 "$REPO_ROOT/scriptis_da_ia/REGRA_DADOS_BINARIOS.md"
+    echo "    [...] arquivo completo: scriptis_da_ia/REGRA_DADOS_BINARIOS.md"
+    echo "=============================================================="
+    echo ""
+fi
+
 # INSTRUCAO MESTRA DO ML (27/09/2026, regra do projeto dada pelo usuario:
 # "esse vai ser suas regras nesse projeto agora, pois voce estava desviando
 # muito do que eu estava pedindo"). Impressa INTEIRA em todo commit.

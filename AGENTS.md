@@ -185,6 +185,13 @@ Regras-chave (resumo — leia o resto deste arquivo):
   obrigatória antes de qualquer commit, **impressa por inteiro pelo hook
   `pre-commit`**, mesmo tratamento do `MEMORY.md`:
   [`scriptis_da_ia/REGRA_O_CRITERIO_EMERGE.md`](scriptis_da_ia/REGRA_O_CRITERIO_EMERGE.md).
+- **Linhas e colunas sao MATRIZ; todo dado que puder ser binario e BINARIO**
+  (regra do usuario, 24/10/2026: *"colunas e linha tem de ser matriz, e todos os
+  dados que puderem ser binarios devem ser binarios"*). Leitura obrigatoria antes
+  de qualquer commit, impressa pelo hook `pre-commit`:
+  [`scriptis_da_ia/REGRA_DADOS_BINARIOS.md`](scriptis_da_ia/REGRA_DADOS_BINARIOS.md)
+  -- inclui o metodo obrigatorio (AS-IS, mesmo tipo numerico, mesma ordem,
+  conferencia que pode falhar, modelo identico) e o inventario do que falta.
   Na palavra dele: *"o machine learning é para o Bot ir aprendendo, então o
   critério para materializar vai surgir com os testes, o ML vai testando as
   alternativas e esse critério vai surgindo"*. **O critério não existe no
