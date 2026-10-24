@@ -24,6 +24,8 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 import corpus_escolhidas as ce  # noqa: E402
 import corpus_git as cg  # noqa: E402
+import alt_bin  # noqa: E402
+import corpus_bin  # noqa: E402
 
 falhas = []
 
@@ -52,6 +54,9 @@ def aponta(d: Path, git: Path):
     ce.INDICE = m / 'q_escolhidas.jsonl'
     ce.META = m / 'q_escolhidas_meta.json'
     ce.ALTERNATIVAS = m / 'q_alternativas.jsonl'
+    alt_bin.DIR = m / 'q_alt_bin'
+    alt_bin.VOCAB = alt_bin.DIR / 'vocab.json'
+    alt_bin.largura = lambda: 3
     cg._tamanho_estavel = lambda espera=0: True
 
 
@@ -76,7 +81,8 @@ try:
     aponta(A, git)
     # TRAVA (bloco 984): este teste ja apagou o indice REAL uma vez. Nenhum
     # caminho pode cair fora do diretorio temporario.
-    for p in (cg.CORPUS, cg.FATIAS, cg.LIVRO, ce.ORIGEM, ce.INDICE, ce.META, ce.ALTERNATIVAS):
+    for p in (cg.CORPUS, cg.FATIAS, cg.LIVRO, ce.ORIGEM, ce.INDICE, ce.META, ce.ALTERNATIVAS,
+              alt_bin.DIR, alt_bin.VOCAB):
         assert str(p).startswith(str(base)), f'caminho REAL no teste: {p}'
 
     # historico: 3 geracoes, escolhidas e alternativas
@@ -114,6 +120,10 @@ try:
     alt = [json.loads(l)['gen'] for l in ce.ALTERNATIVAS.read_text(encoding='utf-8').splitlines()]
     ok(alt and min(alt) >= 1 and 3 in alt,
        f'alternativas seguem a janela de 3 geracoes ({sorted(set(alt))})')
+    bins = sorted(int(p.stem.split('_')[1]) for p in alt_bin.DIR.glob('gen_*.rec'))
+    ok(bins == sorted(set(alt)), f'binario das alternativas segue a MESMA janela ({bins})')
+    ok([d['gen'] for d in alt_bin.linhas()] == alt,
+       'binario devolve as alternativas na MESMA ordem do texto')
 
     # CONTROLE: truncar sem marca_esvaziado reconstroi (perde o historico)
     with open(cg.CORPUS, 'r+b') as fh:

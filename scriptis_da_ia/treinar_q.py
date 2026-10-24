@@ -950,11 +950,18 @@ def main() -> int:
     n_alt = 0
     if args.peso_alternativas > 0 and traj and corpus_escolhidas.ALTERNATIVAS.exists():
         Xa, ya = [], []
-        with corpus_escolhidas.ALTERNATIVAS.open(encoding='utf-8') as fh:
-            for linha in fh:
-                d = json.loads(linha)
+        # BINARIO por geracao (bloco 986, `alt_bin.py`): mesmas linhas, mesma
+        # ordem, sem `json.loads` de ~158 numeros por linha. Sem binario valido
+        # (largura mudou / nunca construido), le o texto como antes.
+        import alt_bin
+        if alt_bin.valido():
+            _fonte = alt_bin.linhas()
+        else:
+            _fonte = (json.loads(l) for l in
+                      corpus_escolhidas.ALTERNATIVAS.open(encoding='utf-8'))
+        for d in _fonte:
                 f, a = d.get('feats'), d.get('alvo')
-                if not f or a is None or d.get('acao') not in FAMILIAS_JOGO:
+                if f is None or len(f) == 0 or a is None or d.get('acao') not in FAMILIAS_JOGO:
                     continue
                 # MESMA REGUA da escolhida (bloco 937b): a nota crua da
                 # simulacao e o valor LOGO apos a jogada, sem a resposta do

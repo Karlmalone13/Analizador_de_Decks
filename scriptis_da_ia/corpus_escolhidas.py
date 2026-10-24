@@ -118,6 +118,11 @@ def atualiza(origem: Path | None = None, indice: Path | None = None,
                 janela <<= 2
         gen_max = max(gs) if gs else 0
     corte = gen_max - GERACOES_ALT + 1
+    # Binario das alternativas POR GERACAO (bloco 986), escrito no MESMO laco.
+    import alt_bin
+    if recomecou:
+        alt_bin.apaga()
+    _ab = alt_bin.Escritor(completo_ao_fechar=True if recomecou else None)
     with open(origem, 'rb') as fi, open(indice, 'ab') as fo, open(ALTERNATIVAS, 'ab') as fa:
         fi.seek(offset)
         for ln in fi:
@@ -134,7 +139,9 @@ def atualiza(origem: Path | None = None, indice: Path | None = None,
                 g = int(g.group(1)) if g else 0
                 if g >= corte:
                     fa.write(ln)
+                    _ab.add(json.loads(ln))
                     gen_max = max(gen_max, g)
+    _ab.fecha()
     _poda_alternativas(gen_max - GERACOES_ALT + 1)
     META.write_text(json.dumps({
         'offset': offset, 'linhas': linhas, 'escolhidas': escolhidas, 'gen_max': gen_max,
@@ -167,6 +174,8 @@ def marca_esvaziado() -> None:
 
 def _poda_alternativas(corte: int) -> None:
     """Tira do arquivo de alternativas as geracoes que sairam da janela."""
+    import alt_bin
+    alt_bin.poda(corte)
     if not ALTERNATIVAS.exists():
         return
     with open(ALTERNATIVAS, 'rb') as fh:

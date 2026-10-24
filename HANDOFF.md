@@ -1,5 +1,18 @@
 ﻿# HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-10-24 (986) - Alternativas em binario POR GERACAO (`alt_bin.py`): leitura 228 s -> 69 s, entrada identica
+
+Pedido do usuario: mais coisas em binario ANTES de esvaziar o corpus. `q_alternativas.jsonl` (3,6 GB, todo treino,
+json.loads de ~158 numeros/linha) e podado a cada geracao -> binario unico seria refeito todo ciclo; entao um par
+`gen_<g>.f32` (float32, ja completado pela regra do treino) + `gen_<g>.rec` (registro fixo: seq, alvo, match,
+decisao, ok, indices de lider/acao/modo) por geracao em `metrics/q_alt_bin/` (gitignored). Escrito por
+`corpus_escolhidas.atualiza` no MESMO laco do texto; `_poda_alternativas` apaga as geracoes velhas; reconstrucao
+apaga tudo. `seq` preserva a ORDEM do texto (o treino sorteia com semente fixa). `treinar_q` usa o binario se
+`alt_bin.valido()` (W atual e completo), senao o texto. `not f` -> `f is None or len(f) == 0` (numpy).
+**Conferencia** (`confere_alt_bin.py --constroi`): 3.392.162 linhas, 0 diferencas (campos + features completadas);
+leitura 228 s -> 69 s; 3,6 -> 2,2 GB. `teste_corpus_fila` 13/13 com o binario redirecionado pro tmp e na trava.
+PROXIMO (4b): `q_bin/meta.jsonl` (1,6 GB, json.loads por linha no treino) em colunas.
+
 ## 2026-10-24 (985) - Corpus fila, etapa 3: ninguem mais conta o q_alvos.jsonl do zero
 
 Mapa: `porque_decisoes`/`qualidade_jogadas` ja leem o indice acumulado (`corpus_escolhidas.atualiza`);
