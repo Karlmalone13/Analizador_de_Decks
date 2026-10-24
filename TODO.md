@@ -2,6 +2,8 @@
 
 **Última atualização:** 9 de outubro de 2026 (blocos 943-960)
 
+> **980**: defesa na arvore com 3 mundos PROMOVE 271x214 (55,9%), ligada. PENDENTE: ST03-001 perde 3x14 com ela (investigar mecanismo); partidas contra o usuario (agora 973+974+980); acelerar o motor de regras pra portoes mais curtos.
+
 > **981**: test_bot_efficiency_report 17/17 (baselines eram de parsers com bug; teste do banco passa `alvo`).
 
 > **979**: arvore 33% mais rapida com decisoes IDENTICAS (`pensar_estado` 1x por decisao); `mede_arvore.py --assinatura` e `--perfil` pra proximas otimizacoes.

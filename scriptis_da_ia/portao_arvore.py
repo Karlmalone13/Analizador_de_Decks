@@ -24,6 +24,6 @@ if __name__ == '__main__':
               'campeao': {'q_net_path': q, flag: False}}
     d = tc.duelar_sprt(
         workers=int(sys.argv[1]) if len(sys.argv) > 1 else 4,
-        seed={'arvore': 973, 'efeitos': 974, 'defesa': 976}[modo],
+        seed={'arvore': 973, 'efeitos': 974, 'defesa': 980}[modo],
         peso_camp=0.0, peso_desaf=0.0, max_pares=4000, extras=extras)
     print(json.dumps(d, ensure_ascii=False, indent=1, default=str))

@@ -1,5 +1,18 @@
 ﻿# HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-10-24 (980) - Defesa na arvore com 3 MUNDOS: PROMOVE 271x214 (55,9%) -- ligada por padrao
+
+O 976 (1 mundo) deu 483x428 inconclusivo: um sorteio so da mao do atacante deixava a escolha refem da sorte.
+Agora cada opcao de defesa e julgada nos MESMOS `ARVORE_DEFESA_MUNDOS`=3 mundos (random.seed(base+w), base tirado
+do estado aleatorio salvo, que e restaurado no fim) e vale a MEDIA; transposicao por mundo. `_valor_defesa_mundo`
+extraido. Com a defesa desligada a assinatura das 8 partidas (`mede_arvore.py --assinatura`) seguiu IDENTICA.
+Ligada (`--defesa`): 71 defesas em 6 partidas, 28% diferentes do Q, ~68 ms cada, 0 erros. smoke 0 [FALHOU].
+**Portao** (`portao_arvore.py 4 defesa`, seed 980 -- amostra nova; os dois com arvore+efeitos, mesmo Q): **271x214
+= 55,9%, PROMOVE** em 2.300 pares, 3 erros em 4.600 partidas, 0 fallback. Lideres 28 na frente x 14 atras x 3.
+**ST03-001 3x14** (e OP16-001 14x21, OP11-041 10x15): investigar o mecanismo geral que falta -- nao regra por lider.
+`arvore_defesa` default True. Portao levou ~2h na maquina de 2 nucleos com Firefox aberto (0,4 GB livres):
+fechar outros programas durante portao.
+
 ## 2026-10-24 (981) - `test_bot_efficiency_report` volta a passar (17/17): baselines vinham de parsers com bug
 
 Pendente do 978 (2 FAIL + 1 ERROR, pre-existentes). **ERROR**: `_validate_bank_entry` mede o id da partida no log

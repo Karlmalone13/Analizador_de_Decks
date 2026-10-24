@@ -23,6 +23,9 @@ from optcg_engine.decision_engine import OPTCGMatch  # noqa: E402
 from gerar_selfplay_dataset import _load_deck_list  # noqa: E402
 
 
+DEFESA = False   # `--defesa`: liga tambem a defesa na arvore (bloco 976/980)
+
+
 def joga(seed: int, arvore: bool) -> dict:
     de._EM_SIMULACAO['on'] = False
     deck_list = _load_deck_list()
@@ -33,6 +36,7 @@ def joga(seed: int, arvore: bool) -> dict:
     m.setup()
     for s in (m.state_a, m.state_b):
         s.arvore_q = arvore
+        s.arvore_defesa = DEFESA and arvore
     t0 = time.perf_counter()
     vencedor, erro = None, None
     try:
@@ -59,13 +63,17 @@ def assinatura(partidas: int, seed: int) -> int:
     for i in range(partidas):
         antes = json.loads(json.dumps(de._ARVORE_STATS, default=str))
         r = joga(seed + i, True)
-        d = {k: de._ARVORE_STATS[k] - antes.get(k, 0) for k in ('decisoes', 'nos', 'hits', 'mudou')}
+        d = {k: de._ARVORE_STATS.get(k, 0) - antes.get(k, 0)
+             for k in ('decisoes', 'nos', 'hits', 'mudou', 'defesas', 'defesa_mudou')}
         ef = {f: [v[0] - (antes.get('efeitos', {}).get(f, [0, 0])[0]),
                   v[1] - (antes.get('efeitos', {}).get(f, [0, 0])[1])]
               for f, v in sorted(de._ARVORE_STATS.get('efeitos', {}).items())}
         print('ASSIN', seed + i, r['vencedor'], r['erro'], json.dumps(d, sort_keys=True),
               json.dumps(ef, sort_keys=True), flush=True)
-    print(f'tempo {time.perf_counter() - t0:.1f}s; arvore {de._ARVORE_STATS["seg"]:.1f}s')
+    print(f'tempo {time.perf_counter() - t0:.1f}s; arvore {de._ARVORE_STATS["seg"]:.1f}s; '
+          f'defesa {de._ARVORE_STATS.get("seg_defesa", 0.0):.1f}s em '
+          f'{de._ARVORE_STATS.get("defesas", 0)} (mudou {de._ARVORE_STATS.get("defesa_mudou", 0)}); '
+          f'erros {de._ARVORE_STATS.get("erros", 0)} {de._ARVORE_STATS.get("ultimo_erro", "")}')
     return 0
 
 
@@ -104,7 +112,10 @@ def main() -> int:
                          '(otimizacao tem que manter IDENTICA)')
     ap.add_argument('--perfil', action='store_true',
                     help='so com a arvore; perfil (cProfile) restrito a ela')
+    ap.add_argument('--defesa', action='store_true')
     a = ap.parse_args()
+    global DEFESA
+    DEFESA = a.defesa
     if a.perfil:
         return perfil(a.partidas, a.seed)
     if a.assinatura:

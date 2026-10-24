@@ -1447,9 +1447,9 @@ def _q_escolhe_familia(me, opp, familia: str, opcoes: list, padrao_idx: int,
                 _maq = _Q_CTX.get('match') or _MAQUINA_VIVO.get('match')
                 if (mudancas and familia in FAMILIAS_DEFESA and _maq is not None
                         and not _EM_SIMULACAO['on']
-                        # INCONCLUSIVO no portao (bloco 976): 483x428 (53%) no
-                        # teto de 4000 pares -> DESLIGADA por padrao ate passar.
-                        and getattr(me, 'arvore_defesa', False)):
+                        # PROMOVIDA no bloco 980 (3 mundos): 271x214 (55,9%),
+                        # 28 lideres na frente x 14. (976, 1 mundo: inconclusivo.)
+                        and getattr(me, 'arvore_defesa', True)):
                     import time as _t
                     _t0 = _t.perf_counter()
                     _id = _maq._arvore_defesa(me, opp, _vals, mudancas)
@@ -1605,6 +1605,8 @@ BUSCA_LARGURA = int(os.environ.get('OPTCG_BUSCA_LARGURA', '6') or 6)
 # (121x81); `p.arvore_q=False` desliga POR JOGADOR so pra medir.
 ARVORE_K = int(os.environ.get('OPTCG_ARVORE_K', '3') or 3)
 ARVORE_PASSOS = int(os.environ.get('OPTCG_ARVORE_PASSOS', '8') or 8)
+# Mundos (maos do atacante sorteadas do observavel) por opcao de DEFESA (bloco 980).
+ARVORE_DEFESA_MUNDOS = int(os.environ.get('OPTCG_ARVORE_DEFESA_MUNDOS', '3') or 3)
 # Medicao (AS-IS do custo): decisoes, segundos, nos expandidos, transposicoes
 # reusadas e quantas vezes a arvore trocou a escolha do Q. Por processo.
 _ARVORE_GAPS = []
@@ -22467,8 +22469,12 @@ class OPTCGMatch:
         bundle = _vn.load_value_net(getattr(opp, 'q_net_path', None) or Q_NET_PATH)
         if not (bundle and bundle.get('tipo') == 'q'):
             return None
-        trans = {}
         _rnd = random.getstate()
+        # VARIOS MUNDOS (bloco 980): um sorteio so da mao do atacante deixava
+        # a escolha refem da sorte (portao 976 inconclusivo). Cada opcao e
+        # julgada nos MESMOS `ARVORE_DEFESA_MUNDOS` mundos e vale a MEDIA.
+        _base = random.getrandbits(64)
+        trans_m = [{} for _ in range(ARVORE_DEFESA_MUNDOS)]   # por mundo
         _sim = _EM_SIMULACAO['on']
         _arv_antes = _EM_SIMULACAO.get('arvore', False)
         _sup = getattr(self, '_suppress_replay_log', False)
@@ -22478,32 +22484,16 @@ class OPTCGMatch:
         resultado = []
         try:
             for i, v in topo:
-                random.setstate(_rnd)      # mesmo mundo pra todas
-                try:
-                    desfaz = mudancas[i]()
-                    if desfaz is _vn.DERROTA:
-                        resultado.append((i, 0.0))
-                        continue
-                    try:
-                        _md, _od = me.deck, opp.deck
-                        me.deck, opp.deck = [], []
-                        try:
-                            m2, o2 = deepcopy(me), deepcopy(opp)
-                        finally:
-                            me.deck, opp.deck = _md, _od
-                    finally:
-                        desfaz()
-                    m2.deck, o2.deck = _SimDeck(_md), _SimDeck(_od)
-                    _cega_copia(m2, o2, _modelo_op)
-                    e2 = DecisionEngine(o2, m2)
-                    ee2 = EffectExecutor(o2, m2)
-                    v_at = self._continua_turno_q(o2, m2, e2, ee2, bundle, trans,
-                                                  1.0 - float(v))
-                    resultado.append((i, 1.0 - v_at))
-                except Exception as _e:
-                    _ARVORE_STATS['erros'] = _ARVORE_STATS.get('erros', 0) + 1
-                    _ARVORE_STATS['ultimo_erro'] = f'defesa {type(_e).__name__}: {_e}'
-                    continue
+                soma, n_ok = 0.0, 0
+                for _w in range(ARVORE_DEFESA_MUNDOS):
+                    random.seed(_base + _w)    # mundo _w: o mesmo pra todas
+                    _r = self._valor_defesa_mundo(me, opp, i, v, mudancas, _modelo_op,
+                                                  bundle, trans_m[_w])
+                    if _r is not None:
+                        soma += _r
+                        n_ok += 1
+                if n_ok:
+                    resultado.append((i, soma / n_ok))
         finally:
             _EM_SIMULACAO['on'] = _sim
             _EM_SIMULACAO['arvore'] = _arv_antes
@@ -22512,6 +22502,37 @@ class OPTCGMatch:
         if not resultado:
             return None
         return max(resultado, key=lambda t: t[1])[0]
+
+    def _valor_defesa_mundo(self, me, opp, i, v, mudancas, _modelo_op, bundle, trans):
+        """Valor (visto por quem defende) da opcao `i` num mundo sorteado: a
+        consequencia aplicada no real, clonada e desfeita; o atacante termina
+        o turno no clone cego. None em falha (contada em `_ARVORE_STATS`)."""
+        from copy import deepcopy
+        from optcg_engine import value_net as _vn
+        try:
+            desfaz = mudancas[i]()
+            if desfaz is _vn.DERROTA:
+                return 0.0
+            try:
+                _md, _od = me.deck, opp.deck
+                me.deck, opp.deck = [], []
+                try:
+                    m2, o2 = deepcopy(me), deepcopy(opp)
+                finally:
+                    me.deck, opp.deck = _md, _od
+            finally:
+                desfaz()
+            m2.deck, o2.deck = _SimDeck(_md), _SimDeck(_od)
+            _cega_copia(m2, o2, _modelo_op)
+            e2 = DecisionEngine(o2, m2)
+            ee2 = EffectExecutor(o2, m2)
+            v_at = self._continua_turno_q(o2, m2, e2, ee2, bundle, trans,
+                                          1.0 - float(v))
+            return 1.0 - v_at
+        except Exception as _e:
+            _ARVORE_STATS['erros'] = _ARVORE_STATS.get('erros', 0) + 1
+            _ARVORE_STATS['ultimo_erro'] = f'defesa {type(_e).__name__}: {_e}'
+            return None
 
     def _arvore_q(self, p, opp, pares_q, bundle):
         """FASE 3 (bloco 973): a ARVORE DO TURNO volta a decidir, com o Q no
