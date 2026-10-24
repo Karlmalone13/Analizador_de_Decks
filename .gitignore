@@ -187,3 +187,6 @@ scriptis_da_ia/metrics/avaliacao_humana/
 .claude/launch.json
 
 scriptis_da_ia/eixos_cache/
+
+# nucleo Rust (PLANO_MOTOR_FORTE): artefatos de compilacao
+optcg_core/target/

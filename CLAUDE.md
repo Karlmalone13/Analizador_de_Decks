@@ -189,6 +189,10 @@ completos):
   obrigatória antes de qualquer commit, **impressa por inteiro pelo hook
   `pre-commit`**, mesmo tratamento do `MEMORY.md`:
   [`scriptis_da_ia/REGRA_O_CRITERIO_EMERGE.md`](scriptis_da_ia/REGRA_O_CRITERIO_EMERGE.md).
+- **PLANO DO MOTOR FORTE (decisao do usuario, 24/10/2026)**: o bot tem que ser
+  DIFICIL de vencer. Arquitetura nova no padrao dos jogos fortes: nucleo em Rust,
+  busca ISMCTS de varios turnos, aprendizado AlphaZero. Leitura obrigatoria antes de
+  mexer em motor/busca/auto-jogo/treino: [`PLANO_MOTOR_FORTE.md`](PLANO_MOTOR_FORTE.md).
 - **Linhas e colunas sao MATRIZ; todo dado que puder ser binario e BINARIO**
   (regra do usuario, 24/10/2026: *"colunas e linha tem de ser matriz, e todos os
   dados que puderem ser binarios devem ser binarios"*). Leitura obrigatoria antes

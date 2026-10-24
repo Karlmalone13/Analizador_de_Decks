@@ -1,5 +1,19 @@
 ﻿# HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-10-24 (994) - PLANO DO MOTOR FORTE: arquitetura nova (Rust + ISMCTS + AlphaZero); toolchain pronta
+
+Usuario: o bot ainda joga mal ("ganho dele facilmente"), "tem que ser dificil de ganhar dele", urgente (o front-end
+depende do motor); "se for preciso trocar a linguagem a gente troca". Pesquisa (competicao de IA de Hearthstone,
+ISMCTS/Cowling, MCTS para Magic, dificuldade no FIFA/Stockfish): os fortes tem simulador compilado rapido + busca
+de varios turnos com mundos sorteados (ISMCTS) + aprendizado em que a BUSCA ensina a rede (AlphaZero/ExIt). O
+nosso: ~200 jogadas/s em Python, busca so do proprio turno com 1 mundo, Q aprendendo de si mesmo (plato).
+**Decisao: opcao 1 -- direto pra arquitetura nova; sem niveis de dificuldade agora.** `PLANO_MOTOR_FORTE.md`
+(apontado no CLAUDE/AGENTS) com fases A (nucleo Rust com PARIDADE contra o motor Python como gabarito), B
+(ISMCTS), C (AlphaZero), D (troca ao vivo). Rust 1.99.1 instalado em E:ust (com permissao; SHA-256 conferido;
+PATH NAO alterado), maturin 1.15; esqueleto `optcg_core/` (PyO3) compila e importa. Catalogo dos efeitos no plano.
+Em paralelo (nao commitado): conversao das 3 analises pro binario (patch993/993b no scratch) -- aguardando as
+saidas antigas de referencia (porque_decisoes 1540 s ja gravada).
+
 ## 2026-10-24 (991) - `ciclo.py --ciclos N`: do 2o ciclo em diante o TREINO rodava com 1 nucleo
 
 `portao()` fazia `os.environ.setdefault('OMP_NUM_THREADS', '1')` no PROCESSO do ciclo e nunca restaurava: com
