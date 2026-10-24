@@ -102,3 +102,8 @@ pub fn inicio_de_turno(e: &mut Estado, global_turn: i64) {
     draw(&mut e.ativo);
     don(&mut e.ativo);
 }
+
+/// `OPTCGMatch.end_phase` SEM efeito: [End of Your Turn] e a fila agendada sao
+/// efeitos (onda de efeitos); a regra pura do fim de turno nao muda o estado --
+/// os "ate o fim do turno" sao limpos no inicio do turno seguinte (`inicio_de_turno`).
+pub fn fim_de_turno(_e: &mut Estado) {}

@@ -35,6 +35,14 @@ fn inicio_de_turno(estado_json: &str, global_turn: i64) -> PyResult<String> {
     e.para_json().map_err(erro)
 }
 
+/// Teste diferencial: estado de `fim_antes` -> fim de turno do nucleo.
+#[pyfunction]
+fn fim_de_turno(estado_json: &str) -> PyResult<String> {
+    let mut e = estado::Estado::de_json(estado_json).map_err(erro)?;
+    turno::fim_de_turno(&mut e);
+    e.para_json().map_err(erro)
+}
+
 /// Teste diferencial de UMA jogada principal: estado antes + jogada (por LUGAR)
 /// + decisoes internas -> ("ok", estado depois, venceu) ou ("nao_suportado", motivo, false).
 #[pyfunction]
@@ -66,6 +74,7 @@ fn optcg_core(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_function(wrap_pyfunction!(versao, m)?)?;
     m.add_function(wrap_pyfunction!(carrega_cartas, m)?)?;
     m.add_function(wrap_pyfunction!(inicio_de_turno, m)?)?;
+    m.add_function(wrap_pyfunction!(fim_de_turno, m)?)?;
     m.add_function(wrap_pyfunction!(aplica_jogada, m)?)?;
     m.add_function(wrap_pyfunction!(ida_e_volta, m)?)?;
     Ok(())

@@ -113,7 +113,8 @@ def main() -> int:
     ap.add_argument('--partidas', type=int, default=10)
     ap.add_argument('--seed', type=int, default=1000)
     a = ap.parse_args()
-    tot = {'ida_volta': [0, 0], 'inicio_turno': [0, 0], 'pulados': 0}
+    tot = {'ida_volta': [0, 0], 'inicio_turno': [0, 0], 'fim_turno': [0, 0], 'pulados': 0,
+           'fim_com_efeito': 0}
     jog = {}      # tipo -> [identicas, conferidas, nao_suportadas, com_efeito]
     motivos = {}
     divs = []
@@ -145,6 +146,22 @@ def main() -> int:
                 tot['inicio_turno'][0] += 1
             elif len(divs) < 12:
                 divs.append(('inicio_turno', a.seed + i, d))
+        for j, e in enumerate(ev):
+            if e['tipo'] != 'fim_antes':
+                continue
+            alvo = next((x for x in ev[j + 1:] if x['tipo'] == 'fim_depois'), None)
+            if alvo is None:
+                continue
+            if alvo['passos'] != e['passos']:
+                tot['fim_com_efeito'] += 1
+                continue
+            r = json.loads(optcg_core.fim_de_turno(json.dumps(e['estado'])))
+            tot['fim_turno'][1] += 1
+            d = _primeira_diferenca(alvo['estado'], r)
+            if d is None:
+                tot['fim_turno'][0] += 1
+            elif len(divs) < 12:
+                divs.append(('fim_turno', a.seed + i, d))
         dec = {}
         for e in ev:
             if e['tipo'] == 'jogada_inicio':
@@ -183,14 +200,15 @@ def main() -> int:
               f'nao suportadas {nao} | com efeito {efe} (fora desta onda)')
     for m_, n_ in sorted(motivos.items(), key=lambda x: -x[1]):
         print(f'   nao suportado: {m_} ({n_})')
-    for k in ('ida_volta', 'inicio_turno'):
+    for k in ('ida_volta', 'inicio_turno', 'fim_turno'):
         ok, n = tot[k]
         print(f'{k:14s} {ok}/{n} identicos ({100 * ok / max(n, 1):.1f}%)')
     print(f'turnos pulados (efeito de inicio de turno ainda fora do nucleo): {tot["pulados"]}')
+    print(f'fins de turno com efeito (fora desta onda): {tot["fim_com_efeito"]}')
     for d in divs:
         print('DIVERGE', d[0], 'seed', d[1], 'campo', d[2][0], '| python', repr(d[2][1])[:60],
               '| rust', repr(d[2][2])[:60])
-    return 0 if (all(tot[k][0] == tot[k][1] for k in ('ida_volta', 'inicio_turno'))
+    return 0 if (all(tot[k][0] == tot[k][1] for k in ('ida_volta', 'inicio_turno', 'fim_turno'))
                  and all(v[0] == v[1] for v in jog.values())) else 1
 
 
