@@ -188,6 +188,54 @@ def linhas():
                'modo': M[r['modo']] or None}
 
 
+
+def selecao(ancora: dict, familias, modo_ok, n_cols: int):
+    """O laco das alternativas do treino, VETORIZADO (bloco 987, ideia do
+    usuario: matriz em vez de linha a linha). Mesmo resultado de iterar
+    `linhas()` com as regras de `treinar_q`: familia em `familias`, modo aceito
+    por `modo_ok(dict)`, largura valida, e ancora da MESMA decisao
+    (gen, match, leader, decisao) -> alvo = consequencia + (nota - nota da
+    escolhida). Filtra pelas COLUNAS pequenas e so entao busca, na matriz, as
+    linhas aprovadas -- nunca carrega os ~2 GB inteiros. Ordem = ordem do texto.
+    Devolve (Xa float32 [n, W], ya list[float])."""
+    v = _vocab()
+    W = v['W']
+    if W != n_cols:
+        return np.zeros((0, W), dtype=np.float32), []
+    L, A, M = v['leader'], v['acao'], v['modo']
+    fam_ok = np.array([a in familias for a in [x or None for x in A]] or [False])
+    mod_ok = np.array([bool(modo_ok({'modo': m or None})) for m in M] or [False])
+    partes = []
+    for p in sorted(DIR.glob('gen_*.rec'), key=lambda p: int(p.stem.split('_')[1])):
+        rec = np.fromfile(p, dtype=_REC)
+        if len(rec):
+            partes.append((int(p.stem.split('_')[1]), p.with_suffix('.f32'), rec))
+    cand = []                                # (seq, parte, pos, ya)
+    for k, (g, _, rec) in enumerate(partes):
+        m = ((rec['ok'] == 1) & ~np.isnan(rec['alvo'])
+             & fam_ok[rec['acao']] & mod_ok[rec['modo']])
+        for pos in np.nonzero(m)[0]:
+            r = rec[pos]
+            dec = None if r['dec_none'] else int(r['decisao'])
+            anc = ancora.get((g, int(r['match']), L[r['leader']] or None, dec))
+            if anc is None:
+                continue
+            cand.append((int(r['seq']), k, int(pos), anc[1] + (float(r['alvo']) - anc[0])))
+    if not cand:
+        return np.zeros((0, W), dtype=np.float32), []
+    cand.sort()
+    Xa = np.empty((len(cand), W), dtype=np.float32)
+    for k, (g, f32, rec) in enumerate(partes):
+        sel = [(i, c[2]) for i, c in enumerate(cand) if c[1] == k]
+        if not sel:
+            continue
+        mm = np.memmap(f32, dtype=np.float32, mode='r', shape=(len(rec), W))
+        dst = np.fromiter((i for i, _ in sel), dtype=np.int64)
+        src = np.fromiter((j for _, j in sel), dtype=np.int64)
+        Xa[dst] = mm[src]
+    return Xa, [c[3] for c in cand]
+
+
 if __name__ == '__main__':
     if '--constroi' in sys.argv:
         print('alternativas em binario:', constroi(), 'linhas')

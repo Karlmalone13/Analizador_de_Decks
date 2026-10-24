@@ -955,7 +955,12 @@ def main() -> int:
         # (largura mudou / nunca construido), le o texto como antes.
         import alt_bin
         if alt_bin.valido():
-            _fonte = alt_bin.linhas()
+            # MATRIZ (bloco 987): filtro vetorizado nas colunas e so as linhas
+            # aprovadas saem da matriz -- 31 s -> 6,6 s, saida IDENTICA ao laco
+            # abaixo (`confere_alt_matriz.py`).
+            Xa, ya = alt_bin.selecao(ancora, FAMILIAS_JOGO,
+                                     lambda d: passa_filtro_modo(d, args.modo), X.shape[1])
+            _fonte = ()
         else:
             _fonte = (json.loads(l) for l in
                       corpus_escolhidas.ALTERNATIVAS.open(encoding='utf-8'))
@@ -984,7 +989,7 @@ def main() -> int:
                 Xa.append(f)
                 ya.append(float(a))
         teto = int(args.peso_alternativas * (len(X) if idx is None else len(idx)))
-        if Xa:
+        if len(Xa):
             Xa, ya = np.asarray(Xa, dtype=np.float32), np.asarray(ya, dtype=float)
             if len(Xa) > teto:
                 ia = np.random.RandomState(2).choice(len(Xa), size=teto, replace=False)

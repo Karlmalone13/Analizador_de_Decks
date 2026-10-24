@@ -1,5 +1,15 @@
 ﻿# HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-10-24 (987) - Alternativas como MATRIZ (ideia do usuario): selecao 31 s -> 6,6 s, saida identica
+
+Os 69 s do 986 nao eram disco: era montar um dict por linha (3,4 mi) e filtrar uma a uma. `alt_bin.selecao`:
+filtra nas COLUNAS pequenas (familia, modo, largura ok, alvo) com mascara numpy, consulta a ancora so nas
+aprovadas e busca na matriz SO essas linhas (nunca carrega os ~2 GB -- o treino ja tem pico de 6,4 GB). Ordem
+preservada por `seq`. `confere_alt_matriz.py` (ancora com 87.564 decisoes REAIS): 428.108 linhas, Xa e ya
+IDENTICOS ao laco linha a linha; 31,0 s -> 6,6 s. No treino essa etapa vai de 228 s (texto) para ~7 s.
+`treinar_q` usa `selecao` quando `alt_bin.valido()`; o laco fica so pro texto. PENDENTE: treino ponta a ponta
+(modelo identico) junto com a 4b.
+
 ## 2026-10-24 (986) - Alternativas em binario POR GERACAO (`alt_bin.py`): leitura 228 s -> 69 s, entrada identica
 
 Pedido do usuario: mais coisas em binario ANTES de esvaziar o corpus. `q_alternativas.jsonl` (3,6 GB, todo treino,
