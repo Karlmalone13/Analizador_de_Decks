@@ -1,5 +1,16 @@
 ﻿# HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-10-24 (991) - `ciclo.py --ciclos N`: do 2o ciclo em diante o TREINO rodava com 1 nucleo
+
+`portao()` fazia `os.environ.setdefault('OMP_NUM_THREADS', '1')` no PROCESSO do ciclo e nunca restaurava: com
+`--ciclos N`, regua (`treina_regua`), treino do Q (`treinar_q`) e geracao dos ciclos seguintes herdavam 1 thread.
+Medido: regua (HistGB) 200 mil linhas 5,9 s com 4 nucleos x 10,9 s com 1 -- a priorizacao do treino preve as
+2,7 mi escolhidas (~80 s com 4 nucleos, ~150 s com 1) e o `fit` usa a mesma biblioteca. Agora o limite vale so
+durante o duelo (try/finally restaura). Scripts de duelo avulsos (`portao_arvore`, `mede_arvore`, `mede_paridade`)
+mantem 1 thread (processo proprio, nao vaza).
+Treino de hoje (422 s, 4 nucleos): o que sobra e CALCULO de modelo, nao formato -- priorizacao (regua preve
+tudo) 128 s e fit 140 s; dado ja e matriz numpy.
+
 ## 2026-10-24 (990) - Corpus ESVAZIADO (40,19 GB) + relogio por etapa explica o "treino nao caiu"
 
 **Corpus**: `corpus_git.py consolida --esvazia --confirmo` (confirmado pelo usuario): 40,19 GB liberados;

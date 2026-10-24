@@ -367,13 +367,24 @@ def portao(seed, max_pares, workers) -> dict:
     *"cada geracao do ML tem que bater a anterior"*, espelho pareado + SPRT.
     """
     import os
-    os.environ.setdefault('OMP_NUM_THREADS', '1')
-    import treino_continuo as tc
-    return tc.duelar_sprt(
-        workers=workers, seed=seed, peso_camp=0.0, peso_desaf=0.0,
-        max_pares=max_pares,
-        extras={'desafiante': {'q_net_path': str(Q_DESAFIANTE)},
-                'campeao': {'q_net_path': str(Q_CAMPEAO)}})
+    # 1 thread por processo DURANTE o duelo (os workers dividem os nucleos).
+    # Restaura no fim (bloco 990): o `setdefault` vazava pro processo inteiro e,
+    # com `--ciclos N`, do 2o ciclo em diante a regua e o treino rodavam com 1
+    # nucleo (medido: regua 200 mil linhas 5,9 s com 4 nucleos x 10,9 s com 1).
+    _omp = os.environ.get('OMP_NUM_THREADS')
+    os.environ['OMP_NUM_THREADS'] = '1'
+    try:
+        import treino_continuo as tc
+        return tc.duelar_sprt(
+            workers=workers, seed=seed, peso_camp=0.0, peso_desaf=0.0,
+            max_pares=max_pares,
+            extras={'desafiante': {'q_net_path': str(Q_DESAFIANTE)},
+                    'campeao': {'q_net_path': str(Q_CAMPEAO)}})
+    finally:
+        if _omp is None:
+            os.environ.pop('OMP_NUM_THREADS', None)
+        else:
+            os.environ['OMP_NUM_THREADS'] = _omp
 
 
 def auditoria(limite) -> bool:
