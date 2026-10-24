@@ -4,7 +4,7 @@
 
 > **980**: defesa na arvore com 3 mundos PROMOVE 271x214 (55,9%), ligada. PENDENTE: ST03-001 perde 3x14 com ela (investigar mecanismo); partidas contra o usuario (agora 973+974+980); acelerar o motor de regras pra portoes mais curtos.
 
-> **994**: PLANO_MOTOR_FORTE (Rust + ISMCTS + AlphaZero) -- decisao do usuario. Toolchain Rust pronta (E:ust), esqueleto optcg_core compila. Proximo: fase A.0 (estado/turno do motor Python) e A.1 (nucleo + teste diferencial).
+> **994**: PLANO_MOTOR_FORTE (Rust + ISMCTS + AlphaZero) -- decisao do usuario. Toolchain Rust pronta (E:/rust), esqueleto optcg_core compila. Proximo: fase A.0 (estado/turno do motor Python) e A.1 (nucleo + teste diferencial).
 
 > **991**: ciclo com --ciclos N treinava com 1 nucleo do 2o ciclo em diante (OMP=1 vazava do portao) -- corrigido. O que sobra no treino e calculo (regua preve 2,7 mi linhas; fit).
 

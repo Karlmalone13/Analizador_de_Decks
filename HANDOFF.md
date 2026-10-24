@@ -9,7 +9,7 @@ de varios turnos com mundos sorteados (ISMCTS) + aprendizado em que a BUSCA ensi
 nosso: ~200 jogadas/s em Python, busca so do proprio turno com 1 mundo, Q aprendendo de si mesmo (plato).
 **Decisao: opcao 1 -- direto pra arquitetura nova; sem niveis de dificuldade agora.** `PLANO_MOTOR_FORTE.md`
 (apontado no CLAUDE/AGENTS) com fases A (nucleo Rust com PARIDADE contra o motor Python como gabarito), B
-(ISMCTS), C (AlphaZero), D (troca ao vivo). Rust 1.99.1 instalado em E:ust (com permissao; SHA-256 conferido;
+(ISMCTS), C (AlphaZero), D (troca ao vivo). Rust 1.99.1 instalado em E:/rust (com permissao; SHA-256 conferido;
 PATH NAO alterado), maturin 1.15; esqueleto `optcg_core/` (PyO3) compila e importa. Catalogo dos efeitos no plano.
 Em paralelo (nao commitado): conversao das 3 analises pro binario (patch993/993b no scratch) -- aguardando as
 saidas antigas de referencia (porque_decisoes 1540 s ja gravada).

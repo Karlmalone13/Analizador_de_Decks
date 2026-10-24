@@ -59,12 +59,12 @@ estado do núcleo novo É binário/matriz por construção), AS-IS antes de muda
 
 ## Estado
 
-- [x] Toolchain: Rust 1.99.1 em `E:ust` (CARGO_HOME/RUSTUP_HOME no E:, PATH do Windows
-      NAO alterado -- usar `E:ust\cargoin\cargo.exe` ou exportar no comando),
+- [x] Toolchain: Rust 1.99.1 em `E:/rust` (CARGO_HOME/RUSTUP_HOME no E:, PATH do Windows
+      NAO alterado -- usar `E:/rust/cargo/bin/cargo.exe` ou exportar no comando),
       instalador conferido por SHA-256 oficial; `maturin` 1.15 no `.venv`.
       Esqueleto `optcg_core/` (PyO3 0.23) compila e importa: `optcg_core.versao()`.
       Compilar: `cd optcg_core && ../.venv/Scripts/python.exe -m maturin develop --release`
-      (com `CARGO_HOME='E:ust\cargo' RUSTUP_HOME='E:ustustup'` e cargo no PATH).
+      (com `CARGO_HOME='E:/rust/cargo' RUSTUP_HOME='E:/rust/rustup'` e cargo no PATH).
 - [~] Fase A.0 — especificação. Catálogo do `card_effects_db.json` (24/10): 2.839 cartas
       (2.542 com efeito); 31 gatilhos (on_play 954, passive 620, trigger 487,
       activate_main 381, main 286, when_attacking 256, counter 199, on_ko 170...);
