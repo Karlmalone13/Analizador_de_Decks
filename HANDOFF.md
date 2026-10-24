@@ -1,5 +1,21 @@
 ﻿# HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-10-24 (988) - Perfil do treino + cache das trajetorias (`traj_bin.py`): modelo IDENTICO, treino 369 s
+
+**AS-IS** (cProfile de um treino inteiro, 627 s com o perfil): rede aprendendo (`fit`) so 95 s; ler as escolhidas
+(`corpus_bin.linhas`: json.loads dos metadados + memmap linha a linha) 142 s; laco das escolhidas no treino ~140 s
+(laco 77 + `alvo_consequencia` 35 + montar linhas 28); `carrega_trajetorias` 99 s (reler/decodificar o selfplay e
+`regua_x_de_selfplay` estado a estado, sempre igual; so a previsao da regua muda por ciclo). Alternativas ~7 s (987).
+`_mem` ganhou relogio (`_T0`), mas so imprime com `psutil` (ausente neste ambiente).
+**Cache das trajetorias**: `metrics/traj_bin/` (gitignored) -- registro fixo (gen, match, leader, turn, ld, win) +
+vetor da regua em **float64** (o mesmo tipo que a regua recebia; float32 mudaria a previsao), incremental sobre o
+selfplay (impressao do inicio + elo; `nomes` diferente reconstroi). `confere_traj_bin.py`: dict IDENTICO
+(166.898 partidas, 800.291 estados); 57 s -> 16 s (1a vez 52 s, monta). **Ponta a ponta**: treino com o cache x
+treino de referencia -> maior diferenca de previsao 0,0, erro fora 0,19877 igual; treino inteiro 369 s.
+Tambem: removida do banco a partida 02.42 (servidor fora); apagada `metrics/_pensar` (1,4 GB, experimento do 968).
+A "decisao de 45 s" de hoje era pedido parado na fila do AQUECIMENTO do servidor (45 s naquela sessao): motor
+decidiu em 3,3 s. Nao e risco em jogo normal. PROXIMO: escolhidas em colunas/matriz (~280 s).
+
 ## 2026-10-24 (987) - Alternativas como MATRIZ (ideia do usuario): selecao 31 s -> 6,6 s, saida identica
 
 Os 69 s do 986 nao eram disco: era montar um dict por linha (3,4 mi) e filtrar uma a uma. `alt_bin.selecao`:

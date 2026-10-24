@@ -150,6 +150,7 @@ scriptis_da_ia/metrics/q_escolhidas_meta.json
 # binario das escolhidas pro treino (bloco 968) -- derivado do indice
 scriptis_da_ia/metrics/q_bin/
 scriptis_da_ia/metrics/q_alt_bin/
+scriptis_da_ia/metrics/traj_bin/
 scriptis_da_ia/metrics/q_alternativas.jsonl
 scriptis_da_ia/metrics/selfplay_v2.jsonl
 # O DESAFIANTE e regenerado a cada ciclo e so vira campeao se o portao

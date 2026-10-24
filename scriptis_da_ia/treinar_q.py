@@ -347,6 +347,10 @@ def _fonte_do_corpus(caminho):
                 yield json.loads(linha)
 
 
+import time as _time_mod
+_T0 = _time_mod.perf_counter()   # relogio das etapas no [MEM] (bloco 988)
+
+
 def _mem(etapa, arr=None):
     """AS-IS de MEMORIA por etapa do treino (bloco 968): RAM em uso e o PICO do
     processo ate aqui, e o tipo/tamanho da matriz da etapa. So mede; sem psutil
@@ -358,7 +362,8 @@ def _mem(etapa, arr=None):
         extra = ''
         if arr is not None:
             extra = ' | matriz %s %s = %.2f GB' % (arr.dtype, 'x'.join(map(str, arr.shape)), arr.nbytes / 1e9)
-        print('  [MEM] %-26s em uso %.2f GB | pico %.2f GB%s' % (etapa, mi.rss / 1e9, pico / 1e9, extra), flush=True)
+        import time as _t
+        print('  [MEM] %-26s %6.0fs | em uso %.2f GB | pico %.2f GB%s' % (etapa, _t.perf_counter() - _T0, mi.rss / 1e9, pico / 1e9, extra), flush=True)
     except Exception:
         pass
 
@@ -580,7 +585,10 @@ def main() -> int:
             # professor congelado.
             from optcg_engine.decision_engine import MODELO_ORDENA_PATH
             _aval = _vn.load_value_net(MODELO_ORDENA_PATH)
-        traj = carrega_trajetorias(args.selfplay, avaliador=_aval)
+        # Cache binario dos estados (bloco 988, `traj_bin.py`): mesmo dict, sem
+        # reler/decodificar o selfplay a cada treino (57 s -> 16 s).
+        import traj_bin
+        traj = traj_bin.trajetorias(Path(args.selfplay), avaliador=_aval)
     cobertura = {f: [0, 0, 0] for f in FAMILIAS_JOGO}   # linhas, escolhidas, consequencia
     ancora = {}
     if True:

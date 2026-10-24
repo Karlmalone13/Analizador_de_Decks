@@ -4,6 +4,8 @@
 
 > **980**: defesa na arvore com 3 mundos PROMOVE 271x214 (55,9%), ligada. PENDENTE: ST03-001 perde 3x14 com ela (investigar mecanismo); partidas contra o usuario (agora 973+974+980); acelerar o motor de regras pra portoes mais curtos.
 
+> **988**: perfil do treino (fit so 95 de 627 s); cache das trajetorias 57 -> 16 s, modelo identico (dif 0,0); treino 369 s. Proximo: escolhidas em colunas/matriz (~280 s).
+
 > **987**: alternativas como matriz (filtro vetorizado): 31 -> 6,6 s, identico. Treino ponta a ponta pendente (fazer junto com a 4b).
 
 > **986**: alternativas em binario por geracao (`alt_bin.py`), leitura 228 -> 69 s, 0 diferencas em 3,39 mi linhas. Proximo: meta das escolhidas em colunas (4b); depois esvaziar o corpus (confirmar).
