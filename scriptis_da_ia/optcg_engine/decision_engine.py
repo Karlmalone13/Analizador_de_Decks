@@ -24849,6 +24849,11 @@ class OPTCGMatch:
         if not _EM_SIMULACAO['on']:
             _Q_CTX['match'] = self
             _Q_CTX['ativo'] = p
+        from optcg_engine import estado_canonico as _ec
+        _dia = _ec.DIARIO['on'] and not _EM_SIMULACAO['on']
+        if _dia:      # paridade (fase A): o turno inteiro tambem e conferido
+            _ec.registra({'tipo': 'turno_inicio', 'lado': 'A' if p is self.state_a else 'B',
+                          'estado': _ec.canonico(p, opp), 'global_turn': self.global_turn})
         self.global_turn += 1
         p.turn += 1
         p.global_turn = self.global_turn
@@ -24872,6 +24877,9 @@ class OPTCGMatch:
                             extra={'count': drawn})
 
         self.don_phase(p, verbose=verbose)
+        if _dia:
+            _ec.registra({'tipo': 'main_inicio', 'lado': 'A' if p is self.state_a else 'B',
+                          'estado': _ec.canonico(p, opp)})
         if post_don_hook is not None:
             post_don_hook(p, opp)
 
@@ -24885,7 +24893,13 @@ class OPTCGMatch:
         self._check_invariants()
         if won:
             return 'A' if p is self.state_a else 'B'
+        if _dia:
+            _ec.registra({'tipo': 'fim_antes', 'lado': 'A' if p is self.state_a else 'B',
+                          'estado': _ec.canonico(p, opp)})
         self.end_phase(p, opp, verbose=verbose)
+        if _dia:
+            _ec.registra({'tipo': 'fim_depois', 'lado': 'A' if p is self.state_a else 'B',
+                          'estado': _ec.canonico(p, opp)})
         self._log_event(p, 'turn_end', phase='end',
                         description=f'Fim do turno {self.global_turn}')
         # deck_out_win_instead_of_loss (OP03-040 Nami lider): inverte o

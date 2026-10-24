@@ -1,5 +1,18 @@
 ﻿# HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-10-24 (996) - Fase A.1 (1o passo): nucleo Rust com 100% de paridade no INICIO DE TURNO
+
+`optcg_core/src/estado.rs`: Carta/Jogador/Estado tipados nos campos que as regras ja usam; o resto passa intacto
+em `extras` (serde flatten) pra comparacao ser exata desde ja. "Revelada" virou MARCA DA CARTA (`revelada` bits)
+que viaja com ela entre zonas -- no canonico do Python sao listas de LUGARES (o motor guarda `id()`); ler marca,
+gravar recalcula na ordem do canonico. `src/turno.rs`: contadores/jogador ativo, refresh (campo a campo do
+`refresh_phase`), compra, DON. Diario ganhou marcos `turno_inicio`/`main_inicio`/`fim_antes`/`fim_depois` em
+`play_turn`. `paridade_nucleo.py` (teste diferencial): 20 partidas -> ida e volta 2.550/2.550 e inicio de turno
+213/213 IDENTICOS; 39 turnos pulados (reativos `opp_turn`/trava de refresh do Stage -> onda de efeitos).
+1a versao divergia em 2 turnos: lista de lugares das reveladas ficava velha quando a carta era comprada.
+PROXIMO: fim de turno sem efeitos + jogadas principais sem efeito (anexar DON, jogar personagem vanilla, ataque
+com bloqueio/counter de personagem), conferidos pelo diario.
+
 ## 2026-10-24 (995) - Fase A.0: ESPEC do nucleo + estado canonico + DIARIO de paridade (deterministico)
 
 `optcg_core/ESPEC.md`: regras x decisoes (26 metodos do DecisionEngine chamados de dentro das regras: decisao de
