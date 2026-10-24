@@ -1,5 +1,14 @@
 ﻿# HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-10-23 (978) - Cor Black no slug do log vira 'K' (era 'B', igual a Blue)
+
+`parse_combat_log._COLOR_LETTER`: Black 'B' -> 'K' (CMYK). Nenhum codigo le a cor de volta do slug (so nome de
+arquivo e `friendly_name`); arquivos ja gravados mantem o nome (o index aponta pra eles), os novos saem "Imu-K".
+Teste `test_cor_do_slug_sem_ambiguidade_bloco_978` (controle: 6 cores, 6 letras). smoke_fast 0 [FALHOU], 1.970 OK.
+**Achado a parte (NAO causado aqui, mesmo resultado com o codigo anterior)**: `python -m unittest
+test_bot_efficiency_report` da 2 FAIL (`test_reproduces_historical_bot_baseline`/`_human_baseline`) e 1 ERROR
+(`test_bank_confirmation_requires_canonical_name_and_artifacts`) -- investigar em sessao propria.
+
 ## 2026-10-23 (977) - Triagem de derrota compara CODIGO, nao nome
 
 `triage_real_losses.py` comparava nomes normalizados cortados em 12 letras; o log do simulador chama OP17-054 de

@@ -25,8 +25,11 @@ DB_INDEX = DB_ROOT / 'index.json'
 
 # Ordem canonica das cores OPTCG para montar a abreviacao
 _COLOR_ORDER  = ['Red', 'Green', 'Blue', 'Purple', 'Black', 'Yellow']
+# Black = 'K' (convencao CMYK) desde o bloco 978: 'B' servia pra Blue E Black,
+# e "Imu-B" nao dizia qual. So o NOME do arquivo/friendly_name usa a letra --
+# nenhum codigo le a cor de volta do slug; arquivos antigos mantem o nome.
 _COLOR_LETTER = {'Red': 'R', 'Green': 'G', 'Blue': 'B',
-                 'Purple': 'P', 'Black': 'B', 'Yellow': 'Y'}
+                 'Purple': 'P', 'Black': 'K', 'Yellow': 'Y'}
 
 # Cache do CSV de cartas
 _CARDS_CSV: dict | None = None
