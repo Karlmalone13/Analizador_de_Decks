@@ -270,10 +270,37 @@ def _grava_livro(dados: dict) -> None:
     LIVRO.write_text(json.dumps(dados, indent=2, ensure_ascii=False), encoding='utf-8')
 
 
+def _cache_fatias_path() -> Path:
+    return CORPUS.with_name(CORPUS.stem + '_fatias_contagem.json')
+
+
 def _nas_fatias() -> collections.Counter:
+    """Linhas por origem em TODAS as fatias versionadas.
+
+    Bloco 983: descomprimir as 49 fatias (840 MB .gz, ~40 GB de texto) a cada
+    push/exporta levava ~16 min. Fatia versionada e IMUTAVEL (cada exporta cria
+    um arquivo novo), entao a contagem fica num cache LOCAL por (nome, tamanho,
+    mtime); fatia nova ou alterada e relida -- mesmo resultado, so sem reler."""
+    try:
+        cache = json.loads(_cache_fatias_path().read_text(encoding='utf-8'))
+    except Exception:
+        cache = {}
     total: collections.Counter = collections.Counter()
+    novo = {}
     for f in _fatias_no_git():
-        total += _conta_por_origem(f, comprimido=True)
+        st = f.stat()
+        chave = f'{f.name}|{st.st_size}|{int(st.st_mtime)}'
+        if chave in cache:
+            c = collections.Counter(cache[chave])
+        else:
+            c = _conta_por_origem(f, comprimido=True)
+        novo[chave] = dict(c)
+        total += c
+    if novo != cache:
+        try:
+            _cache_fatias_path().write_text(json.dumps(novo, indent=1), encoding='utf-8')
+        except Exception:
+            pass
     return total
 
 

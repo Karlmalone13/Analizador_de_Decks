@@ -142,6 +142,7 @@ scriptis_da_ia/metrics/q_alvos.jsonl
 scriptis_da_ia/metrics/q_alvos_fatias.json
 # marcos da leitura incremental (bloco 968) -- locais, valem so pra este corpus
 scriptis_da_ia/metrics/q_alvos_marcos.json
+scriptis_da_ia/metrics/q_alvos_fatias_contagem.json
 # INDICE das jogadas escolhidas (bloco 931): derivado e regeneravel do
 # q_alvos.jsonl (`python corpus_escolhidas.py --reconstroi`), por maquina.
 scriptis_da_ia/metrics/q_escolhidas.jsonl

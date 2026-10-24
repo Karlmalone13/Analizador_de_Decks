@@ -86,7 +86,9 @@ def checa_corpus() -> None:
         return
     if not cg.CORPUS.exists():
         return
-    locais = cg._conta_por_origem(cg.CORPUS, comprimido=False)
+    # Incremental (bloco 983): le so o que veio depois do marco 'contado' --
+    # antes relia os 40 GB do corpus a cada push.
+    locais = cg._conta_corpus()
     fatias = cg._nas_fatias()
     faltando = cg._a_exportar(locais, fatias)
     if not faltando:

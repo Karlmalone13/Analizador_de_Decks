@@ -1,5 +1,18 @@
 ﻿# HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-10-24 (983) - Push/exporta lentos: hook relia os 40 GB e as fatias eram descomprimidas inteiras
+
+Corpus `q_alvos.jsonl` = **40,2 GB** (nao foi reduzido: o 969 so moveu o TREINO pro binario `q_bin/` 4,3 GB; o
+jsonl ficou porque exporta/importa/hook contam linhas nele -- apagar segue pendente e com confirmacao do usuario).
+AS-IS: push travava 5+ min no hook e `corpus_git.py exporta` levou 15m58s pra 183 linhas. Duas causas:
+(1) `verifica_push.checa_corpus` usava `_conta_por_origem(CORPUS)` (le do byte 0) em vez de `_conta_corpus()`
+(incremental pelo marco 'contado', bloco 968); (2) `_nas_fatias` descomprimia as 49 fatias (840 MB .gz, ~40 GB de
+texto) a cada chamada. Agora: hook incremental + cache LOCAL das contagens por fatia (`q_alvos_fatias_contagem.json`,
+gitignored, chave nome|tamanho|mtime; fatia e imutavel). Medido: contagem 378 s (monta o cache) -> 1 s, mesmo
+resultado ("nada a exportar", fatias 42.471.194 / local 42.471.123); hook inteiro 1 s.
+Tambem: logs de decisao de 113/66/46 MB entraram no commit das partidas -> GitHub recusa > 100 MB; o de 113 MB foi
+em .gz (convencao 8dc1497). Sugestao pendente: comprimir automaticamente o log de decisao > 100 MB ao bancar.
+
 ## 2026-10-24 (982) - CPU x CPU de 24/10 + bug AO VIVO: evento de counter repetido no mesmo ataque
 
 3 partidas CPU x CPU (Shift+C, decks trocados): Teach-KY x Newgate-R (Newgate), Ace-R x Sabo-RK (Ace, t6), Luffy-RG
