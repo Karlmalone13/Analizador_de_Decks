@@ -1,5 +1,18 @@
 ﻿# HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-10-23 (979) - Velocidade: parte do ESTADO de `pensar_features` 1x por decisao (decisoes IDENTICAS)
+
+AS-IS (`mede_arvore.py --perfil`, cProfile so dentro de `_arvore_q`, 4 partidas): arvore 18,6 s; `linha_q` 6,0 s
+(32%), dos quais `pensar_features` 3,4 s (7.154 chamadas) -- mao jogavel, papeis, poderes, vida, campo eram
+recalculados a CADA candidata, iguais pra todas. Agora `pensar_estado` (1x por estado, em `q_valores`) +
+`pensar_features(..., est=)` so com a parte da acao; mesma aritmetica, mesma ordem.
+**Controle**: `mede_arvore.py --assinatura` (vencedor, decisoes, nos, transposicoes, trocas e escolhas por familia
+de cada partida) -- reproduz IDENTICA sem mudanca (2 rodadas) e IDENTICA depois da otimizacao (8 seeds).
+Tempo: arvore 13,2 -> 8,8 s nas 8 partidas (-33%); `linha_q` 6,0 -> 2,9 s no perfil. Tambem acelera o Q fora da
+arvore (mesmo `q_valores`). smoke_fast 0 [FALHOU], 1.970 OK.
+NAO feito (mudaria decisao ou ganho pequeno): `avaliar_carta` (~1,8 s) vem de regras do motor
+(`pitch_cost_as_counter`, `_can_play_card`, `_doc_jogaveis`...); `_apply_action` (~43%) e o motor de regras.
+
 ## 2026-10-23 (978) - Cor Black no slug do log vira 'K' (era 'B', igual a Blue)
 
 `parse_combat_log._COLOR_LETTER`: Black 'B' -> 'K' (CMYK). Nenhum codigo le a cor de volta do slug (so nome de

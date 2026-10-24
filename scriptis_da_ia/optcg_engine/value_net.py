@@ -587,23 +587,18 @@ def _oponente_observavel(opp) -> tuple:
     return esperado / 1000.0, float(trig)
 
 
-def pensar_features(p, opp, acao, acoes=None, opp_obs=None) -> list:
-    """Ver `FEATURE_NAMES_PENSAR`. `acoes` = as candidatas da MESMA decisao
-    (quando houver) -- so serve pra dizer se o lider ainda pode ativar.
-    `opp_obs` = `_oponente_observavel(opp)` ja calculado (e do estado, igual pra
-    todas as candidatas). Nunca derruba o motor: falha -> zeros."""
+def pensar_estado(p, opp, acoes=None, opp_obs=None):
+    """A parte de `pensar_features` que so depende do ESTADO (e da lista de
+    candidatas): igual pra todas as acoes da mesma decisao. Bloco 979: era
+    recalculada a cada candidata -- 18% do tempo da arvore. `None` em falha
+    (o chamador cai nos zeros, como antes)."""
     try:
         mao = list(getattr(p, 'hand', []) or [])
         don = _num(lambda: getattr(p, 'don_available', 0))
-        jog = [c for c in mao if _jogavel(c, don)]
-        kind = acao[1] if len(acao) > 1 else None
-        ator = acao[2] if len(acao) > 2 else None
-        alvo_tipo = acao[3] if len(acao) > 3 else None
-        alvo = acao[4] if len(acao) > 4 else None
-        don_acao = float(acao[5]) if len(acao) > 5 and acao[5] is not None else 0.0
-        gasto = _custo(ator) if kind == 'play' and ator is not None else (don_acao if kind == 'attach_don' else 0.0)
-        don_pos = max(0.0, don - gasto)
-        jog_pos = sum(1 for c in mao if c is not ator and _jogavel(c, don_pos))
+        # (carta, tipo jogavel, custo) -- `_jogavel` = tipo ok E custo <= don
+        tipos = [(c, str(getattr(c, 'card_type', '') or '').upper() in ('CHARACTER', 'EVENT', 'STAGE'),
+                  _custo(c)) for c in mao]
+        jog = [c for c, ok, cu in tipos if ok and cu <= don]
         pap = [_papeis(getattr(c, 'code', '')) for c in mao]
         rem = sum(1 for x in pap if x[0]); com = sum(1 for x in pap if x[1])
         blk = sum(1 for c, x in zip(mao, pap) if x[2] or _prop(c, 'has_blocker'))
@@ -621,7 +616,40 @@ def pensar_features(p, opp, acao, acoes=None, opp_obs=None) -> list:
         vida_o = _num(opp.life_count)
         ch_m, ch_o = _chars(p), _chars(opp)
         pw_m = sum(_prop(c, 'power') for c in ch_m) / 1000.0
-        pos_life, pos_ch_o, pos_ch_m, pos_mao, pos_pw = vida_o, float(len(ch_o)), float(len(ch_m)), float(len(mao)), pw_m
+        return {'mao': mao, 'don': don, 'tipos': tipos, 'jog': jog,
+                'soma_jog': sum(_custo(c) for c in jog),
+                'rem': rem, 'com': com, 'blk': blk, 'evd': evd, 'lm': lm, 'lo': lo,
+                'pod_lm': _poder(lm) / 1000.0, 'pod_lo': _poder(lo) / 1000.0,
+                'tem_at': tem_at, 'ativo': ativo, 'ativavel': ativavel,
+                'cnt': cnt, 'trig': trig, 'vida_o': vida_o,
+                'n_ch_o': float(len(ch_o)), 'n_ch_m': float(len(ch_m)), 'pw_m': pw_m}
+    except Exception:
+        return None
+
+
+def pensar_features(p, opp, acao, acoes=None, opp_obs=None, est=None) -> list:
+    """Ver `FEATURE_NAMES_PENSAR`. `acoes` = as candidatas da MESMA decisao
+    (quando houver) -- so serve pra dizer se o lider ainda pode ativar.
+    `opp_obs` = `_oponente_observavel(opp)` ja calculado (e do estado, igual pra
+    todas as candidatas). `est` = `pensar_estado(...)` ja calculado (bloco 979):
+    so a parte da ACAO e feita aqui. Nunca derruba o motor: falha -> zeros."""
+    try:
+        if est is None:
+            est = pensar_estado(p, opp, acoes, opp_obs)
+        if est is None:
+            return [0.0] * len(FEATURE_NAMES_PENSAR)
+        mao, don, lo = est['mao'], est['don'], est['lo']
+        kind = acao[1] if len(acao) > 1 else None
+        ator = acao[2] if len(acao) > 2 else None
+        alvo_tipo = acao[3] if len(acao) > 3 else None
+        alvo = acao[4] if len(acao) > 4 else None
+        don_acao = float(acao[5]) if len(acao) > 5 and acao[5] is not None else 0.0
+        gasto = _custo(ator) if kind == 'play' and ator is not None else (don_acao if kind == 'attach_don' else 0.0)
+        don_pos = max(0.0, don - gasto)
+        jog_pos = sum(1 for c, ok, cu in est['tipos'] if c is not ator and ok and cu <= don_pos)
+        vida_o = est['vida_o']
+        pos_life, pos_ch_o, pos_ch_m, pos_mao, pos_pw = (
+            vida_o, est['n_ch_o'], est['n_ch_m'], float(len(mao)), est['pw_m'])
         if kind == 'attack' and ator is not None:
             golpe = _poder(ator) + don_acao * 1000.0
             if alvo_tipo == 'leader':
@@ -634,16 +662,17 @@ def pensar_features(p, opp, acao, acoes=None, opp_obs=None) -> list:
             if str(getattr(ator, 'card_type', '')).upper() == 'CHARACTER':
                 pos_ch_m += 1.0
                 pos_pw += _prop(ator, 'power') / 1000.0
-        return [float(len(jog)), sum(_custo(c) for c in jog), don_pos, float(jog_pos),
-                float(rem), float(com), float(blk), float(evd),
-                _poder(lm) / 1000.0, _poder(lo) / 1000.0, tem_at, ativo, ativavel,
-                float(cnt), float(trig),
+        return [float(len(est['jog'])), est['soma_jog'], don_pos, float(jog_pos),
+                float(est['rem']), float(est['com']), float(est['blk']), float(est['evd']),
+                est['pod_lm'], est['pod_lo'], est['tem_at'], est['ativo'], est['ativavel'],
+                float(est['cnt']), float(est['trig']),
                 pos_life, pos_ch_o, pos_ch_m, pos_mao, pos_pw]
     except Exception:
         return [0.0] * len(FEATURE_NAMES_PENSAR)
 
 
-def linha_q(p, opp, acao, base=None, corr=None, acoes=None, opp_obs=None) -> list:
+def linha_q(p, opp, acao, base=None, corr=None, acoes=None, opp_obs=None,
+            est=None) -> list:
     """O vetor do Q de UMA acao -- UNICO lugar que monta a linha (bloco 968).
     Antes eram 6 montagens manuais `base + acao_features + corr` espalhadas;
     coluna nova tinha que ser lembrada em cada uma (REGRA_SEM_DUPLICACAO).
@@ -653,7 +682,8 @@ def linha_q(p, opp, acao, base=None, corr=None, acoes=None, opp_obs=None) -> lis
         base = state_features(p, opp, nomes=FEATURE_NAMES_ALUNO)
     if corr is None:
         corr = corrida_features(p, opp)
-    return base + acao_features(acao, opp) + corr + pensar_features(p, opp, acao, acoes, opp_obs)
+    return base + acao_features(acao, opp) + corr + pensar_features(p, opp, acao, acoes,
+                                                                    opp_obs, est)
 
 
 CLASSES_DE_PASSO = ('cartas', 'vida_ganhar', 'vida_espiar', 'vida_outro', 'dano', 'ko',
@@ -817,7 +847,8 @@ def q_valores(p, opp, acoes, bundle=None) -> list:
         base = state_features(p, opp, nomes=FEATURE_NAMES_ALUNO)
         corr = corrida_features(p, opp)
         obs = _oponente_observavel(opp)
-        linhas = [linha_q(p, opp, a, base, corr, acoes, obs) for a in acoes]
+        est = pensar_estado(p, opp, acoes, obs)   # bloco 979: 1x por estado
+        linhas = [linha_q(p, opp, a, base, corr, acoes, obs, est) for a in acoes]
         esperado = getattr(modelo, 'n_features_in_', None)
         if esperado is not None and len(linhas[0]) > esperado:
             # modelo ANTERIOR as colunas mais novas (bloco 910: defesa/alvo;

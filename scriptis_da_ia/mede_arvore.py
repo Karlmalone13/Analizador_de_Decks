@@ -50,11 +50,65 @@ def joga(seed: int, arvore: bool) -> dict:
             'lideres': (deck_list[ia][0], deck_list[ib][0])}
 
 
+def assinatura(partidas: int, seed: int) -> int:
+    """Uma linha por partida com tudo que a arvore decidiu: vencedor, turnos,
+    decisoes, nos, transposicoes, trocas e escolhas por familia. Otimizacao de
+    velocidade tem que reproduzir estas linhas EXATAMENTE."""
+    import json
+    t0 = time.perf_counter()
+    for i in range(partidas):
+        antes = json.loads(json.dumps(de._ARVORE_STATS, default=str))
+        r = joga(seed + i, True)
+        d = {k: de._ARVORE_STATS[k] - antes.get(k, 0) for k in ('decisoes', 'nos', 'hits', 'mudou')}
+        ef = {f: [v[0] - (antes.get('efeitos', {}).get(f, [0, 0])[0]),
+                  v[1] - (antes.get('efeitos', {}).get(f, [0, 0])[1])]
+              for f, v in sorted(de._ARVORE_STATS.get('efeitos', {}).items())}
+        print('ASSIN', seed + i, r['vencedor'], r['erro'], json.dumps(d, sort_keys=True),
+              json.dumps(ef, sort_keys=True), flush=True)
+    print(f'tempo {time.perf_counter() - t0:.1f}s; arvore {de._ARVORE_STATS["seg"]:.1f}s')
+    return 0
+
+
+def perfil(partidas: int, seed: int) -> int:
+    """AS-IS de ONDE a arvore gasta o tempo: cProfile ligado so dentro de
+    `_arvore_q`, nas mesmas seeds."""
+    import cProfile
+    import pstats
+    pr = cProfile.Profile()
+    orig = de.OPTCGMatch._arvore_q
+
+    def _com_perfil(self, *x, **k):
+        pr.enable()
+        try:
+            return orig(self, *x, **k)
+        finally:
+            pr.disable()
+    de.OPTCGMatch._arvore_q = _com_perfil
+    t0 = time.perf_counter()
+    for i in range(partidas):
+        joga(seed + i, True)
+    print(f'{partidas} partidas em {time.perf_counter() - t0:.1f}s; arvore '
+          f'{de._ARVORE_STATS["seg"]:.1f}s em {de._ARVORE_STATS["decisoes"]} decisoes')
+    st = pstats.Stats(pr)
+    st.sort_stats('cumulative').print_stats(35)
+    st.sort_stats('tottime').print_stats(25)
+    return 0
+
+
 def main() -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument('--partidas', type=int, default=6)
     ap.add_argument('--seed', type=int, default=973)
+    ap.add_argument('--assinatura', action='store_true',
+                    help='so com a arvore; imprime a assinatura de cada partida '
+                         '(otimizacao tem que manter IDENTICA)')
+    ap.add_argument('--perfil', action='store_true',
+                    help='so com a arvore; perfil (cProfile) restrito a ela')
     a = ap.parse_args()
+    if a.perfil:
+        return perfil(a.partidas, a.seed)
+    if a.assinatura:
+        return assinatura(a.partidas, a.seed)
     tot = {False: 0.0, True: 0.0}
     for i in range(a.partidas):
         s = a.seed + i
