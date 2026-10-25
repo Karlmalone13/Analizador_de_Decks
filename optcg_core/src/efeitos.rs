@@ -709,6 +709,43 @@ fn casa_alvo_de_substituicao(t: &Carta, i: &InfoCarta, _mesma: bool, st: &Value,
         || ["self_type", "self_power_base_lte", "self_power_base_gte"].iter().any(|k| cs.get(*k).is_some()))
 }
 
+/// Filtros de `eligible_cards` do `play_card` (nome/cor/exclusao; poder so na execucao)
+fn casa_play_card(st: &Value, c: &Carta, i: &InfoCarta, com_poder: bool) -> R<bool> {
+    let nomes: Vec<String> = match (&st["filter_names"], &st["filter_name"]) {
+        (Value::Array(a), _) if !a.is_empty() => a.iter().filter_map(|x| x.as_str()).map(|x| x.to_lowercase()).collect(),
+        (_, Value::Array(a)) => a.iter().filter_map(|x| x.as_str()).map(|x| x.to_lowercase()).collect(),
+        (_, Value::String(x)) if !x.is_empty() => vec![x.to_lowercase()],
+        _ => vec![],
+    };
+    if !nomes.is_empty() {
+        let (nm, cd) = (i.name.to_lowercase(), c.code.to_lowercase());
+        if !nomes.iter().any(|n| nm.contains(n.as_str()) || cd.contains(n.as_str())) {
+            return Ok(false);
+        }
+    }
+    let cor = st["color"].as_str().unwrap_or("").to_lowercase();
+    if !cor.is_empty() && !i.color.to_lowercase().contains(&cor) {
+        return Ok(false);
+    }
+    match &st["exclude"] {
+        Value::String(x) if !x.is_empty() && i.name.to_lowercase().contains(&x.to_lowercase()) => return Ok(false),
+        Value::Array(a) if !a.is_empty() => return Err(ns("play_card exclude em lista")),
+        _ => {}
+    }
+    if com_poder {
+        let num = |k: &str| st[k].as_i64();
+        if num("power_lte").map_or(false, |x| i.power > x) || num("power_gte").map_or(false, |x| i.power < x)
+            || num("power_eq").map_or(false, |x| i.power != x)
+        {
+            return Ok(false);
+        }
+        if st["filter_no_effect"].as_bool().unwrap_or(false) && !i.efeitos.is_empty() {
+            return Ok(false);
+        }
+    }
+    Ok(true)
+}
+
 /// `effective_hand_play_cost(p, card, opp)`
 pub fn custo_de_jogar(p: &Jogador, opp: &Jogador, c: &Carta) -> R<i64> {
     let i = dados(c)?;
@@ -1900,6 +1937,7 @@ impl Executor {
                     if i.card_type == tipo && cl.map_or(true, |l| i.cost <= l)
                         && st["cost_eq"].as_i64().map_or(true, |x| i.cost == x)
                         && casa_filtro(&i, &st["filter_type"], false)
+                        && casa_play_card(st, c, &i, false)?
                     {
                         ok = true;
                     }
@@ -3934,8 +3972,7 @@ impl Executor {
             self.poe_em_jogo(me, opp, c, &ci)?;
             return Ok(());
         }
-        for k in ["each", "filter_no_effect", "exclude_color_of_selected", "color", "power_lte",
-                  "power_gte", "power_eq", "filter_names", "filter_name", "exclude"] {
+        for k in ["each", "exclude_color_of_selected"] {
             if !st[k].is_null() && st[k] != Value::Bool(false) && st[k].as_str() != Some("") {
                 return Err(ns(&format!("play_card com {k}")));
             }
@@ -3959,6 +3996,7 @@ impl Executor {
                     && st["cost_eq"].as_i64().map_or(true, |x| i.cost == x)
                     && (!st["has_trigger"].as_bool().unwrap_or(false) || i.has_trigger)
                     && casa_filtro(&i, &st["filter_type"], false)
+                    && casa_play_card(st, c, &i, true)?
                 {
                     eleg.push((z.to_string(), k));
                 }
