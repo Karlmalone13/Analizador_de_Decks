@@ -9155,6 +9155,8 @@ class EffectExecutor:
                         default=(),
                     )
                     candidates = list(best_combo)
+                    _diario_decisao_efeito('escolha_efeito', qual='orcamento', cartas=[
+                        _diario_lugar_com_lado(x, me, opp) for x in candidates])
                 # Alvo no OPONENTE = remocao, mira o mais valioso. Alvo no
                 # PROPRIO campo = sacrificio/drawback ("trash 1 dos seus"),
                 # mira o MENOS valioso — mesma regua que

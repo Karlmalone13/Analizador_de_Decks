@@ -3559,11 +3559,11 @@ impl Executor {
         if t != "opp_character" {
             return Err(ns(&format!("ko com alvo {t}")));
         }
-        for k in ["total_power_lte", "total_cost_lte", "alt_target"] {
-            if !st[k].is_null() {
-                return Err(ns(&format!("ko com {k}")));
-            }
+        if !st["alt_target"].is_null() {
+            return Err(ns("ko com alt_target"));
         }
+        let tpl = st["total_power_lte"].as_i64();
+        let orcamento = tpl.is_some() || st["total_cost_lte"].as_i64().is_some();
         if tem_reativo(me, &["on_own_effect_removes_char"])? || tem_reativo(opp, &["on_own_effect_removes_char"])? {
             return Err(ns("reativo on_own_effect_removes_char"));
         }
@@ -3574,9 +3574,32 @@ impl Executor {
                 cands.push(i);
             }
         }
+        if orcamento {
+            // a combinacao que cabe no orcamento (heuristica do Python, no diario)
+            self.passivas_da_fila(me, opp)?;
+            let d = self.proxima("escolha_efeito")?;
+            if d["qual"].as_str() != Some("orcamento") {
+                return Err(ns("escolha fora de ordem: esperava orcamento"));
+            }
+            let mut combo = Vec::new();
+            for c in d["cartas"].as_array().into_iter().flatten() {
+                let i = match (c[0].as_str(), c[1].as_str(), c[2].as_u64()) {
+                    (Some("oponente"), Some("field_chars"), Some(i)) if cands.contains(&(i as usize)) => i as usize,
+                    _ => return Err(ns("orcamento fora dos candidatos")),
+                };
+                combo.push(i);
+            }
+            cands = combo;
+        }
+        let mut usado = 0i64;
         for _ in 0..n.min(cands.len()) {
             self.passivas_da_fila(me, opp)?;
             let i = self.alvo_no_oponente(&cands)?;
+            let pw = dados(&opp.field_chars[i])?.power;
+            if tpl.map_or(false, |l| usado + pw > l) {
+                cands.retain(|&j| j != i);
+                continue;
+            }
             let fonte_char = if dados(fonte)?.card_type == "CHARACTER" { Some(fonte) } else { None };
             let saiu_da_lista = |cands: &mut Vec<usize>| cands.retain(|&j| j != i);
             if imune_a_ko(opp, me, i, fonte_char, false)? {
@@ -3593,6 +3616,7 @@ impl Executor {
                 return Err(ns("ko: substituicao paga (indices do campo podem mudar)"));
             }
             crate::acoes::tira_do_campo_para_lixo(opp, i);
+            usado += pw;
             let alvo = opp.trash.last().cloned().unwrap();
             cands.retain(|&j| j != i);
             for j in cands.iter_mut() {
