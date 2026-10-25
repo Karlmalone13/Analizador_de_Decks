@@ -1760,6 +1760,27 @@ impl Executor {
                         + me.stage.as_ref().map_or(0, |s| s.rested as i64);
                     r >= n
                 }
+                "board_has_power_gte" => {
+                    let mut mx: Option<i64> = None;
+                    for c in me.field_chars.iter().chain(opp.field_chars.iter()) {
+                        let pw = poder_meu_turno(c)?;
+                        mx = Some(mx.map_or(pw, |m: i64| m.max(pw)));
+                    }
+                    mx.map_or(false, |m| m >= n)
+                }
+                "don_on_field_lte_opp" => {
+                    !v.as_bool().unwrap_or(!v.is_null())
+                        || me.don_available + me.don_rested <= opp.don_available + opp.don_rested
+                }
+                "opp_char_cost_eq_or_gte" => {
+                    let (eq, ge) = (v["eq"].as_i64(), v["gte"].as_i64());
+                    let mut a = false;
+                    for c in &opp.field_chars {
+                        let x = dados(c)?.cost;
+                        a |= Some(x) == eq || ge.map_or(false, |g| x >= g);
+                    }
+                    a
+                }
                 "opp_char_power_gte" => {
                     let mut mx: Option<i64> = None;
                     for c in &opp.field_chars {
@@ -1818,7 +1839,7 @@ impl Executor {
             "trash_own_life" => if st["face"].as_str() == Some("up") { me.life.iter().any(|c| c.life_face_up) } else { !me.life.is_empty() },
             "attack_life" => !opp.life.is_empty(),
             "trash_from_deck_top" => !me.deck.is_empty(),
-            "reveal_deck_top_conditional" | "select_grant_unblockable_turn" => true,
+            "reveal_deck_top_conditional" | "select_grant_unblockable_turn" | "immunity" => true,
             "select_grant_rush" => {
                 let nome = st["filter_name"].as_str().unwrap_or("").to_lowercase();
                 let exn = st["exclude"].as_str().unwrap_or("").to_lowercase();
@@ -2062,20 +2083,27 @@ impl Executor {
                     }
                 }
                 "trash_from_hand" => {
-                    for k in ["color", "power_lte", "power_gte", "power_eq", "cost_lte", "cost_gte", "cost_eq"] {
-                        if !c[k].is_null() && c[k].as_str() != Some("") {
-                            return Err(ns(&format!("custo trash_from_hand com filtro {k}")));
-                        }
-                    }
+                    let cor = c["color"].as_str().unwrap_or("").to_lowercase();
+                    let num = |k: &str| c[k].as_i64();
                     let mut pool = 0i64;
-                    for h in &me.hand {
+                    let mut elegiveis = Vec::new();
+                    for (j, h) in me.hand.iter().enumerate() {
                         let hi = dados(h)?;
                         if casa_filtro(&hi, &c["filter_type"], false)
                             && (!c["has_trigger"].as_bool().unwrap_or(false) || hi.has_trigger)
+                            && (cor.is_empty() || hi.color.to_lowercase().contains(&cor))
+                            && num("power_lte").map_or(true, |x| hi.power <= x)
+                            && num("power_gte").map_or(true, |x| hi.power >= x)
+                            && num("power_eq").map_or(true, |x| hi.power == x)
+                            && num("cost_lte").map_or(true, |x| hi.cost <= x)
+                            && num("cost_gte").map_or(true, |x| hi.cost >= x)
+                            && num("cost_eq").map_or(true, |x| hi.cost == x)
                         {
                             pool += 1;
+                            elegiveis.push(j);
                         }
                     }
+                    let _ = &elegiveis;
                     if pool < n {
                         return Ok(false);
                     }
@@ -2413,7 +2441,7 @@ impl Executor {
             return Err(ns("passo em selected depois de alvo do oponente"));
         }
         match acao {
-            "look_top_deck" => {}
+            "look_top_deck" | "immunity" => {}
             "trash_from_deck_top" => {
                 if st["count_from_last_hand_trash"].as_bool().unwrap_or(false) {
                     return Err(ns("trash_from_deck_top count_from_last_hand_trash"));
