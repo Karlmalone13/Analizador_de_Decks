@@ -83,6 +83,17 @@ const CONDICOES_DO_PYTHON: &[&str] = &[
 
 pub struct Executor {
     pub fila: VecDeque<Value>,
+    /// Instancia de `EffectExecutor` do Python em uso: o `_once_used` dele e POR
+    /// INSTANCIA (descartavel). 0 = o executor da Main, que vive o turno todo e
+    /// nao esta no canonico -> once_per_turn fora do nucleo.
+    pub inst: u32,
+    pub usados: std::collections::HashSet<(u32, String, String)>,
+}
+
+impl Executor {
+    pub fn novo(fila: VecDeque<Value>) -> Self {
+        Executor { fila, inst: 0, usados: Default::default() }
+    }
 }
 
 impl Executor {
@@ -264,8 +275,15 @@ impl Executor {
         if !fonte.effects_negated_until.is_empty() {
             return Ok(());
         }
-        if ef["once_per_turn"].as_bool().unwrap_or(false) {
-            return Err(ns("once_per_turn (estado do executor fora do canonico)"));
+        let uma_vez = ef["once_per_turn"].as_bool().unwrap_or(false);
+        let chave = (self.inst, fonte.code.clone(), gatilho.to_string());
+        if uma_vez {
+            if self.inst == 0 {
+                return Err(ns("once_per_turn (executor da Main fora do canonico)"));
+            }
+            if self.usados.contains(&chave) {
+                return Ok(());
+            }
         }
         if !self.condicoes(&ef["conditions"], me, opp, fonte, gatilho)? {
             return Ok(());
@@ -300,8 +318,27 @@ impl Executor {
                     return Ok(());
                 }
             }
-            // reativos de "jogou personagem": sem portao de custo opcional no Python
-            "on_own_char_played" | "on_opp_char_played" => {}
+            // gatilhos de combate: `_combat_buff_worth_paying`; se ele nao decide
+            // (None), `_worth_paying_optional_costs`
+            "when_attacking" | "on_opp_attack" | "leader_battle_reactive" => {
+                let d = self.proxima("paga_custo")?;
+                let v = match d["qual"].as_str() {
+                    Some("_combat_buff_worth_paying") if d["valor"].is_null() => {
+                        let d2 = self.proxima("paga_custo")?;
+                        if d2["qual"].as_str() != Some("_worth_paying_optional_costs") {
+                            return Err(ns("veredito de custo inesperado"));
+                        }
+                        d2["valor"].as_bool()
+                    }
+                    Some("_combat_buff_worth_paying") => d["valor"].as_bool(),
+                    _ => return Err(ns("veredito de combate inesperado")),
+                };
+                if v != Some(true) {
+                    return Ok(());
+                }
+            }
+            // sem portao de custo opcional no Python
+            "on_own_char_played" | "on_opp_char_played" | "when_rested" | "on_block" | "on_ko" => {}
             outro => return Err(ns(&format!("gatilho fora do nucleo: {outro}"))),
         }
         let custos: Vec<Value> = ef["costs"].as_array().cloned().unwrap_or_default();
@@ -310,6 +347,9 @@ impl Executor {
         }
         for st in &passos {
             self.passo(st, me, opp, fonte, &inf, gatilho)?;
+        }
+        if uma_vez {
+            self.usados.insert(chave);
         }
         Ok(())
     }
@@ -547,7 +587,11 @@ impl Executor {
                 if ent["once_per_turn"].as_bool().unwrap_or(false) {
                     return Err(ns("reativo once_per_turn (marcador fora do canonico)"));
                 }
-                self.executa(w, o, &f, gat)?;
+                let k = self.inst;
+                self.inst = 1000 + self.usados.len() as u32 + self.fila.len() as u32;
+                let r = self.executa(w, o, &f, gat);
+                self.inst = k;
+                r?;
             }
         }
         Ok(())
@@ -592,7 +636,7 @@ fn casa_alvo(st: &Value, c: &Carta, active_only: bool, usa_filter_types: bool, m
 
 /// Alguma carta do lado tem passo com acao contendo `trecho` (imunidade/substituicao
 /// ainda fora do nucleo: se existir, o resultado nao e garantido)
-fn lado_tem_acao(j: &Jogador, trecho: &str) -> R<bool> {
+pub fn lado_tem_acao(j: &Jogador, trecho: &str) -> R<bool> {
     let cartas = std::iter::once(&j.leader).chain(j.field_chars.iter()).chain(j.stage.iter());
     for c in cartas {
         for b in dados(c)?.efeitos.values() {
@@ -604,10 +648,10 @@ fn lado_tem_acao(j: &Jogador, trecho: &str) -> R<bool> {
     Ok(false)
 }
 
-const REATIVOS_DE_KO: &[&str] = &["when_damage_or_own_char_ko", "on_opp_char_ko", "on_own_char_ko",
+pub const REATIVOS_DE_KO: &[&str] = &["when_damage_or_own_char_ko", "on_opp_char_ko", "on_own_char_ko",
     "on_any_char_ko", "on_own_effect_removes_char"];
 
-fn tem_reativo(j: &Jogador, chaves: &[&str]) -> R<bool> {
+pub fn tem_reativo(j: &Jogador, chaves: &[&str]) -> R<bool> {
     let cartas = std::iter::once(&j.leader).chain(j.field_chars.iter()).chain(j.stage.iter());
     for c in cartas {
         let inf = dados(c)?;

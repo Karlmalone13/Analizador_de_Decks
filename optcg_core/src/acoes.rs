@@ -8,7 +8,7 @@
 //! prontas em `Decisoes` -- no nucleo final sao pontos de decisao da busca.
 //! O que depende de efeito ainda fora do nucleo devolve `NaoSuportado`.
 use crate::cartas::{info, InfoCarta};
-use crate::efeitos::Executor;
+use crate::efeitos::{lado_tem_acao, tem_reativo, Executor, REATIVOS_DE_KO};
 use crate::estado::{Carta, Estado, Jogador};
 use serde::Deserialize;
 use serde_json::Value;
@@ -142,14 +142,14 @@ fn jogar(e: &mut Estado, acao: &Value, d: &Decisoes) -> Result<Resultado, Result
                 is_rush_character(&carta, &inf) && !is_rush(&carta, &inf);
             p.field_chars.push(carta);
             fonte = p.field_chars.last().unwrap().clone();
-            let mut ex = Executor { fila: d.efeito.iter().cloned().collect() };
+            let mut ex = Executor::novo(d.efeito.iter().cloned().collect());
             ex.dispara_jogou_personagem(&mut e.ativo, &mut e.oponente, &fonte)?;
             fila_resto = Some(ex.fila);
         }
         "EVENT" => {
             p.trash.push(carta);
             p.events_activated_costs_this_turn.push(Value::from(inf.cost));
-            Executor { fila: Default::default() }.confere_evento_ativado(&e.ativo, &e.oponente)?;
+            Executor::novo(Default::default()).confere_evento_ativado(&e.ativo, &e.oponente)?;
         }
         "STAGE" => {
             if let Some(velho) = p.stage.take() {
@@ -160,7 +160,7 @@ fn jogar(e: &mut Estado, acao: &Value, d: &Decisoes) -> Result<Resultado, Result
         _ => return Err(ns("tipo de carta inesperado")),
     }
     // efeito ao jogar: on_play e depois main (os dois disparam)
-    let mut ex = Executor { fila: fila_resto.unwrap_or_else(|| d.efeito.iter().cloned().collect()) };
+    let mut ex = Executor::novo(fila_resto.unwrap_or_else(|| d.efeito.iter().cloned().collect()));
     let (p, opp) = (&mut e.ativo, &mut e.oponente);
     ex.executa(p, opp, &fonte, "on_play")?;
     ex.executa(p, opp, &fonte, "main")?;
@@ -211,6 +211,34 @@ fn atacar(e: &mut Estado, acao: &Value, d: &Decisoes) -> Result<Resultado, Resul
     if !atk.attack_paywall.as_object().map_or(true, |m| m.is_empty()) {
         return Err(ns("paywall de ataque (efeito)"));
     }
+    // GATILHOS do ataque, na ordem do Python. Efeito que tira o atacante/alvo do
+    // lugar ainda nao existe nesta onda (os indices continuam validos).
+    let mut ex = Executor::novo(d.efeito.iter().cloned().collect());
+    ex.inst = 1; // `ee` do ataque (lado do atacante)
+    let atk_clone = |e: &Estado| if za == "leader" { e.ativo.leader.clone() } else { e.ativo.field_chars[ia].clone() };
+    let f = atk_clone(e);
+    ex.executa(&mut e.ativo, &mut e.oponente, &f, "when_rested")?;
+    let f = atk_clone(e);
+    ex.executa(&mut e.ativo, &mut e.oponente, &f, "when_attacking")?;
+    if za == "leader" {
+        let fontes: Vec<Carta> = std::iter::once(e.ativo.leader.clone()).chain(e.ativo.field_chars.iter().cloned()).collect();
+        for f in fontes {
+            ex.executa(&mut e.ativo, &mut e.oponente, &f, "leader_battle_reactive")?;
+        }
+    }
+    ex.inst = 2; // `ee_react` (lado do defensor)
+    let reag: Vec<Carta> = std::iter::once(e.oponente.leader.clone()).chain(e.oponente.field_chars.iter().cloned()).collect();
+    for f in reag {
+        ex.executa(&mut e.oponente, &mut e.ativo, &f, "on_opp_attack")?;
+    }
+    if alvo_tipo == "leader" {
+        let reag: Vec<Carta> = std::iter::once(e.oponente.leader.clone()).chain(e.oponente.field_chars.iter().cloned()).collect();
+        for f in reag {
+            ex.executa(&mut e.oponente, &mut e.ativo, &f, "leader_battle_reactive")?;
+        }
+    }
+    let (p, opp) = (&mut e.ativo, &mut e.oponente);
+    let atk = if za == "leader" { &mut p.leader } else { p.field_chars.get_mut(ia).ok_or_else(|| ns("atacante saiu"))? };
     let inf_atk = dados(atk)?;
     let mut atk_power = poder_ataque(atk, &inf_atk);
     let dano = if is_double_attack(atk, &inf_atk) { 2 } else { 1 };
@@ -229,6 +257,16 @@ fn atacar(e: &mut Estado, acao: &Value, d: &Decisoes) -> Result<Resultado, Resul
             alvo_tipo = "character".to_string();
             alvo_idx = Some(ib);
             opp.field_chars.get_mut(ib).ok_or_else(|| ns("bloqueador inexistente"))?.rested = true;
+            let fb = opp.field_chars[ib].clone();
+            ex.inst = 3; // `ee_block`
+            ex.executa(opp, p, &fb, "on_block")?;
+            for c in std::iter::once(&p.leader).chain(p.field_chars.iter()) {
+                if dados(c)?.efeitos.get("passive").and_then(|b| b["steps"].as_array()).map_or(false, |a| {
+                    a.iter().any(|s| matches!(s["action"].as_str(), Some("win_game_on_opp_blocker") | Some("ko_on_opp_blocker")))
+                }) {
+                    return Err(ns("passiva contra blocker"));
+                }
+            }
         }
     }
     let mut defesa = if alvo_tipo == "leader" {
@@ -268,28 +306,58 @@ fn atacar(e: &mut Estado, acao: &Value, d: &Decisoes) -> Result<Resultado, Resul
             if opp.life.is_empty() {
                 return Ok(Resultado::Feito { venceu: true });
             }
+            if tem_reativo(opp, &["when_damage_or_own_char_ko"])? {
+                return Err(ns("reativo de dano"));
+            }
+            let mut tiradas = 0;
             for _ in 0..dano {
                 let Some(mut vida) = opp.life.pop() else { break };
-                if dados(&vida)?.has_trigger && !banish {
-                    return Err(ns("trigger na vida (efeito)"));
-                }
+                tiradas += 1;
+                let gatilho = dados(&vida)?.has_trigger && !banish;
                 if banish {
-                    opp.trash.push(vida);
+                    opp.trash.push(vida.clone());
                 } else if vida.life_face_up && opp.face_up_life_to_deck {
                     vida.life_face_up = false;
-                    opp.deck.insert(0, vida);
+                    opp.deck.insert(0, vida.clone());
                 } else {
-                    opp.hand.push(vida);
+                    opp.hand.push(vida.clone());
+                }
+                if gatilho {
+                    // [Trigger]: o defensor executa, fora do proprio turno
+                    ex.inst = 10 + tiradas; // `ee_opp` novo a cada vida
+                    ex.executa(opp, p, &vida, "trigger")?;
+                }
+            }
+            if tiradas > 0 {
+                let a = if za == "leader" { &p.leader } else { &p.field_chars[ia] };
+                if dados(a)?.efeitos.contains_key("on_damage_to_life") {
+                    return Err(ns("on_damage_to_life"));
                 }
             }
         } else {
             let j = alvo_idx.unwrap();
             if j < opp.field_chars.len() {
+                let t = &opp.field_chars[j];
+                if !t.immunity_ko_until.is_empty() || lado_tem_acao(opp, "immunity")?
+                    || lado_tem_acao(opp, "substitute")?
+                {
+                    return Err(ns("imunidade/substituicao no KO de batalha"));
+                }
+                if tem_reativo(opp, REATIVOS_DE_KO)? || tem_reativo(p, REATIVOS_DE_KO)? {
+                    return Err(ns("reativo de KO"));
+                }
+                let alvo = t.clone();
                 tira_do_campo_para_lixo(opp, j);
+                let alvo = opp.trash.last().cloned().unwrap_or(alvo);
+                ex.inst = 20; // `ee_opp` do KO de batalha
+                ex.executa(opp, p, &alvo, "on_ko")?;
             }
         }
     }
     let _ = atk_eh_char;
+    if !ex.fila.is_empty() {
+        return Err(ns("sobrou decisao de efeito na fila"));
+    }
     Ok(Resultado::Feito { venceu: false })
 }
 
