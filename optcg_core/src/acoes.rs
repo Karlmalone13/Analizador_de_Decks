@@ -259,6 +259,7 @@ fn atacar(e: &mut Estado, acao: &Value, d: &Decisoes) -> Result<Resultado, Resul
         }
     }
     ex.inst = 2; // `ee_react` (lado do defensor)
+    ex.atacante_batalha = Some((if za == "leader" { None } else { Some(ia) }, atk_clone(e).code));
     for (f, l) in lugares(&e.oponente) {
         ex.lugar_fonte = Some(l);
         ex.executa(&mut e.oponente, &mut e.ativo, &f, "on_opp_attack")?;

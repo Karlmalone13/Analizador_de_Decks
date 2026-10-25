@@ -99,13 +99,19 @@ pub struct Executor {
     rest_any_don_n: i64,
     /// `_last_cost_trash_any_count`
     trash_any_n: i64,
+    /// atacante da batalha em curso, no lado `opp` deste executor (None = lider);
+    /// so o `ee_react` recebe (on_opp_attack / leader_battle_reactive)
+    pub atacante_batalha: Option<(Option<usize>, String)>,
+    /// `_battle_attacker`: cada execute() o REDEFINE (None fora daqueles gatilhos);
+    /// passos rodados sem execute() (counter) veem o ultimo valor
+    atacante: Option<(Option<usize>, String)>,
     /// o ultimo `executa` pagou o custo e rodou os passos (`logs` nao vazio no Python)
     pub rodou: bool,
 }
 
 impl Executor {
     pub fn novo(fila: VecDeque<Value>) -> Self {
-        Executor { fila, inst: 0, usados: Default::default(), lugar_fonte: None, ultimo: None, ultimo_oponente: false, rest_any_don_n: 0, trash_any_n: 0, rodou: false }
+        Executor { fila, inst: 0, usados: Default::default(), lugar_fonte: None, ultimo: None, ultimo_oponente: false, rest_any_don_n: 0, trash_any_n: 0, atacante_batalha: None, atacante: None, rodou: false }
     }
 }
 
@@ -1908,6 +1914,7 @@ impl Executor {
     /// `EffectExecutor.execute(card, gatilho)` para o lado `me` (quem executa).
     pub fn executa(&mut self, me: &mut Jogador, opp: &mut Jogador, fonte: &Carta, gatilho: &str) -> R<()> {
         self.rodou = false;
+        self.atacante = if matches!(gatilho, "on_opp_attack" | "leader_battle_reactive") { self.atacante_batalha.clone() } else { None };
         let inf = dados(fonte)?;
         let Some(ef) = inf.efeitos.get(gatilho).cloned() else { return Ok(()) };
         if !fonte.effects_negated_until.is_empty() {
@@ -3464,6 +3471,15 @@ pub fn tem_reativo(j: &Jogador, chaves: &[&str]) -> R<bool> {
 
 impl Executor {
     /// Escolha de alvo (`_pick_effect_target`) que tem que estar entre os candidatos.
+    /// `_battle_attacker`, se ainda esta no lugar (Some(None) = lider)
+    fn atacante_no(&self, opp: &Jogador) -> Option<Option<usize>> {
+        match &self.atacante {
+            Some((None, c)) if &opp.leader.code == c => Some(None),
+            Some((Some(i), c)) if opp.field_chars.get(*i).map(|x| &x.code) == Some(c) => Some(Some(*i)),
+            _ => None,
+        }
+    }
+
     fn alvo_no_oponente(&mut self, cands: &[usize]) -> R<usize> {
         match self.escolha("alvo")? {
             Some((l, z, i)) if l == "oponente" && z == "field_chars" && cands.contains(&i) => Ok(i),
@@ -4054,7 +4070,12 @@ impl Executor {
                 if opp.field_chars.is_empty() {
                     return Ok(());
                 }
-                let ativos: Vec<usize> = (0..opp.field_chars.len()).filter(|&i| !opp.field_chars[i].rested).collect();
+                let mut ativos: Vec<usize> = (0..opp.field_chars.len()).filter(|&i| !opp.field_chars[i].rested).collect();
+                if let Some(Some(a)) = self.atacante_no(opp) {
+                    if !ativos.contains(&a) {
+                        ativos.push(a);
+                    }
+                }
                 let mut cands = if ativos.is_empty() { (0..opp.field_chars.len()).collect() } else { ativos };
                 for _ in 0..n.min(cands.len()) {
                     self.passivas_da_fila(me, opp)?;
@@ -4069,6 +4090,11 @@ impl Executor {
                     (0..opp.field_chars.len()).filter(|&i| !opp.field_chars[i].rested).map(Some).collect();
                 if !opp.leader.rested {
                     cands.push(None);
+                }
+                if let Some(a) = self.atacante_no(opp) {
+                    if !cands.contains(&a) {
+                        cands.push(a);
+                    }
                 }
                 if cands.is_empty() {
                     cands = (0..opp.field_chars.len()).map(Some).collect();
