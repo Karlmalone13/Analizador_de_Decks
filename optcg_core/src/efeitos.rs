@@ -97,13 +97,15 @@ pub struct Executor {
     ultimo_oponente: bool,
     /// `_last_cost_rest_any_don_count` (vive no executor, como no Python)
     rest_any_don_n: i64,
+    /// `_last_cost_trash_any_count`
+    trash_any_n: i64,
     /// o ultimo `executa` pagou o custo e rodou os passos (`logs` nao vazio no Python)
     pub rodou: bool,
 }
 
 impl Executor {
     pub fn novo(fila: VecDeque<Value>) -> Self {
-        Executor { fila, inst: 0, usados: Default::default(), lugar_fonte: None, ultimo: None, ultimo_oponente: false, rest_any_don_n: 0, rodou: false }
+        Executor { fila, inst: 0, usados: Default::default(), lugar_fonte: None, ultimo: None, ultimo_oponente: false, rest_any_don_n: 0, trash_any_n: 0, rodou: false }
     }
 }
 
@@ -1798,6 +1800,29 @@ impl Executor {
             "life_to_hand" => !me.life.is_empty(),
             "trash_own_life" => if st["face"].as_str() == Some("up") { me.life.iter().any(|c| c.life_face_up) } else { !me.life.is_empty() },
             "attack_life" => !opp.life.is_empty(),
+            "trash_from_deck_top" => !me.deck.is_empty(),
+            "reveal_deck_top_conditional" | "select_grant_unblockable_turn" => true,
+            "select_grant_rush" => {
+                let nome = st["filter_name"].as_str().unwrap_or("").to_lowercase();
+                let exn = st["exclude"].as_str().unwrap_or("").to_lowercase();
+                let mut ok = false;
+                for c in &me.field_chars {
+                    let i = dados(c)?;
+                    if !(c.just_played && !c.rested && !crate::acoes::is_rush(c, &i)) {
+                        continue;
+                    }
+                    ok |= if !nome.is_empty() {
+                        st["power_gte"].as_i64().map_or(true, |p| i.power >= p)
+                            && (i.name.to_lowercase().contains(&nome) || c.code.to_lowercase().contains(&nome)
+                                || casa_filtro(&i, &st["filter_type"], false))
+                    } else {
+                        st["cost_lte"].as_i64().map_or(true, |l| i.cost <= l)
+                            && casa_filtro(&i, &st["filter_type"], false)
+                            && (exn.is_empty() || !i.name.to_lowercase().contains(&exn))
+                    };
+                }
+                ok
+            }
             "opp_trash_from_hand" => !opp.hand.is_empty(),
             "turn_life_face_up" | "turn_life_face_down" => if st["target"].as_str() == Some("opponent") { !opp.life.is_empty() } else { !me.life.is_empty() },
             "negate_effect" => match st["target"].as_str().unwrap_or("opp_character") {
@@ -1954,6 +1979,7 @@ impl Executor {
         }
         let custos: Vec<Value> = ef["costs"].as_array().cloned().unwrap_or_default();
         self.rest_any_don_n = 0; // `_last_cost_rest_any_don_count` zera a cada execute
+        self.trash_any_n = 0;
         if !self.paga_custos(&custos, me, opp, fonte)? {
             return Ok(());
         }
@@ -2265,6 +2291,69 @@ impl Executor {
                     opp.don_rested -= n;
                     carta_mut(opp, melhor.unwrap().0)?.don_attached += n;
                 }
+                "trash_any_from_hand" => {
+                    // guloso: trasha TODAS as elegiveis (sem escolha)
+                    let tipos: Vec<String> = c["card_types"].as_array().into_iter().flatten()
+                        .filter_map(|x| x.as_str().map(String::from)).collect();
+                    let mut k = 0;
+                    let mut resto = Vec::new();
+                    for h in std::mem::take(&mut me.hand) {
+                        let hi = dados(&h)?;
+                        if casa_filtro(&hi, &c["filter_type"], false) && (tipos.is_empty() || tipos.contains(&hi.card_type)) {
+                            me.trash.push(h);
+                            k += 1;
+                        } else {
+                            resto.push(h);
+                        }
+                    }
+                    me.hand = resto;
+                    self.trash_any_n = k;
+                }
+                "ko_own_character" => {
+                    let excl = match &self.lugar_fonte {
+                        Some((z, i)) if z == "field_chars" => Some(*i),
+                        _ => None,
+                    };
+                    let mut cands = Vec::new();
+                    for (j, x) in me.field_chars.iter().enumerate() {
+                        if Some(j) != excl && casa_filtro(&dados(x)?, &c["filter_type"], false) {
+                            cands.push(j);
+                        }
+                    }
+                    if (cands.len() as i64) < n {
+                        return Ok(false);
+                    }
+                    for _ in 0..n {
+                        if cands.is_empty() {
+                            break;
+                        }
+                        self.passivas_da_fila(me, opp)?;
+                        let Some((l, z, i)) = self.escolha("custo_sacrificar")? else {
+                            return Err(ns("custo_sacrificar vazio"));
+                        };
+                        if l != "eu" || z != "field_chars" || !cands.contains(&i) {
+                            return Err(ns("custo_sacrificar fora dos candidatos"));
+                        }
+                        crate::acoes::tira_do_campo_para_lixo(me, i);
+                        let alvo = me.trash.last().cloned().unwrap();
+                        cands.retain(|&j| j != i);
+                        for j in cands.iter_mut() {
+                            if *j > i {
+                                *j -= 1;
+                            }
+                        }
+                        if let Some((zf, fi)) = self.lugar_fonte.clone() {
+                            if zf == "field_chars" && fi > i {
+                                self.lugar_fonte = Some((zf, fi - 1));
+                            }
+                        }
+                        // [On K.O.] do K.O.ado + reativos de KO (regra K.O. != Trash)
+                        let lf = self.lugar_fonte.take();
+                        self.executa(me, opp, &alvo, "on_ko")?;
+                        self.lugar_fonte = lf;
+                        self.dispara_ko(me, opp, &alvo)?;
+                    }
+                }
                 outro => return Err(ns(&format!("custo fora do nucleo: {outro}"))),
             }
         }
@@ -2307,6 +2396,153 @@ impl Executor {
         }
         match acao {
             "look_top_deck" => {}
+            "trash_from_deck_top" => {
+                if st["count_from_last_hand_trash"].as_bool().unwrap_or(false) {
+                    return Err(ns("trash_from_deck_top count_from_last_hand_trash"));
+                }
+                for _ in 0..n {
+                    let Some(x) = me.deck.pop() else { break };
+                    me.trash.push(x);
+                }
+            }
+            "reveal_deck_top_conditional" => {
+                let Some(rv) = me.deck.last().cloned() else { return Ok(()) };
+                let ri = dados(&rv)?;
+                let cond = &st["condition"];
+                for k in cond.as_object().into_iter().flatten().map(|(k, _)| k) {
+                    if !matches!(k.as_str(), "revealed_card_type" | "revealed_card_cost_lte" | "revealed_card_cost_gte" | "revealed_card_power_gte") {
+                        return Err(ns(&format!("reveal_deck_top_conditional condicao {k}")));
+                    }
+                }
+                let mut m = true;
+                if let Some(t) = cond["revealed_card_type"].as_str().filter(|t| !t.is_empty()) {
+                    if !norm_tipo(&ri.sub_types).contains(&norm_tipo(t)) {
+                        m = false;
+                    }
+                }
+                if m && cond["revealed_card_cost_lte"].as_i64().map_or(false, |l| ri.cost > l) {
+                    m = false;
+                }
+                if m && cond["revealed_card_cost_gte"].as_i64().map_or(false, |l| ri.cost < l) {
+                    m = false;
+                }
+                if m && cond["revealed_card_power_gte"].as_i64().map_or(false, |l| ri.card_type != "CHARACTER" || ri.power < l) {
+                    m = false;
+                }
+                let rt = st["return_to"].as_str();
+                if rt == Some("bottom") || (rt == Some("top_or_bottom") && !m) {
+                    let x = me.deck.pop().unwrap();
+                    me.deck.insert(0, x);
+                }
+                if m {
+                    let aninhados: Vec<Value> = st["on_match_steps"].as_array().cloned().unwrap_or_default();
+                    for a in &aninhados {
+                        self.passo(a, me, opp, fonte, inf, gatilho)?;
+                    }
+                }
+            }
+            "select_grant_rush" => {
+                let num = |k: &str| st[k].as_i64();
+                let mut cands: Vec<Option<usize>> = Vec::new();
+                let nome = st["filter_name"].as_str().unwrap_or("").to_lowercase();
+                if st["filter_name"].is_array() {
+                    return Err(ns("select_grant_rush com lista de nomes"));
+                }
+                let exn = st["exclude"].as_str().unwrap_or("").to_lowercase();
+                let sem_tag = st["filter_no_tag"].as_str().unwrap_or("");
+                for (j, c) in me.field_chars.iter().enumerate() {
+                    let i = dados(c)?;
+                    if !(c.just_played && !c.rested && !crate::acoes::is_rush(c, &i)) {
+                        continue;
+                    }
+                    let ok = if !nome.is_empty() {
+                        num("power_gte").map_or(true, |p| i.power >= p)
+                            && ((i.name.to_lowercase().contains(&nome) || c.code.to_lowercase().contains(&nome))
+                                || casa_filtro(&i, &st["filter_type"], false))
+                    } else {
+                        num("cost_lte").map_or(true, |l| i.cost <= l)
+                            && casa_filtro(&i, &st["filter_type"], false)
+                            && (exn.is_empty() || !i.name.to_lowercase().contains(&exn))
+                            && (sem_tag.is_empty() || !i.efeitos.contains_key(sem_tag))
+                    };
+                    if ok {
+                        cands.push(Some(j));
+                    }
+                }
+                if !nome.is_empty() {
+                    // ordem do Python: pool por nome primeiro, depois o de tipo
+                    let mut pn = Vec::new();
+                    let mut pt = Vec::new();
+                    for x in &cands {
+                        let c = &me.field_chars[x.unwrap()];
+                        let i = dados(c)?;
+                        if i.name.to_lowercase().contains(&nome) || c.code.to_lowercase().contains(&nome) { pn.push(*x) } else { pt.push(*x) }
+                    }
+                    pn.extend(pt);
+                    cands = pn;
+                }
+                for _ in 0..n.min(cands.len() as i64) {
+                    self.passivas_da_fila(me, opp)?;
+                    let x = self.alvo_meu(&cands)?;
+                    let a = carta_mut(me, x)?;
+                    if st["duration"].as_str() == Some("this_turn") {
+                        a.rush_this_turn = true;
+                    } else {
+                        a.has_rush = true;
+                    }
+                    cands.retain(|c| *c != x);
+                }
+            }
+            "select_grant_unblockable_turn" => {
+                let bate = |c: &Carta, nm: &str| -> R<bool> {
+                    let nm = nm.to_lowercase();
+                    Ok(nm.is_empty() || dados(c)?.name.to_lowercase().contains(&nm) || c.code.to_lowercase().contains(&nm))
+                };
+                let nome = st["filter_name"].as_str().unwrap_or("");
+                if st["filter_name"].is_array() {
+                    return Err(ns("select_grant_unblockable_turn com lista de nomes"));
+                }
+                match st["target"].as_str() {
+                    Some("leader_only") => {
+                        if bate(&me.leader, nome)? {
+                            me.leader.unblockable_this_turn = true;
+                        }
+                    }
+                    Some("selected") => {
+                        if self.ultimo_oponente {
+                            return Err(ns("unblockable selected do oponente"));
+                        }
+                        if let Some(x) = self.ultimo {
+                            carta_mut(me, x)?.unblockable_this_turn = true;
+                        }
+                    }
+                    Some("don_recipient") => return Err(ns("unblockable don_recipient")),
+                    _ => {
+                        let cor = st["color"].as_str().unwrap_or("").to_lowercase();
+                        let mut cands: Vec<Option<usize>> = Vec::new();
+                        for (j, c) in me.field_chars.iter().enumerate() {
+                            let i = dados(c)?;
+                            if casa_filtro(&i, &st["filter_type"], false) && bate(c, nome)?
+                                && st["power_gte"].as_i64().map_or(true, |p| i.power >= p)
+                                && (cor.is_empty() || i.color.to_lowercase().contains(&cor))
+                            {
+                                cands.push(Some(j));
+                            }
+                        }
+                        if st["include_leader"].as_bool().unwrap_or(false) {
+                            let ok = if !nome.is_empty() { bate(&me.leader, nome)? } else { casa_filtro(&dados(&me.leader)?, &st["filter_type"], false) };
+                            if ok {
+                                cands.push(None);
+                            }
+                        }
+                        if !cands.is_empty() {
+                            self.passivas_da_fila(me, opp)?;
+                            let x = self.alvo_meu(&cands)?;
+                            carta_mut(me, x)?.unblockable_this_turn = true;
+                        }
+                    }
+                }
+            }
             "self_cant_take_life" => me.cant_take_life_this_turn = true,
             "select_grant_can_attack_active_turn" => {
                 let f = if st["filter_types"].is_null() || st["filter_types"].as_array().map_or(false, |a| a.is_empty())
@@ -2580,6 +2816,7 @@ impl Executor {
                     }
                     "own_characters" => me.field_chars.len() as i64,
                     "rested_don_this_effect" => self.rest_any_don_n,
+                    "trashed_hand_this_effect" => self.trash_any_n,
                     o => return Err(ns(&format!("buff_power_per_count source {o}"))),
                 };
                 let por = st["count_per"].as_i64().unwrap_or(1).max(1);
