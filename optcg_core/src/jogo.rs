@@ -55,70 +55,109 @@ pub struct Fim {
     pub nao_suportado: Option<String>,
 }
 
+/// Como acabou um trecho do turno, do ponto de vista de quem esta ATIVO nele.
+pub enum Passo {
+    Segue,
+    Venceu,
+    Perdeu,
+    ForaDoNucleo(String),
+}
+
+/// Inicio do turno do ativo (`_once_main` zerado: um executor da Main por turno).
+pub fn abre_turno(e: &mut Estado, global_turn: i64, pol: &PoliticaRef) -> Passo {
+    e.ativo.extras.insert("_once_main".into(), Value::Array(vec![]));
+    let t0 = std::time::Instant::now();
+    let r = inicio_de_turno(e, global_turn, Default::default(), Some(pol.clone()));
+    soma(0, t0);
+    match r {
+        Err(Resultado::NaoSuportado(m)) => Passo::ForaDoNucleo(format!("inicio: {m}")),
+        _ => Passo::Segue,
+    }
+}
+
+/// Aplica UMA jogada principal do ativo.
+pub fn joga(e: &mut Estado, j: &Jogada, d: &Decisoes) -> Passo {
+    let t2 = std::time::Instant::now();
+    let r = aplica_j(e, j, d);
+    soma(2, t2);
+    match r {
+        Resultado::Feito { venceu } => {
+            e.ativo.marca_publicas();
+            e.oponente.marca_publicas();
+            if venceu { Passo::Venceu } else { Passo::Segue }
+        }
+        Resultado::NaoSuportado(m) => Passo::ForaDoNucleo(m),
+    }
+}
+
+/// Jogadas do ativo ate a politica escolher `Fim` (ou acabar a partida).
+pub fn joga_ate_o_fim(e: &mut Estado, d: &Decisoes, pol: &PoliticaRef, jogadas: &mut u32) -> Passo {
+    loop {
+        let t1 = std::time::Instant::now();
+        let leg = jogadas_legais(e);
+        soma(1, t1);
+        let leg = match leg {
+            Ok(v) => v,
+            Err(Resultado::NaoSuportado(m)) => return Passo::ForaDoNucleo(format!("legais: {m}")),
+            Err(_) => return Passo::ForaDoNucleo("legais: inesperado".into()),
+        };
+        let k = pol.borrow_mut().escolhe("jogada", leg.len(), false).unwrap_or(0).min(leg.len() - 1);
+        if leg[k] == Jogada::Fim {
+            return Passo::Segue;
+        }
+        *jogadas += 1;
+        match joga(e, &leg[k], d) {
+            Passo::Segue => {}
+            outro => return outro,
+        }
+    }
+}
+
+/// Fim do turno do ativo + deck vazio (perde quem ficou sem deck). NAO troca de lado.
+pub fn fecha_turno(e: &mut Estado, pol: &PoliticaRef) -> Passo {
+    let t3 = std::time::Instant::now();
+    let r = fim_de_turno(e, Default::default(), Some(pol.clone()));
+    soma(3, t3);
+    if let Err(Resultado::NaoSuportado(m)) = r {
+        return Passo::ForaDoNucleo(format!("fim: {m}"));
+    }
+    // deck_out_win_instead_of_loss ainda fora do nucleo
+    if e.ativo.deck.is_empty() {
+        return Passo::Perdeu;
+    }
+    if e.oponente.deck.is_empty() {
+        return Passo::Venceu;
+    }
+    Passo::Segue
+}
+
 /// Joga do estado `e` (ativo = quem vai comecar o PROXIMO turno, antes do inicio
 /// de turno) ate o fim. `global_turn` = contador da partida antes desse turno.
 pub fn simula(mut e: Estado, mut global_turn: i64, pol: PoliticaRef, max_turnos: u32) -> Fim {
     let d = Decisoes { politica: Some(pol.clone()), ..Default::default() };
     let mut lado = 0u8;
     let (mut turnos, mut jogadas) = (0u32, 0u32);
-    let fim = |v, t, j, m: Option<String>| Fim { vencedor: v, turnos: t, jogadas: j, nao_suportado: m };
     while turnos < max_turnos {
-        // `_once_used` do executor da Main: um executor novo a cada main_phase
-        e.ativo.extras.insert("_once_main".into(), Value::Array(vec![]));
-        let t0 = std::time::Instant::now();
-        let r0 = inicio_de_turno(&mut e, global_turn, Default::default(), Some(pol.clone()));
-        soma(0, t0);
-        if let Err(Resultado::NaoSuportado(m)) = r0 {
-            return fim(None, turnos, jogadas, Some(format!("inicio: {m}")));
-        }
+        let mut p = abre_turno(&mut e, global_turn, &pol);
         global_turn += 1;
         turnos += 1;
-        loop {
-            let t1 = std::time::Instant::now();
-            let leg0 = jogadas_legais(&e);
-            soma(1, t1);
-            let leg = match leg0 {
-                Ok(v) => v,
-                Err(Resultado::NaoSuportado(m)) => return fim(None, turnos, jogadas, Some(format!("legais: {m}"))),
-                Err(_) => return fim(None, turnos, jogadas, Some("legais: inesperado".into())),
-            };
-            let k = pol.borrow_mut().escolhe("jogada", leg.len(), false).unwrap_or(0).min(leg.len() - 1);
-            let a = &leg[k];
-            if *a == Jogada::Fim {
-                break;
-            }
-            jogadas += 1;
-            let t2 = std::time::Instant::now();
-            let ra = aplica_j(&mut e, a, &d);
-            soma(2, t2);
-            match ra {
-                Resultado::Feito { venceu } => {
-                    e.ativo.marca_publicas();
-                    e.oponente.marca_publicas();
-                    if venceu {
-                        return fim(Some(lado), turnos, jogadas, None);
-                    }
-                }
-                Resultado::NaoSuportado(m) => return fim(None, turnos, jogadas, Some(m)),
-            }
+        if let Passo::Segue = p {
+            p = joga_ate_o_fim(&mut e, &d, &pol, &mut jogadas);
         }
-        let t3 = std::time::Instant::now();
-        let r3 = fim_de_turno(&mut e, Default::default(), Some(pol.clone()));
-        soma(3, t3);
-        if let Err(Resultado::NaoSuportado(m)) = r3 {
-            return fim(None, turnos, jogadas, Some(format!("fim: {m}")));
+        if let Passo::Segue = p {
+            p = fecha_turno(&mut e, &pol);
         }
-        // deck vazio ao fim do turno: perde (deck_out_win_instead_of_loss ainda fora)
-        if e.ativo.deck.is_empty() {
-            return fim(Some(1 - lado), turnos, jogadas, None);
-        }
-        if e.oponente.deck.is_empty() {
-            return fim(Some(lado), turnos, jogadas, None);
+        let fim = |v, m| Fim { vencedor: v, turnos, jogadas, nao_suportado: m };
+        match p {
+            Passo::Segue => {}
+            Passo::Venceu => return fim(Some(lado), None),
+            Passo::Perdeu => return fim(Some(1 - lado), None),
+            Passo::ForaDoNucleo(m) => return fim(None, Some(m)),
         }
         std::mem::swap(&mut e.ativo, &mut e.oponente);
         lado = 1 - lado;
     }
-    fim(None, turnos, jogadas, None)
+    Fim { vencedor: None, turnos, jogadas, nao_suportado: None }
 }
 
 /// N partidas aleatorias a partir do mesmo estado (para medir velocidade).

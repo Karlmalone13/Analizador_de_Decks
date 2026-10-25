@@ -1885,6 +1885,22 @@ impl Executor {
                 "deck_lte" => (me.deck.len() as i64) <= n,
                 "opp_chars_gte" => (opp.field_chars.len() as i64) >= n,
                 "opp_chars_lte" => (opp.field_chars.len() as i64) <= n,
+                "chars_lte" => {
+                    let k = match m.get("chars_lte_power_filter").and_then(|x| x.as_i64()) {
+                        Some(pf) => {
+                            let mut k = 0;
+                            for c in &me.field_chars {
+                                if dados(c)?.power >= pf {
+                                    k += 1;
+                                }
+                            }
+                            k
+                        }
+                        None => me.field_chars.len() as i64,
+                    };
+                    k <= n
+                }
+                "chars_lte_power_filter" => true,
                 "opp_hand_gte" => (opp.hand.len() as i64) >= n,
                 "self_rested" => !v.as_bool().unwrap_or(false) || fonte.rested,
                 "just_played" => !v.as_bool().unwrap_or(false) || fonte.just_played,
@@ -2031,6 +2047,7 @@ impl Executor {
             "attack_life" => !opp.life.is_empty(),
             "trash_from_deck_top" => !me.deck.is_empty(),
             "reveal_deck_top_conditional" | "select_grant_unblockable_turn" | "immunity" => true,
+            "character_to_owner_life" if self.politica.is_some() => true,
             "select_grant_rush" => {
                 let nome = st["filter_name"].as_str().unwrap_or("").to_lowercase();
                 let exn = st["exclude"].as_str().unwrap_or("").to_lowercase();
@@ -2610,6 +2627,59 @@ impl Executor {
                         self.dispara_ko(me, opp, &alvo)?;
                     }
                 }
+                "reveal_from_hand" => {
+                    // `_reveal_from_hand_matches`: so confere (nao move nada)
+                    let tipos: Vec<String> = match &c["filter_type"] {
+                        Value::Array(a) => a.iter().filter_map(|x| x.as_str()).map(norm_tipo).collect(),
+                        Value::String(x) => vec![norm_tipo(x)],
+                        _ => vec![],
+                    };
+                    let mut k = 0;
+                    for h in &me.hand {
+                        let hi = dados(h)?;
+                        let st_ = norm_tipo(&hi.sub_types);
+                        if (tipos.iter().all(|t| t.is_empty()) || tipos.iter().any(|t| !t.is_empty() && st_.contains(t.as_str())))
+                            && c["power_eq"].as_i64().map_or(true, |x| hi.power == x)
+                            && c["card_type"].as_str().map_or(true, |t| t.is_empty() || hi.card_type == t)
+                        {
+                            k += 1;
+                        }
+                    }
+                    if k < n {
+                        return Ok(false);
+                    }
+                }
+                // o motor Python nao trata este custo (cai no fim de `_pay_costs`
+                // sem pagar nada): espelho -- bug registrado para depois da paridade
+                "trash_from_deck_top" => {}
+                "give_don_own" if self.politica.is_some() => {
+                    if me.don_available < n {
+                        return Ok(false);
+                    }
+                    let mut ops: Vec<Option<usize>> = (0..me.field_chars.len()).map(Some).collect();
+                    ops.push(None);
+                    let x = self.alvo_meu_q("give_don_own", &ops)?;
+                    me.don_available -= n;
+                    carta_mut(me, x)?.don_attached += n;
+                }
+                "place_from_trash_bottom_deck" if self.politica.is_some() => {
+                    let mut pool: Vec<usize> = Vec::new();
+                    for (i, x) in me.trash.iter().enumerate() {
+                        if casa_filtro(&*dados(x)?, &c["filter_type"], false) {
+                            pool.push(i);
+                        }
+                    }
+                    if (pool.len() as i64) < n {
+                        return Ok(false);
+                    }
+                    // as ultimas `n` elegiveis (a ordem entre elas e heuristica no Python)
+                    let mut tirar: Vec<usize> = pool[pool.len() - n as usize..].to_vec();
+                    tirar.sort_unstable_by(|a, b| b.cmp(a));
+                    for i in tirar {
+                        let x = me.trash.remove(i);
+                        me.deck.insert(0, x);
+                    }
+                }
                 outro => return Err(ns(&format!("custo fora do nucleo: {outro}"))),
             }
         }
@@ -2652,6 +2722,47 @@ impl Executor {
         }
         match acao {
             "look_top_deck" | "immunity" => {}
+            "character_to_owner_life" if self.politica.is_some() => {
+                let num = |k: &str| st[k].as_i64();
+                let exn = st["exclude"].as_str().unwrap_or("").to_lowercase();
+                let escopo = st["target"].as_str().unwrap_or("any");
+                let casa = |c: &Carta| -> R<bool> {
+                    let i = dados(c)?;
+                    Ok(num("cost_lte").map_or(true, |x| i.cost <= x) && num("cost_eq").map_or(true, |x| i.cost == x)
+                        && num("power_eq").map_or(true, |x| i.power == x) && casa_filtro(&i, &st["filter_type"], false)
+                        && (exn.is_empty() || !i.name.to_lowercase().contains(&exn)))
+                };
+                for _ in 0..n {
+                    // o Python prefere o oponente quando ha alvo dele
+                    let mut ops: Vec<Lug> = Vec::new();
+                    if escopo != "own" {
+                        for (i, c) in opp.field_chars.iter().enumerate() {
+                            if casa(c)? {
+                                ops.push(lug("oponente", "field_chars", i));
+                            }
+                        }
+                    }
+                    if ops.is_empty() && escopo != "opponent" {
+                        for (i, c) in me.field_chars.iter().enumerate() {
+                            if casa(c)? {
+                                ops.push(lug("eu", "field_chars", i));
+                            }
+                        }
+                    }
+                    let Some((lado, _, i)) = self.escolha_entre("alvo", &ops, false)? else { break };
+                    let dono: &mut Jogador = if lado == "oponente" { &mut *opp } else { &mut *me };
+                    let mut c = dono.field_chars.remove(i);
+                    dono.don_rested += c.don_attached;
+                    c.don_attached = 0;
+                    c.rested = false;
+                    c.life_face_up = st["face"].as_str() == Some("up");
+                    if st["dest"].as_str() == Some("life_bottom") {
+                        dono.life.insert(0, c);
+                    } else {
+                        dono.life.push(c);
+                    }
+                }
+            }
             "trash_from_deck_top" => {
                 if st["count_from_last_hand_trash"].as_bool().unwrap_or(false) {
                     return Err(ns("trash_from_deck_top count_from_last_hand_trash"));
@@ -3417,16 +3528,63 @@ impl Executor {
                 me.don_available += m;
             }
             "gain_life" => {
-                if st["source"].as_str().unwrap_or("deck_top") != "deck_top" || !st["power_eq"].is_null() {
-                    return Err(ns("gain_life de outra fonte"));
-                }
                 if !st["then"].is_null() {
                     return Err(ns("gain_life com then"));
                 }
+                let fonte_v = st["source"].as_str().unwrap_or("deck_top");
                 let fundo = st["dest"].as_str() == Some("life_bottom");
                 let cima = st["face"].as_str() == Some("up");
+                let num = |k: &str| st[k].as_i64();
                 for _ in 0..n {
-                    let Some(mut c) = me.deck.pop() else { break };
+                    let c = match fonte_v {
+                        "deck_top" => match me.deck.pop() { Some(c) => c, None => break },
+                        "opp_life" => match opp.life.pop() { Some(c) => c, None => break },
+                        z @ ("hand" | "trash" | "hand_or_trash") => {
+                            // `eligible_cards(cost_lte, cost_eq, filter_text)` + `_pick_effect_target`
+                            let mut ops: Vec<Lug> = Vec::new();
+                            for (zona, lista) in [("hand", &me.hand), ("trash", &me.trash)] {
+                                if z != "hand_or_trash" && z != zona {
+                                    continue;
+                                }
+                                for (i, c) in lista.iter().enumerate() {
+                                    let ci = dados(c)?;
+                                    if num("cost_lte").map_or(true, |x| ci.cost <= x) && num("cost_eq").map_or(true, |x| ci.cost == x)
+                                        && casa_filtro(&ci, &st["filter_type"], false)
+                                    {
+                                        ops.push(lug("eu", zona, i));
+                                    }
+                                }
+                            }
+                            if ops.is_empty() {
+                                break;
+                            }
+                            self.passivas_da_fila(me, opp)?;
+                            match self.escolha_entre("alvo", &ops, false)? {
+                                Some((_, zz, i)) if zz == "hand" => me.hand.remove(i),
+                                Some((_, zz, i)) if zz == "trash" => me.trash.remove(i),
+                                o => return Err(ns(&format!("gain_life: alvo inesperado {o:?}"))),
+                            }
+                        }
+                        "own_field" if self.politica.is_some() => {
+                            // o motor escolhe por board_value (heuristica fora do diario): so na simulacao
+                            let mut ops: Vec<Lug> = Vec::new();
+                            for (i, c) in me.field_chars.iter().enumerate() {
+                                let ci = dados(c)?;
+                                if num("power_eq").map_or(true, |x| ci.power == x) && num("cost_gte").map_or(true, |x| ci.cost >= x)
+                                    && num("power_gte").map_or(true, |x| ci.power >= x)
+                                {
+                                    ops.push(lug("eu", "field_chars", i));
+                                }
+                            }
+                            let Some((_, _, i)) = self.escolha_entre("gain_life_campo", &ops, false)? else { break };
+                            let mut c = me.field_chars.remove(i);
+                            me.don_rested += c.don_attached;
+                            c.don_attached = 0;
+                            c
+                        }
+                        o => return Err(ns(&format!("gain_life de {o}"))),
+                    };
+                    let mut c = c;
                     c.life_face_up = cima;
                     if fundo {
                         me.life.insert(0, c);

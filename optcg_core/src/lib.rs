@@ -4,6 +4,7 @@ use pyo3::prelude::*;
 use std::collections::HashMap;
 
 pub mod acoes;
+pub mod busca;
 pub mod cartas;
 pub mod efeitos;
 pub mod estado;
@@ -119,6 +120,18 @@ fn simula_partidas(estado_json: &str, global_turn: i64, n: u32, semente: u64, ma
         "tempos": jogo::TEMPOS.with(|x| x.borrow().to_vec())}).to_string())
 }
 
+/// Busca (ISMCTS) da melhor jogada do ativo, no meio da Main dele.
+#[pyfunction]
+fn busca_jogada(estado_json: &str, global_turn: i64, iteracoes: u32, turnos_rollout: u32, c_ucb: f64, semente: u64) -> PyResult<String> {
+    let e = estado::Estado::de_json(estado_json).map_err(erro)?;
+    let t0 = std::time::Instant::now();
+    let r = busca::busca(&e, global_turn, &busca::Config { iteracoes, turnos_rollout, c_ucb, semente });
+    let raiz: Vec<serde_json::Value> = r.raiz.iter()
+        .map(|(j, v, q)| serde_json::json!({"jogada": j.para_json(), "visitas": v, "valor": q})).collect();
+    Ok(serde_json::json!({"jogada": r.jogada.para_json(), "raiz": raiz, "iteracoes": r.iteracoes,
+        "fora_do_nucleo": r.fora_do_nucleo, "motivos": r.motivos, "segundos": t0.elapsed().as_secs_f64()}).to_string())
+}
+
 #[pymodule]
 fn optcg_core(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_function(wrap_pyfunction!(versao, m)?)?;
@@ -129,5 +142,6 @@ fn optcg_core(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_function(wrap_pyfunction!(ida_e_volta, m)?)?;
     m.add_function(wrap_pyfunction!(jogadas_legais, m)?)?;
     m.add_function(wrap_pyfunction!(simula_partidas, m)?)?;
+    m.add_function(wrap_pyfunction!(busca_jogada, m)?)?;
     Ok(())
 }

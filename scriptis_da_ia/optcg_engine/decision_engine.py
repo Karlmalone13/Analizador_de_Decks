@@ -14268,6 +14268,41 @@ _KEYWORD_GRANTS = {
 _KEYWORD_SO_EM_COMBATE = frozenset(_KEYWORD_GRANTS)
 
 
+def _jogada_da_busca_rust(p: 'GameState', opp: 'GameState'):
+    """Pergunta a jogada principal a busca do nucleo Rust (`optcg_core.busca_jogada`)
+    e devolve a tupla de acao do motor (None = encerrar a Main)."""
+    import json as _json
+    import optcg_core
+    from optcg_engine import estado_canonico as _ec
+    cfg = p.busca_rust
+    cfg['_semente'] = cfg.get('_semente', 0) + 1
+    r = _json.loads(optcg_core.busca_jogada(
+        _json.dumps(_ec.canonico(p, opp)), p.global_turn, int(cfg.get('iteracoes', 2000)),
+        int(cfg.get('turnos', 6)), float(cfg.get('c', 0.7)), int(cfg.get('semente', 1)) * 1000003 + cfg['_semente']))
+    cfg.setdefault('_estat', []).append((r['segundos'], r['fora_do_nucleo'], r['iteracoes']))
+    _mot = cfg.setdefault('_motivos', {})
+    for _k, _v in r.get('motivos', {}).items():
+        _mot[_k] = _mot.get(_k, 0) + _v
+    j = r['jogada']
+    t = j['tipo']
+    if t == 'end':
+        return None
+    z, i = j['ator']
+    ator = (p.leader if z == 'leader' else p.field_stage if z == 'stage'
+            else p.hand[i] if z == 'hand' else p.field_chars[i])
+    if t == 'play':
+        return (0.0, 'play', ator, None, None)
+    if t == 'activate':
+        return (0.0, 'activate', ator, None, None)
+    if t == 'attach_don':
+        return (0.0, 'attach_don', ator, int(j['alvo_tipo']), 'busca')
+    if t == 'attack':
+        if j['alvo_tipo'] == 'leader':
+            return (0.0, 'attack', ator, 'leader', None, 0)
+        return (0.0, 'attack', ator, 'character', opp.field_chars[j['alvo'][2]], 0)
+    return None
+
+
 def apply_conditional_keyword_passives(gs: 'GameState', opp: 'GameState') -> None:
     """
     Liga keywords vindas de PASSIVA CONDICIONAL (ex: Mars OP13-091
@@ -23303,6 +23338,16 @@ class OPTCGMatch:
 
         while n < MAX_ACOES:
             n += 1
+            # BUSCA do nucleo Rust (PLANO_MOTOR_FORTE, fase B): com `p.busca_rust`
+            # (dict de parametros), a jogada principal e da busca; o motor Python
+            # aplica e segue decidindo as escolhas internas.
+            if getattr(p, 'busca_rust', None):
+                _j = _jogada_da_busca_rust(p, opp)
+                if _j is None:
+                    break
+                if self._apply_action(_j, p, opp, ee, engine, verbose=verbose):
+                    return True
+                continue
             # FASE 3C (bloco 783): o MODELO ordena as candidatas -- UMA vez
             # por acao do turno, aqui no ponto de decisao.
             #
