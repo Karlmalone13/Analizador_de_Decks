@@ -208,6 +208,24 @@ fn atacar(e: &mut Estado, acao: &Value, d: &Decisoes) -> Result<Resultado, Resul
     if alvo_tipo == "leader" && p.cannot_attack_leader_this_turn {
         return Ok(Resultado::Feito { venceu: false });
     }
+    let atk_code = if za == "leader" { p.leader.code.clone() } else { p.field_chars[ia].code.clone() };
+    let mut alvo_code = match alvo_idx {
+        Some(j) => Some(opp.field_chars.get(j).ok_or_else(|| ns("alvo fora do campo"))?.code.clone()),
+        None => None,
+    };
+    // efeito que tira atacante/alvo do lugar no meio do ataque: o Python segue
+    // com o objeto velho; o nucleo nao modela isso
+    let confere = |e: &Estado, alvo_idx: Option<usize>, alvo_code: &Option<String>| -> Result<(), Resultado> {
+        if za != "leader" && e.ativo.field_chars.get(ia).map(|c| &c.code) != Some(&atk_code) {
+            return Err(ns("atacante saiu do lugar durante o ataque"));
+        }
+        if let (Some(j), Some(c)) = (alvo_idx, alvo_code) {
+            if e.oponente.field_chars.get(j).map(|x| &x.code) != Some(c) {
+                return Err(ns("alvo saiu do lugar durante o ataque"));
+            }
+        }
+        Ok(())
+    };
     let atk = if za == "leader" { &mut p.leader } else { &mut p.field_chars[ia] };
     atk.rested = true;
     if !atk.attack_paywall.as_object().map_or(true, |m| m.is_empty()) {
@@ -221,8 +239,10 @@ fn atacar(e: &mut Estado, acao: &Value, d: &Decisoes) -> Result<Resultado, Resul
     ex.lugar_fonte = Some((za.clone(), ia));
     let f = atk_clone(e);
     ex.executa(&mut e.ativo, &mut e.oponente, &f, "when_rested")?;
+    confere(e, alvo_idx, &alvo_code)?;
     let f = atk_clone(e);
     ex.executa(&mut e.ativo, &mut e.oponente, &f, "when_attacking")?;
+    confere(e, alvo_idx, &alvo_code)?;
     let lugares = |j: &Jogador| -> Vec<(Carta, (String, usize))> {
         std::iter::once((j.leader.clone(), ("leader".to_string(), 0)))
             .chain(j.field_chars.iter().cloned().enumerate().map(|(i, c)| (c, ("field_chars".to_string(), i))))
@@ -245,6 +265,7 @@ fn atacar(e: &mut Estado, acao: &Value, d: &Decisoes) -> Result<Resultado, Resul
             ex.executa(&mut e.oponente, &mut e.ativo, &f, "leader_battle_reactive")?;
         }
     }
+    confere(e, alvo_idx, &alvo_code)?;
     let (p, opp) = (&mut e.ativo, &mut e.oponente);
     let atk = if za == "leader" { &mut p.leader } else { p.field_chars.get_mut(ia).ok_or_else(|| ns("atacante saiu"))? };
     let inf_atk = dados(atk)?;
@@ -272,6 +293,12 @@ fn atacar(e: &mut Estado, acao: &Value, d: &Decisoes) -> Result<Resultado, Resul
             ex.inst = 3; // `ee_block`
             ex.lugar_fonte = Some(("field_chars".to_string(), ib));
             ex.executa(opp, p, &fb, "on_block")?;
+            alvo_code = Some(fb.code.clone());
+            if opp.field_chars.get(ib).map(|c| &c.code) != alvo_code.as_ref()
+                || (za != "leader" && p.field_chars.get(ia).map(|c| &c.code) != Some(&atk_code))
+            {
+                return Err(ns("carta saiu do lugar no on_block"));
+            }
             for c in std::iter::once(&p.leader).chain(p.field_chars.iter()) {
                 if dados(c)?.efeitos.get("passive").and_then(|b| b["steps"].as_array()).map_or(false, |a| {
                     a.iter().any(|s| matches!(s["action"].as_str(), Some("win_game_on_opp_blocker") | Some("ko_on_opp_blocker")))
@@ -323,6 +350,11 @@ fn atacar(e: &mut Estado, acao: &Value, d: &Decisoes) -> Result<Resultado, Resul
         let a = if za == "leader" { None } else { Some(ia) };
         atk_power -= ex.counter_evento_debuff(opp, p, a, atk_power - defesa + 1)?;
     }
+    if (za != "leader" && p.field_chars.get(ia).map(|c| &c.code) != Some(&atk_code))
+        || alvo_idx.map_or(false, |j| opp.field_chars.get(j).map(|c| &c.code) != alvo_code.as_ref())
+    {
+        return Err(ns("carta saiu do lugar no counter"));
+    }
     if atk_power >= defesa && atk_eh_char && Executor::tem_counter_evento_ko(opp)? {
         return Err(ns("counter evento de KO no atacante"));
     }
@@ -351,6 +383,11 @@ fn atacar(e: &mut Estado, acao: &Value, d: &Decisoes) -> Result<Resultado, Resul
                     ex.inst = 10 + tiradas; // `ee_opp` novo a cada vida
                     ex.lugar_fonte = None;
                     ex.executa(opp, p, &vida, "trigger")?;
+                    if (za != "leader" && p.field_chars.get(ia).map(|c| &c.code) != Some(&atk_code))
+                        || alvo_idx.map_or(false, |j| opp.field_chars.get(j).map(|c| &c.code) != alvo_code.as_ref())
+                    {
+                        return Err(ns("carta saiu do lugar no trigger"));
+                    }
                 }
             }
             if tiradas > 0 {

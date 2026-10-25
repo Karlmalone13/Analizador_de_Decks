@@ -93,13 +93,15 @@ pub struct Executor {
     pub lugar_fonte: Option<(String, usize)>,
     /// `_last_selected` (memoria de alvo entre passos do MESMO execute)
     ultimo: Option<Option<usize>>,
+    /// `_last_selected` e carta do oponente (passo `selected` depois disso: fora do nucleo)
+    ultimo_oponente: bool,
     /// o ultimo `executa` pagou o custo e rodou os passos (`logs` nao vazio no Python)
     pub rodou: bool,
 }
 
 impl Executor {
     pub fn novo(fila: VecDeque<Value>) -> Self {
-        Executor { fila, inst: 0, usados: Default::default(), lugar_fonte: None, ultimo: None, rodou: false }
+        Executor { fila, inst: 0, usados: Default::default(), lugar_fonte: None, ultimo: None, ultimo_oponente: false, rodou: false }
     }
 }
 
@@ -730,6 +732,71 @@ impl Executor {
         Ok(())
     }
 
+    /// `bounce` / `place_opp_character_bottom_deck` em personagem do oponente
+    /// (alvo = `_pick_effect_target`, da fila).
+    fn remove_do_oponente(&mut self, st: &Value, acao: &str, me: &mut Jogador, opp: &mut Jogador) -> R<()> {
+        if acao == "bounce" && st["target"].as_str() == Some("own_character") {
+            return Err(ns("bounce no proprio personagem"));
+        }
+        for k in ["power_gte", "power_eq"] {
+            if !st[k].is_null() {
+                return Err(ns(&format!("{acao} com {k}")));
+            }
+        }
+        if tem_reativo(me, &["on_own_effect_removes_char"])? {
+            return Err(ns("reativo on_own_effect_removes_char"));
+        }
+        let mut cands: Vec<usize> = Vec::new();
+        for (i, c) in opp.field_chars.iter().enumerate() {
+            let ok = if acao == "bounce" {
+                casa_alvo(st, c, st["active_only"].as_bool().unwrap_or(false), false, me, opp)?
+            } else {
+                let i2 = dados(c)?;
+                st["cost_lte"].as_i64().map_or(true, |x| i2.cost <= x)
+                    && st["cost_eq"].as_i64().map_or(true, |x| i2.cost == x)
+                    && st["power_lte"].as_i64().map_or(true, |x| i2.power <= x)
+                    && casa_filtro(&i2, &st["filter_type"], false)
+            };
+            if ok {
+                cands.push(i);
+            }
+        }
+        if acao != "bounce" && !st["cost_lte"].is_null() && !st["cost_lte"].is_i64() {
+            return Err(ns("place_opp_character_bottom_deck com cost_lte dinamico"));
+        }
+        let n = st["count"].as_i64().unwrap_or(1).max(0) as usize;
+        for _ in 0..n.min(cands.len()) {
+            self.passivas_da_fila(me, opp)?;
+            let i = self.alvo_no_oponente(&cands)?;
+            let imune = dados(&opp.field_chars[i])?.efeitos.values().any(|b| passos_de(b).any(|s|
+                s["action"].as_str() == Some("immunity") && s["imm_type"].as_str() == Some("removal")));
+            if imune {
+                return Err(ns("alvo com imunidade a remocao"));
+            }
+            let mut x = opp.field_chars.remove(i);
+            if x.don_attached > 0 {
+                opp.don_rested += x.don_attached;
+                x.don_attached = 0;
+            }
+            x.rested = false;
+            if acao == "bounce" {
+                opp.hand.push(x);
+            } else {
+                opp.deck.insert(0, x);
+            }
+            cands.retain(|&j| j != i);
+            for j in cands.iter_mut() {
+                if *j > i {
+                    *j -= 1;
+                }
+            }
+            // `_last_selected` passa a ser carta do OPONENTE
+            self.ultimo = None;
+            self.ultimo_oponente = true;
+        }
+        Ok(())
+    }
+
     fn proxima(&mut self, tipo: &str) -> R<Value> {
         let d = self.fila.pop_front().ok_or_else(|| ns(&format!("fila sem decisao ({tipo})")))?;
         if d.get("passivas").is_some() {
@@ -941,9 +1008,25 @@ impl Executor {
             "look_top_deck" | "deck_bottom_rest" | "draw" => !me.deck.is_empty(),
             "set_don_active" => me.don_rested > 0,
             "add_to_hand" | "trash_rest" | "gain_life" | "add_don" | "buff_power" | "give_don" | "redirect_attack_target"
-            | "activate_trash_event_main" | "self_cant_play" | "give_don_opp" | "set_active"
+            | "activate_trash_event_main" | "transfer_don" | "activate_main_effect" | "hand_to_deck"
+            | "deal_damage" | "give_don_either_side" | "trash_from_hand" | "peek_opp_deck_top"
+            | "trash_own_life" | "self_cant_play" | "give_don_opp" | "set_active"
             | "lock_opp_cannot_be_rested" | "lock_opp_blocker_turn" => true,
-            "gain_blocker" | "gain_rush" => !(st["duration"].as_str() == Some("this_turn") && me.turn == 1),
+            "negate_effect" => match st["target"].as_str().unwrap_or("opp_character") {
+                "opp_leader" | "opp_leader_or_character" => true,
+                _ => {
+                    let cl = st["cost_lte"].as_i64();
+                    if !st["cost_lte"].is_null() && cl.is_none() {
+                        return Err(ns("negate cost_lte dinamico"));
+                    }
+                    let mut a = false;
+                    for c in &opp.field_chars {
+                        a |= cl.map_or(true, |l| dados(c).map_or(false, |d| d.cost <= l));
+                    }
+                    a
+                }
+            },
+            "gain_blocker" | "gain_rush" | "gain_banish" | "gain_rush_character" => !(st["duration"].as_str() == Some("this_turn") && me.turn == 1),
             "play_from_trash" => !me.trash.is_empty(),
             "play_card" => {
                 if st["source"].as_str() == Some("self") {
@@ -968,7 +1051,8 @@ impl Executor {
                 }
                 ok
             }
-            a @ ("ko" | "rest_opp_character" | "debuff_power" | "lock_opp_character_refresh"
+            a @ ("ko" | "rest_opp_character" | "debuff_power" | "lock_opp_character_refresh" | "bounce"
+                 | "place_opp_character_bottom_deck"
                  | "lock_opp_character_attack") => {
                 match st["target"].as_str() {
                     Some("opp_stage") => return Err(ns("alvo opp_stage")),
@@ -1080,10 +1164,13 @@ impl Executor {
             return Ok(());
         }
         self.ultimo = None;
-        self.rodou = !custos.is_empty() || !passos.is_empty();
+        self.ultimo_oponente = false;
+        let rodou = !custos.is_empty() || !passos.is_empty();
+        self.rodou = rodou;
         for st in &passos {
             self.passo(st, me, opp, fonte, &inf, gatilho)?;
         }
+        self.rodou = rodou; // executa aninhado (trigger, main) nao apaga o deste
         if uma_vez {
             if self.inst == 0 {
                 let mut lista: Vec<(String, String)> = me.extras["_once_main"].as_array().unwrap().iter()
@@ -1294,8 +1381,92 @@ impl Executor {
         }
         let n = st["count"].as_i64().unwrap_or(1);
         let acao = st["action"].as_str().unwrap_or("");
+        if self.ultimo_oponente && (st["target"].as_str() == Some("selected") || st["source"].as_str() == Some("selected")) {
+            return Err(ns("passo em selected depois de alvo do oponente"));
+        }
         match acao {
             "look_top_deck" => {}
+            "bounce" | "place_opp_character_bottom_deck" => self.remove_do_oponente(st, acao, me, opp)?,
+            "negate_effect" => {
+                let dur = match st["duration"].as_str().unwrap_or("this_turn") {
+                    "until_opp_end_phase" => "opp_end_phase",
+                    "until_my_next_turn_start" => "my_next_turn_start",
+                    _ => "opp_turn_end",
+                };
+                match st["target"].as_str().unwrap_or("opp_character") {
+                    "opp_leader" => opp.leader.effects_negated_until = dur.into(),
+                    "opp_leader_or_character" => return Err(ns("negate_effect leader_or_character (board_value)")),
+                    _ => {
+                        let cl = match &st["cost_lte"] {
+                            Value::Null => None,
+                            v => Some(v.as_i64().ok_or_else(|| ns("negate cost_lte dinamico"))?),
+                        };
+                        let mut cands = Vec::new();
+                        for (i, c) in opp.field_chars.iter().enumerate() {
+                            if cl.map_or(true, |l| dados(c).map_or(false, |d| d.cost <= l)) {
+                                cands.push(i);
+                            }
+                        }
+                        if !cands.is_empty() {
+                            self.passivas_da_fila(me, opp)?;
+                            let i = self.alvo_no_oponente(&cands)?;
+                            opp.field_chars[i].effects_negated_until = dur.into();
+                            self.ultimo = None;
+                            self.ultimo_oponente = true;
+                        }
+                    }
+                }
+            }
+            "trash_from_hand" => {
+                let mut k = 0;
+                for _ in 0..n.min(me.hand.len() as i64) {
+                    self.passivas_da_fila(me, opp)?;
+                    let Some((lado, z, i)) = self.escolha("descarte")? else { continue };
+                    if lado != "eu" || z != "hand" || i >= me.hand.len() {
+                        return Err(ns("descarte fora da mao"));
+                    }
+                    let x = me.hand.remove(i);
+                    me.trash.push(x);
+                    k += 1;
+                }
+                if k > 0 && tem_reativo(me, &["on_hand_card_trashed"])? {
+                    return Err(ns("reativo on_hand_card_trashed"));
+                }
+            }
+            "peek_opp_deck_top" => {
+                if let Some(c) = opp.deck.last_mut() {
+                    c.revelada |= 1;
+                }
+            }
+            "trash_own_life" => {
+                if st["face"].as_str() == Some("up") {
+                    let mut resto = Vec::new();
+                    for mut c in std::mem::take(&mut me.life) {
+                        if c.life_face_up {
+                            c.life_face_up = false;
+                            me.trash.push(c);
+                        } else {
+                            resto.push(c);
+                        }
+                    }
+                    me.life = resto;
+                } else {
+                    let ate1 = st["until_1"].as_bool().unwrap_or(false);
+                    let mut k = 0;
+                    while if ate1 { me.life.len() > 1 } else { k < n && !me.life.is_empty() } {
+                        let mut c = me.life.pop().unwrap();
+                        c.life_face_up = false;
+                        me.trash.push(c);
+                        k += 1;
+                    }
+                }
+            }
+            "gain_banish" => self.fonte_mut(me, fonte)?.has_banish = true,
+            "gain_rush_character" => {
+                let f = self.fonte_mut(me, fonte)?;
+                f.has_rush_character = true;
+                f.rush_character_only_this_turn = !(f.has_rush || f.rush_this_turn);
+            }
             "lock_opp_character_attack" | "lock_opp_cannot_be_rested" | "lock_opp_blocker_turn"
             | "lock_opp_character_refresh" => self.trava(st, acao, me, opp)?,
             "self_cant_play" => {
@@ -1369,7 +1540,41 @@ impl Executor {
                 o => return Err(ns(&format!("set_active {o}"))),
             },
             // nao implementados no motor Python (retornam '' sem mudar nada): espelho
-            "redirect_attack_target" | "activate_trash_event_main" => {}
+            "redirect_attack_target" | "activate_trash_event_main" | "transfer_don" => {}
+            "activate_main_effect" => self.executa(me, opp, fonte, "main")?,
+            "hand_to_deck" => {
+                for _ in 0..n.min(me.hand.len() as i64) {
+                    self.passivas_da_fila(me, opp)?;
+                    let Some((lado, z, i)) = self.escolha("descarte")? else { continue };
+                    if lado != "eu" || z != "hand" || i >= me.hand.len() {
+                        return Err(ns("hand_to_deck fora da mao"));
+                    }
+                    let x = me.hand.remove(i);
+                    me.deck.insert(0, x);
+                }
+            }
+            "deal_damage" => {
+                for _ in 0..n {
+                    let Some(mut v) = opp.life.pop() else { break };
+                    v.life_face_up = false;
+                    opp.hand.push(v.clone());
+                    if dados(&v)?.has_trigger {
+                        // `EffectExecutor(opp, me)` novo, fora do turno de quem tem a vida
+                        let (k, lf) = (self.inst, self.lugar_fonte.take());
+                        self.inst = 7000 + self.fila.len() as u32 + self.usados.len() as u32;
+                        let r = self.executa(opp, me, &v, "trigger");
+                        self.inst = k;
+                        self.lugar_fonte = lf;
+                        r?;
+                    }
+                }
+            }
+            "give_don_either_side" => {
+                let proprio = self.veredito("don_proprio")?;
+                let mut s2 = st.clone();
+                s2["action"] = Value::from(if proprio { "give_don" } else { "give_don_opp" });
+                self.passo(&s2, me, opp, fonte, inf, gatilho)?;
+            }
             "draw" => {
                 let mut n = n;
                 match st["count_source"].as_str() {

@@ -10480,6 +10480,7 @@ class EffectExecutor:
                 melhor_own = max(own_ready, key=lambda c: c.effective_power(True))
                 deficit = opp.leader.power - attack_time_power(melhor_own, opp)
                 prefer_own = 0 < deficit <= count * 1000
+            _diario_decisao_efeito('veredito_efeito', qual='don_proprio', valor=bool(prefer_own))
             delegate_action = 'give_don' if prefer_own else 'give_don_opp'
             return self._execute_step({**step, 'action': delegate_action}, card)
 
