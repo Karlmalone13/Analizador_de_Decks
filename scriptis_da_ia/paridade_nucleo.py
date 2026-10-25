@@ -29,7 +29,7 @@ _REATIVAS = de.OPTCGMatch._OPP_TURN_REACTIVE_ACTIONS
 # vao para o Rust com a fila de decisoes do efeito.
 _ONDA = {'look_top_deck', 'add_to_hand', 'deck_bottom_rest', 'trash_rest', 'draw',
          'gain_life', 'add_don', 'set_don_active', 'ko', 'rest_opp_character', 'debuff_power', 'buff_power', 'give_don', 'play_from_trash', 'play_card', 'redirect_attack_target', 'activate_trash_event_main',
-         '#custo_jogar', '#passiva_keyword', '#try_counter_event_power', '#try_counter_event_debuff', 'custo:trash_from_hand', 'custo:don_minus', 'custo:rest_don'}
+         '#custo_jogar', 'self_cant_play', 'give_don_opp', 'gain_blocker', 'gain_rush', 'set_active', 'lock_opp_character_attack', 'lock_opp_cannot_be_rested', 'lock_opp_character_refresh', 'custo:rest_self', 'custo:rest_own_card', 'custo:rest_own_character', 'custo:trash_self', 'custo:give_don_opp', '#passiva_keyword', '#try_counter_event_power', '#try_counter_event_debuff', 'custo:trash_from_hand', 'custo:don_minus', 'custo:rest_don'}
 
 
 def _tem_efeito_de_inicio(estado: dict) -> bool:

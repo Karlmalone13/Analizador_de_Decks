@@ -666,6 +666,70 @@ impl Executor {
         Ok(())
     }
 
+    /// `lock_opp_*` / `lock_opp_character_refresh`: candidatas pela regra; QUAL
+    /// trava (o motor usa board_value) vem da fila (`trava`).
+    fn trava(&mut self, st: &Value, acao: &str, me: &mut Jogador, opp: &mut Jogador) -> R<()> {
+        let n = st["count"].as_i64().unwrap_or(1);
+        let dur = match st["duration"].as_str().unwrap_or("until_opp_turn_end") {
+            "until_opp_end_phase" => "opp_end_phase",
+            "until_my_next_turn_start" => "my_next_turn_start",
+            _ => "opp_turn_end",
+        };
+        let num = |k: &str| -> R<Option<i64>> {
+            match &st[k] {
+                Value::Null => Ok(None),
+                v => v.as_i64().map(Some).ok_or_else(|| ns(&format!("{k} nao numerico"))),
+            }
+        };
+        let (cost_lte, power_lte) = (num("cost_lte")?, num("power_lte")?);
+        let mut cands: Vec<Option<usize>> = Vec::new();
+        if acao == "lock_opp_character_refresh" {
+            let (ceq, dg) = (num("cost_eq")?, num("don_attached_gte")?);
+            for (j, c) in opp.field_chars.iter().enumerate() {
+                let i = dados(c)?;
+                if c.rested && cost_lte.map_or(true, |x| i.cost <= x) && ceq.map_or(true, |x| i.cost == x)
+                    && power_lte.map_or(true, |x| i.power <= x) && dg.map_or(true, |x| c.don_attached >= x)
+                {
+                    cands.push(Some(j));
+                }
+            }
+        } else if st["target"].as_str() == Some("opp_leader") {
+            if !st["only_rested"].as_bool().unwrap_or(false) || opp.leader.rested {
+                cands.push(None);
+            }
+        } else {
+            if acao == "lock_opp_blocker_turn" {
+                return Err(ns("lock_opp_blocker_turn"));
+            }
+            let excl = st["exclude"].as_str().unwrap_or("").to_lowercase();
+            for (j, c) in opp.field_chars.iter().enumerate() {
+                let i = dados(c)?;
+                if cost_lte.map_or(true, |x| i.cost <= x) && power_lte.map_or(true, |x| i.power <= x)
+                    && (excl.is_empty() || !i.name.to_lowercase().contains(&excl))
+                {
+                    cands.push(Some(j));
+                }
+            }
+        }
+        for _ in 0..n.min(cands.len() as i64) {
+            self.passivas_da_fila(me, opp)?;
+            let x = match self.escolha("trava")? {
+                Some((l, z, i)) if l == "oponente" && z == "field_chars" => Some(i),
+                Some((l, z, _)) if l == "oponente" && z == "leader" => None,
+                _ => return Err(ns("trava sem alvo valido")),
+            };
+            let Some(p) = cands.iter().position(|c| *c == x) else { return Err(ns("trava fora dos candidatos")) };
+            cands.remove(p);
+            let t = carta_mut(opp, x)?;
+            match acao {
+                "lock_opp_character_attack" => t.cannot_attack_until = dur.into(),
+                "lock_opp_cannot_be_rested" => t.cannot_be_rested_until = dur.into(),
+                _ => t.frozen_next_refresh = true,
+            }
+        }
+        Ok(())
+    }
+
     fn proxima(&mut self, tipo: &str) -> R<Value> {
         let d = self.fila.pop_front().ok_or_else(|| ns(&format!("fila sem decisao ({tipo})")))?;
         if d.get("passivas").is_some() {
@@ -877,7 +941,9 @@ impl Executor {
             "look_top_deck" | "deck_bottom_rest" | "draw" => !me.deck.is_empty(),
             "set_don_active" => me.don_rested > 0,
             "add_to_hand" | "trash_rest" | "gain_life" | "add_don" | "buff_power" | "give_don" | "redirect_attack_target"
-            | "activate_trash_event_main" => true,
+            | "activate_trash_event_main" | "self_cant_play" | "give_don_opp" | "set_active"
+            | "lock_opp_cannot_be_rested" | "lock_opp_blocker_turn" => true,
+            "gain_blocker" | "gain_rush" => !(st["duration"].as_str() == Some("this_turn") && me.turn == 1),
             "play_from_trash" => !me.trash.is_empty(),
             "play_card" => {
                 if st["source"].as_str() == Some("self") {
@@ -902,14 +968,17 @@ impl Executor {
                 }
                 ok
             }
-            a @ ("ko" | "rest_opp_character" | "debuff_power") => {
+            a @ ("ko" | "rest_opp_character" | "debuff_power" | "lock_opp_character_refresh"
+                 | "lock_opp_character_attack") => {
                 match st["target"].as_str() {
                     Some("opp_stage") => return Err(ns("alvo opp_stage")),
                     Some("opp_leader") | Some("opp_leader_or_character") | Some("self") => true,
                     _ => {
                         let mut algum = false;
                         for c in &opp.field_chars {
-                            if casa_alvo(st, c, a == "rest_opp_character", false, me, opp)? {
+                            if casa_alvo(st, c, a == "rest_opp_character", false, me, opp)?
+                                && (a != "lock_opp_character_refresh" || c.rested)
+                            {
                                 algum = true;
                             }
                         }
@@ -1007,7 +1076,7 @@ impl Executor {
             outro => return Err(ns(&format!("gatilho fora do nucleo: {outro}"))),
         }
         let custos: Vec<Value> = ef["costs"].as_array().cloned().unwrap_or_default();
-        if !self.paga_custos(&custos, me, opp)? {
+        if !self.paga_custos(&custos, me, opp, fonte)? {
             return Ok(());
         }
         self.ultimo = None;
@@ -1033,7 +1102,7 @@ impl Executor {
     }
 
     /// `_pay_costs` -- sequencial (pagamento parcial fica, como no Python).
-    fn paga_custos(&mut self, custos: &[Value], me: &mut Jogador, opp: &mut Jogador) -> R<bool> {
+    fn paga_custos(&mut self, custos: &[Value], me: &mut Jogador, opp: &mut Jogador, fonte: &Carta) -> R<bool> {
         for c in custos {
             let n = c["count"].as_i64().unwrap_or(1);
             match c["type"].as_str().unwrap_or("") {
@@ -1082,10 +1151,133 @@ impl Executor {
                         me.trash.push(x);
                     }
                 }
+                "rest_self" => {
+                    let f = self.fonte_mut(me, fonte)?;
+                    if f.rested {
+                        return Ok(false);
+                    }
+                    f.rested = true;
+                }
+                "trash_self" => {
+                    // so se a carta-fonte ainda esta no campo
+                    if let Some((z, i)) = self.lugar_fonte.clone() {
+                        if z == "field_chars" {
+                            if me.field_chars.get(i).map(|c| &c.code) != Some(&fonte.code) {
+                                return Err(ns("trash_self: fonte fora do lugar"));
+                            }
+                            crate::acoes::tira_do_campo_para_lixo(me, i);
+                            self.lugar_fonte = None;
+                        }
+                    }
+                }
+                "rest_own_character" | "rest_own_card" => {
+                    // candidatas na ordem do Python (campo, [stage, lider] em rest_own_card)
+                    let mut cands: Vec<(String, usize)> = Vec::new();
+                    let excl = if c["exclude_self"].as_bool().unwrap_or(false) {
+                        match &self.lugar_fonte {
+                            Some((z, i)) if z == "field_chars" => Some(*i),
+                            _ => return Err(ns("rest_own_character exclude_self sem lugar")),
+                        }
+                    } else {
+                        None
+                    };
+                    for (j, x) in me.field_chars.iter().enumerate() {
+                        if x.rested {
+                            continue;
+                        }
+                        if c["type"].as_str() == Some("rest_own_character") {
+                            if Some(j) == excl {
+                                continue;
+                            }
+                            let xi = dados(x)?;
+                            if c["cost_gte"].as_i64().map_or(false, |g| xi.cost < g)
+                                || c["cost_lte"].as_i64().map_or(false, |g| xi.cost > g)
+                                || !casa_filtro(&xi, &c["filter_type"], false)
+                            {
+                                continue;
+                            }
+                            if let Some(nm) = c["filter_name"].as_str().filter(|s| !s.is_empty()) {
+                                let nm = nm.to_lowercase();
+                                if !xi.name.to_lowercase().contains(&nm) && !x.code.to_lowercase().contains(&nm) {
+                                    continue;
+                                }
+                            } else if c["filter_name"].is_array() {
+                                return Err(ns("rest_own_character com lista de nomes"));
+                            }
+                        }
+                        cands.push(("field_chars".into(), j));
+                    }
+                    if c["type"].as_str() == Some("rest_own_card") {
+                        if me.stage.as_ref().map_or(false, |s| !s.rested) {
+                            cands.push(("stage".into(), 0));
+                        }
+                        if !me.leader.rested {
+                            cands.push(("leader".into(), 0));
+                        }
+                    }
+                    if (cands.len() as i64) < n {
+                        return Ok(false);
+                    }
+                    for _ in 0..n {
+                        self.passivas_da_fila(me, opp)?;
+                        let Some((lado, z, i)) = self.escolha("custo_restar")? else {
+                            return Err(ns("custo_restar vazio"));
+                        };
+                        let z = if z == "field_stage" { "stage".to_string() } else { z };
+                        let Some(pos) = cands.iter().position(|(cz, ci)| *cz == z && (*ci == i || cz != "field_chars")) else {
+                            return Err(ns("custo_restar fora dos candidatos"));
+                        };
+                        if lado != "eu" {
+                            return Err(ns("custo_restar do lado errado"));
+                        }
+                        cands.remove(pos);
+                        match z.as_str() {
+                            "field_chars" => me.field_chars[i].rested = true,
+                            "stage" => me.stage.as_mut().unwrap().rested = true,
+                            _ => me.leader.rested = true,
+                        }
+                    }
+                }
+                "give_don_opp" => {
+                    if opp.don_rested < n {
+                        return Ok(false);
+                    }
+                    // maior effective_power(True); empate fica com o primeiro (campo, depois lider)
+                    let mut melhor: Option<(Option<usize>, i64)> = None;
+                    for (j, x) in opp.field_chars.iter().enumerate() {
+                        let p = poder_meu_turno(x)?;
+                        if melhor.map_or(true, |(_, b)| p > b) {
+                            melhor = Some((Some(j), p));
+                        }
+                    }
+                    let pl = poder_meu_turno(&opp.leader)?;
+                    if melhor.map_or(true, |(_, b)| pl > b) {
+                        melhor = Some((None, pl));
+                    }
+                    opp.don_rested -= n;
+                    carta_mut(opp, melhor.unwrap().0)?.don_attached += n;
+                }
                 outro => return Err(ns(&format!("custo fora do nucleo: {outro}"))),
             }
         }
         Ok(true)
+    }
+
+    /// A carta-fonte do efeito, no lugar onde esta (`card` do Python).
+    fn fonte_mut<'a>(&self, me: &'a mut Jogador, fonte: &Carta) -> R<&'a mut Carta> {
+        let c = match &self.lugar_fonte {
+            Some((z, _)) if z == "leader" => &mut me.leader,
+            Some((z, i)) if z == "field_chars" => me.field_chars.get_mut(*i).ok_or_else(|| ns("fonte fora do campo"))?,
+            None => match me.stage.as_mut() {
+                Some(s) if s.code == fonte.code => s,
+                _ => return Err(ns("fonte sem lugar conhecido")),
+            },
+            _ => return Err(ns("fonte em zona inesperada")),
+        };
+        if c.code != fonte.code {
+            return Err(ns("fonte fora do lugar"));
+        }
+        Ok(c)
     }
 
     fn passo(&mut self, st: &Value, me: &mut Jogador, opp: &mut Jogador, fonte: &Carta, inf: &InfoCarta, gatilho: &str) -> R<()> {
@@ -1104,6 +1296,78 @@ impl Executor {
         let acao = st["action"].as_str().unwrap_or("");
         match acao {
             "look_top_deck" => {}
+            "lock_opp_character_attack" | "lock_opp_cannot_be_rested" | "lock_opp_blocker_turn"
+            | "lock_opp_character_refresh" => self.trava(st, acao, me, opp)?,
+            "self_cant_play" => {
+                if st["scope"].as_str() == Some("hand") {
+                    me.cant_play_from_hand_this_turn = true;
+                } else {
+                    me.cant_play_chars_this_turn = true;
+                    let g = st["cost_gte"].as_i64().unwrap_or(0);
+                    if g != 0 {
+                        me.cant_play_cost_gte = g;
+                    }
+                }
+            }
+            "give_don_opp" => {
+                let mut melhor: Option<(Option<usize>, i64)> = None;
+                for (j, x) in opp.field_chars.iter().enumerate() {
+                    let p = poder_meu_turno(x)?;
+                    if melhor.map_or(true, |(_, b)| p > b) {
+                        melhor = Some((Some(j), p));
+                    }
+                }
+                let pl = poder_meu_turno(&opp.leader)?;
+                if melhor.map_or(true, |(_, b)| pl > b) {
+                    melhor = Some((None, pl));
+                }
+                let t = if st["rested"].as_bool().unwrap_or(false) {
+                    let r = n.min(opp.don_rested);
+                    opp.don_rested -= r;
+                    r
+                } else {
+                    let a = n.min(opp.don_available);
+                    opp.don_available -= a;
+                    let r = (n - a).max(0).min(opp.don_rested);
+                    opp.don_rested -= r;
+                    a + r
+                };
+                carta_mut(opp, melhor.unwrap().0)?.don_attached += t;
+            }
+            "gain_blocker" | "gain_rush" => {
+                if st["target"].as_str() == Some("selected") {
+                    return Err(ns(&format!("{acao} em selected")));
+                }
+                let f = self.fonte_mut(me, fonte)?;
+                let temp = if acao == "gain_blocker" {
+                    matches!(st["duration"].as_str(), Some("this_turn") | Some("until_opp_turn_end") | Some("until_opp_end_phase"))
+                } else {
+                    st["duration"].as_str() == Some("this_turn")
+                };
+                match (acao, temp) {
+                    ("gain_blocker", true) => f.blocker_this_turn = true,
+                    ("gain_blocker", false) => f.has_blocker = true,
+                    (_, true) => f.rush_this_turn = true,
+                    _ => f.has_rush = true,
+                }
+            }
+            "set_active" => match st["target"].as_str().unwrap_or("self") {
+                "self" => self.fonte_mut(me, fonte)?.rested = false,
+                "leader" => {
+                    if casa_filtro(&dados(&me.leader)?, &st["filter_type"], false) {
+                        me.leader.rested = false;
+                    }
+                }
+                "own_stage" => {
+                    if let Some(s) = me.stage.as_mut() {
+                        let cor = st["color"].as_str().unwrap_or("").to_lowercase();
+                        if s.rested && (cor.is_empty() || dados(s)?.color.to_lowercase().contains(&cor)) {
+                            s.rested = false;
+                        }
+                    }
+                }
+                o => return Err(ns(&format!("set_active {o}"))),
+            },
             // nao implementados no motor Python (retornam '' sem mudar nada): espelho
             "redirect_attack_target" | "activate_trash_event_main" => {}
             "draw" => {

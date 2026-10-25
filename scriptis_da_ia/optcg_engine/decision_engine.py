@@ -9640,6 +9640,7 @@ class EffectExecutor:
             locked = []
             for _ in range(min(count, len(candidates))):
                 target = max(candidates, key=lambda x: x.board_value())
+                _diario_decisao_efeito('escolha_efeito', qual='trava', carta=_diario_lugar_com_lado(target, me, opp))
                 if action == 'lock_opp_character_attack':
                     target.cannot_attack_until = dur
                 elif action == 'lock_opp_cannot_be_rested':
@@ -9705,6 +9706,7 @@ class EffectExecutor:
             locked = []
             for _ in range(min(count, len(candidates))):
                 target = max(candidates, key=lambda x: x.board_value())
+                _diario_decisao_efeito('escolha_efeito', qual='trava', carta=_diario_lugar_com_lado(target, me, opp))
                 target.frozen_next_refresh = True
                 remove_by_identity(candidates, target)
                 locked.append(target.name[:15])
