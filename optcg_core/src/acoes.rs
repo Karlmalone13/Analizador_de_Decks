@@ -373,11 +373,36 @@ fn atacar(e: &mut Estado, acao: &Value, d: &Decisoes) -> Result<Resultado, Resul
     Ok(Resultado::Feito { venceu: false })
 }
 
+/// `[Activate: Main]` (kind 'activate'): marca `_am_used_turn` e executa o bloco
+/// pelo executor da Main.
+fn ativar(e: &mut Estado, acao: &Value, d: &Decisoes) -> Result<Resultado, Resultado> {
+    let (z, i) = lugar(&acao["ator"]).ok_or_else(|| ns("activate sem ator"))?;
+    let turno = e.ativo.turn;
+    let src = match z.as_str() {
+        "leader" => &mut e.ativo.leader,
+        "stage" => e.ativo.stage.as_mut().ok_or_else(|| ns("sem stage"))?,
+        "field_chars" => e.ativo.field_chars.get_mut(i).ok_or_else(|| ns("ator fora do campo"))?,
+        _ => return Err(ns("activate em zona inesperada")),
+    };
+    src.extras.insert("_am_used_turn".into(), Value::from(turno));
+    let fonte = src.clone();
+    let mut ex = Executor::novo(d.efeito.iter().cloned().collect());
+    if z != "stage" {
+        ex.lugar_fonte = Some((z.clone(), i));
+    }
+    ex.executa(&mut e.ativo, &mut e.oponente, &fonte, "activate_main")?;
+    if !ex.fila.is_empty() {
+        return Err(ns("sobrou decisao de efeito na fila"));
+    }
+    Ok(Resultado::Feito { venceu: false })
+}
+
 pub fn aplica(e: &mut Estado, acao: &Value, d: &Decisoes) -> Resultado {
     let r = match acao["tipo"].as_str().unwrap_or("") {
         "attach_don" => anexar_don(e, acao),
         "play" => jogar(e, acao, d),
         "attack" => atacar(e, acao, d),
+        "activate" => ativar(e, acao, d),
         outro => Err(ns(&format!("jogada ainda fora do nucleo: {outro}"))),
     };
     match r {

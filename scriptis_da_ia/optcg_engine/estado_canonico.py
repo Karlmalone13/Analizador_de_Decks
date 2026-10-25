@@ -91,6 +91,8 @@ def jogador(s) -> dict:
             out[f.name] = _lugares_de_ids(s, set(v or ()), _IDS[f.name])
         else:
             out[f.name] = _valor(v)
+    if getattr(s, '_once_main', None) is not None:     # `_once_used` do executor da Main
+        out['_once_main'] = sorted([list(k) for k in s._once_main])
     return out
 
 

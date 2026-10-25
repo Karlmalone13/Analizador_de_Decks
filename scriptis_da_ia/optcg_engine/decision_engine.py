@@ -23198,6 +23198,9 @@ class OPTCGMatch:
         """
         engine = DecisionEngine(p, opp)
         ee     = EffectExecutor(p, opp)
+        # "uma vez por turno" deste executor vive o turno todo: exposto no estado
+        # canonico (paridade do nucleo) so enquanto a Main corre.
+        p._once_main = ee._once_used
         ee.apply_your_turn_buffs()
 
         if verbose:
@@ -25201,3 +25204,17 @@ def _execute_com_diario(self, card, trigger, *a, **k):
 
 _execute_com_diario.__wrapped__ = _execute_orig
 EffectExecutor.execute = _execute_com_diario
+
+
+_main_phase_orig = OPTCGMatch.main_phase
+
+
+def _main_phase_limpa_once(self, p, opp, verbose=False):
+    try:
+        return _main_phase_orig(self, p, opp, verbose=verbose)
+    finally:
+        p.__dict__.pop('_once_main', None)
+
+
+_main_phase_limpa_once.__wrapped__ = _main_phase_orig
+OPTCGMatch.main_phase = _main_phase_limpa_once

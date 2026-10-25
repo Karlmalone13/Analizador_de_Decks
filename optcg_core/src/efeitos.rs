@@ -93,11 +93,13 @@ pub struct Executor {
     pub lugar_fonte: Option<(String, usize)>,
     /// `_last_selected` (memoria de alvo entre passos do MESMO execute)
     ultimo: Option<Option<usize>>,
+    /// o ultimo `executa` pagou o custo e rodou os passos (`logs` nao vazio no Python)
+    pub rodou: bool,
 }
 
 impl Executor {
     pub fn novo(fila: VecDeque<Value>) -> Self {
-        Executor { fila, inst: 0, usados: Default::default(), lugar_fonte: None, ultimo: None }
+        Executor { fila, inst: 0, usados: Default::default(), lugar_fonte: None, ultimo: None, rodou: false }
     }
 }
 
@@ -183,6 +185,17 @@ impl Executor {
                     }
                 }
                 "opp_life_gte" => (opp.life.len() as i64) >= n,
+                "only_field_type" => {
+                    let t = v.as_str().unwrap_or("").to_lowercase();
+                    let mut todos = !me.field_chars.is_empty();
+                    for c in &me.field_chars {
+                        if !dados(c)?.sub_types.to_lowercase().contains(&t) {
+                            todos = false;
+                        }
+                    }
+                    todos
+                }
+                "has_face_up_life" => !v.as_bool().unwrap_or(false) || me.life.iter().any(|c| c.life_face_up),
                 "total_life_lte" => ((me.life.len() + opp.life.len()) as i64) <= n,
                 "trash_gte" => (me.trash.len() as i64) >= n,
                 "trash_lte" => (me.trash.len() as i64) <= n,
@@ -289,6 +302,7 @@ impl Executor {
 
     /// `EffectExecutor.execute(card, gatilho)` para o lado `me` (quem executa).
     pub fn executa(&mut self, me: &mut Jogador, opp: &mut Jogador, fonte: &Carta, gatilho: &str) -> R<()> {
+        self.rodou = false;
         let inf = dados(fonte)?;
         let Some(ef) = inf.efeitos.get(gatilho).cloned() else { return Ok(()) };
         if !fonte.effects_negated_until.is_empty() {
@@ -298,9 +312,13 @@ impl Executor {
         let chave = (self.inst, fonte.code.clone(), gatilho.to_string());
         if uma_vez {
             if self.inst == 0 {
-                return Err(ns("once_per_turn (executor da Main fora do canonico)"));
-            }
-            if self.usados.contains(&chave) {
+                // executor da Main: `_once_used` dele vem no canonico (`_once_main`)
+                let lista = me.extras.get("_once_main").and_then(|v| v.as_array())
+                    .ok_or_else(|| ns("once_per_turn sem _once_main no estado"))?;
+                if lista.iter().any(|k| k[0].as_str() == Some(&chave.1) && k[1].as_str() == Some(&chave.2)) {
+                    return Ok(());
+                }
+            } else if self.usados.contains(&chave) {
                 return Ok(());
             }
         }
@@ -357,7 +375,7 @@ impl Executor {
                 }
             }
             // sem portao de custo opcional no Python
-            "on_own_char_played" | "on_opp_char_played" | "when_rested" | "on_block" | "on_ko"
+            "on_own_char_played" | "on_opp_char_played" | "when_rested" | "on_block" | "on_ko" | "activate_main"
             | "when_damage_or_own_char_ko" | "on_opp_char_ko" | "on_own_char_ko" | "on_any_char_ko" => {}
             outro => return Err(ns(&format!("gatilho fora do nucleo: {outro}"))),
         }
@@ -366,11 +384,23 @@ impl Executor {
             return Ok(());
         }
         self.ultimo = None;
+        self.rodou = !custos.is_empty() || !passos.is_empty();
         for st in &passos {
             self.passo(st, me, opp, fonte, &inf, gatilho)?;
         }
         if uma_vez {
-            self.usados.insert(chave);
+            if self.inst == 0 {
+                let mut lista: Vec<(String, String)> = me.extras["_once_main"].as_array().unwrap().iter()
+                    .map(|k| (k[0].as_str().unwrap_or("").to_string(), k[1].as_str().unwrap_or("").to_string()))
+                    .collect();
+                lista.push((chave.1.clone(), chave.2.clone()));
+                lista.sort();
+                lista.dedup();
+                me.extras.insert("_once_main".into(),
+                    Value::Array(lista.into_iter().map(|(a, b)| Value::from(vec![a, b])).collect()));
+            } else {
+                self.usados.insert(chave);
+            }
         }
         Ok(())
     }
@@ -632,16 +662,37 @@ impl Executor {
             if !filtro(&ent)? {
                 continue;
             }
-            if ent["once_per_turn"].as_bool().unwrap_or(false) {
-                return Err(ns(&format!("reativo {gat} once_per_turn (marcador fora do canonico)")));
+            let uma_vez = ent["once_per_turn"].as_bool().unwrap_or(false);
+            let marca_nome = match gat {
+                "when_damage_or_own_char_ko" => "_damage_ko_once_marker",
+                "on_opp_char_ko" => "_opp_char_ko_once_marker",
+                "on_own_char_ko" => "_own_char_ko_once_marker",
+                "on_any_char_ko" => "_any_char_ko_once_marker",
+                _ => return Err(ns("marcador desconhecido")),
+            };
+            let marca = Value::from(vec![Value::from(w.global_turn), Value::from(gat)]);
+            if uma_vez && f.extras.get(marca_nome) == Some(&marca) {
+                continue;
             }
             let (k, lf) = (self.inst, self.lugar_fonte.take());
             self.inst = 5000 + self.fila.len() as u32 + self.usados.len() as u32;
-            self.lugar_fonte = Some(l);
+            self.lugar_fonte = Some(l.clone());
             let r = self.executa(w, o, &f, gat);
             self.inst = k;
             self.lugar_fonte = lf;
             r?;
+            if uma_vez && self.rodou {
+                let alvo = match l.0.as_str() {
+                    "leader" => Some(&mut w.leader),
+                    "field_chars" => w.field_chars.get_mut(l.1),
+                    _ => w.stage.as_mut(),
+                };
+                let alvo = alvo.ok_or_else(|| ns("fonte do reativo saiu do lugar"))?;
+                if alvo.code != f.code {
+                    return Err(ns("fonte do reativo saiu do lugar"));
+                }
+                alvo.extras.insert(marca_nome.into(), marca);
+            }
         }
         Ok(())
     }

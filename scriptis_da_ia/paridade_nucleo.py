@@ -190,12 +190,12 @@ def main() -> int:
                 t = e['acao']['tipo']
                 c = jog.setdefault(t, [0, 0, 0, 0])
                 if e.get('passos_efeito', 0):
-                    if not (t in ('play', 'attack') and set(e.get('acoes_efeito', [])) <= _ONDA):
+                    if not (t in ('play', 'attack', 'activate') and set(e.get('acoes_efeito', [])) <= _ONDA):
                         c[3] += 1
                         continue
                     t = t + '+efeito'
                     c = jog.setdefault(t, [0, 0, 0, 0])
-                elif t in ('play', 'attack'):
+                elif t in ('play', 'attack', 'activate'):
                     # sem passo de efeito: as decisoes de efeito (veredito sem custo) ficam
                     dec.setdefault('efeito', [])
                 d = dict(dec)
