@@ -147,6 +147,20 @@ fn prob_valor(estado_json: &str) -> PyResult<(Option<f64>, Vec<f64>)> {
     Ok((valor::prob(&e.ativo, &e.oponente), valor::features(&e.ativo, &e.oponente).to_vec()))
 }
 
+/// AUTO-JOGO (fase C): partida inteira no nucleo com a busca nos dois lados.
+#[pyfunction]
+fn autojogo(estado_json: &str, global_turn: i64, iteracoes: u32, turnos_rollout: u32, c_ucb: f64, semente: u64,
+            max_turnos: u32) -> PyResult<String> {
+    let e = estado::Estado::de_json(estado_json).map_err(erro)?;
+    let t0 = std::time::Instant::now();
+    let p = busca::autojogo(e, global_turn, &busca::Config { iteracoes, turnos_rollout, c_ucb, semente }, max_turnos);
+    let regs: Vec<serde_json::Value> = p.registros.iter().map(|r| serde_json::json!({
+        "lado": r.lado, "feats": r.feats.to_vec(), "visitas": r.visitas, "escolhida": r.escolhida,
+        "legais": r.legais.iter().map(|j| j.para_json()).collect::<Vec<_>>()})).collect();
+    Ok(serde_json::json!({"vencedor": p.vencedor, "turnos": p.turnos, "fora_do_nucleo": p.fora_do_nucleo,
+        "registros": regs, "segundos": t0.elapsed().as_secs_f64()}).to_string())
+}
+
 #[pymodule]
 fn optcg_core(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_function(wrap_pyfunction!(versao, m)?)?;
@@ -160,5 +174,6 @@ fn optcg_core(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_function(wrap_pyfunction!(busca_jogada, m)?)?;
     m.add_function(wrap_pyfunction!(carrega_valor, m)?)?;
     m.add_function(wrap_pyfunction!(prob_valor, m)?)?;
+    m.add_function(wrap_pyfunction!(autojogo, m)?)?;
     Ok(())
 }

@@ -190,3 +190,6 @@ scriptis_da_ia/eixos_cache/
 
 # nucleo Rust (PLANO_MOTOR_FORTE): artefatos de compilacao
 optcg_core/target/
+
+# auto-jogo da fase C (dados de treino, binario)
+scriptis_da_ia/metrics/autojogo/

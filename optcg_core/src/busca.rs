@@ -17,6 +17,7 @@ use crate::legais::jogadas_legais;
 use std::cell::RefCell;
 use std::rc::Rc;
 
+#[derive(Clone, Copy)]
 pub struct Config {
     pub iteracoes: u32,
     pub turnos_rollout: u32,
@@ -169,6 +170,11 @@ fn depois_do_meu_turno(mut w: Estado, gt: i64, pol: &PoliticaRef, turnos: u32, f
 
 /// Melhor jogada do ativo de `e` (ja no meio da Main dele). `gt` = global_turn atual.
 pub fn busca(e: &Estado, gt: i64, cfg: &Config) -> Resposta {
+    busca_sem(e, gt, cfg, &[])
+}
+
+/// `busca`, sem considerar na raiz as jogadas `proibidas`.
+pub fn busca_sem(e: &Estado, gt: i64, cfg: &Config, proibidas: &[Jogada]) -> Resposta {
     let mut rng = Rng::novo(cfg.semente);
     let pol: PoliticaRef = Rc::new(RefCell::new(Rollout(Rng::novo(cfg.semente ^ 0x5DEE_CE66))));
     let d = Decisoes { politica: Some(pol.clone()), ..Default::default() };
@@ -180,6 +186,7 @@ pub fn busca(e: &Estado, gt: i64, cfg: &Config) -> Resposta {
         let mut no = 0usize;
         let valor: f64 = loop {
             let leg = match jogadas_legais(&w) {
+                Ok(v) if no == 0 => v.into_iter().filter(|j| !proibidas.contains(j)).collect(),
                 Ok(v) => v,
                 Err(_) => {
                     fora += 1;
@@ -263,4 +270,85 @@ pub fn busca(e: &Estado, gt: i64, cfg: &Config) -> Resposta {
     let _ = abre_turno;
     let motivos = MOTIVOS.with(|x| std::mem::take(&mut *x.borrow_mut()));
     Resposta { jogada, raiz, iteracoes: cfg.iteracoes, fora_do_nucleo: fora, motivos }
+}
+
+/// Uma decisao do auto-jogo: o que a busca viu e escolheu.
+pub struct Registro {
+    /// 0 = quem comecou a partida, 1 = o outro
+    pub lado: u8,
+    pub feats: [f64; 32],
+    /// jogadas legais (na ordem de `jogadas_legais`) e visitas da busca em cada uma
+    pub legais: Vec<Jogada>,
+    pub visitas: Vec<u32>,
+    pub escolhida: usize,
+}
+
+pub struct Partida {
+    /// 0 / 1 (como `Registro::lado`), None = limite de turnos ou caso fora do nucleo
+    pub vencedor: Option<u8>,
+    pub registros: Vec<Registro>,
+    pub turnos: u32,
+    pub fora_do_nucleo: Option<String>,
+}
+
+/// AUTO-JOGO (fase C): partida inteira no nucleo, a busca decidindo a jogada
+/// principal dos DOIS lados. `e` = estado antes do 1o inicio de turno.
+pub fn autojogo(mut e: Estado, mut gt: i64, cfg: &Config, max_turnos: u32) -> Partida {
+    let pol: PoliticaRef = Rc::new(RefCell::new(Rollout(Rng::novo(cfg.semente ^ 0xA5A5))));
+    let d = Decisoes { politica: Some(pol.clone()), ..Default::default() };
+    let mut regs = Vec::new();
+    let mut lado = 0u8;
+    let mut turnos = 0u32;
+    let mut sem = cfg.semente;
+    let acaba = |v: Option<u8>, r, t, m| Partida { vencedor: v, registros: r, turnos: t, fora_do_nucleo: m };
+    while turnos < max_turnos {
+        if let Passo::ForaDoNucleo(m) = abre_turno(&mut e, gt, &pol) {
+            return acaba(None, regs, turnos, Some(m));
+        }
+        gt += 1;
+        turnos += 1;
+        let mut passo = Passo::Segue;
+        let mut proibidas: Vec<Jogada> = Vec::new();
+        for _ in 0..200 {
+            let legais: Vec<Jogada> = match jogadas_legais(&e) {
+                Ok(v) => v.into_iter().filter(|j| !proibidas.contains(j)).collect(),
+                Err(_) => return acaba(None, regs, turnos, Some("legais".into())),
+            };
+            sem = sem.wrapping_mul(6364136223846793005).wrapping_add(1442695040888963407);
+            let r = busca_sem(&e, gt, &Config { semente: sem, ..*cfg }, &proibidas);
+            let visitas: Vec<u32> = legais.iter()
+                .map(|j| r.raiz.iter().find(|(x, _, _)| x == j).map_or(0, |x| x.1)).collect();
+            let escolhida = legais.iter().position(|j| *j == r.jogada).unwrap_or(legais.len() - 1);
+            regs.push(Registro { lado, feats: crate::valor::features(&e.ativo, &e.oponente), legais: legais.clone(), visitas, escolhida });
+            if legais[escolhida] == Jogada::Fim {
+                break;
+            }
+            // efeito ainda fora do nucleo: desfaz, proibe a jogada nesta decisao e segue
+            let antes = e.clone();
+            passo = joga(&mut e, &legais[escolhida], &d);
+            if let Passo::ForaDoNucleo(_) = passo {
+                e = antes;
+                proibidas.push(legais[escolhida].clone());
+                regs.pop();
+                passo = Passo::Segue;
+                continue;
+            }
+            proibidas.clear();
+            if !matches!(passo, Passo::Segue) {
+                break;
+            }
+        }
+        if let Passo::Segue = passo {
+            passo = fecha_turno(&mut e, &pol);
+        }
+        match passo {
+            Passo::Segue => {}
+            Passo::Venceu => return acaba(Some(lado), regs, turnos, None),
+            Passo::Perdeu => return acaba(Some(1 - lado), regs, turnos, None),
+            Passo::ForaDoNucleo(m) => return acaba(None, regs, turnos, Some(m)),
+        }
+        std::mem::swap(&mut e.ativo, &mut e.oponente);
+        lado = 1 - lado;
+    }
+    acaba(None, regs, turnos, None)
 }
