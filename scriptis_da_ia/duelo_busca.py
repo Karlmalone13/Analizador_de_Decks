@@ -50,8 +50,13 @@ def main():
     ap.add_argument('--iteracoes', type=int, default=2000)
     ap.add_argument('--turnos', type=int, default=6)
     ap.add_argument('--c', type=float, default=0.7)
+    ap.add_argument('--sem-valor', action='store_true', help='folhas pela nota simples (sem a rede)')
     a = ap.parse_args()
     cfg = {'iteracoes': a.iteracoes, 'turnos': a.turnos, 'c': a.c, 'semente': a.seed}
+    if not a.sem_valor:
+        # folhas da busca avaliadas pela rede de valor do motor (`win_prob`)
+        from optcg_engine import value_net as V
+        optcg_core.carrega_valor(json.dumps(V.exporta_para_nucleo()))
     placar = {'busca': 0, 'python': 0, 'empate': 0}
     t_busca, n_busca, fora, its = 0.0, 0, 0, 0
     t0 = time.time()

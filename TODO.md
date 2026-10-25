@@ -2,6 +2,8 @@
 
 **Última atualização:** 9 de outubro de 2026 (blocos 943-960)
 
+> **998**: fase A essencial pronta (paridade 100% nas comparadas, ~97,6% cobertas, legais 100%, ~78k jogadas/s); carta conhecida vira marca da carta (decisao do usuario); fase B iniciada: busca ISMCTS + rede de valor no Rust, 1a versao perdeu 11x19 do bot Python. PROXIMO: fase C -- auto-jogo inteiro em Rust com a busca, rede politica+valor, ciclo com SPRT.
+
 > **980**: defesa na arvore com 3 mundos PROMOVE 271x214 (55,9%), ligada. PENDENTE: ST03-001 perde 3x14 com ela (investigar mecanismo); partidas contra o usuario (agora 973+974+980); acelerar o motor de regras pra portoes mais curtos.
 
 > **997**: nucleo Rust 100% nas jogadas sem efeito (DON 128/128, jogar 123/123, ataque 300/300; 30 partidas). 4 achados no motor Python (custo don_minus pago pela metade; defensor ignora base_power_override; counter soma impresso; revealed por id limpo preguicoso). Proximo: fim de turno + 1a onda de efeitos.

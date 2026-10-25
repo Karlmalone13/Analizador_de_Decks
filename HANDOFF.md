@@ -1,4 +1,38 @@
-﻿# HANDOFF — registro de troca entre IAs (Claude / Codex)
+# HANDOFF — registro de troca entre IAs (Claude / Codex)
+
+## 2026-10-25 (998) - Fase A fechada no essencial + fase B iniciada (busca ISMCTS no nucleo Rust)
+
+**Paridade (fase A)**: o nucleo Rust (`optcg_core/`) reproduz o motor Python jogada a jogada -- 100% nas jogadas
+comparadas (seeds 1000/2000/3000 x30 e 5000 x100: ataque 1064/1064, jogar 645/645, ativar 224/224; inicio/fim de
+turno 100%). ~97,6% das jogadas com efeito cobertas; o resto e cauda (opp_trash_from_hand aleatorio, KO no stage,
+efeitos agendados p/ fim do turno, choice...). Escolhas heuristicas escondidas do Python vao ao DIARIO
+(orcamento de KO, trava, reordena, sacrificio, paga_substituicao...). Teste: `paridade_nucleo.py`.
+**Jogadas legais** (`legais.rs`, regras sem os cortes heuristicos; `attach_don` de 1 em 1, ataque com don=0):
+toda jogada do Python esta na lista e jogar/atacar = referencia de regras 100% (`legais_nucleo.py`).
+**Simulador**: partida inteira so em Rust (`jogo.rs`), escolhas internas por `Politica` plugavel (diario na
+paridade; politica na simulacao). Velocidade ~78 mil jogadas/s (Python ~200): jogada tipada, dados da carta na
+carta (Arc), gatilhos so nas cartas com o gatilho, codigo da carta internado, campos extras tipados.
+`bench_nucleo.py`.
+**Mudancas no motor Python (decididas pelo usuario)**:
+1. clone de Card copia o set `_passivo_on` (a simulacao da busca apagava a marca da carta real e o +N era somado
+   de novo).
+2. CARTA CONHECIDA virou marca da carta (`_conhecida`: 1 dono, 2 oponente, 4 posicao perdida) e segue em QUALQUER
+   zona (pedido: "a carta tem que continuar contando como revelada"); substitui revealed_to_opponent/
+   revealed_life/revealed_deck (que esqueciam ao mudar de zona, misturavam quem viu e nao sobreviviam ao clone).
+   Campo/lixo/lider/stage = publicos ao fim de cada jogada; embaralhar perde so a posicao. Assinatura mudou
+   (esperado). `server.py` ajustado (so conferido que importa).
+**Bugs do Python registrados (corrigir depois da paridade)**: transfer_don/redirect_attack_target/
+activate_trash_event_main sao no-op; custo `trash_from_deck_top` nao e pago; custo parcial don_minus; KO de
+substituicao com escolha heuristica; lazy `_de` aplica passivas de keyword no momento da decisao.
+**Fase B**: `busca.rs` = ISMCTS de um observador sobre as jogadas do MEU turno, mundos sorteados so do observavel
+(`determiniza`), folhas pela rede de valor do motor portada pro Rust (`valor.rs`, 32 features + arvores de
+`value_net.exporta_para_nucleo`; identica ao `win_prob` em 181/181 estados). Ligada ao motor por
+`GameState.busca_rust` (a busca escolhe a jogada principal; escolhas internas seguem no Python).
+`duelo_busca.py` (pares com troca de lado): 1a versao (rollout aleatorio 6 turnos) PERDEU 11x19 (37%).
+Versao com a rede nas folhas (turnos=0): duelo rodando ao fim da sessao (resultado no proximo bloco).
+**PROXIMO (decisao do usuario: priorizar a fase C)**: auto-jogo inteiro em Rust com a busca nos dois lados
+(gera visitas + resultado), rede de politica+valor mais rica treinada no Python e carregada no Rust, ciclo
+gerar/treinar/duelar/promover (SPRT). Fase B so conta como cumprida quando vencer o bot atual no portao.
 
 ## 2026-10-24 (997) - Nucleo Rust: jogadas sem efeito com 100% de paridade (30 partidas)
 

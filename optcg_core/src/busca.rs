@@ -117,8 +117,12 @@ pub fn determiniza(e: &Estado, rng: &mut Rng) -> Estado {
     w
 }
 
-/// Nota de 0 a 1 para `eu` numa mesa sem vencedor.
+/// Nota de 0 a 1 para `eu` numa mesa sem vencedor: a rede de valor do motor
+/// (`win_prob`) quando carregada; senao vida/mesa/mao.
 fn nota(eu: &Jogador, ele: &Jogador) -> f64 {
+    if let Some(v) = crate::valor::prob(eu, ele) {
+        return v;
+    }
     let v = 0.5 + 0.08 * (eu.life.len() as f64 - ele.life.len() as f64)
         + 0.02 * (eu.field_chars.len() as f64 - ele.field_chars.len() as f64)
         + 0.01 * (eu.hand.len() as f64 - ele.hand.len() as f64);

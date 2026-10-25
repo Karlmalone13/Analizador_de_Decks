@@ -11,6 +11,7 @@ pub mod estado;
 pub mod jogo;
 pub mod legais;
 pub mod turno;
+pub mod valor;
 
 fn erro(x: impl ToString) -> PyErr {
     PyValueError::new_err(x.to_string())
@@ -132,6 +133,20 @@ fn busca_jogada(estado_json: &str, global_turn: i64, iteracoes: u32, turnos_roll
         "fora_do_nucleo": r.fora_do_nucleo, "motivos": r.motivos, "segundos": t0.elapsed().as_secs_f64()}).to_string())
 }
 
+/// Carrega a rede de valor (arvores de `value_net.exporta_para_nucleo`).
+#[pyfunction]
+fn carrega_valor(modelo_json: &str) -> PyResult<()> {
+    let m: valor::Modelo = serde_json::from_str(modelo_json).map_err(erro)?;
+    valor::carrega(m).map_err(erro)
+}
+
+/// `win_prob(ativo, oponente)` no nucleo (None sem modelo) + as features.
+#[pyfunction]
+fn prob_valor(estado_json: &str) -> PyResult<(Option<f64>, Vec<f64>)> {
+    let e = estado::Estado::de_json(estado_json).map_err(erro)?;
+    Ok((valor::prob(&e.ativo, &e.oponente), valor::features(&e.ativo, &e.oponente).to_vec()))
+}
+
 #[pymodule]
 fn optcg_core(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_function(wrap_pyfunction!(versao, m)?)?;
@@ -143,5 +158,7 @@ fn optcg_core(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_function(wrap_pyfunction!(jogadas_legais, m)?)?;
     m.add_function(wrap_pyfunction!(simula_partidas, m)?)?;
     m.add_function(wrap_pyfunction!(busca_jogada, m)?)?;
+    m.add_function(wrap_pyfunction!(carrega_valor, m)?)?;
+    m.add_function(wrap_pyfunction!(prob_valor, m)?)?;
     Ok(())
 }

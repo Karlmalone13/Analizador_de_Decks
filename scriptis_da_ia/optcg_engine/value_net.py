@@ -1443,6 +1443,21 @@ def _arvores_planas(modelo):
     return plano
 
 
+def exporta_para_nucleo(bundle=None) -> dict | None:
+    """As arvores do modelo de valor em listas simples, para o nucleo Rust
+    (`optcg_core.carrega_valor`). None se o modelo nao for o caso coberto."""
+    bundle = bundle if bundle is not None else load_value_net()
+    if not bundle or not isinstance(bundle, dict) or bundle.get('modelo') is None:
+        return None
+    pl = _arvores_planas(bundle['modelo'])
+    if pl is None:
+        return None
+    return {'nomes': list(bundle.get('feature_names') or FEATURE_NAMES),
+            'raiz': pl['raiz'].tolist(), 'feat': pl['feat'].tolist(), 'thr': pl['thr'].tolist(),
+            'mgl': pl['mgl'].tolist(), 'esq': pl['esq'].tolist(), 'dir': pl['dir'].tolist(),
+            'folha': pl['folha'].tolist(), 'valor': pl['valor'].tolist(), 'base': pl['base']}
+
+
 def _arvores_rapido(modelo, X):
     """Mesma conta do `HistGradientBoostingRegressor.predict` (soma das folhas +
     baseline), percorrendo TODAS as arvores ao mesmo tempo em numpy -- sem o
