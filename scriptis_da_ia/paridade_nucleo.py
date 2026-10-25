@@ -29,7 +29,7 @@ _REATIVAS = de.OPTCGMatch._OPP_TURN_REACTIVE_ACTIONS
 # vao para o Rust com a fila de decisoes do efeito.
 _ONDA = {'look_top_deck', 'add_to_hand', 'deck_bottom_rest', 'trash_rest', 'draw',
          'gain_life', 'add_don', 'set_don_active', 'ko', 'rest_opp_character', 'debuff_power', 'buff_power', 'give_don', 'play_from_trash', 'play_card', 'redirect_attack_target', 'activate_trash_event_main',
-         '#custo_jogar', 'custo:trash_char_or_hand', 'custo:return_own_character_to_hand', 'self_cant_take_life', 'select_grant_can_attack_active_turn', 'opp_trash_from_hand', 'set_base_power', 'buff_cost', 'debuff_cost', 'attack_life', 'life_to_hand', 'add_from_trash', 'deck_reorder_rest', 'deck_top_rest', 'buff_power_per_count', 'lock_opp_blocker_turn', 'custo:rest_any_don', 'custo:return_active_don_to_don_deck', 'custo:life_to_hand', 'bounce', 'place_opp_character_bottom_deck', 'negate_effect', 'trash_from_hand', 'peek_opp_deck_top', 'trash_own_life', 'gain_banish', 'gain_rush_character', 'transfer_don', 'activate_main_effect', 'hand_to_deck', 'deal_damage', 'give_don_either_side', 'self_cant_play', 'give_don_opp', 'gain_blocker', 'gain_rush', 'set_active', 'lock_opp_character_attack', 'lock_opp_cannot_be_rested', 'lock_opp_character_refresh', 'custo:rest_self', 'custo:rest_own_card', 'custo:rest_own_character', 'custo:trash_self', 'custo:give_don_opp', '#passiva_keyword', '#try_counter_event_power', '#try_counter_event_debuff', 'custo:trash_from_hand', 'custo:don_minus', 'custo:rest_don'}
+         '#custo_jogar', 'turn_life_face_up', 'turn_life_face_down', 'custo:turn_life_face_up', 'custo:turn_life_face_down', 'custo:trash_char_or_hand', 'custo:return_own_character_to_hand', 'self_cant_take_life', 'select_grant_can_attack_active_turn', 'opp_trash_from_hand', 'set_base_power', 'buff_cost', 'debuff_cost', 'attack_life', 'life_to_hand', 'add_from_trash', 'deck_reorder_rest', 'deck_top_rest', 'buff_power_per_count', 'lock_opp_blocker_turn', 'custo:rest_any_don', 'custo:return_active_don_to_don_deck', 'custo:life_to_hand', 'bounce', 'place_opp_character_bottom_deck', 'negate_effect', 'trash_from_hand', 'peek_opp_deck_top', 'trash_own_life', 'gain_banish', 'gain_rush_character', 'transfer_don', 'activate_main_effect', 'hand_to_deck', 'deal_damage', 'give_don_either_side', 'self_cant_play', 'give_don_opp', 'gain_blocker', 'gain_rush', 'set_active', 'lock_opp_character_attack', 'lock_opp_cannot_be_rested', 'lock_opp_character_refresh', 'custo:rest_self', 'custo:rest_own_card', 'custo:rest_own_character', 'custo:trash_self', 'custo:give_don_opp', '#passiva_keyword', '#try_counter_event_power', '#try_counter_event_debuff', 'custo:trash_from_hand', 'custo:don_minus', 'custo:rest_don'}
 
 
 def _tem_efeito_de_inicio(estado: dict) -> bool:
@@ -147,10 +147,14 @@ def main() -> int:
             alvo = next((x for x in ev[j + 1:] if x['tipo'] == 'main_inicio'), None)
             if alvo is None:
                 continue
-            if _tem_efeito_de_inicio(e['estado']):
+            k = ev.index(alvo, j)
+            fila = [x for x in ev[j + 1:k] if x['tipo'] in ('escolha_efeito', 'paga_custo', 'veredito_efeito')]
+            st, r = optcg_core.inicio_de_turno(json.dumps(e['estado']), e['global_turn'], json.dumps(fila))
+            if st != 'ok':
                 tot['pulados'] += 1
+                motivos['inicio: ' + r] = motivos.get('inicio: ' + r, 0) + 1
                 continue
-            r = json.loads(optcg_core.inicio_de_turno(json.dumps(e['estado']), e['global_turn']))
+            r = json.loads(r)
             tot['inicio_turno'][1] += 1
             d = _primeira_diferenca(alvo['estado'], r)
             if d is None:
@@ -163,10 +167,14 @@ def main() -> int:
             alvo = next((x for x in ev[j + 1:] if x['tipo'] == 'fim_depois'), None)
             if alvo is None:
                 continue
-            if alvo['passos'] != e['passos']:
+            k = ev.index(alvo, j)
+            fila = [x for x in ev[j + 1:k] if x['tipo'] in ('escolha_efeito', 'paga_custo', 'veredito_efeito')]
+            st, r = optcg_core.fim_de_turno(json.dumps(e['estado']), json.dumps(fila))
+            if st != 'ok':
                 tot['fim_com_efeito'] += 1
+                motivos['fim: ' + r] = motivos.get('fim: ' + r, 0) + 1
                 continue
-            r = json.loads(optcg_core.fim_de_turno(json.dumps(e['estado'])))
+            r = json.loads(r)
             tot['fim_turno'][1] += 1
             d = _primeira_diferenca(alvo['estado'], r)
             if d is None:
@@ -225,8 +233,8 @@ def main() -> int:
     for k in ('ida_volta', 'inicio_turno', 'fim_turno'):
         ok, n = tot[k]
         print(f'{k:14s} {ok}/{n} identicos ({100 * ok / max(n, 1):.1f}%)')
-    print(f'turnos pulados (efeito de inicio de turno ainda fora do nucleo): {tot["pulados"]}')
-    print(f'fins de turno com efeito (fora desta onda): {tot["fim_com_efeito"]}')
+    print(f'inicios de turno nao suportados: {tot["pulados"]}')
+    print(f'fins de turno nao suportados: {tot["fim_com_efeito"]}')
     for d in divs:
         print('DIVERGE', d[0], 'seed', d[1], 'campo', d[2][0], '| python', repr(d[2][1])[:60],
               '| rust', repr(d[2][2])[:60])

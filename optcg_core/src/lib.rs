@@ -30,18 +30,26 @@ fn carrega_cartas(tabela_json: &str) -> PyResult<usize> {
 /// Teste diferencial: estado canonico (JSON) de `turno_inicio` -> inicio de
 /// turno do nucleo -> estado canonico (JSON).
 #[pyfunction]
-fn inicio_de_turno(estado_json: &str, global_turn: i64) -> PyResult<String> {
+fn inicio_de_turno(estado_json: &str, global_turn: i64, decisoes_json: &str) -> PyResult<(String, String)> {
     let mut e = estado::Estado::de_json(estado_json).map_err(erro)?;
-    turno::inicio_de_turno(&mut e, global_turn);
-    e.para_json().map_err(erro)
+    let fila: Vec<serde_json::Value> = serde_json::from_str(decisoes_json).map_err(erro)?;
+    match turno::inicio_de_turno(&mut e, global_turn, fila.into()) {
+        Ok(()) => Ok(("ok".into(), e.para_json().map_err(erro)?)),
+        Err(acoes::Resultado::NaoSuportado(m)) => Ok(("nao_suportado".into(), m)),
+        Err(_) => Ok(("nao_suportado".into(), "resultado inesperado".into())),
+    }
 }
 
 /// Teste diferencial: estado de `fim_antes` -> fim de turno do nucleo.
 #[pyfunction]
-fn fim_de_turno(estado_json: &str) -> PyResult<String> {
+fn fim_de_turno(estado_json: &str, decisoes_json: &str) -> PyResult<(String, String)> {
     let mut e = estado::Estado::de_json(estado_json).map_err(erro)?;
-    turno::fim_de_turno(&mut e);
-    e.para_json().map_err(erro)
+    let fila: Vec<serde_json::Value> = serde_json::from_str(decisoes_json).map_err(erro)?;
+    match turno::fim_de_turno(&mut e, fila.into()) {
+        Ok(()) => Ok(("ok".into(), e.para_json().map_err(erro)?)),
+        Err(acoes::Resultado::NaoSuportado(m)) => Ok(("nao_suportado".into(), m)),
+        Err(_) => Ok(("nao_suportado".into(), "resultado inesperado".into())),
+    }
 }
 
 /// Teste diferencial de UMA jogada principal: estado antes + jogada (por LUGAR)

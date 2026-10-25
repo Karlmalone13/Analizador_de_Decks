@@ -1026,6 +1026,7 @@ impl Executor {
             "trash_own_life" => if st["face"].as_str() == Some("up") { me.life.iter().any(|c| c.life_face_up) } else { !me.life.is_empty() },
             "attack_life" => !opp.life.is_empty(),
             "opp_trash_from_hand" => !opp.hand.is_empty(),
+            "turn_life_face_up" | "turn_life_face_down" => if st["target"].as_str() == Some("opponent") { !opp.life.is_empty() } else { !me.life.is_empty() },
             "negate_effect" => match st["target"].as_str().unwrap_or("opp_character") {
                 "opp_leader" | "opp_leader_or_character" => true,
                 _ => {
@@ -1170,6 +1171,7 @@ impl Executor {
             }
             // sem portao de custo opcional no Python
             "on_own_char_played" | "on_opp_char_played" | "when_rested" | "on_block" | "on_ko" | "activate_main"
+            | "opp_turn" | "end_of_turn"
             | "when_damage_or_own_char_ko" | "on_opp_char_ko" | "on_own_char_ko" | "on_any_char_ko" => {}
             outro => return Err(ns(&format!("gatilho fora do nucleo: {outro}"))),
         }
@@ -1350,6 +1352,22 @@ impl Executor {
                     }
                     me.don_available -= n;
                     me.don_deck += n;
+                }
+                t @ ("turn_life_face_up" | "turn_life_face_down") => {
+                    if (me.life.len() as i64) < n {
+                        return Ok(false);
+                    }
+                    let quer = t == "turn_life_face_up";
+                    let k = n as usize;
+                    let alvos: Vec<usize> = if c["position"].as_str() == Some("top_or_bottom") {
+                        let ja: Vec<usize> = (0..me.life.len()).filter(|&i| me.life[i].life_face_up == quer).collect();
+                        if ja.len() >= k { ja[..k].to_vec() } else { (me.life.len() - k..me.life.len()).collect() }
+                    } else {
+                        (me.life.len() - k..me.life.len()).collect()
+                    };
+                    for i in alvos {
+                        me.life[i].life_face_up = quer;
+                    }
                 }
                 "life_to_hand" => {
                     if me.cant_take_life_this_turn || (me.life.len() as i64) < n {
@@ -1928,10 +1946,13 @@ impl Executor {
                 carta_mut(opp, melhor.unwrap().0)?.don_attached += t;
             }
             "gain_blocker" | "gain_rush" => {
-                if st["target"].as_str() == Some("selected") {
-                    return Err(ns(&format!("{acao} em selected")));
-                }
-                let f = self.fonte_mut(me, fonte)?;
+                let f = if st["target"].as_str() == Some("selected") {
+                    // `_last_selected` (do proprio lado; None = nada selecionado)
+                    let Some(x) = self.ultimo else { return Ok(()) };
+                    carta_mut(me, x)?
+                } else {
+                    self.fonte_mut(me, fonte)?
+                };
                 let temp = if acao == "gain_blocker" {
                     matches!(st["duration"].as_str(), Some("this_turn") | Some("until_opp_turn_end") | Some("until_opp_end_phase"))
                 } else {
@@ -1959,8 +1980,57 @@ impl Executor {
                         }
                     }
                 }
-                o => return Err(ns(&format!("set_active {o}"))),
+                t => {
+                    let num = |k: &str| st[k].as_i64();
+                    let nome = st["filter_name"].as_str().unwrap_or("").to_lowercase();
+                    let cor = st["color"].as_str().unwrap_or("").to_lowercase();
+                    let atr = st["attribute"].as_str().unwrap_or("").to_lowercase();
+                    if st["filter_name"].is_array() {
+                        return Err(ns("set_active com lista de nomes"));
+                    }
+                    let mut cands: Vec<Option<usize>> = Vec::new();
+                    for (j, c) in me.field_chars.iter().enumerate() {
+                        let i = dados(c)?;
+                        if !c.rested || !casa_filtro(&i, &st["filter_type"], false)
+                            || (!nome.is_empty() && !i.name.to_lowercase().contains(&nome) && !c.code.to_lowercase().contains(&nome))
+                            || (!cor.is_empty() && !i.color.to_lowercase().contains(&cor))
+                            || (!atr.is_empty() && !i.attribute.to_lowercase().contains(&atr))
+                            || num("cost_lte").map_or(false, |x| i.cost > x) || num("cost_gte").map_or(false, |x| i.cost < x)
+                            || num("cost_eq").map_or(false, |x| i.cost != x) || num("power_lte").map_or(false, |x| i.power > x)
+                            || num("power_eq").map_or(false, |x| i.power != x)
+                        {
+                            continue;
+                        }
+                        cands.push(Some(j));
+                    }
+                    let mut ativou = false;
+                    for _ in 0..n {
+                        if cands.is_empty() {
+                            break;
+                        }
+                        self.passivas_da_fila(me, opp)?;
+                        let x = self.alvo_meu(&cands)?;
+                        carta_mut(me, x)?.rested = false;
+                        cands.retain(|c| *c != x);
+                        ativou = true;
+                        self.ultimo = Some(x);
+                        self.ultimo_oponente = false;
+                    }
+                    if (t == "own_character_and_leader" || (t == "leader_or_character" && !ativou)) && me.leader.rested {
+                        me.leader.rested = false;
+                    }
+                }
             },
+            "turn_life_face_up" | "turn_life_face_down" => {
+                let dono: &mut Jogador = if st["target"].as_str() == Some("opponent") { opp } else { me };
+                if !dono.life.is_empty() {
+                    let k = if st["count"].as_str() == Some("all") { dono.life.len() } else { (n.max(0) as usize).min(dono.life.len()) };
+                    let l = dono.life.len();
+                    for c in dono.life[l - k..].iter_mut() {
+                        c.life_face_up = acao == "turn_life_face_up";
+                    }
+                }
+            }
             // nao implementados no motor Python (retornam '' sem mudar nada): espelho
             "redirect_attack_target" | "activate_trash_event_main" | "transfer_don" => {}
             "activate_main_effect" => self.executa(me, opp, fonte, "main")?,
