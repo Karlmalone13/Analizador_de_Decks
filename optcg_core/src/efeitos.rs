@@ -653,7 +653,9 @@ impl Executor {
                     }
                 }
                 "don_minus" if !c["optional"].as_bool().unwrap_or(false) => {
-                    if !devolve_don(me, c["count"].as_i64().unwrap_or(1), None)? {
+                    let (ok, dev) = devolve_don(me, c["count"].as_i64().unwrap_or(1), None)?;
+                    self.dispara_don_devolvido(me, opp, dev)?;
+                    if !ok {
                         return Ok(None);
                     }
                 }
@@ -800,6 +802,55 @@ impl Executor {
             // `_last_selected` passa a ser carta do OPONENTE
             self.ultimo = None;
             self.ultimo_oponente = true;
+        }
+        Ok(())
+    }
+
+    /// `_dispatch_don_returned(owner=me, amount, source_owner=me)`: o proprio
+    /// efeito de `me` devolveu `dev` DON; um EffectExecutor novo por fonte.
+    fn dispara_don_devolvido(&mut self, me: &mut Jogador, opp: &mut Jogador, dev: i64) -> R<()> {
+        if dev <= 0 {
+            return Ok(());
+        }
+        let mut fontes: Vec<(Carta, Option<(String, usize)>)> = vec![(me.leader.clone(), Some(("leader".into(), 0)))];
+        fontes.extend(me.field_chars.iter().cloned().enumerate().map(|(i, c)| (c, Some(("field_chars".into(), i)))));
+        if let Some(s) = &me.stage {
+            fontes.push((s.clone(), None));
+        }
+        for (f, l) in fontes {
+            let inf = dados(&f)?;
+            let Some(ent) = inf.efeitos.get("when_don_returned").cloned() else { continue };
+            if dev < ent["return_count_gte"].as_i64().unwrap_or(1) {
+                continue;
+            }
+            match ent["owner_turn"].as_str() {
+                Some("your") if !me.is_active_turn => continue,
+                Some("opponent") if me.is_active_turn => continue,
+                _ => {}
+            }
+            let uma_vez = ent["once_per_turn"].as_bool().unwrap_or(false);
+            let marca = Value::from(vec![Value::from(me.global_turn), Value::from("when_don_returned")]);
+            if uma_vez && f.extras.get("_event_once_marker") == Some(&marca) {
+                continue;
+            }
+            let (k, lf, rod) = (self.inst, self.lugar_fonte.clone(), self.rodou);
+            self.inst = 8000 + self.fila.len() as u32 + self.usados.len() as u32;
+            self.lugar_fonte = l.clone();
+            let r = self.executa(me, opp, &f, "when_don_returned");
+            let rodou = self.rodou;
+            self.inst = k;
+            self.lugar_fonte = lf;
+            self.rodou = rod;
+            r?;
+            if uma_vez && rodou {
+                let alvo = match &l {
+                    Some((z, _)) if z == "leader" => Some(&mut me.leader),
+                    Some((_, i)) => me.field_chars.get_mut(*i),
+                    None => me.stage.as_mut(),
+                };
+                let alvo = alvo.filter(|c| c.code == f.code).ok_or_else(|| ns("fonte do when_don_returned saiu do lugar"))?;
+                alvo.extras.insert("_event_once_marker".into(), marca);
+            }
         }
         Ok(())
     }
@@ -1175,22 +1226,34 @@ impl Executor {
             }
             // sem portao de custo opcional no Python
             "on_own_char_played" | "on_opp_char_played" | "when_rested" | "on_block" | "on_ko" | "activate_main"
-            | "opp_turn" | "end_of_turn"
+            | "opp_turn" | "end_of_turn" | "when_don_returned"
             | "when_damage_or_own_char_ko" | "on_opp_char_ko" | "on_own_char_ko" | "on_any_char_ko" => {}
             outro => return Err(ns(&format!("gatilho fora do nucleo: {outro}"))),
         }
         let custos: Vec<Value> = ef["costs"].as_array().cloned().unwrap_or_default();
+        self.rest_any_don_n = 0; // `_last_cost_rest_any_don_count` zera a cada execute
         if !self.paga_custos(&custos, me, opp, fonte)? {
             return Ok(());
         }
         self.ultimo = None;
         self.ultimo_oponente = false;
-        let rodou = !custos.is_empty() || !passos.is_empty();
-        self.rodou = rodou;
+        // `logs` do Python: os do custo pago + os de cada passo que FEZ algo.
+        // Aproximado por "pagou custo ou o estado mudou" (so importa para o
+        // marcador once_per_turn dos reativos, entao so mede quando ha marcador).
+        let antes = if uma_vez && custos.is_empty() {
+            Some((serde_json::to_value(&*me).ok(), serde_json::to_value(&*opp).ok()))
+        } else {
+            None
+        };
+        self.rodou = !custos.is_empty() || !passos.is_empty();
         for st in &passos {
             self.passo(st, me, opp, fonte, &inf, gatilho)?;
         }
-        self.rodou = rodou; // executa aninhado (trigger, main) nao apaga o deste
+        // executa aninhado (trigger, main) nao apaga o deste
+        self.rodou = match antes {
+            Some(a) => a != (serde_json::to_value(&*me).ok(), serde_json::to_value(&*opp).ok()),
+            None => !custos.is_empty() || !passos.is_empty(),
+        };
         if uma_vez {
             if self.inst == 0 {
                 let mut lista: Vec<(String, String)> = me.extras["_once_main"].as_array().unwrap().iter()
@@ -1226,7 +1289,9 @@ impl Executor {
                         Some((z, i)) if z == "field_chars" => Some(Some(*i)),
                         _ => None,
                     };
-                    if !devolve_don(me, n, exclui)? {
+                    let (ok, dev) = devolve_don(me, n, exclui)?;
+                    self.dispara_don_devolvido(me, opp, dev)?;
+                    if !ok {
                         return Ok(false);
                     }
                 }
@@ -3083,7 +3148,7 @@ fn olhar_e_pegar(inf: &InfoCarta, ultimo: bool) -> (i64, i64) {
 /// `_return_don_to_deck` (custo DON!! -X), mesma ordem de preferencia.
 /// `exclui`: a carta-fonte do efeito (`exclude_card=card` em `_pay_costs`;
 /// Some(None) = lider), fora so das duas fontes "baratas".
-fn devolve_don(me: &mut Jogador, n: i64, exclui: Option<Option<usize>>) -> R<bool> {
+fn devolve_don(me: &mut Jogador, n: i64, exclui: Option<Option<usize>>) -> R<(bool, i64)> {
     let mut dev = 0;
     for (j, c) in me.field_chars.iter_mut().enumerate() {
         if exclui == Some(Some(j)) {
@@ -3124,14 +3189,5 @@ fn devolve_don(me: &mut Jogador, n: i64, exclui: Option<Option<usize>>) -> R<boo
             dev += 1;
         }
     }
-    if dev > 0 {
-        // _dispatch_don_returned: reativos when_don_returned ficam fora desta onda
-        let fontes = std::iter::once(&me.leader).chain(me.field_chars.iter()).chain(me.stage.iter());
-        for c in fontes {
-            if dados(c)?.efeitos.keys().any(|k| k.starts_with("when_don_returned")) {
-                return Err(ns("when_don_returned"));
-            }
-        }
-    }
-    Ok(dev >= n)
+    Ok((dev >= n, dev))
 }
