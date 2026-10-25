@@ -4,7 +4,7 @@
 //! onda de efeitos; o teste diferencial pula esses turnos).
 use crate::acoes::Resultado;
 use crate::cartas::info;
-use crate::efeitos::Executor;
+use crate::efeitos::{Executor, PoliticaRef};
 use crate::estado::{Carta, Estado, Jogador};
 use serde_json::Value;
 use std::collections::VecDeque;
@@ -132,7 +132,7 @@ fn don(p: &mut Jogador) {
 
 /// Do estado `turno_inicio` (antes de tudo) ate o `main_inicio` (depois do DON).
 /// `global_turn` = contador da partida ANTES deste turno.
-pub fn inicio_de_turno(e: &mut Estado, global_turn: i64, fila: VecDeque<Value>) -> R<()> {
+pub fn inicio_de_turno(e: &mut Estado, global_turn: i64, fila: VecDeque<Value>, politica: Option<PoliticaRef>) -> R<()> {
     let g = global_turn + 1;
     e.ativo.turn += 1;
     e.ativo.global_turn = g;
@@ -151,6 +151,7 @@ pub fn inicio_de_turno(e: &mut Estado, global_turn: i64, fila: VecDeque<Value>) 
         fontes.push((s.clone(), None));
     }
     let mut ex = Executor::novo(fila);
+    ex.politica = politica.clone();
     for (k, (f, l)) in fontes.into_iter().enumerate() {
         let i = info(&f.code).ok_or_else(|| ns("carta sem dados"))?;
         let Some(b) = i.efeitos.get("opp_turn") else { continue };
@@ -172,7 +173,7 @@ pub fn inicio_de_turno(e: &mut Estado, global_turn: i64, fila: VecDeque<Value>) 
 /// `OPTCGMatch.end_phase` SEM efeito: [End of Your Turn] e a fila agendada sao
 /// efeitos (onda de efeitos); a regra pura do fim de turno nao muda o estado --
 /// os "ate o fim do turno" sao limpos no inicio do turno seguinte (`inicio_de_turno`).
-pub fn fim_de_turno(e: &mut Estado, fila: VecDeque<Value>) -> R<()> {
+pub fn fim_de_turno(e: &mut Estado, fila: VecDeque<Value>, politica: Option<PoliticaRef>) -> R<()> {
     // [End of Your Turn] de lider, personagens e stage, pelo MESMO executor
     let mut fontes: Vec<(Carta, Option<(String, usize)>)> = vec![(e.ativo.leader.clone(), Some(("leader".into(), 0)))];
     fontes.extend(e.ativo.field_chars.iter().cloned().enumerate().map(|(i, c)| (c, Some(("field_chars".into(), i)))));
@@ -180,6 +181,7 @@ pub fn fim_de_turno(e: &mut Estado, fila: VecDeque<Value>) -> R<()> {
         fontes.push((s.clone(), None));
     }
     let mut ex = Executor::novo(fila);
+    ex.politica = politica.clone();
     ex.inst = 9000;
     for (f, l) in fontes {
         ex.lugar_fonte = l;

@@ -10,7 +10,31 @@ use crate::acoes::Resultado;
 use crate::cartas::{info, InfoCarta};
 use crate::estado::{Carta, Jogador};
 use serde_json::Value;
+use std::cell::RefCell;
 use std::collections::VecDeque;
+use std::rc::Rc;
+
+/// Lugar de uma carta do ponto de vista de quem executa: ("eu"|"oponente", zona, indice)
+pub type Lug = (String, String, usize);
+
+/// Quem decide as escolhas internas quando NAO ha diario (simulacao / busca).
+/// No teste de paridade a politica e None e as escolhas vem do diario do Python.
+pub trait Politica {
+    /// indice em `n` opcoes (None = nenhuma, so quando `pode_nenhuma`)
+    fn escolhe(&mut self, qual: &str, n: usize, pode_nenhuma: bool) -> Option<usize>;
+    fn veredito(&mut self, qual: &str) -> bool;
+}
+
+pub type PoliticaRef = Rc<RefCell<dyn Politica>>;
+
+fn lug(lado: &str, z: &str, i: usize) -> Lug {
+    (lado.to_string(), z.to_string(), i)
+}
+
+/// opcoes: cartas da zona `z` do proprio lado (menos `exceto`)
+fn zona_toda(n: usize, z: &str, exceto: Option<usize>) -> Vec<Lug> {
+    (0..n).filter(|i| Some(*i) != exceto).map(|i| lug("eu", z, i)).collect()
+}
 
 fn ns(m: &str) -> Resultado {
     Resultado::NaoSuportado(m.to_string())
@@ -18,7 +42,7 @@ fn ns(m: &str) -> Resultado {
 
 type R<T> = Result<T, Resultado>;
 
-pub(crate) fn dados(c: &Carta) -> R<InfoCarta> {
+pub(crate) fn dados(c: &Carta) -> R<std::sync::Arc<InfoCarta>> {
     info(&c.code).ok_or_else(|| ns(&format!("carta sem dados: {}", c.code)))
 }
 
@@ -107,11 +131,13 @@ pub struct Executor {
     atacante: Option<(Option<usize>, String)>,
     /// o ultimo `executa` pagou o custo e rodou os passos (`logs` nao vazio no Python)
     pub rodou: bool,
+    /// Some = simulacao: as escolhas internas sao da politica, nao do diario
+    pub politica: Option<PoliticaRef>,
 }
 
 impl Executor {
     pub fn novo(fila: VecDeque<Value>) -> Self {
-        Executor { fila, inst: 0, usados: Default::default(), lugar_fonte: None, ultimo: None, ultimo_oponente: false, rest_any_don_n: 0, trash_any_n: 0, atacante_batalha: None, atacante: None, rodou: false }
+        Executor { fila, inst: 0, usados: Default::default(), lugar_fonte: None, ultimo: None, ultimo_oponente: false, rest_any_don_n: 0, trash_any_n: 0, atacante_batalha: None, atacante: None, rodou: false, politica: None }
     }
 }
 
@@ -160,6 +186,28 @@ pub fn regra_de_custo_casa(c: &Carta, regra: &Value) -> R<bool> {
 }
 
 /// `_hand_cost_conditions_match`
+/// `other_char_power_gte` (+ _type/_names/_uses_base) sobre os personagens `outros`
+fn outro_com_poder(cs: &serde_json::Map<String, Value>, outros: &[&Carta]) -> R<bool> {
+    let l = cs["other_char_power_gte"].as_i64().unwrap_or(0);
+    let tipo = cs.get("other_char_power_gte_type").and_then(|x| x.as_str()).unwrap_or("");
+    let nomes: Vec<String> = cs.get("other_char_power_gte_names").and_then(|x| x.as_array())
+        .map(|a| a.iter().filter_map(|x| x.as_str()).map(|x| x.to_lowercase()).collect()).unwrap_or_default();
+    let base = cs.get("other_char_power_uses_base").map_or(false, |x| x.as_bool().unwrap_or(!x.is_null()));
+    for c in outros {
+        let i = dados(c)?;
+        if !tipo.is_empty() && !norm_tipo(&i.sub_types).contains(&norm_tipo(tipo)) {
+            continue;
+        }
+        if !nomes.is_empty() && !nomes.iter().any(|n| i.name.to_lowercase().contains(n.as_str())) {
+            continue;
+        }
+        if (if base { i.power } else { poder_meu_turno(c)? }) >= l {
+            return Ok(true);
+        }
+    }
+    Ok(false)
+}
+
 fn condicoes_de_custo(p: &Jogador, opp: &Jogador, carta: &Carta, cs: &serde_json::Map<String, Value>) -> R<bool> {
     let don = |j: &Jogador| j.don_available + j.don_rested;
     let n = |k: &str| cs[k].as_i64().unwrap_or(0);
@@ -211,7 +259,7 @@ fn condicoes_de_custo(p: &Jogador, opp: &Jogador, carta: &Carta, cs: &serde_json
             }
             "don_on_field_lte_opp" => !cs[k].as_bool().unwrap_or(false) || don(p) <= don(opp),
             "don_fewer_than_opp_by_gte" => don(opp) - don(p) >= n(k),
-            "other_char_power_gte" => return Err(ns("custo: other_char_power_gte")),
+            "other_char_power_gte" => outro_com_poder(cs, &p.field_chars.iter().collect::<Vec<_>>())?,
             _ => true,
         };
         if !ok {
@@ -874,7 +922,8 @@ impl Executor {
             return Ok(0);
         }
         self.passivas_da_fila(me, opp)?;
-        let Some((lado, z, k)) = self.escolha("counter_evento")? else { return Ok(0) };
+        let ops: Vec<Lug> = cands.iter().map(|c| lug("eu", "hand", c.2)).collect();
+        let Some((lado, z, k)) = self.escolha_entre("counter_evento", &ops, true)? else { return Ok(0) };
         if lado != "eu" || z != "hand" {
             return Err(ns("counter evento fora da mao"));
         }
@@ -979,7 +1028,8 @@ impl Executor {
             return Ok(0);
         }
         self.passivas_da_fila(me, opp)?;
-        let Some((lado, z, k)) = self.escolha("counter_evento")? else { return Ok(0) };
+        let ops: Vec<Lug> = cands.iter().map(|c| lug("eu", "hand", c.2)).collect();
+        let Some((lado, z, k)) = self.escolha_entre("counter_evento", &ops, true)? else { return Ok(0) };
         if lado != "eu" || z != "hand" {
             return Err(ns("counter evento fora da mao"));
         }
@@ -1007,7 +1057,8 @@ impl Executor {
                             return Ok(None);
                         }
                         self.passivas_da_fila(me, opp)?;
-                        let Some((lado, z, i)) = self.escolha("descarte")? else {
+                        let ops = zona_toda(me.hand.len(), "hand", Some(k));
+                        let Some((lado, z, i)) = self.escolha_entre("descarte", &ops, false)? else {
                             return Err(ns("descarte vazio no custo do counter"));
                         };
                         if lado != "eu" || z != "hand" || i >= me.hand.len() || i == k {
@@ -1036,6 +1087,7 @@ impl Executor {
     /// A proxima decisao veio depois de o Python criar o motor de decisao
     /// (`EffectExecutor._de`), que liga as passivas de keyword dos dois lados.
     fn passivas_da_fila(&mut self, me: &mut Jogador, opp: &mut Jogador) -> R<()> {
+        // na simulacao nao ha fila: as passivas de keyword sao momento do Python (`_de` preguicoso)
         if let Some(d) = self.fila.front_mut() {
             if d.get("passivas").and_then(|v| v.as_bool()) == Some(true) {
                 d.as_object_mut().unwrap().remove("passivas");
@@ -1091,7 +1143,8 @@ impl Executor {
         }
         for _ in 0..n.min(cands.len() as i64) {
             self.passivas_da_fila(me, opp)?;
-            let x = match self.escolha("trava")? {
+            let ops: Vec<Lug> = cands.iter().map(|c| match c { Some(i) => lug("oponente", "field_chars", *i), None => lug("oponente", "leader", 0) }).collect();
+            let x = match self.escolha_entre("trava", &ops, false)? {
                 Some((l, z, i)) if l == "oponente" && z == "field_chars" => Some(i),
                 Some((l, z, _)) if l == "oponente" && z == "leader" => None,
                 _ => return Err(ns("trava sem alvo valido")),
@@ -1236,7 +1289,8 @@ impl Executor {
     /// Escolha `sub_escolha` (max/min de board_value no motor) entre lugares do campo
     fn sub_escolha(&mut self, me: &mut Jogador, opp: &mut Jogador, cands: &[(String, usize)]) -> R<(String, usize)> {
         self.passivas_da_fila(me, opp)?;
-        match self.escolha("sub_escolha")? {
+        let ops: Vec<Lug> = cands.iter().map(|(z, i)| lug("eu", z, *i)).collect();
+        match self.escolha_entre("sub_escolha", &ops, false)? {
             Some((l, z, i)) if l == "eu" => {
                 let p = if z == "leader" || z == "stage" { (z, 0) } else { (z, i) };
                 if cands.contains(&p) { Ok(p) } else { Err(ns("sub_escolha fora dos candidatos")) }
@@ -1287,7 +1341,8 @@ impl Executor {
                 let mut tirar = Vec::new();
                 for _ in 0..n {
                     self.passivas_da_fila(me, opp)?;
-                    let p = match self.escolha("sub_escolha")? {
+                    let ops: Vec<Lug> = cands.iter().map(|(z, i)| lug("eu", z, *i)).collect();
+                    let p = match self.escolha_entre("sub_escolha", &ops, false)? {
                         Some((l, z, i)) if l == "eu" && z == "hand" && cands.contains(&(z.clone(), i)) => (z, i),
                         o => return Err(ns(&format!("sub_escolha de descarte inesperada: {o:?}"))),
                     };
@@ -1331,7 +1386,8 @@ impl Executor {
                 }
                 for _ in 0..k {
                     self.passivas_da_fila(me, opp)?;
-                    let Some((l, z, i)) = self.escolha("descarte")? else { return Ok(false) };
+                    let ops = zona_toda(me.hand.len(), "hand", None);
+                    let Some((l, z, i)) = self.escolha_entre("descarte", &ops, false)? else { return Ok(false) };
                     if l != "eu" || z != "hand" || i >= me.hand.len() {
                         return Err(ns("descarte fora da mao"));
                     }
@@ -1402,7 +1458,8 @@ impl Executor {
                 }
                 for _ in 0..n {
                     self.passivas_da_fila(me, opp)?;
-                    let i = match self.escolha("sub_escolha")? {
+                    let ops = zona_toda(me.trash.len(), "trash", None);
+                    let i = match self.escolha_entre("sub_escolha", &ops, false)? {
                         Some((l, z, i)) if l == "eu" && z == "trash" && i < me.trash.len() => i,
                         o => return Err(ns(&format!("sub_escolha do lixo inesperada: {o:?}"))),
                     };
@@ -1631,8 +1688,33 @@ impl Executor {
         Ok(d)
     }
 
+    /// Escolha entre `opcoes` (lugares): do diario (conferida contra as opcoes) ou da politica.
+    fn escolha_entre(&mut self, qual: &str, opcoes: &[Lug], pode_nenhuma: bool) -> R<Option<Lug>> {
+        if let Some(p) = &self.politica {
+            if opcoes.is_empty() {
+                return Ok(None);
+            }
+            let k = p.borrow_mut().escolhe(qual, opcoes.len(), pode_nenhuma);
+            return Ok(match k {
+                Some(k) if k < opcoes.len() => Some(opcoes[k].clone()),
+                _ if pode_nenhuma => None,
+                _ => Some(opcoes[0].clone()),
+            });
+        }
+        let r = self.escolha(qual)?;
+        if let Some(x) = &r {
+            if !opcoes.contains(x) {
+                return Err(ns(&format!("{qual}: escolha fora das opcoes: {x:?}")));
+            }
+        }
+        Ok(r)
+    }
+
     /// Lugar da carta escolhida (lado de quem executa): ("eu"|"oponente", zona, i)
     fn escolha(&mut self, qual: &str) -> R<Option<(String, String, usize)>> {
+        if self.politica.is_some() {
+            return Err(ns(&format!("escolha sem opcoes na simulacao: {qual}")));
+        }
         let d = self.proxima("escolha_efeito")?;
         if d["qual"].as_str() != Some(qual) {
             return Err(ns(&format!("escolha fora de ordem: esperava {qual}, veio {}", d["qual"])));
@@ -1642,9 +1724,10 @@ impl Executor {
             return Ok(None);
         }
         let a = c.as_array().ok_or_else(|| ns("escolha sem lugar"))?;
+        let z = a.get(1).and_then(|x| x.as_str()).unwrap_or("?");
         Ok(Some((
             a.first().and_then(|x| x.as_str()).unwrap_or("?").to_string(),
-            a.get(1).and_then(|x| x.as_str()).unwrap_or("?").to_string(),
+            (if z == "field_stage" { "stage" } else { z }).to_string(),
             a.get(2).and_then(|x| x.as_u64()).ok_or_else(|| ns("escolha sem indice"))? as usize,
         )))
     }
@@ -1712,14 +1795,7 @@ impl Executor {
                         };
                         // `c is not card`: a fonte pelo lugar; senao, pela igualdade de estado
                         let excl = if o.get("chars_gte_exclude_self").and_then(|x| x.as_bool()).unwrap_or(false) {
-                            match &self.lugar_fonte {
-                                Some((z, i)) if z == "field_chars" && me.field_chars.get(*i).map(|c| &c.code) == Some(&fonte.code) => Some(*i),
-                                Some((z, _)) if z != "field_chars" => None,
-                                _ => {
-                                    let fv = serde_json::to_value(fonte).ok();
-                                    me.field_chars.iter().position(|c| serde_json::to_value(c).ok() == fv)
-                                }
-                            }
+                            self.idx_fonte(me, fonte)
                         } else {
                             None
                         };
@@ -1804,6 +1880,51 @@ impl Executor {
                         mx = Some(mx.map_or(pw, |m: i64| m.max(pw)));
                     }
                     mx.map_or(false, |m| m >= n)
+                }
+                "other_char_power_gte" | "other_char_cost_gte" => {
+                    let ex = self.idx_fonte(me, fonte);
+                    let mut outros: Vec<&Carta> = me.field_chars.iter().enumerate().filter(|(j, _)| Some(*j) != ex).map(|(_, c)| c).collect();
+                    if k == "other_char_power_gte" {
+                        outro_com_poder(m, &outros)?
+                    } else {
+                        if let Some(t) = m.get("other_char_cost_gte_type").and_then(|x| x.as_str()).filter(|t| !t.is_empty()) {
+                            let mut f = Vec::new();
+                            for c in outros {
+                                if norm_tipo(&dados(c)?.sub_types).contains(&norm_tipo(t)) {
+                                    f.push(c);
+                                }
+                            }
+                            outros = f;
+                        }
+                        let mut mx: Option<i64> = None;
+                        for c in &outros {
+                            let x = dados(c)?.cost;
+                            mx = Some(mx.map_or(x, |a: i64| a.max(x)));
+                        }
+                        mx.map_or(false, |x| x >= n)
+                    }
+                }
+                "don_attached_total_gte" => {
+                    me.leader.don_attached + me.field_chars.iter().map(|c| c.don_attached).sum::<i64>() >= n
+                }
+                "no_char_type_cost_gte" => {
+                    let t = norm_tipo(v["type"].as_str().unwrap_or(""));
+                    let g = v["cost_gte"].as_i64().unwrap_or(0);
+                    let mut algum = false;
+                    for c in &me.field_chars {
+                        let i = dados(c)?;
+                        algum |= norm_tipo(&i.sub_types).contains(&t) && i.cost >= g;
+                    }
+                    !algum
+                }
+                "events_in_trash_gte" => {
+                    let mut e = 0;
+                    for c in &me.trash {
+                        if dados(c)?.card_type.to_lowercase() == "event" {
+                            e += 1;
+                        }
+                    }
+                    e >= n
                 }
                 "don_on_field_lte_opp" => {
                     !v.as_bool().unwrap_or(!v.is_null())
@@ -2017,6 +2138,13 @@ impl Executor {
             }
         }
         match gatilho {
+            "on_play" | "main" | "trigger" | "when_attacking" | "on_opp_attack" | "leader_battle_reactive"
+                if self.politica.is_some() =>
+            {
+                if !self.veredito("pagar_custo")? {
+                    return Ok(());
+                }
+            }
             "on_play" | "main" | "trigger" => {
                 self.passivas_da_fila(me, opp)?;
                 let d = self.proxima("paga_custo")?;
@@ -2141,18 +2269,24 @@ impl Executor {
                             elegiveis.push(j);
                         }
                     }
-                    let _ = &elegiveis;
                     if pool < n {
                         return Ok(false);
                     }
                     for _ in 0..n {
                         self.passivas_da_fila(me, opp)?;
-                        let Some((lado, z, i)) = self.escolha("descarte")? else { continue };
+                        let ops: Vec<Lug> = elegiveis.iter().map(|&j| lug("eu", "hand", j)).collect();
+                        let Some((lado, z, i)) = self.escolha_entre("descarte", &ops, false)? else { continue };
                         if lado != "eu" || z != "hand" || i >= me.hand.len() {
                             return Err(ns("descarte fora da mao"));
                         }
                         let x = me.hand.remove(i);
                         me.trash.push(x);
+                        elegiveis.retain(|&j| j != i);
+                        for j in elegiveis.iter_mut() {
+                            if *j > i {
+                                *j -= 1;
+                            }
+                        }
                     }
                 }
                 "rest_self" => {
@@ -2224,7 +2358,8 @@ impl Executor {
                     }
                     for _ in 0..n {
                         self.passivas_da_fila(me, opp)?;
-                        let Some((lado, z, i)) = self.escolha("custo_restar")? else {
+                        let ops: Vec<Lug> = cands.iter().map(|(z, i)| lug("eu", z, *i)).collect();
+                        let Some((lado, z, i)) = self.escolha_entre("custo_restar", &ops, false)? else {
                             return Err(ns("custo_restar vazio"));
                         };
                         let z = if z == "field_stage" { "stage".to_string() } else { z };
@@ -2284,7 +2419,7 @@ impl Executor {
                     for _ in 0..n {
                         let mut chars = Vec::new();
                         for (j, x) in me.field_chars.iter().enumerate() {
-                            if casa_filtro(&dados(x)?, &c["filter_type"], false) {
+                            if casa_filtro(&*dados(x)?, &c["filter_type"], false) {
                                 chars.push(j);
                             }
                         }
@@ -2292,7 +2427,9 @@ impl Executor {
                             return Ok(false);
                         }
                         self.passivas_da_fila(me, opp)?;
-                        match self.escolha("sacrificio")? {
+                        let mut ops: Vec<Lug> = chars.iter().map(|&j| lug("eu", "field_chars", j)).collect();
+                        ops.extend(zona_toda(me.hand.len(), "hand", None));
+                        match self.escolha_entre("sacrificio", &ops, false)? {
                             Some((l, z, i)) if l == "eu" && z == "hand" && i < me.hand.len() => {
                                 let x = me.hand.remove(i);
                                 me.trash.push(x);
@@ -2330,7 +2467,8 @@ impl Executor {
                     }
                     for _ in 0..n {
                         self.passivas_da_fila(me, opp)?;
-                        let Some((l, z, i)) = self.escolha("custo_sacrificar")? else {
+                        let ops: Vec<Lug> = cands.iter().map(|&j| lug("eu", "field_chars", j)).collect();
+                        let Some((l, z, i)) = self.escolha_entre("custo_sacrificar", &ops, false)? else {
                             return Err(ns("custo_sacrificar vazio"));
                         };
                         if l != "eu" || z != "field_chars" || !cands.contains(&i) {
@@ -2400,7 +2538,7 @@ impl Executor {
                     };
                     let mut cands = Vec::new();
                     for (j, x) in me.field_chars.iter().enumerate() {
-                        if Some(j) != excl && casa_filtro(&dados(x)?, &c["filter_type"], false) {
+                        if Some(j) != excl && casa_filtro(&*dados(x)?, &c["filter_type"], false) {
                             cands.push(j);
                         }
                     }
@@ -2412,7 +2550,8 @@ impl Executor {
                             break;
                         }
                         self.passivas_da_fila(me, opp)?;
-                        let Some((l, z, i)) = self.escolha("custo_sacrificar")? else {
+                        let ops: Vec<Lug> = cands.iter().map(|&j| lug("eu", "field_chars", j)).collect();
+                        let Some((l, z, i)) = self.escolha_entre("custo_sacrificar", &ops, false)? else {
                             return Err(ns("custo_sacrificar vazio"));
                         };
                         if l != "eu" || z != "field_chars" || !cands.contains(&i) {
@@ -2614,7 +2753,7 @@ impl Executor {
                             }
                         }
                         if st["include_leader"].as_bool().unwrap_or(false) {
-                            let ok = if !nome.is_empty() { bate(&me.leader, nome)? } else { casa_filtro(&dados(&me.leader)?, &st["filter_type"], false) };
+                            let ok = if !nome.is_empty() { bate(&me.leader, nome)? } else { casa_filtro(&*dados(&me.leader)?, &st["filter_type"], false) };
                             if ok {
                                 cands.push(None);
                             }
@@ -2633,11 +2772,11 @@ impl Executor {
                     || st["filter_types"].as_str() == Some("") { &st["filter_type"] } else { &st["filter_types"] };
                 let mut cands: Vec<Option<usize>> = Vec::new();
                 for (j, c) in me.field_chars.iter().enumerate() {
-                    if casa_filtro(&dados(c)?, f, false) {
+                    if casa_filtro(&*dados(c)?, f, false) {
                         cands.push(Some(j));
                     }
                 }
-                if st["include_leader"].as_bool().unwrap_or(false) && casa_filtro(&dados(&me.leader)?, f, false) {
+                if st["include_leader"].as_bool().unwrap_or(false) && casa_filtro(&*dados(&me.leader)?, f, false) {
                     cands.push(None);
                 }
                 if !cands.is_empty() {
@@ -2657,7 +2796,8 @@ impl Executor {
                 let mut k = 0;
                 for _ in 0..n.min(opp.hand.len() as i64) {
                     self.passivas_da_fila(me, opp)?;
-                    let Some((lado, z, i)) = self.escolha("descarte")? else { continue };
+                    let ops: Vec<Lug> = (0..opp.hand.len()).map(|j| lug("oponente", "hand", j)).collect();
+                    let Some((lado, z, i)) = self.escolha_entre("descarte", &ops, false)? else { continue };
                     if lado != "oponente" || z != "hand" || i >= opp.hand.len() {
                         return Err(ns("descarte do oponente fora da mao"));
                     }
@@ -2696,23 +2836,23 @@ impl Executor {
                     let mut cands: Vec<Option<usize>> = Vec::new();
                     match st["target"].as_str().unwrap_or("self") {
                         "self" => {
-                            if casa_filtro(&dados(fonte)?, f, false) {
+                            if casa_filtro(&*dados(fonte)?, f, false) {
                                 let c = self.fonte_mut(me, fonte)?;
                                 c.base_power_override = Some(v);
                             }
                             return Ok(());
                         }
                         "leader" => {
-                            if casa_filtro(&dados(&me.leader)?, f, false) {
+                            if casa_filtro(&*dados(&me.leader)?, f, false) {
                                 cands.push(None);
                             }
                         }
                         t @ ("own_character" | "leader_or_own_character" | "leader_or_character") => {
-                            if t != "own_character" && casa_filtro(&dados(&me.leader)?, f, false) {
+                            if t != "own_character" && casa_filtro(&*dados(&me.leader)?, f, false) {
                                 cands.push(None);
                             }
                             for (j, c) in me.field_chars.iter().enumerate() {
-                                if casa_filtro(&dados(c)?, f, false) {
+                                if casa_filtro(&*dados(c)?, f, false) {
                                     cands.push(Some(j));
                                 }
                             }
@@ -2862,12 +3002,23 @@ impl Executor {
                     visto.push(me.deck.pop().unwrap());
                 }
                 if !visto.is_empty() {
-                    let d = self.proxima("escolha_efeito")?;
-                    if d["qual"].as_str() != Some("reordena") {
-                        return Err(ns("reordena fora de ordem"));
-                    }
-                    let ordem: Vec<usize> = d["ordem"].as_array().ok_or_else(|| ns("reordena sem ordem"))?
-                        .iter().filter_map(|x| x.as_u64().map(|v| v as usize)).collect();
+                    let ordem: Vec<usize> = if let Some(p) = self.politica.clone() {
+                        // a politica tira uma a uma (a primeira tirada vai mais fundo)
+                        let mut resto: Vec<usize> = (0..visto.len()).collect();
+                        let mut o = Vec::new();
+                        while !resto.is_empty() {
+                            let k = p.borrow_mut().escolhe("reordena", resto.len(), false).unwrap_or(0).min(resto.len() - 1);
+                            o.push(resto.remove(k));
+                        }
+                        o
+                    } else {
+                        let d = self.proxima("escolha_efeito")?;
+                        if d["qual"].as_str() != Some("reordena") {
+                            return Err(ns("reordena fora de ordem"));
+                        }
+                        d["ordem"].as_array().ok_or_else(|| ns("reordena sem ordem"))?
+                            .iter().filter_map(|x| x.as_u64().map(|v| v as usize)).collect()
+                    };
                     let mut vis: Vec<bool> = vec![false; visto.len()];
                     if ordem.len() != visto.len() || ordem.iter().any(|&j| j >= vis.len() || std::mem::replace(&mut vis[j], true)) {
                         return Err(ns("reordena invalida"));
@@ -2894,7 +3045,7 @@ impl Executor {
                     "unique_character_names" => {
                         let mut s = std::collections::HashSet::new();
                         for c in &me.field_chars {
-                            s.insert(dados(c)?.name);
+                            s.insert(dados(c)?.name.clone());
                         }
                         s.len() as i64
                     }
@@ -2912,7 +3063,7 @@ impl Executor {
                         "leader_or_character" => {
                             let mut melhor: Option<(Option<usize>, i64)> = None;
                             for (j, c) in me.field_chars.iter().enumerate() {
-                                if !casa_filtro(&dados(c)?, &st["filter_type"], false) {
+                                if !casa_filtro(&*dados(c)?, &st["filter_type"], false) {
                                     continue;
                                 }
                                 let p = poder_meu_turno(c)?;
@@ -2973,7 +3124,8 @@ impl Executor {
                 let mut k = 0;
                 for _ in 0..n.min(me.hand.len() as i64) {
                     self.passivas_da_fila(me, opp)?;
-                    let Some((lado, z, i)) = self.escolha("descarte")? else { continue };
+                    let ops = zona_toda(me.hand.len(), "hand", None);
+                    let Some((lado, z, i)) = self.escolha_entre("descarte", &ops, false)? else { continue };
                     if lado != "eu" || z != "hand" || i >= me.hand.len() {
                         return Err(ns("descarte fora da mao"));
                     }
@@ -3080,7 +3232,7 @@ impl Executor {
             "set_active" => match st["target"].as_str().unwrap_or("self") {
                 "self" => self.fonte_mut(me, fonte)?.rested = false,
                 "leader" => {
-                    if casa_filtro(&dados(&me.leader)?, &st["filter_type"], false) {
+                    if casa_filtro(&*dados(&me.leader)?, &st["filter_type"], false) {
                         me.leader.rested = false;
                     }
                 }
@@ -3149,7 +3301,8 @@ impl Executor {
             "hand_to_deck" => {
                 for _ in 0..n.min(me.hand.len() as i64) {
                     self.passivas_da_fila(me, opp)?;
-                    let Some((lado, z, i)) = self.escolha("descarte")? else { continue };
+                    let ops = zona_toda(me.hand.len(), "hand", None);
+                    let Some((lado, z, i)) = self.escolha_entre("descarte", &ops, false)? else { continue };
                     if lado != "eu" || z != "hand" || i >= me.hand.len() {
                         return Err(ns("hand_to_deck fora da mao"));
                     }
@@ -3186,7 +3339,7 @@ impl Executor {
                     Some("own_field_type_count") => {
                         n = 0;
                         for c in &me.field_chars {
-                            if casa_filtro(&dados(c)?, &st["filter_type"], false) {
+                            if casa_filtro(&*dados(c)?, &st["filter_type"], false) {
                                 n += 1;
                             }
                         }
@@ -3207,7 +3360,8 @@ impl Executor {
                 for _ in 0..descarta {
                     // mao vazia: o diario grava a escolha vazia (None) e a fila a consome
                     self.passivas_da_fila(me, opp)?;
-                    let Some((lado, z, i)) = self.escolha("descarte")? else { continue };
+                    let ops = zona_toda(me.hand.len(), "hand", None);
+                    let Some((lado, z, i)) = self.escolha_entre("descarte", &ops, false)? else { continue };
                     if lado != "eu" || z != "hand" || i >= me.hand.len() {
                         return Err(ns("descarte fora da mao"));
                     }
@@ -3324,7 +3478,8 @@ impl Executor {
         let n = st["count"].as_i64().unwrap_or(1).max(0) as usize;
         let mut pegas: Vec<usize> = Vec::new();
         for _ in 0..n.min(filtradas.len()) {
-            let Some((lado, z, i)) = self.escolha("busca")? else { break };
+            let ops: Vec<Lug> = filtradas.iter().map(|&j| lug("eu", "deck", j)).collect();
+            let Some((lado, z, i)) = self.escolha_entre("busca", &ops, false)? else { break };
             if lado != "eu" || z != "deck" || !filtradas.contains(&i) {
                 return Err(ns("busca escolheu fora das candidatas"));
             }
@@ -3547,7 +3702,8 @@ impl Executor {
     }
 
     fn alvo_no_oponente(&mut self, cands: &[usize]) -> R<usize> {
-        match self.escolha("alvo")? {
+        let ops: Vec<Lug> = cands.iter().map(|&i| lug("oponente", "field_chars", i)).collect();
+        match self.escolha_entre("alvo", &ops, false)? {
             Some((l, z, i)) if l == "oponente" && z == "field_chars" && cands.contains(&i) => Ok(i),
             outro => Err(ns(&format!("alvo fora dos candidatos: {outro:?}"))),
         }
@@ -3574,7 +3730,27 @@ impl Executor {
                 cands.push(i);
             }
         }
-        if orcamento {
+        if orcamento && self.politica.is_some() {
+            // a politica monta a combinacao uma carta por vez, dentro do orcamento
+            let (tp, tc) = (st["total_power_lte"].as_i64(), st["total_cost_lte"].as_i64());
+            let (mut sp, mut sc) = (0i64, 0i64);
+            let mut combo = Vec::new();
+            while combo.len() < n {
+                let mut ops = Vec::new();
+                for &j in &cands {
+                    let i = dados(&opp.field_chars[j])?;
+                    if !combo.contains(&j) && tp.map_or(true, |l| sp + i.power <= l) && tc.map_or(true, |l| sc + i.cost <= l) {
+                        ops.push(lug("oponente", "field_chars", j));
+                    }
+                }
+                let Some((_, _, j)) = self.escolha_entre("orcamento", &ops, true)? else { break };
+                let i = dados(&opp.field_chars[j])?;
+                sp += i.power;
+                sc += i.cost;
+                combo.push(j);
+            }
+            cands = combo;
+        } else if orcamento {
             // a combinacao que cabe no orcamento (heuristica do Python, no diario)
             self.passivas_da_fila(me, opp)?;
             let d = self.proxima("escolha_efeito")?;
@@ -3627,6 +3803,7 @@ impl Executor {
             // `ee_target = EffectExecutor(owner, me)`: [On K.O.] do alvo + reativos de KO
             let resto: Vec<String> = cands.iter().map(|&j| opp.field_chars[j].code.clone()).collect();
             let mut ee = Executor::novo(std::mem::take(&mut self.fila));
+            ee.politica = self.politica.clone();
             ee.inst = 7700 + self.usados.len() as u32;
             let r = ee.executa(opp, me, &alvo, "on_ko")
                 .and_then(|_| ee.dispara_dano_ou_ko(opp, me, Some(&alvo)))
@@ -3787,19 +3964,30 @@ impl Executor {
         if alvos.is_empty() {
             return Ok(());
         }
-        let d = self.proxima("escolha_efeito")?;
-        if d["qual"].as_str() != Some("give_don") {
-            return Err(ns("decisao de give_don fora de ordem"));
-        }
-        let x = match d["carta"].as_array().map(|a| (a[0].as_str(), a[1].as_str(), a[2].as_u64())) {
-            Some((Some("eu"), Some("field_chars"), Some(i))) => Some(i as usize),
-            Some((Some("eu"), Some("leader"), _)) => None,
-            _ => return Err(ns("give_don sem alvo valido")),
+        let count = st["count"].as_i64().unwrap_or(1);
+        let (x, t) = if self.politica.is_some() {
+            let t = if st["rested"].as_bool().unwrap_or(false) {
+                count.min(me.don_rested)
+            } else {
+                let r = count.min(me.don_rested);
+                r + (count - r).max(0).min(me.don_available)
+            };
+            (self.alvo_meu_q("give_don", &alvos)?, t)
+        } else {
+            let d = self.proxima("escolha_efeito")?;
+            if d["qual"].as_str() != Some("give_don") {
+                return Err(ns("decisao de give_don fora de ordem"));
+            }
+            let x = match d["carta"].as_array().map(|a| (a[0].as_str(), a[1].as_str(), a[2].as_u64())) {
+                Some((Some("eu"), Some("field_chars"), Some(i))) => Some(i as usize),
+                Some((Some("eu"), Some("leader"), _)) => None,
+                _ => return Err(ns("give_don sem alvo valido")),
+            };
+            (x, d["qtd"].as_i64().unwrap_or(0))
         };
         if !alvos.contains(&x) {
             return Err(ns("give_don fora dos alvos"));
         }
-        let t = d["qtd"].as_i64().unwrap_or(0);
         if st["rested"].as_bool().unwrap_or(false) {
             if t > me.don_rested {
                 return Err(ns("give_don maior que o DON restado"));
@@ -3821,6 +4009,9 @@ impl Executor {
     }
 
     fn veredito(&mut self, qual: &str) -> R<bool> {
+        if let Some(p) = &self.politica {
+            return Ok(p.borrow_mut().veredito(qual));
+        }
         let d = self.proxima("veredito_efeito")?;
         if d["qual"].as_str() != Some(qual) {
             return Err(ns(&format!("veredito fora de ordem: esperava {qual}, veio {}", d["qual"])));
@@ -3830,7 +4021,8 @@ impl Executor {
 
     /// Campo cheio dentro de efeito: quem sai e decisao (fila `sai_campo`).
     fn sai_do_campo(&mut self, me: &mut Jogador) -> R<()> {
-        match self.escolha("sai_campo")? {
+        let ops = zona_toda(me.field_chars.len(), "field_chars", None);
+        match self.escolha_entre("sai_campo", &ops, true)? {
             None => Ok(()),
             Some((l, z, i)) if l == "eu" && z == "field_chars" && i < me.field_chars.len() => {
                 crate::acoes::tira_do_campo_para_lixo(me, i);
@@ -3903,7 +4095,8 @@ impl Executor {
                 break;
             }
             self.passivas_da_fila(me, opp)?;
-            let k = match self.escolha("do_lixo")? {
+            let ops: Vec<Lug> = pool.iter().map(|&j| lug("eu", "trash", j)).collect();
+            let k = match self.escolha_entre("do_lixo", &ops, false)? {
                 Some((l, z, i)) if l == "eu" && z == "trash" && pool.contains(&i) => i,
                 outro => return Err(ns(&format!("do_lixo inesperado: {outro:?}"))),
             };
@@ -4047,7 +4240,8 @@ impl Executor {
             }
             // escolhe_carta_para_jogar -> _q_escolhe_carta('jogar_gratis')
             self.passivas_da_fila(me, opp)?;
-            let (z, k) = match self.escolha("jogar_gratis")? {
+            let ops: Vec<Lug> = pool.iter().map(|(z, k)| lug("eu", z, *k)).collect();
+            let (z, k) = match self.escolha_entre("jogar_gratis", &ops, false)? {
                 Some((l, z, i)) if l == "eu" && pool.contains(&(z.clone(), i)) => (z, i),
                 outro => return Err(ns(&format!("jogar_gratis inesperado: {outro:?}"))),
             };
@@ -4085,9 +4279,26 @@ impl Executor {
         Ok(())
     }
 
+    /// `c is card`: indice da fonte no campo (pelo lugar; senao, pela igualdade de estado)
+    fn idx_fonte(&self, me: &Jogador, fonte: &Carta) -> Option<usize> {
+        match &self.lugar_fonte {
+            Some((z, i)) if z == "field_chars" && me.field_chars.get(*i).map(|c| &c.code) == Some(&fonte.code) => Some(*i),
+            Some((z, _)) if z != "field_chars" => None,
+            _ => {
+                let fv = serde_json::to_value(fonte).ok();
+                me.field_chars.iter().position(|c| serde_json::to_value(c).ok() == fv)
+            }
+        }
+    }
+
     /// Alvo do proprio lado (lider = None)
     fn alvo_meu(&mut self, cands: &[Option<usize>]) -> R<Option<usize>> {
-        let x = match self.escolha("alvo")? {
+        self.alvo_meu_q("alvo", cands)
+    }
+
+    fn alvo_meu_q(&mut self, qual: &str, cands: &[Option<usize>]) -> R<Option<usize>> {
+        let ops: Vec<Lug> = cands.iter().map(|c| match c { Some(i) => lug("eu", "field_chars", *i), None => lug("eu", "leader", 0) }).collect();
+        let x = match self.escolha_entre(qual, &ops, false)? {
             Some((l, z, i)) if l == "eu" && z == "field_chars" => Some(i),
             Some((l, z, _)) if l == "eu" && z == "leader" => None,
             outro => return Err(ns(&format!("alvo inesperado: {outro:?}"))),
@@ -4196,7 +4407,8 @@ impl Executor {
                 }
                 for _ in 0..n.min(cands.len()) {
                     self.passivas_da_fila(me, opp)?;
-                    let e = match self.escolha("alvo")? {
+                    let ops: Vec<Lug> = cands.iter().map(|c| match c { Some(i) => lug("oponente", "field_chars", *i), None => lug("oponente", "leader", 0) }).collect();
+                    let e = match self.escolha_entre("alvo", &ops, false)? {
                         Some((l, z, i)) if l == "oponente" && z == "field_chars" => Some(i),
                         Some((l, z, _)) if l == "oponente" && z == "leader" => None,
                         outro => return Err(ns(&format!("alvo inesperado: {outro:?}"))),

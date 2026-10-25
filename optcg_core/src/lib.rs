@@ -7,6 +7,7 @@ pub mod acoes;
 pub mod cartas;
 pub mod efeitos;
 pub mod estado;
+pub mod jogo;
 pub mod legais;
 pub mod turno;
 
@@ -34,7 +35,7 @@ fn carrega_cartas(tabela_json: &str) -> PyResult<usize> {
 fn inicio_de_turno(estado_json: &str, global_turn: i64, decisoes_json: &str) -> PyResult<(String, String)> {
     let mut e = estado::Estado::de_json(estado_json).map_err(erro)?;
     let fila: Vec<serde_json::Value> = serde_json::from_str(decisoes_json).map_err(erro)?;
-    match turno::inicio_de_turno(&mut e, global_turn, fila.into()) {
+    match turno::inicio_de_turno(&mut e, global_turn, fila.into(), None) {
         Ok(()) => Ok(("ok".into(), e.para_json().map_err(erro)?)),
         Err(acoes::Resultado::NaoSuportado(m)) => Ok(("nao_suportado".into(), m)),
         Err(_) => Ok(("nao_suportado".into(), "resultado inesperado".into())),
@@ -46,7 +47,7 @@ fn inicio_de_turno(estado_json: &str, global_turn: i64, decisoes_json: &str) -> 
 fn fim_de_turno(estado_json: &str, decisoes_json: &str) -> PyResult<(String, String)> {
     let mut e = estado::Estado::de_json(estado_json).map_err(erro)?;
     let fila: Vec<serde_json::Value> = serde_json::from_str(decisoes_json).map_err(erro)?;
-    match turno::fim_de_turno(&mut e, fila.into()) {
+    match turno::fim_de_turno(&mut e, fila.into(), None) {
         Ok(()) => Ok(("ok".into(), e.para_json().map_err(erro)?)),
         Err(acoes::Resultado::NaoSuportado(m)) => Ok(("nao_suportado".into(), m)),
         Err(_) => Ok(("nao_suportado".into(), "resultado inesperado".into())),
@@ -93,6 +94,30 @@ fn jogadas_legais(estado_json: &str) -> PyResult<(String, String)> {
     }
 }
 
+/// N partidas inteiras so no nucleo (politica aleatoria) a partir do estado:
+/// resumo JSON com vitorias, jogadas, casos fora do nucleo e o tempo gasto.
+#[pyfunction]
+fn simula_partidas(estado_json: &str, global_turn: i64, n: u32, semente: u64, max_turnos: u32) -> PyResult<String> {
+    let e = estado::Estado::de_json(estado_json).map_err(erro)?;
+    let t0 = std::time::Instant::now();
+    let fins = jogo::simula_varias(&e, global_turn, n, semente, max_turnos);
+    let seg = t0.elapsed().as_secs_f64();
+    let mut ns: std::collections::BTreeMap<String, u32> = Default::default();
+    let (mut v0, mut v1, mut emp, mut jog, mut tur) = (0, 0, 0, 0u64, 0u64);
+    for f in &fins {
+        jog += f.jogadas as u64;
+        tur += f.turnos as u64;
+        match (&f.nao_suportado, f.vencedor) {
+            (Some(m), _) => *ns.entry(m.clone()).or_default() += 1,
+            (None, Some(0)) => v0 += 1,
+            (None, Some(_)) => v1 += 1,
+            (None, None) => emp += 1,
+        }
+    }
+    Ok(serde_json::json!({"partidas": n, "vitorias_ativo": v0, "vitorias_outro": v1, "limite": emp,
+        "nao_suportado": ns, "jogadas": jog, "turnos": tur, "segundos": seg}).to_string())
+}
+
 #[pymodule]
 fn optcg_core(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_function(wrap_pyfunction!(versao, m)?)?;
@@ -102,5 +127,6 @@ fn optcg_core(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_function(wrap_pyfunction!(aplica_jogada, m)?)?;
     m.add_function(wrap_pyfunction!(ida_e_volta, m)?)?;
     m.add_function(wrap_pyfunction!(jogadas_legais, m)?)?;
+    m.add_function(wrap_pyfunction!(simula_partidas, m)?)?;
     Ok(())
 }

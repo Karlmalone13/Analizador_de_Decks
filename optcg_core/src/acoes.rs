@@ -8,13 +8,16 @@
 //! prontas em `Decisoes` -- no nucleo final sao pontos de decisao da busca.
 //! O que depende de efeito ainda fora do nucleo devolve `NaoSuportado`.
 use crate::cartas::{info, InfoCarta};
-use crate::efeitos::{aplica_passivas_keyword, custo_de_jogar, lado_tem_acao, regra_de_custo_casa, tem_reativo, Executor};
+use crate::efeitos::{aplica_passivas_keyword, custo_de_jogar, regra_de_custo_casa, tem_reativo, Executor, PoliticaRef};
 use crate::estado::{Carta, Estado, Jogador};
 use serde::Deserialize;
 use serde_json::Value;
 
-#[derive(Debug, Default, Deserialize)]
+#[derive(Default, Deserialize)]
 pub struct Decisoes {
+    /// Some = simulacao: estas decisoes (e as de dentro dos efeitos) sao da politica
+    #[serde(skip)]
+    pub politica: Option<PoliticaRef>,
     pub don_ataque: Option<i64>,
     /// "nenhum" = decidiu nao bloquear; [zona, indice] = bloqueador; ausente = sem registro
     pub bloqueio: Option<Value>,
@@ -36,7 +39,7 @@ fn ns(m: &str) -> Resultado {
     Resultado::NaoSuportado(m.to_string())
 }
 
-fn dados(c: &Carta) -> Result<InfoCarta, Resultado> {
+fn dados(c: &Carta) -> Result<std::sync::Arc<InfoCarta>, Resultado> {
     info(&c.code).ok_or_else(|| ns(&format!("carta sem dados: {}", c.code)))
 }
 
@@ -130,7 +133,13 @@ fn jogar(e: &mut Estado, acao: &Value, d: &Decisoes) -> Result<Resultado, Result
     match inf.card_type.as_str() {
         "CHARACTER" => {
             if p.field_chars.len() >= 5 {
-                let (zs, is) = d.campo_cheio.clone().ok_or_else(|| ns("campo cheio sem decisao"))?;
+                let (zs, is) = match &d.politica {
+                    Some(pol) => {
+                        let k = pol.borrow_mut().escolhe("sai_campo", p.field_chars.len(), false).unwrap_or(0);
+                        ("field_chars".to_string(), k.min(p.field_chars.len() - 1))
+                    }
+                    None => d.campo_cheio.clone().ok_or_else(|| ns("campo cheio sem decisao"))?,
+                };
                 if zs != "field_chars" {
                     return Err(ns("campo cheio: lugar inesperado"));
                 }
@@ -145,7 +154,7 @@ fn jogar(e: &mut Estado, acao: &Value, d: &Decisoes) -> Result<Resultado, Result
             carta.rush_character_only_this_turn =
                 is_rush_character(carta, &inf) && !is_rush(carta, &inf);
             fonte = p.field_chars.last().unwrap().clone();
-            let mut ex = Executor::novo(d.efeito.iter().cloned().collect());
+            let mut ex = executor(d, d.efeito.iter().cloned().collect());
             ex.dispara_jogou_personagem(&mut e.ativo, &mut e.oponente, &fonte, false)?;
             fila_resto = Some(ex.fila);
         }
@@ -163,7 +172,7 @@ fn jogar(e: &mut Estado, acao: &Value, d: &Decisoes) -> Result<Resultado, Result
         _ => return Err(ns("tipo de carta inesperado")),
     }
     // efeito ao jogar: on_play e depois main (os dois disparam)
-    let mut ex = Executor::novo(fila_resto.unwrap_or_else(|| d.efeito.iter().cloned().collect()));
+    let mut ex = executor(d, fila_resto.unwrap_or_else(|| d.efeito.iter().cloned().collect()));
     let (p, opp) = (&mut e.ativo, &mut e.oponente);
     if inf.card_type == "CHARACTER" {
         ex.lugar_fonte = Some(("field_chars".to_string(), p.field_chars.len() - 1));
@@ -201,7 +210,8 @@ fn atacar(e: &mut Estado, acao: &Value, d: &Decisoes) -> Result<Resultado, Resul
         }
     }
     // DON do ataque (decisao escondida na regra no motor Python)
-    let don = d.don_ataque.ok_or_else(|| ns("ataque sem registro de DON"))?;
+    // na simulacao o DON vem antes, pelas jogadas `attach_don`
+    let don = if d.politica.is_some() { 0 } else { d.don_ataque.ok_or_else(|| ns("ataque sem registro de DON"))? };
     {
         let atk = if za == "leader" { &mut p.leader } else { &mut p.field_chars[ia] };
         if don > 0 {
@@ -237,7 +247,7 @@ fn atacar(e: &mut Estado, acao: &Value, d: &Decisoes) -> Result<Resultado, Resul
     }
     // GATILHOS do ataque, na ordem do Python. Efeito que tira o atacante/alvo do
     // lugar ainda nao existe nesta onda (os indices continuam validos).
-    let mut ex = Executor::novo(d.efeito.iter().cloned().collect());
+    let mut ex = executor(d, d.efeito.iter().cloned().collect());
     ex.inst = 1; // `ee` do ataque (lado do atacante)
     let atk_clone = |e: &Estado| if za == "leader" { e.ativo.leader.clone() } else { e.ativo.field_chars[ia].clone() };
     ex.lugar_fonte = Some((za.clone(), ia));
@@ -283,7 +293,36 @@ fn atacar(e: &mut Estado, acao: &Value, d: &Decisoes) -> Result<Resultado, Resul
     let atk = if za == "leader" { &p.leader } else { &p.field_chars[ia] };
     let banish = atk.has_banish;
     let unblockable = atk.has_unblockable || atk.unblockable_this_turn;
-    let blv = d.bloqueio.clone().ok_or_else(|| ns("ataque sem registro de bloqueio"))?;
+    let blv = match &d.politica {
+        Some(pol) => {
+            // `blockers_active()` do defensor
+            let lock = opp.blocker_lock_battle.clone();
+            let mut bs = Vec::new();
+            if !unblockable {
+                for (j, c) in opp.field_chars.iter().enumerate() {
+                    let i = dados(c)?;
+                    if !is_blocker(c, &i) || c.rested || !c.cannot_be_rested_until.is_empty() || !c.cannot_block_until.is_empty() {
+                        continue;
+                    }
+                    if let Some(l) = lock.as_object() {
+                        let (pl, pg, cl) = (l.get("power_lte").and_then(|x| x.as_i64()), l.get("power_gte").and_then(|x| x.as_i64()),
+                                            l.get("cost_lte").and_then(|x| x.as_i64()));
+                        if (pl.is_none() && pg.is_none() && cl.is_none())
+                            || pl.map_or(false, |x| i.power <= x) || pg.map_or(false, |x| i.power >= x) || cl.map_or(false, |x| i.cost <= x)
+                        {
+                            continue;
+                        }
+                    }
+                    bs.push(j);
+                }
+            }
+            match pol.borrow_mut().escolhe("bloqueio", bs.len(), true) {
+                Some(k) if k < bs.len() => serde_json::json!(["field_chars", bs[k]]),
+                _ => Value::from("nenhum"),
+            }
+        }
+        None => d.bloqueio.clone().ok_or_else(|| ns("ataque sem registro de bloqueio"))?,
+    };
     opp.blocker_lock_battle = Value::Null;
     let bl = if blv.as_str() == Some("nenhum") { None } else { lugar(&blv) };
     if let Some((zb, ib)) = bl {
@@ -325,9 +364,29 @@ fn atacar(e: &mut Estado, acao: &Value, d: &Decisoes) -> Result<Resultado, Resul
         v
     };
     // COUNTER de personagens (cartas pelo lugar na mao, antes de sair)
-    if !d.counter_cartas.is_empty() {
+    let counters_pol: Vec<(String, usize)> = match &d.politica {
+        Some(pol) => {
+            // o defensor escolhe uma a uma entre as cartas com [Counter] da mao
+            let mut resto: Vec<usize> = Vec::new();
+            for (j, c) in opp.hand.iter().enumerate() {
+                if dados(c)?.counter > 0 {
+                    resto.push(j);
+                }
+            }
+            let mut out = Vec::new();
+            while let Some(k) = pol.borrow_mut().escolhe("counter", resto.len(), true) {
+                if k >= resto.len() {
+                    break;
+                }
+                out.push(("hand".to_string(), resto.remove(k)));
+            }
+            out
+        }
+        None => d.counter_cartas.clone(),
+    };
+    if !counters_pol.is_empty() {
         let mut idxs: Vec<usize> = Vec::new();
-        for (z, i) in &d.counter_cartas {
+        for (z, i) in &counters_pol {
             if z != "hand" {
                 return Err(ns("counter fora da mao"));
             }
@@ -457,7 +516,7 @@ fn ativar(e: &mut Estado, acao: &Value, d: &Decisoes) -> Result<Resultado, Resul
     };
     src.extras.insert("_am_used_turn".into(), Value::from(turno));
     let fonte = src.clone();
-    let mut ex = Executor::novo(d.efeito.iter().cloned().collect());
+    let mut ex = executor(d, d.efeito.iter().cloned().collect());
     if z != "stage" {
         ex.lugar_fonte = Some((z.clone(), i));
     }
@@ -466,6 +525,13 @@ fn ativar(e: &mut Estado, acao: &Value, d: &Decisoes) -> Result<Resultado, Resul
         return Err(ns("sobrou decisao de efeito na fila"));
     }
     Ok(Resultado::Feito { venceu: false })
+}
+
+/// Executor com a fila do diario (paridade) ou com a politica (simulacao)
+fn executor(d: &Decisoes, fila: std::collections::VecDeque<Value>) -> Executor {
+    let mut ex = Executor::novo(fila);
+    ex.politica = d.politica.clone();
+    ex
 }
 
 pub fn aplica(e: &mut Estado, acao: &Value, d: &Decisoes) -> Resultado {
