@@ -7,6 +7,7 @@ pub mod acoes;
 pub mod cartas;
 pub mod efeitos;
 pub mod estado;
+pub mod legais;
 pub mod turno;
 
 fn erro(x: impl ToString) -> PyErr {
@@ -81,6 +82,17 @@ fn ida_e_volta(estado_json: &str) -> PyResult<String> {
     e.para_json().map_err(erro)
 }
 
+/// Jogadas legais (regras) do jogador ativo: ("ok", lista JSON) ou ("nao_suportado", motivo).
+#[pyfunction]
+fn jogadas_legais(estado_json: &str) -> PyResult<(String, String)> {
+    let e = estado::Estado::de_json(estado_json).map_err(erro)?;
+    match legais::jogadas_legais(&e) {
+        Ok(v) => Ok(("ok".into(), serde_json::to_string(&v).map_err(erro)?)),
+        Err(acoes::Resultado::NaoSuportado(m)) => Ok(("nao_suportado".into(), m)),
+        Err(_) => Ok(("nao_suportado".into(), "resultado inesperado".into())),
+    }
+}
+
 #[pymodule]
 fn optcg_core(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_function(wrap_pyfunction!(versao, m)?)?;
@@ -89,5 +101,6 @@ fn optcg_core(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_function(wrap_pyfunction!(fim_de_turno, m)?)?;
     m.add_function(wrap_pyfunction!(aplica_jogada, m)?)?;
     m.add_function(wrap_pyfunction!(ida_e_volta, m)?)?;
+    m.add_function(wrap_pyfunction!(jogadas_legais, m)?)?;
     Ok(())
 }

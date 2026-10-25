@@ -18,7 +18,7 @@ fn ns(m: &str) -> Resultado {
 
 type R<T> = Result<T, Resultado>;
 
-fn dados(c: &Carta) -> R<InfoCarta> {
+pub(crate) fn dados(c: &Carta) -> R<InfoCarta> {
     info(&c.code).ok_or_else(|| ns(&format!("carta sem dados: {}", c.code)))
 }
 
@@ -49,7 +49,7 @@ fn casa_filtro(i: &InfoCarta, filtro: &Value, incluir_texto: bool) -> bool {
     agulhas.iter().any(|a| campos.iter().any(|c| c.contains(a.as_str())))
 }
 
-fn passos_de(b: &Value) -> impl Iterator<Item = &Value> {
+pub(crate) fn passos_de(b: &Value) -> impl Iterator<Item = &Value> {
     b["steps"].as_array().into_iter().flatten()
 }
 
@@ -124,13 +124,13 @@ fn carta_mut(me: &mut Jogador, i: Option<usize>) -> R<&mut Carta> {
 }
 
 /// `effective_power(your_turn=False)`: sem DON, com o override do turno do oponente
-fn poder_turno_do_outro(c: &Carta) -> R<i64> {
+pub(crate) fn poder_turno_do_outro(c: &Carta) -> R<i64> {
     let base = c.base_power_override.or(c.base_power_override_opp_turn).unwrap_or(dados(c)?.power);
     Ok((base + c.power_buff).max(0))
 }
 
 /// `effective_power(your_turn=True)`
-fn poder_meu_turno(c: &Carta) -> R<i64> {
+pub(crate) fn poder_meu_turno(c: &Carta) -> R<i64> {
     let base = c.base_power_override.unwrap_or(dados(c)?.power);
     Ok((base + c.power_buff + c.don_attached * 1000).max(0))
 }
@@ -1650,7 +1650,7 @@ impl Executor {
     }
 
     /// `_check_conditions` -- so as chaves conhecidas; qualquer outra = fora do nucleo.
-    fn condicoes(&self, conds: &Value, me: &Jogador, opp: &Jogador, fonte: &Carta, gatilho: &str) -> R<bool> {
+    pub(crate) fn condicoes(&self, conds: &Value, me: &Jogador, opp: &Jogador, fonte: &Carta, gatilho: &str) -> R<bool> {
         let Some(m) = conds.as_object() else { return Ok(true) };
         if m.is_empty() {
             return Ok(true);
