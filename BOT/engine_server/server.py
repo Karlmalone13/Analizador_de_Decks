@@ -623,7 +623,7 @@ def _dto_to_gs(player: PlayerDto, turn: int, hide_hidden: bool = False):
     revealed_life), alimentando o OpponentModel e o lethal conservador
     (opp_counter_chunks_for_lethal). E a persistencia ao vivo da memoria de
     reveals (MEMORIA_REVEALS.md, pendencia 1)."""
-    from optcg_engine.decision_engine import GameState, _make_card
+    from optcg_engine.decision_engine import GameState, _make_card, revela_carta, CONHECIDA_OPONENTE
     bridge = _get_bridge()
     cards_db = getattr(bridge, '_cards_db', {})
 
@@ -648,7 +648,7 @@ def _dto_to_gs(player: PlayerDto, turn: int, hide_hidden: bool = False):
             if _match_memory.is_known("opp_hand", d.deckUniqueId):
                 card = _make(d) or _hidden_placeholder(d)
                 if card.code != "UNKNOWN-000":
-                    gs.revealed_to_opponent.add(id(card))
+                    revela_carta(card, CONHECIDA_OPONENTE)
             else:
                 card = _hidden_placeholder(d)
             gs.hand.append(card)
@@ -658,7 +658,7 @@ def _dto_to_gs(player: PlayerDto, turn: int, hide_hidden: bool = False):
             if _match_memory.is_known("opp_life", d.deckUniqueId):
                 card = _make(d) or _hidden_placeholder(d)
                 if card.code != "UNKNOWN-000":
-                    gs.revealed_life.add(id(card))
+                    revela_carta(card, CONHECIDA_OPONENTE)
             else:
                 card = _hidden_placeholder(d)
             gs.life.append(card)

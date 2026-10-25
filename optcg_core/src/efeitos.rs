@@ -1357,10 +1357,6 @@ impl Executor {
                 if (me.trash.len() as i64) < n {
                     return Ok(false);
                 }
-                // o Python guarda `revealed_deck` por id() e so limpa ao ler: carta
-                // que foi revelada no deck, foi ao lixo e volta, reaparece revelada.
-                // O canonico nao carrega esse conjunto escondido.
-                return Err(ns("carta volta do lixo ao deck (revealed_deck por id no Python)"));
                 for _ in 0..n {
                     self.passivas_da_fila(me, opp)?;
                     let i = match self.escolha("sub_escolha")? {
@@ -2918,7 +2914,7 @@ impl Executor {
             }
             "peek_opp_deck_top" => {
                 if let Some(c) = opp.deck.last_mut() {
-                    c.revelada |= 1;
+                    c.revela(crate::estado::CONHECIDA_OPONENTE);
                 }
             }
             "trash_own_life" => {
@@ -3230,7 +3226,7 @@ impl Executor {
         let cost_lte = st["cost_lte"].as_i64().unwrap_or(99);
         let mut filtradas: Vec<usize> = Vec::new();
         for i in ini..me.deck.len() {
-            me.deck[i].revelada |= 1;
+            me.deck[i].revela(crate::estado::CONHECIDA_DONO);
             let ci = dados(&me.deck[i])?;
             let nomes: Vec<String> = st["filter_names"]
                 .as_array()
@@ -3274,7 +3270,7 @@ impl Executor {
             let k = tiradas.iter().position(|(j, _)| *j == i).unwrap();
             let mut c = tiradas.remove(k).1;
             if mostra {
-                c.revelada |= 1 << 2;
+                c.revela(crate::estado::CONHECIDA_OPONENTE);
             }
             me.hand.push(c);
         }

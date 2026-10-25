@@ -65,6 +65,9 @@ fn aplica_jogada(
     let d: acoes::Decisoes = serde_json::from_str(decisoes_json).map_err(erro)?;
     match acoes::aplica(&mut e, &acao, &d) {
         acoes::Resultado::Feito { venceu } => {
+            // `marca_publicas` dos dois lados ao fim de cada jogada (_apply_action)
+            e.ativo.marca_publicas();
+            e.oponente.marca_publicas();
             Ok(("ok".to_string(), e.para_json().map_err(erro)?, venceu))
         }
         acoes::Resultado::NaoSuportado(m) => Ok(("nao_suportado".to_string(), m, false)),

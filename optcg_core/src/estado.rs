@@ -42,11 +42,11 @@ pub struct Carta {
     pub has_blocker: bool,
     pub life_face_up: bool,
     pub rush_character_only_this_turn: bool,
-    /// Revelada ao oponente (bit 0 = revealed_deck, 1 = revealed_life,
-    /// 2 = revealed_to_opponent). Marca DA CARTA: viaja com ela entre zonas.
-    /// No canonico do Python sao listas de LUGARES (ver `estado_canonico.py`).
-    #[serde(skip)]
-    pub revelada: u8,
+    /// `_conhecida` (decision_engine.revela_carta): 1 = o dono viu,
+    /// 2 = o oponente do dono viu, 4 = posicao perdida (deck embaralhado).
+    /// Marca DA CARTA: viaja com ela entre zonas.
+    #[serde(rename = "_conhecida", default, skip_serializing_if = "e_zero")]
+    pub conhecida: u8,
     #[serde(flatten)]
     pub extras: Map<String, Value>,
 }
@@ -75,72 +75,35 @@ pub struct Jogador {
     pub cant_take_life_this_turn: bool,
     pub events_activated_costs_this_turn: Vec<Value>,
     pub pending_play_cost_reductions: Vec<Value>,
-    pub revealed_deck: Vec<(String, usize)>,
-    pub revealed_life: Vec<(String, usize)>,
-    pub revealed_to_opponent: Vec<(String, usize)>,
     pub face_up_life_to_deck: bool,
     pub blocker_lock_battle: serde_json::Value,
     #[serde(flatten)]
     pub extras: Map<String, Value>,
 }
 
-/// Ordem das zonas igual a `estado_canonico._lugares_de_ids`.
-const ZONAS: [&str; 7] = ["leader", "stage", "deck", "hand", "field_chars", "life", "trash"];
+fn e_zero(x: &u8) -> bool {
+    *x == 0
+}
+
+pub const CONHECIDA_DONO: u8 = 1;
+pub const CONHECIDA_OPONENTE: u8 = 2;
+pub const POSICAO_PERDIDA: u8 = 4;
+
+impl Carta {
+    /// `revela_carta(c, quem)`
+    pub fn revela(&mut self, quem: u8) {
+        self.conhecida = (self.conhecida | quem) & !POSICAO_PERDIDA;
+    }
+}
 
 impl Jogador {
-    fn zona_mut(&mut self, z: &str) -> Vec<&mut Carta> {
-        match z {
-            "leader" => vec![&mut self.leader],
-            "stage" => self.stage.iter_mut().collect(),
-            "deck" => self.deck.iter_mut().collect(),
-            "hand" => self.hand.iter_mut().collect(),
-            "field_chars" => self.field_chars.iter_mut().collect(),
-            "life" => self.life.iter_mut().collect(),
-            "trash" => self.trash.iter_mut().collect(),
-            _ => vec![],
+    /// `marca_publicas(gs)`: campo, lixo, lider e stage -> os dois lados conhecem
+    pub fn marca_publicas(&mut self) {
+        let cartas = self.field_chars.iter_mut().chain(self.trash.iter_mut())
+            .chain(std::iter::once(&mut self.leader)).chain(self.stage.iter_mut());
+        for c in cartas {
+            c.conhecida |= 3;
         }
-    }
-
-    /// Lugares (do canonico) -> marca nas cartas. Chamar depois de ler.
-    pub fn marca_reveladas(&mut self) {
-        let listas = [
-            (0u8, self.revealed_deck.clone()),
-            (1u8, self.revealed_life.clone()),
-            (2u8, self.revealed_to_opponent.clone()),
-        ];
-        for (bit, lugares) in listas {
-            for (z, i) in lugares {
-                if let Some(c) = self.zona_mut(&z).into_iter().nth(i) {
-                    c.revelada |= 1 << bit;
-                }
-            }
-        }
-    }
-
-    /// Marca nas cartas -> lugares (na ordem do canonico). Chamar antes de gravar.
-    /// Cada marca so vale na zona a que se refere (bit 0 deck, 1 vida, 2 mao):
-    /// carta que saiu da zona perde a marca (mesma regra do canonico do Python).
-    pub fn recalcula_reveladas(&mut self) {
-        const ZONA_DO_BIT: [&str; 3] = ["deck", "life", "hand"];
-        let mut out: [Vec<(String, usize)>; 3] = [vec![], vec![], vec![]];
-        for z in ZONAS {
-            for (i, c) in self.zona_mut(z).into_iter().enumerate() {
-                for (bit, lista) in out.iter_mut().enumerate() {
-                    if c.revelada & (1 << bit) == 0 {
-                        continue;
-                    }
-                    if ZONA_DO_BIT[bit] == z {
-                        lista.push((z.to_string(), i));
-                    } else {
-                        c.revelada &= !(1 << bit);
-                    }
-                }
-            }
-        }
-        let [d, l, o] = out;
-        self.revealed_deck = d;
-        self.revealed_life = l;
-        self.revealed_to_opponent = o;
     }
 }
 
@@ -152,15 +115,10 @@ pub struct Estado {
 
 impl Estado {
     pub fn de_json(s: &str) -> Result<Estado, serde_json::Error> {
-        let mut e: Estado = serde_json::from_str(s)?;
-        e.ativo.marca_reveladas();
-        e.oponente.marca_reveladas();
-        Ok(e)
+        serde_json::from_str(s)
     }
 
     pub fn para_json(&mut self) -> Result<String, serde_json::Error> {
-        self.ativo.recalcula_reveladas();
-        self.oponente.recalcula_reveladas();
         serde_json::to_string(self)
     }
 }

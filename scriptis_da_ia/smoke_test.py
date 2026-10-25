@@ -319,7 +319,7 @@ opp2.life = []
 opp2.hand = [mk('B1', 'Blank 1'), mk('B2', 'Blank 2'), mk('B3', 'Blank 3')]
 blank_hidden_result = DecisionEngine(me2, opp2).analyzer.can_lethal_this_turn()
 
-opp.revealed_to_opponent = {id(c) for c in opp.hand}
+for c in opp.hand: c._conhecida = 2
 known_counter_result = DecisionEngine(me, opp).analyzer.can_lethal_this_turn()
 
 check('can_lethal_this_turn ignora counters reais ocultos e usa tamanho da mao',

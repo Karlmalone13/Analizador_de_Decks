@@ -1287,7 +1287,7 @@ def _cega_copia(p2, o2, modelo_op) -> None:
         except Exception:
             pass
     try:
-        conhecidas = {id(c) for c in p2.known_life_cards()}
+        conhecidas = {id(c) for c in p2.known_life_cards(CONHECIDA_DONO)}
         slots = [j for j, c in enumerate(p2.life) if id(c) not in conhecidas]
         pool = list(p2.deck) + [p2.life[j] for j in slots]
         random.shuffle(pool)
@@ -3227,6 +3227,57 @@ def actor_step_numeric_filter(actor_code: str, in_combat: bool):
     return achado
 
 
+# ── CARTA CONHECIDA (bits em `card._conhecida`) ──────────────────────────
+# Pedido do usuario (25/10/2026): carta revelada CONTINUA conhecida quando
+# muda de zona -- o motor tem que saber se ela esta em campo, mao, lixo, deck
+# (topo ou fundo, pelo efeito que a moveu) ou vida. Substitui os 3 conjuntos
+# de id() do GameState (revealed_to_opponent/revealed_life/revealed_deck),
+# que (1) esqueciam a carta ao sair da zona, (2) misturavam QUEM viu (a busca
+# no proprio deck caia no mesmo conjunto que o reveal ao oponente) e (3) nao
+# sobreviviam ao clone (guardavam o id() da carta ORIGINAL). Marca na propria
+# carta: viaja com ela e e copiada no `Card.__deepcopy__`.
+CONHECIDA_DONO = 1        # o dono viu (look/peek no proprio deck ou vida)
+CONHECIDA_OPONENTE = 2    # o oponente do dono viu (reveal, peek, campo, lixo)
+POSICAO_PERDIDA = 4       # conhecida no deck, mas o deck foi embaralhado depois
+
+
+def revela_carta(c, quem: int) -> None:
+    """`quem` passa a conhecer a carta, com a posicao em que ela esta agora."""
+    c._conhecida = (getattr(c, '_conhecida', 0) | quem) & ~POSICAO_PERDIDA
+
+
+def revela_no_deck(deck, i: int, quem: int):
+    """`revela_carta` numa carta que ainda esta no deck. No `_SimDeck` da
+    simulacao a carta e o objeto REAL (copia so no pop): copia antes de
+    marcar, senao a simulacao marcaria a carta da partida de verdade."""
+    c = deck[i]
+    if isinstance(deck, _SimDeck):
+        c = _deepcopy(c)
+        list.__setitem__(deck, i, c)
+    revela_carta(c, quem)
+    return c
+
+
+def embaralha_deck(deck, rnd=None) -> None:
+    """Embaralha: as cartas conhecidas do deck seguem conhecidas ("esta no
+    deck"), mas a posicao (topo/fundo) deixa de ser sabida."""
+    (rnd or random).shuffle(deck)
+    for i, c in enumerate(deck):
+        if getattr(c, '_conhecida', 0):
+            if isinstance(deck, _SimDeck):
+                c = _deepcopy(c)
+                list.__setitem__(deck, i, c)
+            c._conhecida |= POSICAO_PERDIDA
+
+
+def marca_publicas(gs) -> None:
+    """Campo, lixo, lider e stage sao publicos: os dois lados conhecem a
+    carta, e continuam conhecendo se ela voltar pra mao/deck/vida."""
+    for c in list(gs.field_chars) + list(gs.trash) + [gs.leader, gs.field_stage]:
+        if c is not None and getattr(c, '_conhecida', 0) & 3 != 3:
+            c._conhecida = getattr(c, '_conhecida', 0) | 3
+
+
 @dataclass
 class GameState:
     leader: Card
@@ -3322,7 +3373,6 @@ class GameState:
     # nao revela). Removido do set quando a carta sai da mao (jogada,
     # trashada, etc) -- usado pelo OpponentModel para saber quais cartas
     # specificas o oponente certamente tem, em vez de sortear via Monte Carlo.
-    revealed_to_opponent: set = field(default_factory=set)
     # Memoria de INFORMACAO REVELADA (mesma ideia de revealed_to_opponent,
     # estendida pra vida e deck). ids (id(card)) de cartas cuja IDENTIDADE ja
     # foi vista por um efeito de "olhar/revelar" e que continuam na zona --
@@ -3334,8 +3384,6 @@ class GameState:
     #                     life_top_revealed_cost, etc.)
     #   revealed_deck  -> topo do deck visto por SEARCH (look at top N) ou peek
     #                     (peek_opp_deck_top da Pudding, reveal_opp_deck_top...)
-    revealed_life: set = field(default_factory=set)
-    revealed_deck: set = field(default_factory=set)
     # Trava TRANSITORIA de Blocker, escopo de UMA UNICA batalha (a que esta
     # sendo resolvida agora). Setada por lock_opp_blocker_battle (efeito
     # [When Attacking] do atacante) e LIMPA pelo proprio _resolve_battle
@@ -3456,9 +3504,6 @@ class GameState:
             novo.eval_weights = self.eval_weights
         if hasattr(self, 'use_eval_v2'):
             novo.use_eval_v2 = self.use_eval_v2
-        novo.revealed_to_opponent = set(self.revealed_to_opponent)
-        novo.revealed_life = set(self.revealed_life)
-        novo.revealed_deck = set(self.revealed_deck)
         novo.blocker_lock_battle = _dc(self.blocker_lock_battle, memo)
         novo.end_of_turn_queue = _dc(self.end_of_turn_queue, memo)
         novo.pending_play_cost_reductions = _dc(self.pending_play_cost_reductions, memo)
@@ -3466,7 +3511,7 @@ class GameState:
         novo.events_activated_costs_this_turn = list(self.events_activated_costs_this_turn)
         return novo
 
-    def known_hand_cards(self) -> List['Card']:
+    def known_hand_cards(self, quem: int = CONHECIDA_OPONENTE) -> List['Card']:
         """
         Subconjunto de `self.hand` que é conhecido pelo oponente (cartas
         reveladas por efeito de busca e que ainda estão na mão). Filtra de
@@ -3476,28 +3521,20 @@ class GameState:
         arriscar esquecer algum desses pontos e deixar um id() órfão
         apontando para memória já realocada para outra carta.
         """
-        ids_na_mao = {id(c) for c in self.hand}
-        # remove ids que não correspondem a nenhuma carta atual na mão
-        # (carta já saiu -- ex: jogada, trashada). Faz isso aqui (lazy)
-        # em vez de em cada ponto de remoção da mão.
-        self.revealed_to_opponent &= ids_na_mao
-        return [c for c in self.hand if id(c) in self.revealed_to_opponent]
+        return [c for c in self.hand if getattr(c, '_conhecida', 0) & quem]
 
-    def known_life_cards(self) -> List['Card']:
+    def known_life_cards(self, quem: int = CONHECIDA_OPONENTE) -> List['Card']:
         """Cartas da Life cuja identidade ja foi revelada por efeito e que
         AINDA estao na Life. Mesma limpeza lazy de known_hand_cards -- quando
         a carta sai da Life (dano, movida pro deck/mao), o id orfao some."""
-        ids_na_vida = {id(c) for c in self.life}
-        self.revealed_life &= ids_na_vida
-        return [c for c in self.life if id(c) in self.revealed_life]
+        return [c for c in self.life if getattr(c, '_conhecida', 0) & quem]
 
-    def known_deck_cards(self) -> List['Card']:
+    def known_deck_cards(self, quem: int = CONHECIDA_OPONENTE) -> List['Card']:
         """Cartas do deck cuja identidade ja foi vista (search/peek do topo) e
         que AINDA estao no deck. Limpeza lazy identica -- a carta buscada pra
         mao ou movida pra outra zona deixa de contar automaticamente."""
-        ids_no_deck = {id(c) for c in self.deck}
-        self.revealed_deck &= ids_no_deck
-        return [c for c in self.deck if id(c) in self.revealed_deck]
+        return [c for c in self.deck
+                if getattr(c, '_conhecida', 0) & quem and not c._conhecida & POSICAO_PERDIDA]
 
     def life_count(self) -> int:
         return len(self.life)
@@ -4271,7 +4308,7 @@ def per_count_source_n(source: str, me: 'GameState', holder=None,
         # OP15-119). Zero se a Life estiver vazia.
         n = me.life[-1].cost if me.life else 0
         if me.life and not projecao:  # memoria: topo da propria Life conhecido
-            me.revealed_life.add(id(me.life[-1]))
+            revela_carta(me.life[-1], CONHECIDA_DONO)
         return n
     return 0
 
@@ -7595,7 +7632,7 @@ class EffectExecutor:
                 for target in chosen:
                     remove_by_identity(self.me.trash, target)
                     self.me.deck.append(target)
-                random.shuffle(self.me.deck)
+                embaralha_deck(self.me.deck)
                 self._cost_logs.append(f'custo: devolveu {count} do trash ao deck')
             elif ctype == 'don_minus':
                 count = cost.get('count', 1)
@@ -8476,12 +8513,11 @@ class EffectExecutor:
                         break
 
             look = min(look_count, len(me.deck))
+            # Memoria: o buscador VE todas as `look` cartas do topo -- e
+            # segue sabendo delas em qualquer zona (marca da carta).
+            for _k in range(len(me.deck) - look, len(me.deck)):
+                revela_no_deck(me.deck, _k, CONHECIDA_DONO)
             candidates = me.deck[-look:]
-            # Memoria: o buscador VE todas as `look` cartas do topo. As que
-            # sairem do deck (pra mao/trash) somem via limpeza lazy em
-            # known_deck_cards; as que ficarem seguem conhecidas.
-            for _seen in candidates:
-                me.revealed_deck.add(id(_seen))
 
             exclude = step.get('exclude', [])
             cost_lte = self._resolve_cost_lte(step, default=99)
@@ -8548,7 +8584,7 @@ class EffectExecutor:
                 c = pop_by_identity(me.deck, c)
                 me.hand.append(c)
                 if step.get('revealed_to_opponent') is True:
-                    me.revealed_to_opponent.add(id(c))
+                    revela_carta(c, CONHECIDA_OPONENTE)
 
             # Resto permanece no deck (será tratado pelo próximo step)
             me.searchers_used += 1
@@ -8574,12 +8610,11 @@ class EffectExecutor:
                         look_count = s.get('count', 5)
                         break
             look = min(look_count, len(me.deck))
+            # Memoria: o buscador VE todas as `look` cartas do topo -- e
+            # segue sabendo delas em qualquer zona (marca da carta).
+            for _k in range(len(me.deck) - look, len(me.deck)):
+                revela_no_deck(me.deck, _k, CONHECIDA_DONO)
             candidates = me.deck[-look:]
-            # Memoria: o buscador VE todas as `look` cartas do topo. As que
-            # sairem do deck (pra mao/trash) somem via limpeza lazy em
-            # known_deck_cards; as que ficarem seguem conhecidas.
-            for _seen in candidates:
-                me.revealed_deck.add(id(_seen))
             count = step.get('count', 1)
             trashed = []
             for _ in range(min(count, len(candidates))):
@@ -8621,16 +8656,16 @@ class EffectExecutor:
                 best = pop_by_identity(me.deck, best)
                 me.hand.append(best)
                 if step.get('revealed_to_opponent'):
-                    me.revealed_to_opponent.add(id(best))
+                    revela_carta(best, CONHECIDA_OPONENTE)
                 taken.append(best.name[:15])
-            random.shuffle(me.deck)
+            embaralha_deck(me.deck)
             return f'buscou no deck: {", ".join(taken)}' if taken else 'busca sem alvo'
 
         if action == 'reveal_opp_hand':
             count = min(step.get('count', 1), len(opp.hand))
             revealed = sorted(opp.hand, key=self._trash_value, reverse=True)[:count]
             for target in revealed:
-                opp.revealed_to_opponent.add(id(target))
+                revela_carta(target, CONHECIDA_OPONENTE)
             if (step.get('if_event_opp_life_to_deck_bottom')
                     and any(c.card_type == 'EVENT' for c in revealed)
                     and opp.life):
@@ -8658,7 +8693,7 @@ class EffectExecutor:
             # Efeito apenas informacional: nao move nem reordena a carta.
             # Memoria: passa a conhecer a identidade do topo do deck inimigo.
             if opp.deck:
-                opp.revealed_deck.add(id(opp.deck[-1]))
+                revela_no_deck(opp.deck, -1, CONHECIDA_OPONENTE)
             return 'olhou o topo do deck do oponente' if opp.deck else ''
 
         if action == 'reveal_opp_deck_top_choose_cost':
@@ -8680,8 +8715,7 @@ class EffectExecutor:
                 # um palpite fixo plausivel e, principalmente, nao consulta
                 # o topo oculto para fabricar um acerto.
                 chosen_cost = 3
-            revealed = opp.deck[-1]
-            opp.revealed_deck.add(id(revealed))  # memoria: topo do deck inimigo conhecido
+            revealed = revela_no_deck(opp.deck, -1, CONHECIDA_DONO | CONHECIDA_OPONENTE)  # revelado: os dois veem
             matched = revealed.cost == chosen_cost
             nested_logs = []
             if matched:
@@ -10697,7 +10731,7 @@ class EffectExecutor:
                 # padrao "look at N; play" deixa o resto das N cartas vistas
                 # para o step seguinte (trash_rest/deck_bottom_rest/etc)
                 # tratar, sem tocar no resto do deck.
-                random.shuffle(me.deck)
+                embaralha_deck(me.deck)
             return f'jogou do deck: {", ".join(played)}' if played else ''
 
         # ── Trash from hand ───────────────────────────────────────────────────
@@ -10919,7 +10953,7 @@ class EffectExecutor:
                     me.deck.insert(0, c)        # fundo = início da lista
             else:
                 me.deck.extend(cards)
-                _rnd.shuffle(me.deck)
+                embaralha_deck(me.deck, _rnd)
             # recompra N (= nº devolvido), do topo (= pop())
             if step.get('draw_back'):
                 for _ in range(n):
@@ -10937,7 +10971,7 @@ class EffectExecutor:
             cards = list(opp.hand)
             opp.hand.clear()
             opp.deck.extend(cards)
-            _rnd.shuffle(opp.deck)
+            embaralha_deck(opp.deck, _rnd)
             draw_back = step.get('draw_back', 0)
             for _ in range(draw_back):
                 if not opp.deck: break
@@ -22230,6 +22264,8 @@ class OPTCGMatch:
             _ec.registra({'tipo': 'jogada_inicio', 'acao': _desc,
                           'lado': 'A' if p is self.state_a else 'B'})
         r = self._apply_action_inner(action, p, opp, ee, engine, verbose)
+        marca_publicas(p)
+        marca_publicas(opp)
         if _dia:
             _ec.registra({'tipo': 'jogada', 'acao': _desc, 'antes': _antes,
                           'depois': _ec.canonico(p, opp), 'venceu': bool(r),

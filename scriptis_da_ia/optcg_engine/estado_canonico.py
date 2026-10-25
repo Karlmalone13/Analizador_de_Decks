@@ -63,8 +63,7 @@ def carta(c) -> dict | None:
 # (`known_hand_cards`/`known_life_cards`/`known_deck_cards`), entao o conteudo
 # cru depende de quando alguem LEU a informacao. A regra: revelada na mao deixa de
 # ser conhecida ao sair da mao (idem vida e deck).
-_IDS = {'revealed_deck': ('deck',), 'revealed_life': ('life',),
-        'revealed_to_opponent': ('hand',)}
+_IDS = {}   # carta conhecida virou marca da carta (`_conhecida`), sai em carta()
 
 
 def _lugares_de_ids(s, ids, zonas=None) -> list:

@@ -7712,7 +7712,7 @@ def test_segundo_lote_10_pendencias_op01_063_a_op05_100() -> None:
     opp.life = [life]
     EffectExecutor(me, opp).execute(arlong, "activate_main")
     check("Execucao lote 2: Arlong revela Event e move vida ao fundo",
-          arlong.rested and id(event) in opp.revealed_to_opponent
+          arlong.rested and event in opp.known_hand_cards()
           and not opp.life and opp.deck and opp.deck[0] is life)
 
     bao = real_card("OP01-105")
@@ -7721,7 +7721,7 @@ def test_segundo_lote_10_pendencias_op01_063_a_op05_100() -> None:
     opp_bao.hand = [mk(f"BH{i}", f"Carta {i}") for i in range(3)]
     EffectExecutor(me_bao, opp_bao).execute(bao, "on_play")
     check("Execucao lote 2: Bao Huang registra exatamente duas reveladas",
-          len(opp_bao.revealed_to_opponent) == 2)
+          len(opp_bao.known_hand_cards()) == 2)
 
     orochi = real_card("OP01-098")
     smile = mk("SMILE", "Artificial Devil Fruit SMILE", card_type="EVENT")
@@ -7729,7 +7729,7 @@ def test_segundo_lote_10_pendencias_op01_063_a_op05_100() -> None:
     me_orochi.deck = [mk("NO", "Outra"), smile]
     EffectExecutor(me_orochi, opp_bao).execute(orochi, "on_play")
     check("Execucao lote 2: Orochi busca e revela SMILE no deck inteiro",
-          smile in me_orochi.hand and id(smile) in me_orochi.revealed_to_opponent)
+          smile in me_orochi.hand and smile in me_orochi.known_hand_cards())
 
     makino = real_card("OP02-015")
     red1 = mk("R1", "Vermelho custo 1", cost=1, color="Red")
@@ -11100,12 +11100,12 @@ def test_self_play_info_hidden_mascara_counter_e_deck_do_oponente() -> None:
     check("flag ON, nada revelado: NAO ve os 2 counters reais (nao e mais 4000)",
           v_hidden != 4000)
 
-    opp.revealed_to_opponent = {id(nola_a)}
+    nola_a._conhecida = 2
     v_partial = eng.analyzer.opp_counter_potential()
     check("flag ON + 1 carta revelada: inclui o valor REAL da revelada (>= 2000)",
           v_partial >= 2000)
     opp.self_play_info_hidden = False
-    opp.revealed_to_opponent = set()
+    nola_a._conhecida = 0
 
     # _opp_can_remove_stage: mesma flag, agora sobre o DECK (texto de OP03-096
     # remove Stage do oponente com custo <=3 -- carta real, nao sintetica)
@@ -11120,7 +11120,7 @@ def test_self_play_info_hidden_mascara_counter_e_deck_do_oponente() -> None:
     check("flag ON, nada revelado do deck: NAO espia (assume que nao tem)",
           OPTCGMatch._opp_can_remove_stage(opp2, reach_cost=3) is False)
 
-    opp2.revealed_deck = {id(removedora)}
+    removedora._conhecida = 2
     check("flag ON + carta revelada de verdade: agora conta",
           OPTCGMatch._opp_can_remove_stage(opp2, reach_cost=3) is True)
 
@@ -11151,7 +11151,7 @@ def test_hidden_information_masked_tambem_liga_estimativa_de_counter() -> None:
     check("hidden_information_masked ON, nada revelado: NAO ve os 2 counters reais",
           v_masked != 4000)
 
-    opp.revealed_to_opponent = {id(nola_a)}
+    nola_a._conhecida = 2
     v_partial = eng.analyzer.opp_counter_potential()
     check("hidden_information_masked ON + 1 carta revelada: inclui o valor REAL dela (>= 2000)",
           v_partial >= 2000)
@@ -13229,7 +13229,7 @@ def test_lethal_conta_counter_tipo_evento_conhecido_na_mao_17_08() -> None:
     opp.life = [real_card("OP17-040")]  # vida = 1 -> precisa de 2 hits
     ground_death = real_card("OP14-096")
     opp.hand = [ground_death]
-    opp.revealed_to_opponent = {id(ground_death)}
+    ground_death._conhecida = 2
     opp.field_chars = []
 
     # Atacantes com poder IGUAL ao lider do oponente -- passam sem DON,
@@ -14559,7 +14559,7 @@ def test_opp_combo_threat_ve_carta_revelada_na_mao_11_08() -> None:
     check("Five Elders NAO revelada na mao do oponente -- ameaca invisivel (fairness preservada)",
           combo_oculto['magnitude'] == 0)
 
-    opp.revealed_to_opponent = {id(five_elders)}
+    five_elders._conhecida = 2
     combo_revelado = GameAnalyzer(me, opp).opp_combo_threat()
     check("Five Elders REVELADA na mao do oponente -- ameaca detectada (fix funciona)",
           combo_revelado['magnitude'] == 2)
