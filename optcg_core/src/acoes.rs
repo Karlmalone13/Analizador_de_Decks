@@ -289,7 +289,7 @@ fn atacar(e: &mut Estado, ator: (&'static str, usize), alvo: Option<usize>, d: &
     };
     // efeito que tira atacante/alvo do lugar no meio do ataque: o Python segue
     // com o objeto velho; o nucleo nao modela isso
-    let confere = |e: &Estado, alvo_idx: Option<usize>, alvo_code: &Option<String>| -> Result<(), Resultado> {
+    let confere = |e: &Estado, alvo_idx: Option<usize>, alvo_code: &Option<crate::cartas::Cod>| -> Result<(), Resultado> {
         if za != "leader" && e.ativo.field_chars.get(ia).map(|c| &c.code) != Some(&atk_code) {
             return Err(ns("atacante saiu do lugar durante o ataque"));
         }

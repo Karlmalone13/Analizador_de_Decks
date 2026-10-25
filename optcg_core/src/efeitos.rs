@@ -111,7 +111,7 @@ pub struct Executor {
     /// INSTANCIA (descartavel). 0 = o executor da Main, que vive o turno todo e
     /// nao esta no canonico -> once_per_turn fora do nucleo.
     pub inst: u32,
-    pub usados: std::collections::HashSet<(u32, String, String)>,
+    pub usados: std::collections::HashSet<(u32, crate::cartas::Cod, String)>,
     /// Lugar da carta-fonte no lado de quem executa ("leader"|"field_chars", i):
     /// passos que mexem na PROPRIA carta (`target='self'`). None = fora do campo.
     pub lugar_fonte: Option<(String, usize)>,
@@ -125,10 +125,10 @@ pub struct Executor {
     trash_any_n: i64,
     /// atacante da batalha em curso, no lado `opp` deste executor (None = lider);
     /// so o `ee_react` recebe (on_opp_attack / leader_battle_reactive)
-    pub atacante_batalha: Option<(Option<usize>, String)>,
+    pub atacante_batalha: Option<(Option<usize>, crate::cartas::Cod)>,
     /// `_battle_attacker`: cada execute() o REDEFINE (None fora daqueles gatilhos);
     /// passos rodados sem execute() (counter) veem o ultimo valor
-    atacante: Option<(Option<usize>, String)>,
+    atacante: Option<(Option<usize>, crate::cartas::Cod)>,
     /// o ultimo `executa` pagou o custo e rodou os passos (`logs` nao vazio no Python)
     pub rodou: bool,
     /// Some = simulacao: as escolhas internas sao da politica, nao do diario
@@ -2245,7 +2245,7 @@ impl Executor {
                 let mut lista: Vec<(String, String)> = me.extras["_once_main"].as_array().unwrap().iter()
                     .map(|k| (k[0].as_str().unwrap_or("").to_string(), k[1].as_str().unwrap_or("").to_string()))
                     .collect();
-                lista.push((chave.1.clone(), chave.2.clone()));
+                lista.push((chave.1.to_string(), chave.2.clone()));
                 lista.sort();
                 lista.dedup();
                 me.extras.insert("_once_main".into(),
@@ -3828,7 +3828,7 @@ impl Executor {
                 }
             }
             // `ee_target = EffectExecutor(owner, me)`: [On K.O.] do alvo + reativos de KO
-            let resto: Vec<String> = cands.iter().map(|&j| opp.field_chars[j].code.clone()).collect();
+            let resto: Vec<crate::cartas::Cod> = cands.iter().map(|&j| opp.field_chars[j].code).collect();
             let mut ee = Executor::novo(std::mem::take(&mut self.fila));
             ee.politica = self.politica.clone();
             ee.inst = 7700 + self.usados.len() as u32;

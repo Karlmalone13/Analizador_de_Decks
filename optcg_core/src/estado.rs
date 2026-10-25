@@ -7,7 +7,7 @@ use serde_json::{Map, Value};
 
 #[derive(Clone, Debug, Serialize, Deserialize, PartialEq)]
 pub struct Carta {
-    pub code: String,
+    pub code: crate::cartas::Cod,
     pub rested: bool,
     pub just_played: bool,
     pub don_attached: i64,
@@ -26,6 +26,9 @@ pub struct Carta {
     pub banish_this_turn: bool,
     pub extra_attribute_this_turn: String,
     pub can_attack_active_this_turn: bool,
+    /// permanente ("This Character can also attack active Characters")
+    #[serde(default)]
+    pub can_attack_active: bool,
     pub ko_on_opp_blocker_used_this_turn: bool,
     pub immunity_ko_until: String,
     pub battled_opp_character_this_turn: bool,
@@ -80,6 +83,14 @@ pub struct Jogador {
     pub pending_play_cost_reductions: Vec<Value>,
     pub face_up_life_to_deck: bool,
     pub blocker_lock_battle: serde_json::Value,
+    #[serde(default)]
+    pub end_of_turn_queue: Vec<Value>,
+    #[serde(default)]
+    pub extra_turn_pending: bool,
+    #[serde(default)]
+    pub life_count_snapshot_mine: i64,
+    #[serde(default)]
+    pub life_count_snapshot_opp: i64,
     #[serde(flatten)]
     pub extras: Map<String, Value>,
 }

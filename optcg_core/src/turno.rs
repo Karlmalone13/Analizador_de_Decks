@@ -181,7 +181,7 @@ pub fn fim_de_turno(e: &mut Estado, fila: VecDeque<Value>, politica: Option<Poli
         ex.lugar_fonte = l;
         ex.executa(&mut e.ativo, &mut e.oponente, &f, "end_of_turn")?;
     }
-    if e.ativo.extras.get("end_of_turn_queue").and_then(|v| v.as_array()).map_or(false, |a| !a.is_empty()) {
+    if !e.ativo.end_of_turn_queue.is_empty() {
         return Err(ns("fila agendada para o fim do turno"));
     }
     if !ex.fila.is_empty() {

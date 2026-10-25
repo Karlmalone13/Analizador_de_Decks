@@ -236,8 +236,7 @@ pub fn jogadas_legais(e: &Estado) -> R<Vec<Jogada>> {
             if !a.rush_character_only_this_turn && prov.is_none() && !p.cannot_attack_leader_this_turn {
                 out.push(Jogada::Atacar(l, None));
             }
-            let ativos_tambem = a.can_attack_active_this_turn
-                || a.extras.get("can_attack_active").and_then(|x| x.as_bool()).unwrap_or(false);
+            let ativos_tambem = a.can_attack_active_this_turn || a.can_attack_active;
             for (j, t) in opp.field_chars.iter().enumerate() {
                 if !(t.rested || ativos_tambem) || prov.map_or(false, |x| x != j) {
                     continue;
