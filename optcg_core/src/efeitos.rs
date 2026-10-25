@@ -256,7 +256,7 @@ const KEYWORD_GRANTS: &[&str] = &[
 /// Varre campo, mao, lider e stage, nessa ordem; cada carta ve o que as
 /// anteriores ja ligaram.
 pub fn aplica_passivas_keyword(gs: &mut Jogador, opp: &Jogador) -> R<()> {
-    let ex = Executor::novo(Default::default());
+    let mut ex = Executor::novo(Default::default());
     let mut pool: Vec<(u8, usize)> = (0..gs.field_chars.len()).map(|i| (0, i)).collect();
     pool.extend((0..gs.hand.len()).map(|i| (1, i)));
     pool.push((2, 0));
@@ -273,6 +273,8 @@ pub fn aplica_passivas_keyword(gs: &mut Jogador, opp: &Jogador) -> R<()> {
     }
     for l in pool {
         let c = pega(gs, l).clone();
+        let z = ["field_chars", "hand", "leader", "stage"][l.0 as usize];
+        ex.lugar_fonte = Some((z.to_string(), l.1));
         let inf = dados(&c)?;
         let pas = inf.efeitos.get("passive").cloned().unwrap_or(Value::Null);
         let ot = inf.efeitos.get("opp_turn").cloned().unwrap_or(Value::Null);
@@ -1669,13 +1671,26 @@ impl Executor {
                             Value::Array(a) => a.iter().map(|x| x.as_str().unwrap_or("").to_lowercase()).collect(),
                             x => vec![x.as_str().unwrap_or("").to_lowercase()],
                         };
-                        if o.get("chars_gte_exclude_self").and_then(|x| x.as_bool()).unwrap_or(false) {
-                            return Err(ns("chars_gte_exclude_self"));
-                        }
+                        // `c is not card`: a fonte pelo lugar; senao, pela igualdade de estado
+                        let excl = if o.get("chars_gte_exclude_self").and_then(|x| x.as_bool()).unwrap_or(false) {
+                            match &self.lugar_fonte {
+                                Some((z, i)) if z == "field_chars" && me.field_chars.get(*i).map(|c| &c.code) == Some(&fonte.code) => Some(*i),
+                                Some((z, _)) if z != "field_chars" => None,
+                                _ => {
+                                    let fv = serde_json::to_value(fonte).ok();
+                                    me.field_chars.iter().position(|c| serde_json::to_value(c).ok() == fv)
+                                }
+                            }
+                        } else {
+                            None
+                        };
                         let cor = o.get("chars_gte_color_filter").and_then(|x| x.as_str()).unwrap_or("").to_lowercase();
                         let mut nomes = std::collections::HashSet::new();
                         let mut k = 0;
-                        for c in &me.field_chars {
+                        for (j, c) in me.field_chars.iter().enumerate() {
+                            if Some(j) == excl {
+                                continue;
+                            }
                             let ci = dados(c)?;
                             let st = ci.sub_types.to_lowercase();
                             if !tipos.iter().any(|t| st.contains(t.as_str())) {
