@@ -235,6 +235,24 @@ impl Executor {
             "look_top_deck" | "deck_bottom_rest" | "draw" => !me.deck.is_empty(),
             "set_don_active" => me.don_rested > 0,
             "add_to_hand" | "trash_rest" | "gain_life" | "add_don" => true,
+            a @ ("ko" | "rest_opp_character" | "debuff_power") => {
+                match st["target"].as_str() {
+                    Some("opp_stage") => return Err(ns("alvo opp_stage")),
+                    Some("opp_leader") | Some("opp_leader_or_character") | Some("self") => true,
+                    _ => {
+                        let mut algum = false;
+                        for c in &opp.field_chars {
+                            if casa_alvo(st, c, a == "rest_opp_character", false, me, opp)? {
+                                algum = true;
+                            }
+                        }
+                        if !algum && !st["alt_target"].is_null() {
+                            return Err(ns("alt_target"));
+                        }
+                        algum
+                    }
+                }
+            }
             outro => return Err(ns(&format!("passo fora do nucleo: {outro}"))),
         })
     }
@@ -408,6 +426,9 @@ impl Executor {
                 }
             }
             "add_to_hand" => self.busca(st, me, inf)?,
+            "ko" => self.ko(st, me, opp)?,
+            "rest_opp_character" => self.restar_oponente(st, me, opp)?,
+            "debuff_power" => self.debuff(st, me, opp, fonte)?,
             "trash_rest" | "deck_bottom_rest" => {
                 let (olha, pega) = olhar_e_pegar(inf, acao == "deck_bottom_rest");
                 let resto = (olha - pega).max(0).min(me.deck.len() as i64);
@@ -541,6 +562,215 @@ impl Executor {
                     return Err(ns(&format!("reativo {gat}")));
                 }
             }
+        }
+        Ok(())
+    }
+}
+
+/// `eligible_cards` dos passos de alvo no oponente (`_step_is_viable` e execucao):
+/// cost_lte (fixo ou DON em campo), cost_eq, power_lte (impresso), don_attached_gte,
+/// rested_only, active_only, filter_type (sem texto), exclude.
+fn casa_alvo(st: &Value, c: &Carta, active_only: bool, usa_filter_types: bool, me: &Jogador, opp: &Jogador) -> R<bool> {
+    let i = dados(c)?;
+    let cost_lte = match &st["cost_lte"] {
+        Value::Null => None,
+        Value::String(x) if x == "don_count_self" => Some(me.don_available + me.don_rested),
+        Value::String(x) if x == "don_count_opp" => Some(opp.don_available + opp.don_rested),
+        v => Some(v.as_i64().ok_or_else(|| ns("cost_lte inesperado"))?),
+    };
+    let filtro = if usa_filter_types && !st["filter_types"].is_null() { &st["filter_types"] } else { &st["filter_type"] };
+    let excl = st["exclude"].as_str().unwrap_or("").to_lowercase();
+    Ok(cost_lte.map_or(true, |l| i.cost <= l)
+        && st["cost_eq"].as_i64().map_or(true, |x| i.cost == x)
+        && st["power_lte"].as_i64().map_or(true, |x| i.power <= x)
+        && st["don_attached_gte"].as_i64().map_or(true, |x| c.don_attached >= x)
+        && (!st["rested_only"].as_bool().unwrap_or(false) || c.rested)
+        && (!active_only || !c.rested)
+        && casa_filtro(&i, filtro, false)
+        && (excl.is_empty() || !i.name.to_lowercase().contains(&excl)))
+}
+
+/// Alguma carta do lado tem passo com acao contendo `trecho` (imunidade/substituicao
+/// ainda fora do nucleo: se existir, o resultado nao e garantido)
+fn lado_tem_acao(j: &Jogador, trecho: &str) -> R<bool> {
+    let cartas = std::iter::once(&j.leader).chain(j.field_chars.iter()).chain(j.stage.iter());
+    for c in cartas {
+        for b in dados(c)?.efeitos.values() {
+            if passos_de(b).any(|s| s["action"].as_str().map_or(false, |a| a.contains(trecho))) {
+                return Ok(true);
+            }
+        }
+    }
+    Ok(false)
+}
+
+const REATIVOS_DE_KO: &[&str] = &["when_damage_or_own_char_ko", "on_opp_char_ko", "on_own_char_ko",
+    "on_any_char_ko", "on_own_effect_removes_char"];
+
+fn tem_reativo(j: &Jogador, chaves: &[&str]) -> R<bool> {
+    let cartas = std::iter::once(&j.leader).chain(j.field_chars.iter()).chain(j.stage.iter());
+    for c in cartas {
+        let inf = dados(c)?;
+        if chaves.iter().any(|k| inf.efeitos.contains_key(*k)) {
+            return Ok(true);
+        }
+    }
+    Ok(false)
+}
+
+impl Executor {
+    /// Escolha de alvo (`_pick_effect_target`) que tem que estar entre os candidatos.
+    fn alvo_no_oponente(&mut self, cands: &[usize]) -> R<usize> {
+        match self.escolha("alvo")? {
+            Some((l, z, i)) if l == "oponente" && z == "field_chars" && cands.contains(&i) => Ok(i),
+            outro => Err(ns(&format!("alvo fora dos candidatos: {outro:?}"))),
+        }
+    }
+
+    /// `ko` em personagem do oponente (sem orcamento total, sem stage).
+    fn ko(&mut self, st: &Value, me: &mut Jogador, opp: &mut Jogador) -> R<()> {
+        let t = st["target"].as_str().unwrap_or("opp_character");
+        if t != "opp_character" {
+            return Err(ns(&format!("ko com alvo {t}")));
+        }
+        for k in ["total_power_lte", "total_cost_lte", "alt_target"] {
+            if !st[k].is_null() {
+                return Err(ns(&format!("ko com {k}")));
+            }
+        }
+        if lado_tem_acao(opp, "substitute")? || lado_tem_acao(opp, "immunity")?
+            || lado_tem_acao(opp, "ko_immunity")?
+        {
+            return Err(ns("imunidade/substituicao no lado do alvo"));
+        }
+        if tem_reativo(me, REATIVOS_DE_KO)? || tem_reativo(opp, REATIVOS_DE_KO)? {
+            return Err(ns("reativo de KO"));
+        }
+        let n = st["count"].as_i64().unwrap_or(1).max(0) as usize;
+        let mut cands: Vec<usize> = Vec::new();
+        for (i, c) in opp.field_chars.iter().enumerate() {
+            if casa_alvo(st, c, false, false, me, opp)? {
+                cands.push(i);
+            }
+        }
+        for _ in 0..n.min(cands.len()) {
+            let i = self.alvo_no_oponente(&cands)?;
+            let c = &opp.field_chars[i];
+            if !c.immunity_ko_until.is_empty() {
+                return Err(ns("alvo com imunidade a KO"));
+            }
+            if dados(c)?.efeitos.contains_key("on_ko") {
+                return Err(ns("on_ko do alvo"));
+            }
+            let mut x = opp.field_chars.remove(i);
+            if x.don_attached > 0 {
+                opp.don_rested += x.don_attached;
+                x.don_attached = 0;
+            }
+            opp.trash.push(x);
+            cands.retain(|&j| j != i);
+            for j in cands.iter_mut() {
+                if *j > i {
+                    *j -= 1;
+                }
+            }
+        }
+        Ok(())
+    }
+
+    /// `rest_opp_character`
+    fn restar_oponente(&mut self, st: &Value, me: &mut Jogador, opp: &mut Jogador) -> R<()> {
+        if lado_tem_acao(opp, "substitute")? || lado_tem_acao(opp, "immunity")? {
+            return Err(ns("imunidade/substituicao no lado do alvo"));
+        }
+        let n = st["count"].as_i64().unwrap_or(1).max(0) as usize;
+        let st2 = {
+            let mut v = st.clone();
+            if v["cost_lte"].is_null() {
+                v["cost_lte"] = Value::from(99);
+            }
+            v
+        };
+        let mut cands: Vec<usize> = Vec::new();
+        for (i, c) in opp.field_chars.iter().enumerate() {
+            if c.cannot_be_rested_until.is_empty() && casa_alvo(&st2, c, true, true, me, opp)? {
+                cands.push(i);
+            }
+        }
+        let mut feitos = 0;
+        for _ in 0..n.min(cands.len()) {
+            let i = self.alvo_no_oponente(&cands)?;
+            opp.field_chars[i].rested = true;
+            cands.retain(|&j| j != i);
+            feitos += 1;
+        }
+        if st["or_rest_opp_don"].as_bool().unwrap_or(false) {
+            let m = (n as i64 - feitos).max(0).min(opp.don_available);
+            opp.don_available -= m;
+            opp.don_rested += m;
+        }
+        Ok(())
+    }
+
+    /// `debuff_power` (fora de batalha: sem atacante em curso)
+    fn debuff(&mut self, st: &Value, me: &mut Jogador, opp: &mut Jogador, fonte: &Carta) -> R<()> {
+        let _ = me;
+        let v = st["amount"].as_i64().unwrap_or(0);
+        let n = st["count"].as_i64().unwrap_or(1).max(0) as usize;
+        match st["target"].as_str().unwrap_or("opp_character") {
+            "self" => {
+                let _ = fonte;
+                return Err(ns("debuff_power self (fonte no campo)"));
+            }
+            "opp_leader" => opp.leader.power_buff -= v,
+            "all_opp_characters" => {
+                if st["per_don_attached"].as_bool().unwrap_or(false) {
+                    return Err(ns("debuff por DON anexado"));
+                }
+                for c in opp.field_chars.iter_mut() {
+                    c.power_buff -= v;
+                }
+            }
+            "opp_character" => {
+                if opp.field_chars.is_empty() {
+                    return Ok(());
+                }
+                let ativos: Vec<usize> = (0..opp.field_chars.len()).filter(|&i| !opp.field_chars[i].rested).collect();
+                let mut cands = if ativos.is_empty() { (0..opp.field_chars.len()).collect() } else { ativos };
+                for _ in 0..n.min(cands.len()) {
+                    let i = self.alvo_no_oponente(&cands)?;
+                    opp.field_chars[i].power_buff -= v;
+                    cands.retain(|&j| j != i);
+                }
+            }
+            "opp_leader_or_character" => {
+                // candidatos: personagens ativos e o lider (se ativo), nessa ordem
+                let mut cands: Vec<Option<usize>> =
+                    (0..opp.field_chars.len()).filter(|&i| !opp.field_chars[i].rested).map(Some).collect();
+                if !opp.leader.rested {
+                    cands.push(None);
+                }
+                if cands.is_empty() {
+                    cands = (0..opp.field_chars.len()).map(Some).collect();
+                    cands.push(None);
+                }
+                for _ in 0..n.min(cands.len()) {
+                    let e = match self.escolha("alvo")? {
+                        Some((l, z, i)) if l == "oponente" && z == "field_chars" => Some(i),
+                        Some((l, z, _)) if l == "oponente" && z == "leader" => None,
+                        outro => return Err(ns(&format!("alvo inesperado: {outro:?}"))),
+                    };
+                    if !cands.contains(&e) {
+                        return Err(ns("alvo fora dos candidatos"));
+                    }
+                    match e {
+                        Some(i) => opp.field_chars[i].power_buff -= v,
+                        None => opp.leader.power_buff -= v,
+                    }
+                    cands.retain(|x| *x != e);
+                }
+            }
+            outro => return Err(ns(&format!("debuff alvo {outro}"))),
         }
         Ok(())
     }

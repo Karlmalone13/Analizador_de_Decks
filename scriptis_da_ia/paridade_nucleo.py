@@ -28,7 +28,7 @@ _REATIVAS = de.OPTCGMatch._OPP_TURN_REACTIVE_ACTIONS
 # Onda de efeitos 1 no nucleo: jogadas cujos passos de efeito estao TODOS aqui
 # vao para o Rust com a fila de decisoes do efeito.
 _ONDA = {'look_top_deck', 'add_to_hand', 'deck_bottom_rest', 'trash_rest', 'draw',
-         'gain_life', 'add_don', 'set_don_active',
+         'gain_life', 'add_don', 'set_don_active', 'ko', 'rest_opp_character', 'debuff_power',
          'custo:trash_from_hand', 'custo:don_minus', 'custo:rest_don'}
 
 
