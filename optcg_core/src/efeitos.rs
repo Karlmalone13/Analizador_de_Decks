@@ -95,13 +95,15 @@ pub struct Executor {
     ultimo: Option<Option<usize>>,
     /// `_last_selected` e carta do oponente (passo `selected` depois disso: fora do nucleo)
     ultimo_oponente: bool,
+    /// `_last_cost_rest_any_don_count` (vive no executor, como no Python)
+    rest_any_don_n: i64,
     /// o ultimo `executa` pagou o custo e rodou os passos (`logs` nao vazio no Python)
     pub rodou: bool,
 }
 
 impl Executor {
     pub fn novo(fila: VecDeque<Value>) -> Self {
-        Executor { fila, inst: 0, usados: Default::default(), lugar_fonte: None, ultimo: None, ultimo_oponente: false, rodou: false }
+        Executor { fila, inst: 0, usados: Default::default(), lugar_fonte: None, ultimo: None, ultimo_oponente: false, rest_any_don_n: 0, rodou: false }
     }
 }
 
@@ -700,13 +702,11 @@ impl Executor {
                 cands.push(None);
             }
         } else {
-            if acao == "lock_opp_blocker_turn" {
-                return Err(ns("lock_opp_blocker_turn"));
-            }
             let excl = st["exclude"].as_str().unwrap_or("").to_lowercase();
             for (j, c) in opp.field_chars.iter().enumerate() {
                 let i = dados(c)?;
                 if cost_lte.map_or(true, |x| i.cost <= x) && power_lte.map_or(true, |x| i.power <= x)
+                    && (acao != "lock_opp_blocker_turn" || crate::acoes::is_blocker(c, &i))
                     && (excl.is_empty() || !i.name.to_lowercase().contains(&excl))
                 {
                     cands.push(Some(j));
@@ -726,6 +726,7 @@ impl Executor {
             match acao {
                 "lock_opp_character_attack" => t.cannot_attack_until = dur.into(),
                 "lock_opp_cannot_be_rested" => t.cannot_be_rested_until = dur.into(),
+                "lock_opp_blocker_turn" => t.cannot_block_until = dur.into(),
                 _ => t.frozen_next_refresh = true,
             }
         }
@@ -1008,10 +1009,16 @@ impl Executor {
             "look_top_deck" | "deck_bottom_rest" | "draw" => !me.deck.is_empty(),
             "set_don_active" => me.don_rested > 0,
             "add_to_hand" | "trash_rest" | "gain_life" | "add_don" | "buff_power" | "give_don" | "redirect_attack_target"
-            | "activate_trash_event_main" | "transfer_don" | "activate_main_effect" | "hand_to_deck"
-            | "deal_damage" | "give_don_either_side" | "trash_from_hand" | "peek_opp_deck_top"
-            | "trash_own_life" | "self_cant_play" | "give_don_opp" | "set_active"
+            | "activate_trash_event_main" | "transfer_don" | "activate_main_effect"
+            | "deal_damage" | "give_don_either_side" | "peek_opp_deck_top"
+            | "buff_power_per_count" | "self_cant_play" | "give_don_opp" | "set_active"
             | "lock_opp_cannot_be_rested" | "lock_opp_blocker_turn" => true,
+            "add_from_trash" => !me.trash.is_empty(),
+            "deck_reorder_rest" | "deck_top_rest" => !me.deck.is_empty(),
+            "trash_from_hand" | "hand_to_deck" => !me.hand.is_empty(),
+            "life_to_hand" => !me.life.is_empty(),
+            "trash_own_life" => if st["face"].as_str() == Some("up") { me.life.iter().any(|c| c.life_face_up) } else { !me.life.is_empty() },
+            "attack_life" => !opp.life.is_empty(),
             "negate_effect" => match st["target"].as_str().unwrap_or("opp_character") {
                 "opp_leader" | "opp_leader_or_character" => true,
                 _ => {
@@ -1325,6 +1332,28 @@ impl Executor {
                         }
                     }
                 }
+                "rest_any_don" => {
+                    self.rest_any_don_n = me.don_available;
+                    me.don_rested += me.don_available;
+                    me.don_available = 0;
+                }
+                "return_active_don_to_don_deck" => {
+                    if me.don_available < n {
+                        return Ok(false);
+                    }
+                    me.don_available -= n;
+                    me.don_deck += n;
+                }
+                "life_to_hand" => {
+                    if me.cant_take_life_this_turn || (me.life.len() as i64) < n {
+                        return Ok(false);
+                    }
+                    for _ in 0..n {
+                        let mut v = if c["source"].as_str() == Some("life_bottom") { me.life.remove(0) } else { me.life.pop().unwrap() };
+                        v.life_face_up = false;
+                        me.hand.push(v);
+                    }
+                }
                 "give_don_opp" => {
                     if opp.don_rested < n {
                         return Ok(false);
@@ -1386,6 +1415,146 @@ impl Executor {
         }
         match acao {
             "look_top_deck" => {}
+            "attack_life" => {
+                for _ in 0..n {
+                    let Some(mut v) = opp.life.pop() else { break };
+                    v.life_face_up = false;
+                    opp.trash.push(v);
+                }
+            }
+            "life_to_hand" => {
+                if !me.cant_take_life_this_turn {
+                    for _ in 0..n {
+                        if me.life.is_empty() {
+                            break;
+                        }
+                        let mut v = if st["source"].as_str() == Some("life_bottom") { me.life.remove(0) } else { me.life.pop().unwrap() };
+                        v.life_face_up = false;
+                        me.hand.push(v);
+                    }
+                }
+            }
+            "add_from_trash" => {
+                let num = |k: &str| st[k].as_i64();
+                let nome = st["filter_name"].as_str().unwrap_or("").to_lowercase();
+                let cor = st["color"].as_str().unwrap_or("").to_lowercase();
+                let exn = st["exclude_name"].as_str().unwrap_or("").to_lowercase();
+                let mut achou = Vec::new();
+                for (k, c) in me.trash.iter().enumerate() {
+                    let i = dados(c)?;
+                    if num("cost_lte").map_or(false, |x| i.cost > x) || num("cost_gte").map_or(false, |x| i.cost < x)
+                        || num("cost_eq").map_or(false, |x| i.cost != x) || num("power_lte").map_or(false, |x| i.power > x)
+                        || !casa_filtro(&i, &st["filter_type"], false)
+                        || (!nome.is_empty() && !i.name.to_lowercase().contains(&nome) && !c.code.to_lowercase().contains(&nome))
+                        || (!cor.is_empty() && !i.color.to_lowercase().contains(&cor))
+                        || (!exn.is_empty() && i.name.to_lowercase().contains(&exn))
+                    {
+                        continue;
+                    }
+                    achou.push(k);
+                }
+                for &k in achou.iter().take(n.max(0) as usize).rev() {
+                    let c = me.trash.remove(k);
+                    // a ordem de chegada na mao e a do lixo
+                    me.hand.push(c);
+                }
+                let m = achou.len().min(n.max(0) as usize);
+                let l = me.hand.len();
+                me.hand[l - m..].reverse();
+            }
+            "deck_reorder_rest" | "deck_top_rest" => {
+                // quantas olhou/pegou: ultimo look_top_deck / add_to_hand|trash_from_looked_deck da carta
+                let (mut olha, mut pega) = (5i64, 0i64);
+                for b in inf.efeitos.values() {
+                    for s in passos_de(b) {
+                        match s["action"].as_str() {
+                            Some("look_top_deck") => olha = s["count"].as_i64().unwrap_or(5),
+                            Some("add_to_hand") | Some("trash_from_looked_deck") => pega = s["count"].as_i64().unwrap_or(1),
+                            _ => {}
+                        }
+                    }
+                }
+                let k = (olha - pega).max(0).min(me.deck.len() as i64) as usize;
+                let mut visto: Vec<Carta> = Vec::new();
+                for _ in 0..k {
+                    visto.push(me.deck.pop().unwrap());
+                }
+                if !visto.is_empty() {
+                    let d = self.proxima("escolha_efeito")?;
+                    if d["qual"].as_str() != Some("reordena") {
+                        return Err(ns("reordena fora de ordem"));
+                    }
+                    let ordem: Vec<usize> = d["ordem"].as_array().ok_or_else(|| ns("reordena sem ordem"))?
+                        .iter().filter_map(|x| x.as_u64().map(|v| v as usize)).collect();
+                    let mut vis: Vec<bool> = vec![false; visto.len()];
+                    if ordem.len() != visto.len() || ordem.iter().any(|&j| j >= vis.len() || std::mem::replace(&mut vis[j], true)) {
+                        return Err(ns("reordena invalida"));
+                    }
+                    for j in ordem {
+                        me.deck.push(visto[j].clone());
+                    }
+                }
+            }
+            "buff_power_per_count" => {
+                let fonte_n = match st["source"].as_str().unwrap_or("trash") {
+                    "events_in_trash" => {
+                        let mut k = 0;
+                        for c in &me.trash {
+                            if dados(c)?.card_type == "EVENT" {
+                                k += 1;
+                            }
+                        }
+                        k
+                    }
+                    "trash" => me.trash.len() as i64,
+                    "rested_don" => me.don_rested,
+                    "hand" => me.hand.len() as i64,
+                    "unique_character_names" => {
+                        let mut s = std::collections::HashSet::new();
+                        for c in &me.field_chars {
+                            s.insert(dados(c)?.name);
+                        }
+                        s.len() as i64
+                    }
+                    "own_characters" => me.field_chars.len() as i64,
+                    "rested_don_this_effect" => self.rest_any_don_n,
+                    o => return Err(ns(&format!("buff_power_per_count source {o}"))),
+                };
+                let por = st["count_per"].as_i64().unwrap_or(1).max(1);
+                let v = (fonte_n / por) * st["amount_per"].as_i64().unwrap_or(1000);
+                if v > 0 {
+                    match st["target"].as_str().unwrap_or("self") {
+                        "self" => self.fonte_mut(me, fonte)?.power_buff += v,
+                        "leader" => me.leader.power_buff += v,
+                        "leader_or_character" => {
+                            let mut melhor: Option<(Option<usize>, i64)> = None;
+                            for (j, c) in me.field_chars.iter().enumerate() {
+                                if !casa_filtro(&dados(c)?, &st["filter_type"], false) {
+                                    continue;
+                                }
+                                let p = poder_meu_turno(c)?;
+                                if melhor.map_or(true, |(_, b)| p > b) {
+                                    melhor = Some((Some(j), p));
+                                }
+                            }
+                            let pl = poder_meu_turno(&me.leader)?;
+                            if melhor.map_or(true, |(_, b)| pl > b) {
+                                melhor = Some((None, pl));
+                            }
+                            carta_mut(me, melhor.unwrap().0)?.power_buff += v;
+                        }
+                        t @ ("all_allies" | "all_allies_and_leader") => {
+                            for c in me.field_chars.iter_mut() {
+                                c.power_buff += v;
+                            }
+                            if t == "all_allies_and_leader" {
+                                me.leader.power_buff += v;
+                            }
+                        }
+                        _ => {}
+                    }
+                }
+            }
             "bounce" | "place_opp_character_bottom_deck" => self.remove_do_oponente(st, acao, me, opp)?,
             "negate_effect" => {
                 let dur = match st["duration"].as_str().unwrap_or("this_turn") {

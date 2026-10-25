@@ -8854,7 +8854,10 @@ class EffectExecutor:
                 seen.append(me.deck.pop())
             if not seen:
                 return ''
+            _antes_ord = list(seen)
             seen.sort(key=lambda c: c.board_value())  # pior primeiro, melhor por ultimo
+            _diario_decisao_efeito('escolha_efeito', qual='reordena',
+                                   ordem=[next(k for k, x in enumerate(_antes_ord) if x is c) for c in seen])
             me.deck.extend(seen)  # melhor carta -> fim da lista = topo do deck
             return f'{len(seen)} carta(s) reordenada(s) no deck (melhor no topo)'
 

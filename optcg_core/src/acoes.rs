@@ -52,6 +52,10 @@ pub fn is_rush_character(c: &Carta, i: &InfoCarta) -> bool {
     kw_ativa(c, i, "rush_character", c.has_rush_character)
 }
 
+pub fn is_blocker(c: &Carta, i: &InfoCarta) -> bool {
+    kw_ativa(c, i, "blocker", c.has_blocker) || c.blocker_this_turn
+}
+
 fn is_double_attack(c: &Carta, i: &InfoCarta) -> bool {
     kw_ativa(c, i, "double_attack", c.has_double_attack) || c.double_attack_this_turn
 }
