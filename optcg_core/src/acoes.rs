@@ -8,7 +8,7 @@
 //! prontas em `Decisoes` -- no nucleo final sao pontos de decisao da busca.
 //! O que depende de efeito ainda fora do nucleo devolve `NaoSuportado`.
 use crate::cartas::{info, InfoCarta};
-use crate::efeitos::{lado_tem_acao, tem_reativo, Executor};
+use crate::efeitos::{aplica_passivas_keyword, custo_de_jogar, lado_tem_acao, regra_de_custo_casa, tem_reativo, Executor};
 use crate::estado::{Carta, Estado, Jogador};
 use serde::Deserialize;
 use serde_json::Value;
@@ -107,20 +107,17 @@ fn jogar(e: &mut Estado, acao: &Value, d: &Decisoes) -> Result<Resultado, Result
         return Err(ns("play fora da mao"));
     }
     let p = &mut e.ativo;
-    if !p.pending_play_cost_reductions.is_empty() {
-        return Err(ns("reducao de custo pendente (efeito)"));
-    }
-    if let Some(st) = &p.stage {
-        if dados(st)?.reduz_custo_mao {
-            return Err(ns("stage reduz custo (efeito)"));
-        }
-    }
     let carta = p.hand.get(i).ok_or_else(|| ns("carta fora da mao"))?;
     let inf = dados(carta)?;
-    if inf.custo_por_efeito {
-        return Err(ns("custo muda por efeito da propria carta"));
+    let custo = custo_de_jogar(p, &e.oponente, carta)?;
+    // consume_play_cost_reductions: so as regras que casam com ESTA carta
+    let mut resto = Vec::new();
+    for r in std::mem::take(&mut p.pending_play_cost_reductions) {
+        if !regra_de_custo_casa(carta, &r)? {
+            resto.push(r);
+        }
     }
-    let custo = custo_efetivo(carta, &inf);
+    p.pending_play_cost_reductions = resto;
     let mut carta = p.hand.remove(i);
     let mut fonte = carta.clone();
     let mut fila_resto: Option<std::collections::VecDeque<Value>> = None;
@@ -136,11 +133,13 @@ fn jogar(e: &mut Estado, acao: &Value, d: &Decisoes) -> Result<Resultado, Result
                 tira_do_campo_para_lixo(p, is);
             }
             carta.rested = false;
-            carta.just_played =
-                !(carta.has_rush || carta.rush_this_turn || is_rush_character(&carta, &inf));
-            carta.rush_character_only_this_turn =
-                is_rush_character(&carta, &inf) && !is_rush(&carta, &inf);
             p.field_chars.push(carta);
+            aplica_passivas_keyword(p, &e.oponente)?;
+            let carta = p.field_chars.last_mut().unwrap();
+            carta.just_played =
+                !(carta.has_rush || carta.rush_this_turn || is_rush_character(carta, &inf));
+            carta.rush_character_only_this_turn =
+                is_rush_character(carta, &inf) && !is_rush(carta, &inf);
             fonte = p.field_chars.last().unwrap().clone();
             let mut ex = Executor::novo(d.efeito.iter().cloned().collect());
             ex.dispara_jogou_personagem(&mut e.ativo, &mut e.oponente, &fonte, false)?;
@@ -251,10 +250,13 @@ fn atacar(e: &mut Estado, acao: &Value, d: &Decisoes) -> Result<Resultado, Resul
     let inf_atk = dados(atk)?;
     let mut atk_power = poder_ataque(atk, &inf_atk);
     let dano = if is_double_attack(atk, &inf_atk) { 2 } else { 1 };
+    let atk_eh_char = za != "leader";
+    // BLOQUEIO: `DecisionEngine(opp, p)` liga as passivas de keyword dos dois lados
+    aplica_passivas_keyword(opp, p)?;
+    aplica_passivas_keyword(p, opp)?;
+    let atk = if za == "leader" { &p.leader } else { &p.field_chars[ia] };
     let banish = atk.has_banish;
     let unblockable = atk.has_unblockable || atk.unblockable_this_turn;
-    let atk_eh_char = za != "leader";
-    // BLOQUEIO
     let blv = d.bloqueio.clone().ok_or_else(|| ns("ataque sem registro de bloqueio"))?;
     opp.blocker_lock_battle = Value::Null;
     let bl = if blv.as_str() == Some("nenhum") { None } else { lugar(&blv) };
@@ -309,6 +311,20 @@ fn atacar(e: &mut Estado, acao: &Value, d: &Decisoes) -> Result<Resultado, Resul
             defesa += dados(&c)?.counter;
             opp.trash.push(c);
         }
+    }
+    // EVENTO [Counter] de poder (`ee_react`), so se o golpe ainda passa
+    if atk_power >= defesa {
+        ex.inst = 2;
+        defesa += ex.counter_evento_poder(opp, p, alvo_idx.filter(|_| alvo_tipo != "leader"), &alvo_tipo,
+                                          atk_power - defesa + 1)?;
+    }
+    // EVENTO [Counter] que enfraquece o atacante, se o de poder nao bastou
+    if atk_power >= defesa {
+        let a = if za == "leader" { None } else { Some(ia) };
+        atk_power -= ex.counter_evento_debuff(opp, p, a, atk_power - defesa + 1)?;
+    }
+    if atk_power >= defesa && atk_eh_char && Executor::tem_counter_evento_ko(opp)? {
+        return Err(ns("counter evento de KO no atacante"));
     }
     let _ = &mut atk_power;
     if atk_power >= defesa {

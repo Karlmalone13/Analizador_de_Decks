@@ -117,9 +117,560 @@ fn poder_meu_turno(c: &Carta) -> R<i64> {
     Ok((base + c.power_buff + c.don_attached * 1000).max(0))
 }
 
+/// `_play_cost_rule_matches` (custo IMPRESSO da carta)
+pub fn regra_de_custo_casa(c: &Carta, regra: &Value) -> R<bool> {
+    let i = dados(c)?;
+    if i.card_type != "CHARACTER" || i.cost < regra["cost_gte"].as_i64().unwrap_or(0) {
+        return Ok(false);
+    }
+    match &regra["filter_type"] {
+        Value::Null => {}
+        Value::String(t) if t.is_empty() => {}
+        Value::String(t) => {
+            if !norm_tipo(&i.sub_types).contains(&norm_tipo(t)) {
+                return Ok(false);
+            }
+        }
+        _ => return Err(ns("regra de custo com filter_type nao-string")),
+    }
+    if let Some(n) = regra["filter_name"].as_str().filter(|n| !n.is_empty()) {
+        if !i.name.to_lowercase().contains(&n.to_lowercase()) {
+            return Ok(false);
+        }
+    }
+    Ok(true)
+}
+
+/// `_hand_cost_conditions_match`
+fn condicoes_de_custo(p: &Jogador, opp: &Jogador, carta: &Carta, cs: &serde_json::Map<String, Value>) -> R<bool> {
+    let don = |j: &Jogador| j.don_available + j.don_rested;
+    let n = |k: &str| cs[k].as_i64().unwrap_or(0);
+    for k in cs.keys() {
+        let ok = match k.as_str() {
+            "life_lte" => (p.life.len() as i64) <= n(k),
+            "trash_gte" => (p.trash.len() as i64) >= n(k),
+            "events_in_trash_gte" => {
+                let mut e = 0;
+                for c in &p.trash {
+                    if dados(c)?.card_type == "EVENT" {
+                        e += 1;
+                    }
+                }
+                e >= n(k)
+            }
+            "leader_power_lte" => poder_meu_turno(&p.leader)? <= n(k),
+            "leader_type" => norm_tipo(&dados(&p.leader)?.sub_types).contains(&norm_tipo(cs[k].as_str().unwrap_or(""))),
+            "leader_name_includes" => dados(&p.leader)?.name.to_lowercase().contains(&cs[k].as_str().unwrap_or("").to_lowercase()),
+            "don_gte" | "don_on_field_gte" => don(p) >= n(k),
+            "don_on_field_zero_or_gte" => don(p) == 0 || don(p) >= n(k),
+            "opp_char_power_gte" => {
+                let mut a = false;
+                for c in &opp.field_chars {
+                    a |= dados(c)?.power >= n(k);
+                }
+                a
+            }
+            "opp_char_cost_eq" => {
+                let mut a = false;
+                for c in &opp.field_chars {
+                    a |= dados(c)?.cost == n(k);
+                }
+                a
+            }
+            "opp_char_cost_eq_or_gte" => {
+                let (eq, ge) = (cs[k]["eq"].as_i64(), cs[k]["gte"].as_i64());
+                let mut a = false;
+                for c in &opp.field_chars {
+                    let x = dados(c)?.cost;
+                    a |= Some(x) == eq || ge.map_or(false, |g| x >= g);
+                }
+                a
+            }
+            "opp_rested_cards_gte" => {
+                let r = opp.don_rested + opp.field_chars.iter().filter(|c| c.rested).count() as i64
+                    + opp.leader.rested as i64 + opp.stage.as_ref().map_or(0, |s| s.rested as i64);
+                r >= n(k)
+            }
+            "don_on_field_lte_opp" => !cs[k].as_bool().unwrap_or(false) || don(p) <= don(opp),
+            "don_fewer_than_opp_by_gte" => don(opp) - don(p) >= n(k),
+            "other_char_power_gte" => return Err(ns("custo: other_char_power_gte")),
+            _ => true,
+        };
+        if !ok {
+            return Ok(false);
+        }
+    }
+    let _ = carta;
+    Ok(true)
+}
+
+/// `_counter_event_cost_payable` (o evento ainda esta na mao)
+fn custo_de_counter_pagavel(me: &Jogador, custos: &[Value]) -> bool {
+    let mut descartes = 0;
+    for c in custos {
+        match c["type"].as_str().unwrap_or("") {
+            "trash_from_hand" => descartes += c["count"].as_i64().unwrap_or(1),
+            "don_minus" => {
+                if !c["optional"].as_bool().unwrap_or(false)
+                    && me.don_available + me.don_rested < c["count"].as_i64().unwrap_or(1)
+                {
+                    return false;
+                }
+            }
+            _ => return false,
+        }
+    }
+    (me.hand.len() as i64 - 1) >= descartes
+}
+
+/// `_KEYWORD_GRANTS`: campo ligado por cada acao
+fn liga_keyword(c: &mut Carta, acao: &str) {
+    match acao {
+        "gain_blocker" => c.has_blocker = true,
+        "gain_rush" => c.has_rush = true,
+        "gain_rush_character" => c.has_rush_character = true,
+        "gain_double_attack" => c.has_double_attack = true,
+        "gain_banish" => c.has_banish = true,
+        "gain_unblockable" => c.has_unblockable = true,
+        _ => {}
+    }
+}
+
+const KEYWORD_GRANTS: &[&str] = &[
+    "gain_blocker", "gain_rush", "gain_rush_character", "gain_double_attack", "gain_banish", "gain_unblockable",
+];
+
+/// `apply_conditional_keyword_passives(gs, opp)`: so LIGA (nunca desliga).
+/// Varre campo, mao, lider e stage, nessa ordem; cada carta ve o que as
+/// anteriores ja ligaram.
+pub fn aplica_passivas_keyword(gs: &mut Jogador, opp: &Jogador) -> R<()> {
+    let ex = Executor::novo(Default::default());
+    let mut pool: Vec<(u8, usize)> = (0..gs.field_chars.len()).map(|i| (0, i)).collect();
+    pool.extend((0..gs.hand.len()).map(|i| (1, i)));
+    pool.push((2, 0));
+    if gs.stage.is_some() {
+        pool.push((3, 0));
+    }
+    fn pega(gs: &mut Jogador, l: (u8, usize)) -> &mut Carta {
+        match l.0 {
+            0 => &mut gs.field_chars[l.1],
+            1 => &mut gs.hand[l.1],
+            2 => &mut gs.leader,
+            _ => gs.stage.as_mut().unwrap(),
+        }
+    }
+    for l in pool {
+        let c = pega(gs, l).clone();
+        let inf = dados(&c)?;
+        let pas = inf.efeitos.get("passive").cloned().unwrap_or(Value::Null);
+        let ot = inf.efeitos.get("opp_turn").cloned().unwrap_or(Value::Null);
+        let acao = |s: &Value| s["action"].as_str().unwrap_or("").to_string();
+        let passos: Vec<Value> = passos_de(&pas).cloned().collect();
+        let passos_ot: Vec<Value> = passos_de(&ot).cloned().collect();
+        let ot_grants: Vec<String> = passos_ot.iter().map(acao).filter(|a| KEYWORD_GRANTS.contains(&a.as_str())).collect();
+        if !ot_grants.is_empty() && ex.condicoes(&ot["conditions"], gs, opp, &c, "opp_turn")? {
+            for a in &ot_grants {
+                liga_keyword(pega(gs, l), a);
+            }
+        }
+        let tem = |nomes: &[&str]| passos.iter().any(|s| nomes.contains(&s["action"].as_str().unwrap_or("")));
+        let bp_grupo: Vec<&Value> = passos_ot.iter()
+            .filter(|s| s["action"].as_str() == Some("set_base_power_group_opp_turn")).collect();
+        if !(tem(KEYWORD_GRANTS)
+            || tem(&["grant_rush_character_type", "grant_rush_aura", "grant_blocker_aura",
+                     "grant_unblockable_aura_named", "grant_double_attack_aura_named"])
+            || !bp_grupo.is_empty())
+        {
+            continue;
+        }
+        if !ex.condicoes(&pas["conditions"], gs, opp, &c, "passive")? {
+            continue;
+        }
+        // grants, depois cada aura, na ordem do Python (por tipo, nao por passo)
+        for s in passos.iter().filter(|s| KEYWORD_GRANTS.contains(&s["action"].as_str().unwrap_or(""))) {
+            let a = acao(s);
+            let cm = pega(gs, l);
+            liga_keyword(cm, &a);
+            if a == "gain_rush_character" && cm.just_played {
+                cm.rush_character_only_this_turn = true;
+            }
+        }
+        let eh_eu = |j: usize| l.0 == 0 && l.1 == j;
+        for s in passos.iter().filter(|s| s["action"].as_str() == Some("grant_rush_character_type")) {
+            let w = match &s["filter_type"] {
+                Value::String(t) => norm_tipo(t),
+                Value::Null => String::new(),
+                _ => return Err(ns("grant_rush_character_type com filter_type nao-string")),
+            };
+            for t in gs.field_chars.iter_mut() {
+                if !w.is_empty() && norm_tipo(&dados(t)?.sub_types).contains(&w) {
+                    t.has_rush_character = true;
+                    if t.just_played {
+                        t.rush_character_only_this_turn = true;
+                    }
+                }
+            }
+        }
+        for s in passos.iter().filter(|s| s["action"].as_str() == Some("grant_rush_aura")) {
+            let cor = s["color"].as_str().unwrap_or("").to_lowercase();
+            for (j, t) in gs.field_chars.iter_mut().enumerate() {
+                if s["exclude_self"].as_bool().unwrap_or(false) && eh_eu(j) {
+                    continue;
+                }
+                let ti = dados(t)?;
+                if !cor.is_empty() && ti.color.to_lowercase() != cor {
+                    continue;
+                }
+                if s["cost_gte"].as_i64().map_or(false, |g| ti.cost < g) {
+                    continue;
+                }
+                t.has_rush = true;
+            }
+        }
+        for s in passos.iter().filter(|s| s["action"].as_str() == Some("grant_blocker_aura")) {
+            for t in gs.field_chars.iter_mut() {
+                let ct = dados(t)?.cost;
+                if s["cost_gte"].as_i64().map_or(false, |g| ct < g) {
+                    continue;
+                }
+                t.has_blocker = true;
+            }
+        }
+        for s in passos.iter().filter(|s| matches!(s["action"].as_str(),
+                Some("grant_unblockable_aura_named") | Some("grant_double_attack_aura_named"))) {
+            let unb = s["action"].as_str() == Some("grant_unblockable_aura_named");
+            let liga = |x: &mut Carta| if unb { x.has_unblockable = true } else { x.has_double_attack = true };
+            liga(pega(gs, l));
+            let nome = s["filter_name"].as_str().unwrap_or("").to_lowercase();
+            for (j, t) in gs.field_chars.iter_mut().enumerate() {
+                if eh_eu(j) {
+                    continue;
+                }
+                if !nome.is_empty() && dados(t)?.name.to_lowercase().contains(&nome) {
+                    liga(t);
+                }
+            }
+        }
+        for s in &bp_grupo {
+            let v = s["amount"].as_i64();
+            pega(gs, l).base_power_override_opp_turn = v;
+            let nome = s["filter_name"].as_str().unwrap_or("").to_lowercase();
+            for (j, t) in gs.field_chars.iter_mut().enumerate() {
+                if eh_eu(j) {
+                    continue;
+                }
+                if !nome.is_empty() && dados(t)?.name.to_lowercase().contains(&nome) {
+                    t.base_power_override_opp_turn = v;
+                }
+            }
+        }
+    }
+    Ok(())
+}
+
+/// `effective_hand_play_cost(p, card, opp)`
+pub fn custo_de_jogar(p: &Jogador, opp: &Jogador, c: &Carta) -> R<i64> {
+    let i = dados(c)?;
+    let mut custo = i.cost + c.cost_buff + c.cost_buff_permanent;
+    if let Some(st) = &p.stage {
+        for (_, ent) in dados(st)?.efeitos.iter() {
+            for s in ent["steps"].as_array().into_iter().flatten() {
+                if s["action"].as_str() == Some("buff_cost") && s["target"].as_str() == Some("own_play_hand")
+                    && regra_de_custo_casa(c, s)?
+                {
+                    custo -= s["amount"].as_i64().unwrap_or(0);
+                }
+            }
+        }
+    }
+    for r in &p.pending_play_cost_reductions {
+        if regra_de_custo_casa(c, r)? {
+            custo -= r["amount"].as_i64().unwrap_or(0);
+        }
+    }
+    if let Some(pas) = i.efeitos.get("passive") {
+        if let Some(cs) = pas["conditions"].as_object().filter(|m| !m.is_empty()) {
+            if condicoes_de_custo(p, opp, c, cs)? {
+                for s in pas["steps"].as_array().into_iter().flatten() {
+                    if s["target"].as_str() != Some("own_play_self") {
+                        continue;
+                    }
+                    match s["action"].as_str() {
+                        Some("debuff_cost") => custo -= s["amount"].as_i64().unwrap_or(0),
+                        Some("set_play_cost") => custo = s["amount"].as_i64().unwrap_or(custo),
+                        _ => {}
+                    }
+                }
+            }
+        }
+    }
+    Ok(custo.max(0))
+}
+
 impl Executor {
+    /// `try_counter_event_power(alvo, alvo_tipo, falta)` pelo `ee_react`
+    /// (`me` = defensor). Devolve o poder somado a defesa (0 = nenhum).
+    pub fn counter_evento_poder(&mut self, me: &mut Jogador, opp: &mut Jogador, alvo: Option<usize>,
+                                alvo_tipo: &str, falta: i64) -> R<i64> {
+        const EXTRAS_OK: &[&str] = &[
+            "draw", "set_active", "rest_opp_character", "add_don", "set_don_active",
+            "ko", "bounce", "place_opp_character_bottom_deck", "debuff_power",
+            "trash_from_deck_top", "peek_life", "add_from_trash", "gain_life",
+            "character_to_owner_life", "opp_bounce_own_character",
+            "play_card", "play_from_deck", "look_top_deck", "add_to_hand",
+            "deck_bottom_rest", "deck_reorder_rest", "deck_top_rest",
+        ];
+        let alvo_inf = dados(match alvo {
+            None => &me.leader,
+            Some(j) => me.field_chars.get(j).ok_or_else(|| ns("alvo do counter fora do campo"))?,
+        })?;
+        // (excesso, custo, k, quanto, custos, extras)
+        let mut cands: Vec<(i64, i64, usize, i64, Vec<Value>, Vec<Value>)> = Vec::new();
+        for (k, ev) in me.hand.iter().enumerate() {
+            let inf = dados(ev)?;
+            if inf.card_type != "EVENT" {
+                continue;
+            }
+            let bloco = inf.efeitos.get("counter").cloned().unwrap_or(Value::Null);
+            if bloco.as_object().map_or(true, |m| m.is_empty()) {
+                if inf.card_text.to_lowercase().contains("[counter]") {
+                    return Err(ns("counter evento pelo texto (fallback)"));
+                }
+                continue;
+            }
+            if !self.condicoes(&bloco["conditions"], me, opp, ev, "counter")? {
+                continue;
+            }
+            let passos: Vec<Value> = passos_de(&bloco).cloned().collect();
+            let eh_buff = |s: &Value| s["action"].as_str() == Some("buff_power")
+                && matches!(s["duration"].as_str(), Some("battle_only") | Some("this_turn"));
+            let buffs: Vec<&Value> = passos.iter().filter(|s| eh_buff(s)).collect();
+            if buffs.is_empty() {
+                continue;
+            }
+            let extras: Vec<Value> = passos.iter().filter(|s| !eh_buff(s)).cloned().collect();
+            if extras.iter().any(|s| !EXTRAS_OK.contains(&s["action"].as_str().unwrap_or(""))) {
+                continue;
+            }
+            let pr = buffs[0];
+            match pr["target"].as_str().unwrap_or("") {
+                "leader" if alvo_tipo != "leader" => continue,
+                "own_character" if alvo_tipo != "character" => continue,
+                "leader" | "own_character" | "leader_or_character" => {}
+                "select_filtered" => {
+                    if !casa_filtro(&alvo_inf, &pr["filter_type"], false) {
+                        continue;
+                    }
+                }
+                _ => continue,
+            }
+            if !pr["conditions"].is_null() && !self.condicoes(&pr["conditions"], me, opp, ev, "counter")? {
+                continue;
+            }
+            let mut quanto = pr["amount"].as_i64().unwrap_or(0);
+            let mut ok = true;
+            for b in &buffs[1..] {
+                if !matches!(b["target"].as_str(), Some("self") | Some("selected")) {
+                    ok = false;
+                    break;
+                }
+                if !b["conditions"].is_null() && !self.condicoes(&b["conditions"], me, opp, ev, "counter")? {
+                    continue;
+                }
+                quanto += b["amount"].as_i64().unwrap_or(0);
+            }
+            if !ok || quanto < falta {
+                continue;
+            }
+            let custo = custo_de_jogar(me, opp, ev)?;
+            if me.don_available < custo {
+                continue;
+            }
+            let custos: Vec<Value> = bloco["costs"].as_array().cloned().unwrap_or_default();
+            if !custo_de_counter_pagavel(me, &custos) {
+                continue;
+            }
+            cands.push((quanto - falta, custo, k, quanto, custos, extras));
+        }
+        if cands.is_empty() {
+            return Ok(0);
+        }
+        self.passivas_da_fila(me, opp)?;
+        let Some((lado, z, k)) = self.escolha("counter_evento")? else { return Ok(0) };
+        if lado != "eu" || z != "hand" {
+            return Err(ns("counter evento fora da mao"));
+        }
+        let Some(pos) = cands.iter().position(|c| c.2 == k) else {
+            return Err(ns("counter evento fora dos candidatos"));
+        };
+        let (_, custo, k, quanto, custos, extras) = cands.swap_remove(pos);
+        let Some(k) = self.paga_custo_de_counter(me, opp, &custos, k)? else { return Ok(0) };
+        let ev = me.hand.remove(k);
+        me.trash.push(ev.clone());
+        me.don_available -= custo;
+        me.don_rested += custo;
+        let inf = dados(&ev)?;
+        let lf = self.lugar_fonte.take();
+        let mut r = Ok(());
+        for st in &extras {
+            r = self.passo(st, me, opp, &ev, &inf, "counter");
+            if r.is_err() {
+                break;
+            }
+        }
+        self.lugar_fonte = lf;
+        r?;
+        Ok(quanto)
+    }
+
+    /// Ha evento [Counter] de K.O. no atacante na mao? (fora do nucleo)
+    pub fn tem_counter_evento_ko(me: &Jogador) -> R<bool> {
+        for ev in &me.hand {
+            let inf = dados(ev)?;
+            if inf.card_type != "EVENT" {
+                continue;
+            }
+            let Some(b) = inf.efeitos.get("counter") else { continue };
+            let p: Vec<&Value> = passos_de(b).collect();
+            if p.len() == 1 && p[0]["action"].as_str() == Some("ko") {
+                return Ok(true);
+            }
+        }
+        Ok(false)
+    }
+
+    /// `try_counter_event_debuff(atacante, tipo, falta)` pelo `ee_react`
+    /// (`me` = defensor). Devolve quanto o atacante perdeu (0 = nenhum); o
+    /// `power_buff` do atacante e baixado aqui.
+    pub fn counter_evento_debuff(&mut self, me: &mut Jogador, opp: &mut Jogador, atacante: Option<usize>,
+                                 falta: i64) -> R<i64> {
+        let atk_char = atacante.is_some();
+        // (excesso, custo, k, quanto, custos)
+        let mut cands: Vec<(i64, i64, usize, i64, Vec<Value>)> = Vec::new();
+        for (k, ev) in me.hand.iter().enumerate() {
+            let inf = dados(ev)?;
+            if inf.card_type != "EVENT" {
+                continue;
+            }
+            // `_counter_event_debuff_plan`
+            let Some(bloco) = inf.efeitos.get("counter").filter(|b| b.as_object().map_or(false, |m| !m.is_empty())) else {
+                continue;
+            };
+            if !self.condicoes(&bloco["conditions"], me, opp, ev, "counter")? {
+                continue;
+            }
+            let passos: Vec<&Value> = passos_de(bloco).collect();
+            if passos.is_empty()
+                || passos.iter().any(|s| !matches!(s["action"].as_str(), Some("debuff_power") | Some("negate_effect")))
+            {
+                continue;
+            }
+            let mut total = 0;
+            let mut ok = true;
+            for s in &passos {
+                if s["action"].as_str() != Some("debuff_power") {
+                    continue;
+                }
+                match s["target"].as_str() {
+                    Some("opp_character") if !atk_char => continue,
+                    Some("opp_character") | Some("opp_leader_or_character") => {}
+                    _ => {
+                        ok = false;
+                        break;
+                    }
+                }
+                if !s["conditions"].is_null() && !self.condicoes(&s["conditions"], me, opp, ev, "counter")? {
+                    continue;
+                }
+                total += s["amount"].as_i64().unwrap_or(0);
+            }
+            if !ok || total == 0 || total < falta {
+                continue;
+            }
+            let custo = custo_de_jogar(me, opp, ev)?;
+            if me.don_available < custo {
+                continue;
+            }
+            let custos: Vec<Value> = bloco["costs"].as_array().cloned().unwrap_or_default();
+            if !custo_de_counter_pagavel(me, &custos) {
+                continue;
+            }
+            cands.push((total - falta, custo, k, total, custos));
+        }
+        if cands.is_empty() {
+            return Ok(0);
+        }
+        self.passivas_da_fila(me, opp)?;
+        let Some((lado, z, k)) = self.escolha("counter_evento")? else { return Ok(0) };
+        if lado != "eu" || z != "hand" {
+            return Err(ns("counter evento fora da mao"));
+        }
+        let Some(pos) = cands.iter().position(|c| c.2 == k) else {
+            return Err(ns("counter evento fora dos candidatos"));
+        };
+        let (_, custo, k, quanto, custos) = cands.swap_remove(pos);
+        let Some(k) = self.paga_custo_de_counter(me, opp, &custos, k)? else { return Ok(0) };
+        let ev = me.hand.remove(k);
+        me.trash.push(ev);
+        me.don_available -= custo;
+        me.don_rested += custo;
+        carta_mut(opp, atacante)?.power_buff -= quanto;
+        Ok(quanto)
+    }
+
+    /// `_pay_counter_event_costs`; devolve o novo indice do evento na mao
+    /// (None = nao pagou; o que ja foi pago fica pago, como no Python).
+    fn paga_custo_de_counter(&mut self, me: &mut Jogador, opp: &mut Jogador, custos: &[Value], mut k: usize) -> R<Option<usize>> {
+        for c in custos {
+            match c["type"].as_str().unwrap_or("") {
+                "trash_from_hand" => {
+                    for _ in 0..c["count"].as_i64().unwrap_or(1) {
+                        if me.hand.len() <= 1 {
+                            return Ok(None);
+                        }
+                        self.passivas_da_fila(me, opp)?;
+                        let Some((lado, z, i)) = self.escolha("descarte")? else {
+                            return Err(ns("descarte vazio no custo do counter"));
+                        };
+                        if lado != "eu" || z != "hand" || i >= me.hand.len() || i == k {
+                            return Err(ns("descarte fora da mao"));
+                        }
+                        let x = me.hand.remove(i);
+                        me.trash.push(x);
+                        if i < k {
+                            k -= 1;
+                        }
+                    }
+                }
+                "don_minus" if !c["optional"].as_bool().unwrap_or(false) => {
+                    if !devolve_don(me, c["count"].as_i64().unwrap_or(1), None)? {
+                        return Ok(None);
+                    }
+                }
+                _ => {}
+            }
+        }
+        Ok(Some(k))
+    }
+
+    /// A proxima decisao veio depois de o Python criar o motor de decisao
+    /// (`EffectExecutor._de`), que liga as passivas de keyword dos dois lados.
+    fn passivas_da_fila(&mut self, me: &mut Jogador, opp: &mut Jogador) -> R<()> {
+        if let Some(d) = self.fila.front_mut() {
+            if d.get("passivas").and_then(|v| v.as_bool()) == Some(true) {
+                d.as_object_mut().unwrap().remove("passivas");
+                aplica_passivas_keyword(me, opp)?;
+                aplica_passivas_keyword(opp, me)?;
+            }
+        }
+        Ok(())
+    }
+
     fn proxima(&mut self, tipo: &str) -> R<Value> {
         let d = self.fila.pop_front().ok_or_else(|| ns(&format!("fila sem decisao ({tipo})")))?;
+        if d.get("passivas").is_some() {
+            return Err(ns("passivas de keyword antes de decisao fora do descarte"));
+        }
         if d["tipo"].as_str() != Some(tipo) {
             return Err(ns(&format!("decisao fora de ordem: esperava {tipo}, veio {}", d["tipo"])));
         }
@@ -185,6 +736,54 @@ impl Executor {
                     }
                 }
                 "opp_life_gte" => (opp.life.len() as i64) >= n,
+                "opp_don_on_field_gte" => opp.don_available + opp.don_rested >= n,
+                // sub-chaves: so lidas dentro de chars_gte
+                "chars_gte_cost_filter" | "chars_gte_type_filter" | "chars_gte_color_filter"
+                | "chars_gte_distinct_names" | "chars_gte_exclude_self" => true,
+                "chars_gte" => {
+                    let o = conds.as_object().unwrap();
+                    let contagem = if let Some(cf) = o.get("chars_gte_cost_filter").filter(|x| !x.is_null()) {
+                        let cf = cf.as_i64().unwrap_or(0);
+                        let mut k = 0;
+                        for c in &me.field_chars {
+                            if dados(c)?.cost >= cf {
+                                k += 1;
+                            }
+                        }
+                        k
+                    } else if let Some(tf) = o.get("chars_gte_type_filter").filter(|x| !x.is_null()) {
+                        let tipos: Vec<String> = match tf {
+                            Value::Array(a) => a.iter().map(|x| x.as_str().unwrap_or("").to_lowercase()).collect(),
+                            x => vec![x.as_str().unwrap_or("").to_lowercase()],
+                        };
+                        if o.get("chars_gte_exclude_self").and_then(|x| x.as_bool()).unwrap_or(false) {
+                            return Err(ns("chars_gte_exclude_self"));
+                        }
+                        let cor = o.get("chars_gte_color_filter").and_then(|x| x.as_str()).unwrap_or("").to_lowercase();
+                        let mut nomes = std::collections::HashSet::new();
+                        let mut k = 0;
+                        for c in &me.field_chars {
+                            let ci = dados(c)?;
+                            let st = ci.sub_types.to_lowercase();
+                            if !tipos.iter().any(|t| st.contains(t.as_str())) {
+                                continue;
+                            }
+                            if !cor.is_empty() && ci.color.to_lowercase() != cor {
+                                continue;
+                            }
+                            k += 1;
+                            nomes.insert(ci.name.clone());
+                        }
+                        if o.get("chars_gte_distinct_names").map_or(false, |x| x.as_bool().unwrap_or(!x.is_null())) {
+                            nomes.len() as i64
+                        } else {
+                            k
+                        }
+                    } else {
+                        me.field_chars.len() as i64
+                    };
+                    contagem >= n
+                }
                 "only_field_type" => {
                     let t = v.as_str().unwrap_or("").to_lowercase();
                     let mut todos = !me.field_chars.is_empty();
@@ -372,6 +971,7 @@ impl Executor {
         }
         match gatilho {
             "on_play" | "main" | "trigger" => {
+                self.passivas_da_fila(me, opp)?;
                 let d = self.proxima("paga_custo")?;
                 if d["qual"].as_str() != Some("_worth_paying_optional_costs") {
                     return Err(ns("veredito de custo inesperado"));
@@ -383,9 +983,11 @@ impl Executor {
             // gatilhos de combate: `_combat_buff_worth_paying`; se ele nao decide
             // (None), `_worth_paying_optional_costs`
             "when_attacking" | "on_opp_attack" | "leader_battle_reactive" => {
+                self.passivas_da_fila(me, opp)?;
                 let d = self.proxima("paga_custo")?;
                 let v = match d["qual"].as_str() {
                     Some("_combat_buff_worth_paying") if d["valor"].is_null() => {
+                        self.passivas_da_fila(me, opp)?;
                         let d2 = self.proxima("paga_custo")?;
                         if d2["qual"].as_str() != Some("_worth_paying_optional_costs") {
                             return Err(ns("veredito de custo inesperado"));
@@ -405,7 +1007,7 @@ impl Executor {
             outro => return Err(ns(&format!("gatilho fora do nucleo: {outro}"))),
         }
         let custos: Vec<Value> = ef["costs"].as_array().cloned().unwrap_or_default();
-        if !self.paga_custos(&custos, me)? {
+        if !self.paga_custos(&custos, me, opp)? {
             return Ok(());
         }
         self.ultimo = None;
@@ -431,7 +1033,7 @@ impl Executor {
     }
 
     /// `_pay_costs` -- sequencial (pagamento parcial fica, como no Python).
-    fn paga_custos(&mut self, custos: &[Value], me: &mut Jogador) -> R<bool> {
+    fn paga_custos(&mut self, custos: &[Value], me: &mut Jogador, opp: &mut Jogador) -> R<bool> {
         for c in custos {
             let n = c["count"].as_i64().unwrap_or(1);
             match c["type"].as_str().unwrap_or("") {
@@ -443,7 +1045,12 @@ impl Executor {
                     me.don_rested += n;
                 }
                 "don_minus" => {
-                    if !devolve_don(me, n)? {
+                    let exclui = match &self.lugar_fonte {
+                        Some((z, _)) if z == "leader" => Some(None),
+                        Some((z, i)) if z == "field_chars" => Some(Some(*i)),
+                        _ => None,
+                    };
+                    if !devolve_don(me, n, exclui)? {
                         return Ok(false);
                     }
                 }
@@ -466,6 +1073,7 @@ impl Executor {
                         return Ok(false);
                     }
                     for _ in 0..n {
+                        self.passivas_da_fila(me, opp)?;
                         let Some((lado, z, i)) = self.escolha("descarte")? else { continue };
                         if lado != "eu" || z != "hand" || i >= me.hand.len() {
                             return Err(ns("descarte fora da mao"));
@@ -525,6 +1133,7 @@ impl Executor {
                 }
                 for _ in 0..descarta {
                     // mao vazia: o diario grava a escolha vazia (None) e a fila a consome
+                    self.passivas_da_fila(me, opp)?;
                     let Some((lado, z, i)) = self.escolha("descarte")? else { continue };
                     if lado != "eu" || z != "hand" || i >= me.hand.len() {
                         return Err(ns("descarte fora da mao"));
@@ -566,11 +1175,17 @@ impl Executor {
                     }
                 }
             }
-            "add_to_hand" => self.busca(st, me, inf)?,
+            "add_to_hand" => {
+                self.passivas_da_fila(me, opp)?;
+                self.busca(st, me, inf)?
+            }
             "ko" => self.ko(st, me, opp)?,
-            "buff_power" => self.buff(st, me, fonte)?,
-            "give_don" => self.da_don(st, me)?,
-            "play_from_trash" => self.joga_do_lixo(st, me)?,
+            "buff_power" => self.buff(st, me, opp, fonte)?,
+            "give_don" => {
+                self.passivas_da_fila(me, opp)?;
+                self.da_don(st, me)?
+            }
+            "play_from_trash" => self.joga_do_lixo(st, me, opp)?,
             "play_card" => self.joga_carta(st, me, opp, fonte)?,
             "rest_opp_character" => self.restar_oponente(st, me, opp)?,
             "debuff_power" => self.debuff(st, me, opp, fonte)?,
@@ -883,6 +1498,7 @@ impl Executor {
             }
         }
         for _ in 0..n.min(cands.len()) {
+            self.passivas_da_fila(me, opp)?;
             let i = self.alvo_no_oponente(&cands)?;
             let c = &opp.field_chars[i];
             if !c.immunity_ko_until.is_empty() {
@@ -908,7 +1524,7 @@ impl Executor {
     }
 
     /// `buff_power` (a duracao nao muda a execucao: o buff some no inicio do turno)
-    fn buff(&mut self, st: &Value, me: &mut Jogador, fonte: &Carta) -> R<()> {
+    fn buff(&mut self, st: &Value, me: &mut Jogador, opp: &mut Jogador, fonte: &Carta) -> R<()> {
         let v = st["amount"].as_i64().unwrap_or(0);
         match st["target"].as_str().unwrap_or("self") {
             "self" => {
@@ -996,6 +1612,7 @@ impl Executor {
                 if cands.is_empty() {
                     return Ok(());
                 }
+                self.passivas_da_fila(me, opp)?;
                 let x = self.alvo_meu(&cands)?;
                 carta_mut(me, x)?.power_buff += v;
                 self.ultimo = Some(x);
@@ -1024,6 +1641,7 @@ impl Executor {
                     if cands.is_empty() {
                         break;
                     }
+                    self.passivas_da_fila(me, opp)?;
                     let x = self.alvo_meu(&cands)?;
                     cands.retain(|y| *y != x);
                     carta_mut(me, x)?.power_buff += v;
@@ -1105,19 +1723,22 @@ impl Executor {
         }
     }
 
-    /// Personagem entra no campo por efeito (rested, just_played, rush de personagem).
-    fn entra_personagem(me: &mut Jogador, mut c: Carta, rested: bool) -> R<()> {
-        let i = dados(&c)?;
+    /// Personagem entra no campo por efeito: entra, passivas de keyword,
+    /// DEPOIS just_played / rush de personagem (ordem do Python).
+    fn entra_personagem(me: &mut Jogador, opp: &Jogador, mut c: Carta, rested: bool) -> R<()> {
         c.rested = rested;
-        c.just_played = !(c.has_rush || c.rush_this_turn || crate::acoes::is_rush_character(&c, &i));
-        c.rush_character_only_this_turn =
-            crate::acoes::is_rush_character(&c, &i) && !crate::acoes::is_rush(&c, &i);
         me.field_chars.push(c);
+        aplica_passivas_keyword(me, opp)?;
+        let n = me.field_chars.last_mut().unwrap();
+        let i = dados(n)?;
+        n.just_played = !(n.has_rush || n.rush_this_turn || crate::acoes::is_rush_character(n, &i));
+        n.rush_character_only_this_turn =
+            crate::acoes::is_rush_character(n, &i) && !crate::acoes::is_rush(n, &i);
         Ok(())
     }
 
     /// `play_from_trash` (sem on_play -- igual ao motor de hoje)
-    fn joga_do_lixo(&mut self, st: &Value, me: &mut Jogador) -> R<()> {
+    fn joga_do_lixo(&mut self, st: &Value, me: &mut Jogador, opp: &mut Jogador) -> R<()> {
         for k in ["filter_self", "same_name_as_trashed"] {
             if st[k].as_bool().unwrap_or(false) {
                 return Err(ns(&format!("play_from_trash {k}")));
@@ -1164,6 +1785,7 @@ impl Executor {
             if pool.is_empty() {
                 break;
             }
+            self.passivas_da_fila(me, opp)?;
             let k = match self.escolha("do_lixo")? {
                 Some((l, z, i)) if l == "eu" && z == "trash" && pool.contains(&i) => i,
                 outro => return Err(ns(&format!("do_lixo inesperado: {outro:?}"))),
@@ -1185,9 +1807,10 @@ impl Executor {
                 me.stage = Some(c);
             } else {
                 if me.field_chars.len() >= 5 {
+                    self.passivas_da_fila(me, opp)?;
                     self.sai_do_campo(me)?;
                 }
-                Self::entra_personagem(me, c, rested)?;
+                Self::entra_personagem(me, opp, c, rested)?;
             }
         }
         Ok(())
@@ -1249,11 +1872,13 @@ impl Executor {
                 break;
             }
             // escolhe_carta_para_jogar -> _q_escolhe_carta('jogar_gratis')
+            self.passivas_da_fila(me, opp)?;
             let (z, k) = match self.escolha("jogar_gratis")? {
                 Some((l, z, i)) if l == "eu" && pool.contains(&(z.clone(), i)) => (z, i),
                 outro => return Err(ns(&format!("jogar_gratis inesperado: {outro:?}"))),
             };
             let ci = dados(if z == "hand" { &me.hand[k] } else { &me.trash[k] })?;
+            self.passivas_da_fila(me, opp)?;
             if ci.card_type == "CHARACTER" && me.field_chars.len() >= 5 && !self.veredito("troca_campo")? {
                 eleg.retain(|x| *x != (z.clone(), k));
                 continue;
@@ -1276,9 +1901,10 @@ impl Executor {
             match ci.card_type.as_str() {
                 "CHARACTER" => {
                     if me.field_chars.len() >= 5 {
+                        self.passivas_da_fila(me, opp)?;
                         self.sai_do_campo(me)?;
                     }
-                    Self::entra_personagem(me, c, false)?;
+                    Self::entra_personagem(me, opp, c, false)?;
                     let nova = me.field_chars.last().unwrap().clone();
                     self.dispara_jogou_personagem(me, opp, &nova, true)?;
                     self.lugar_fonte = Some(("field_chars".into(), me.field_chars.len() - 1));
@@ -1351,6 +1977,7 @@ impl Executor {
         }
         let mut feitos = 0;
         for _ in 0..n.min(cands.len()) {
+            self.passivas_da_fila(me, opp)?;
             let i = self.alvo_no_oponente(&cands)?;
             opp.field_chars[i].rested = true;
             cands.retain(|&j| j != i);
@@ -1390,6 +2017,7 @@ impl Executor {
                 let ativos: Vec<usize> = (0..opp.field_chars.len()).filter(|&i| !opp.field_chars[i].rested).collect();
                 let mut cands = if ativos.is_empty() { (0..opp.field_chars.len()).collect() } else { ativos };
                 for _ in 0..n.min(cands.len()) {
+                    self.passivas_da_fila(me, opp)?;
                     let i = self.alvo_no_oponente(&cands)?;
                     opp.field_chars[i].power_buff -= v;
                     cands.retain(|&j| j != i);
@@ -1407,6 +2035,7 @@ impl Executor {
                     cands.push(None);
                 }
                 for _ in 0..n.min(cands.len()) {
+                    self.passivas_da_fila(me, opp)?;
                     let e = match self.escolha("alvo")? {
                         Some((l, z, i)) if l == "oponente" && z == "field_chars" => Some(i),
                         Some((l, z, _)) if l == "oponente" && z == "leader" => None,
@@ -1462,17 +2091,21 @@ fn olhar_e_pegar(inf: &InfoCarta, ultimo: bool) -> (i64, i64) {
 }
 
 /// `_return_don_to_deck` (custo DON!! -X), mesma ordem de preferencia.
-/// (`exclude_card` so vale para o proprio atacante em when_attacking -- fora desta onda)
-fn devolve_don(me: &mut Jogador, n: i64) -> R<bool> {
+/// `exclui`: a carta-fonte do efeito (`exclude_card=card` em `_pay_costs`;
+/// Some(None) = lider), fora so das duas fontes "baratas".
+fn devolve_don(me: &mut Jogador, n: i64, exclui: Option<Option<usize>>) -> R<bool> {
     let mut dev = 0;
-    for c in me.field_chars.iter_mut() {
+    for (j, c) in me.field_chars.iter_mut().enumerate() {
+        if exclui == Some(Some(j)) {
+            continue;
+        }
         while c.don_attached > 0 && c.rested && dev < n {
             c.don_attached -= 1;
             me.don_deck += 1;
             dev += 1;
         }
     }
-    while me.leader.don_attached > 0 && me.leader.rested && dev < n {
+    while exclui != Some(None) && me.leader.don_attached > 0 && me.leader.rested && dev < n {
         me.leader.don_attached -= 1;
         me.don_deck += 1;
         dev += 1;

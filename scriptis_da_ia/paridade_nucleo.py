@@ -29,7 +29,7 @@ _REATIVAS = de.OPTCGMatch._OPP_TURN_REACTIVE_ACTIONS
 # vao para o Rust com a fila de decisoes do efeito.
 _ONDA = {'look_top_deck', 'add_to_hand', 'deck_bottom_rest', 'trash_rest', 'draw',
          'gain_life', 'add_don', 'set_don_active', 'ko', 'rest_opp_character', 'debuff_power', 'buff_power', 'give_don', 'play_from_trash', 'play_card', 'redirect_attack_target', 'activate_trash_event_main',
-         'custo:trash_from_hand', 'custo:don_minus', 'custo:rest_don'}
+         '#custo_jogar', '#passiva_keyword', '#try_counter_event_power', '#try_counter_event_debuff', 'custo:trash_from_hand', 'custo:don_minus', 'custo:rest_don'}
 
 
 def _tem_efeito_de_inicio(estado: dict) -> bool:
@@ -127,6 +127,7 @@ def main() -> int:
            'fim_com_efeito': 0}
     jog = {}      # tipo -> [identicas, conferidas, nao_suportadas, com_efeito]
     motivos = {}
+    faltam = {}
     divs = []
     for i in range(a.partidas):
         ev = diario_de(a.seed + i)
@@ -192,6 +193,8 @@ def main() -> int:
                 if e.get('passos_efeito', 0):
                     if not (t in ('play', 'attack', 'activate') and set(e.get('acoes_efeito', [])) <= _ONDA):
                         c[3] += 1
+                        for r_ in set(e.get('acoes_efeito', [])) - _ONDA:
+                            faltam[r_] = faltam.get(r_, 0) + 1
                         continue
                     t = t + '+efeito'
                     c = jog.setdefault(t, [0, 0, 0, 0])
@@ -216,6 +219,7 @@ def main() -> int:
     for t, (ok, n, nao, efe) in sorted(jog.items()):
         print(f'jogada {t:11s} {ok}/{n} identicas ({100 * ok / max(n, 1):.1f}%) | '
               f'nao suportadas {nao} | com efeito {efe} (fora desta onda)')
+    print('   fora da onda:', ', '.join(f'{k}={v}' for k, v in sorted(faltam.items(), key=lambda x: -x[1])[:25]))
     for m_, n_ in sorted(motivos.items(), key=lambda x: -x[1]):
         print(f'   nao suportado: {m_} ({n_})')
     for k in ('ida_volta', 'inicio_turno', 'fim_turno'):

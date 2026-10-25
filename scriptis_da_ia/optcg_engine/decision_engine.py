@@ -22205,6 +22205,7 @@ class OPTCGMatch:
             _desc = _ec.descreve_acao(action, p, opp)
             _passos0 = _ec.DIARIO.get('passos', 0)
             _acoes0 = len(_ec.DIARIO.get('acoes', []))
+            _ec.DIARIO['passivas_pendentes'] = False
             _ec.registra({'tipo': 'jogada_inicio', 'acao': _desc,
                           'lado': 'A' if p is self.state_a else 'B'})
         r = self._apply_action_inner(action, p, opp, ee, engine, verbose)
@@ -25143,7 +25144,29 @@ def _diario_lugar_com_lado(c, me, opp):
 def _diario_decisao_efeito(tipo, **campos):
     from optcg_engine import estado_canonico as _ec
     if _ec.DIARIO['on'] and not _EM_SIMULACAO['on']:
+        if _ec.DIARIO.pop('passivas_pendentes', False):
+            # o motor de decisao criado DURANTE esta escolha ligou as passivas
+            # de keyword dos dois lados (`EffectExecutor._de`) antes dela
+            campos['passivas'] = True
         _ec.registra(dict(tipo=tipo, **campos))
+
+
+_de_orig = EffectExecutor._de
+
+
+def _de_com_diario(self):
+    """`DecisionEngine(me, opp)` liga as passivas de keyword: o diario marca o
+    momento (vai na proxima decisao gravada)."""
+    from optcg_engine import estado_canonico as _ec
+    if (self._decision_engine_cache is None and _ec.DIARIO['on']
+            and not _EM_SIMULACAO['on']):
+        _ec.DIARIO['passivas_pendentes'] = True
+    return _de_orig(self)
+
+
+_de_com_diario.__wrapped__ = _de_orig
+_de_com_diario.__doc__ = _de_orig.__doc__
+EffectExecutor._de = _de_com_diario
 
 
 def _embrulha_escolha_de_carta(nome, rotulo, pula=None):
@@ -25163,6 +25186,19 @@ def _embrulha_escolha_de_carta(nome, rotulo, pula=None):
 _embrulha_escolha_de_carta('_pick_effect_target', 'alvo')
 _embrulha_escolha_de_carta('_choose_to_trash', 'descarte',
                            pula=lambda a, k: k.get('avaliando', a[1] if len(a) > 1 else False))
+_qce_orig = EffectExecutor._q_counter_evento
+
+
+def _q_counter_evento_com_diario(self, candidates, alvo, alvo_tipo):
+    """Evento [Counter]: qual usar (o evento, pelo lugar na mao) ou nenhum."""
+    r = _qce_orig(self, candidates, alvo, alvo_tipo)
+    _diario_decisao_efeito('escolha_efeito', qual='counter_evento',
+                           carta=_diario_lugar_com_lado(r[2] if r else None, self.me, self.opp))
+    return r
+
+
+_q_counter_evento_com_diario.__wrapped__ = _qce_orig
+EffectExecutor._q_counter_evento = _q_counter_evento_com_diario
 _qec_orig = _q_escolhe_carta
 
 
