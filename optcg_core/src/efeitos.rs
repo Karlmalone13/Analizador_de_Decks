@@ -3526,8 +3526,8 @@ impl Executor {
                 return Err(ns(&format!("ko com {k}")));
             }
         }
-        if tem_reativo(me, REATIVOS_DE_KO)? || tem_reativo(opp, REATIVOS_DE_KO)? {
-            return Err(ns("reativo de KO"));
+        if tem_reativo(me, &["on_own_effect_removes_char"])? || tem_reativo(opp, &["on_own_effect_removes_char"])? {
+            return Err(ns("reativo on_own_effect_removes_char"));
         }
         let n = st["count"].as_i64().unwrap_or(1).max(0) as usize;
         let mut cands: Vec<usize> = Vec::new();
@@ -3554,21 +3554,25 @@ impl Executor {
             if sub? {
                 return Err(ns("ko: substituicao paga (indices do campo podem mudar)"));
             }
-            let c = &opp.field_chars[i];
-            if dados(c)?.efeitos.contains_key("on_ko") {
-                return Err(ns("on_ko do alvo"));
-            }
-            let mut x = opp.field_chars.remove(i);
-            if x.don_attached > 0 {
-                opp.don_rested += x.don_attached;
-                x.don_attached = 0;
-            }
-            opp.trash.push(x);
+            crate::acoes::tira_do_campo_para_lixo(opp, i);
+            let alvo = opp.trash.last().cloned().unwrap();
             cands.retain(|&j| j != i);
             for j in cands.iter_mut() {
                 if *j > i {
                     *j -= 1;
                 }
+            }
+            // `ee_target = EffectExecutor(owner, me)`: [On K.O.] do alvo + reativos de KO
+            let resto: Vec<String> = cands.iter().map(|&j| opp.field_chars[j].code.clone()).collect();
+            let mut ee = Executor::novo(std::mem::take(&mut self.fila));
+            ee.inst = 7700 + self.usados.len() as u32;
+            let r = ee.executa(opp, me, &alvo, "on_ko")
+                .and_then(|_| ee.dispara_dano_ou_ko(opp, me, Some(&alvo)))
+                .and_then(|_| ee.dispara_ko(opp, me, &alvo));
+            self.fila = std::mem::take(&mut ee.fila);
+            r?;
+            if cands.iter().zip(&resto).any(|(&j, c)| opp.field_chars.get(j).map(|x| &x.code) != Some(c)) {
+                return Err(ns("ko: campo do alvo mudou no on_ko"));
             }
         }
         Ok(())
