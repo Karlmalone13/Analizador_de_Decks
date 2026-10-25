@@ -115,6 +115,12 @@ fn carta_mut(me: &mut Jogador, i: Option<usize>) -> R<&mut Carta> {
     }
 }
 
+/// `effective_power(your_turn=False)`: sem DON, com o override do turno do oponente
+fn poder_turno_do_outro(c: &Carta) -> R<i64> {
+    let base = c.base_power_override.or(c.base_power_override_opp_turn).unwrap_or(dados(c)?.power);
+    Ok((base + c.power_buff).max(0))
+}
+
 /// `effective_power(your_turn=True)`
 fn poder_meu_turno(c: &Carta) -> R<i64> {
     let base = c.base_power_override.unwrap_or(dados(c)?.power);
@@ -1011,7 +1017,7 @@ impl Executor {
             "add_to_hand" | "trash_rest" | "gain_life" | "add_don" | "buff_power" | "give_don" | "redirect_attack_target"
             | "activate_trash_event_main" | "transfer_don" | "activate_main_effect"
             | "deal_damage" | "give_don_either_side" | "peek_opp_deck_top"
-            | "buff_power_per_count" | "self_cant_play" | "give_don_opp" | "set_active"
+            | "buff_power_per_count" | "set_base_power" | "buff_cost" | "self_cant_play" | "give_don_opp" | "set_active"
             | "lock_opp_cannot_be_rested" | "lock_opp_blocker_turn" => true,
             "add_from_trash" => !me.trash.is_empty(),
             "deck_reorder_rest" | "deck_top_rest" => !me.deck.is_empty(),
@@ -1058,7 +1064,7 @@ impl Executor {
                 }
                 ok
             }
-            a @ ("ko" | "rest_opp_character" | "debuff_power" | "lock_opp_character_refresh" | "bounce"
+            a @ ("ko" | "rest_opp_character" | "debuff_power" | "debuff_cost" | "lock_opp_character_refresh" | "bounce"
                  | "place_opp_character_bottom_deck"
                  | "lock_opp_character_attack") => {
                 match st["target"].as_str() {
@@ -1415,6 +1421,134 @@ impl Executor {
         }
         match acao {
             "look_top_deck" => {}
+            "set_base_power" => {
+                if let Some(src) = st["source"].as_str() {
+                    let v = match src {
+                        "opp_leader" => poder_turno_do_outro(&opp.leader)?,
+                        "own_leader" => poder_meu_turno(&me.leader)?,
+                        "selected_opp_character" => {
+                            let mut m: Option<i64> = None;
+                            for c in &opp.field_chars {
+                                let p = poder_turno_do_outro(c)?;
+                                if m.map_or(true, |b| p > b) {
+                                    m = Some(p);
+                                }
+                            }
+                            match m {
+                                Some(p) => p,
+                                None => return Ok(()),
+                            }
+                        }
+                        "opp_attacking_character" => return Err(ns("set_base_power do atacante")),
+                        _ => return Ok(()),
+                    };
+                    self.fonte_mut(me, fonte)?.base_power_override = Some(v);
+                } else if let Some(v) = st["amount"].as_i64() {
+                    let f = &st["filter_type"];
+                    let mut cands: Vec<Option<usize>> = Vec::new();
+                    match st["target"].as_str().unwrap_or("self") {
+                        "self" => {
+                            if casa_filtro(&dados(fonte)?, f, false) {
+                                let c = self.fonte_mut(me, fonte)?;
+                                c.base_power_override = Some(v);
+                            }
+                            return Ok(());
+                        }
+                        "leader" => {
+                            if casa_filtro(&dados(&me.leader)?, f, false) {
+                                cands.push(None);
+                            }
+                        }
+                        t @ ("own_character" | "leader_or_own_character" | "leader_or_character") => {
+                            if t != "own_character" && casa_filtro(&dados(&me.leader)?, f, false) {
+                                cands.push(None);
+                            }
+                            for (j, c) in me.field_chars.iter().enumerate() {
+                                if casa_filtro(&dados(c)?, f, false) {
+                                    cands.push(Some(j));
+                                }
+                            }
+                        }
+                        "opp_character" => return Err(ns("set_base_power em personagem do oponente")),
+                        _ => {}
+                    }
+                    let mut melhor: Option<(Option<usize>, i64)> = None;
+                    for x in cands {
+                        let p = poder_meu_turno(carta_mut(me, x)?)?;
+                        if melhor.map_or(true, |(_, b)| p > b) {
+                            melhor = Some((x, p));
+                        }
+                    }
+                    if let Some((x, _)) = melhor {
+                        carta_mut(me, x)?.base_power_override = Some(v);
+                    }
+                }
+            }
+            "buff_cost" | "debuff_cost" => {
+                let mut v = st["amount"].as_i64().unwrap_or(0);
+                if acao == "debuff_cost" {
+                    v = -v;
+                }
+                let alvo = st["target"].as_str().unwrap_or("self");
+                let perm = st["duration"].as_str() == Some("permanent");
+                if alvo == "own_play_hand" {
+                    if st["duration"].as_str() == Some("next_play_only") {
+                        let mut r = serde_json::Map::new();
+                        for k in ["amount", "filter_type", "filter_name", "cost_gte"] {
+                            if let Some(x) = st.get(k) {
+                                r.insert(k.into(), x.clone());
+                            }
+                        }
+                        me.pending_play_cost_reductions.push(Value::Object(r));
+                    }
+                    return Ok(());
+                }
+                let para = st["to_value"].as_i64();
+                let aplica = |c: &mut Carta| -> R<()> {
+                    let real = match para {
+                        Some(t) => {
+                            let i = dados(c)?;
+                            -((i.cost + c.cost_buff + c.cost_buff_permanent).max(0) - t)
+                        }
+                        None => v,
+                    };
+                    if perm {
+                        c.cost_buff_permanent += real;
+                    } else {
+                        c.cost_buff += real;
+                    }
+                    Ok(())
+                };
+                if alvo == "self" {
+                    aplica(self.fonte_mut(me, fonte)?)?;
+                    return Ok(());
+                }
+                let lado: &mut Jogador = if alvo == "own_character" { me } else { opp };
+                let cl = match &st["cost_lte"] {
+                    Value::Null => None,
+                    x => Some(x.as_i64().ok_or_else(|| ns("custo: cost_lte dinamico"))?),
+                };
+                let nome = st["filter_name"].as_str().unwrap_or("").to_lowercase();
+                let cor = st["color"].as_str().unwrap_or("").to_lowercase();
+                let mut k = 0;
+                for c in lado.field_chars.iter_mut() {
+                    if k >= n {
+                        break;
+                    }
+                    let i = dados(c)?;
+                    if cl.map_or(false, |x| i.cost > x) || st["power_lte"].as_i64().map_or(false, |x| i.power > x)
+                        || !casa_filtro(&i, &st["filter_type"], false)
+                        || (!cor.is_empty() && !i.color.to_lowercase().contains(&cor))
+                        || (!nome.is_empty() && !i.name.to_lowercase().contains(&nome))
+                        || st["cost_gte"].as_i64().map_or(false, |x| i.cost < x)
+                        || (st["filter_no_effect"].as_bool().unwrap_or(false) && !i.efeitos.is_empty())
+                    {
+                        continue;
+                    }
+                    aplica(c)?;
+                    k += 1;
+                }
+            }
             "attack_life" => {
                 for _ in 0..n {
                     let Some(mut v) = opp.life.pop() else { break };
