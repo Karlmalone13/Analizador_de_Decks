@@ -14278,7 +14278,8 @@ def _jogada_da_busca_rust(p: 'GameState', opp: 'GameState'):
     cfg['_semente'] = cfg.get('_semente', 0) + 1
     r = _json.loads(optcg_core.busca_jogada(
         _json.dumps(_ec.canonico(p, opp)), p.global_turn, int(cfg.get('iteracoes', 2000)),
-        int(cfg.get('turnos', 6)), float(cfg.get('c', 0.7)), int(cfg.get('semente', 1)) * 1000003 + cfg['_semente']))
+        int(cfg.get('turnos', 6)), float(cfg.get('c', 0.7)), int(cfg.get('semente', 1)) * 1000003 + cfg['_semente'],
+        int(cfg.get('rede', 0))))
     cfg.setdefault('_estat', []).append((r['segundos'], r['fora_do_nucleo'], r['iteracoes']))
     _mot = cfg.setdefault('_motivos', {})
     for _k, _v in r.get('motivos', {}).items():

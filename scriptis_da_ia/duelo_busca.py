@@ -51,12 +51,16 @@ def main():
     ap.add_argument('--turnos', type=int, default=6)
     ap.add_argument('--c', type=float, default=0.7)
     ap.add_argument('--sem-valor', action='store_true', help='folhas pela nota simples (sem a rede)')
+    ap.add_argument('--rede', default='', help='rede politica+valor da fase C (JSON do rede_pv.py)')
     a = ap.parse_args()
     cfg = {'iteracoes': a.iteracoes, 'turnos': a.turnos, 'c': a.c, 'semente': a.seed}
     if not a.sem_valor:
         # folhas da busca avaliadas pela rede de valor do motor (`win_prob`)
         from optcg_engine import value_net as V
         optcg_core.carrega_valor(json.dumps(V.exporta_para_nucleo()))
+    if a.rede:
+        optcg_core.carrega_rede(1, open(a.rede).read())
+        cfg['rede'] = 1
     placar = {'busca': 0, 'python': 0, 'empate': 0}
     t_busca, n_busca, fora, its = 0.0, 0, 0, 0
     t0 = time.time()

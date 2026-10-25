@@ -14,6 +14,8 @@ Saida em binario (REGRA_DADOS_BINARIOS): um .npz por lote, matrizes numpy --
                      zona do ator(0 mao,1 lider,2 campo,3 stage), indice do ator,
                      alvo do ataque(-1 lider, j = personagem j, -2 sem alvo)
   visitas  (m,)      visitas da busca em cada jogada legal
+  S        (n, NS)   features da rede nova (`feats.rs::estado`), so o observavel
+  A        (m, NA)   features de cada jogada legal (`feats.rs::jogada`)
 
 Uso: python autojogo.py --partidas 20 --seed 9000 --iteracoes 500 --saida metrics/autojogo/gen000_a.npz
 """
@@ -52,16 +54,35 @@ def main():
     ap.add_argument('--max-turnos', type=int, default=40)
     ap.add_argument('--saida', default='metrics/autojogo/gen000.npz')
     ap.add_argument('--sem-valor', action='store_true')
+    ap.add_argument('--rede', default='', help='rede politica+valor (JSON do rede_pv.py) dos dois lados')
+    ap.add_argument('--rede-b', default='', help='ARENA: rede do outro lado (os lados alternam a cada partida)')
     a = ap.parse_args()
     if not a.sem_valor:
         from optcg_engine import value_net as V
         optcg_core.carrega_valor(json.dumps(V.exporta_para_nucleo()))
-    X, lado, partida, z, esc, ini, acoes, visitas = [], [], [], [], [], [0], [], []
+    X, lado, partida, z, esc, ini, acoes, visitas, S, A = [], [], [], [], [], [0], [], [], [], []
+    def carrega_rede(espaco, caminho):
+        optcg_core.carrega_rede(espaco, open(caminho).read() if caminho else '')
+    carrega_rede(1, a.rede)
+    carrega_rede(2, a.rede_b)
+    arena = bool(a.rede_b)
+    placar = {'rede': 0, 'rede_b': 0, 'sem': 0}
     res = {'vencidas': 0, 'sem_vencedor': 0, 'fora': {}}
     t0 = time.time()
     for k in range(a.partidas):
         e = estado_inicial(a.seed + k)
-        r = json.loads(optcg_core.autojogo(json.dumps(e), 0, a.iteracoes, a.turnos, a.c, a.seed + k, a.max_turnos))
+        # espacos: 1 = --rede (0 se vazia), 2 = --rede-b; na arena o lado 0 alterna
+        ea = 1 if a.rede else 0
+        eb = 2 if arena else ea
+        if arena and k % 2 == 1:
+            ea, eb = eb, ea
+        r = json.loads(optcg_core.autojogo(json.dumps(e), 0, a.iteracoes, a.turnos, a.c, a.seed + k, a.max_turnos, ea, eb))
+        if arena:
+            v_ = r['vencedor']
+            if v_ is None:
+                placar['sem'] += 1
+            else:
+                placar['rede' if (ea if v_ == 0 else eb) == (1 if a.rede else 0) else 'rede_b'] += 1
         v = r['vencedor']
         if v is None:
             res['sem_vencedor'] += 1
@@ -76,6 +97,8 @@ def main():
             partida.append(k)
             z.append(0.5 if v is None else float(g['lado'] == v))
             esc.append(g['escolhida'])
+            S.append(g['estado'])
+            A.extend(g['jogadas'])
             for j, n in zip(g['legais'], g['visitas']):
                 acoes.append(codifica(j))
                 visitas.append(n)
@@ -86,9 +109,14 @@ def main():
     np.savez_compressed(a.saida, X=np.asarray(X, np.float32), lado=np.asarray(lado, np.int8),
                         partida=np.asarray(partida, np.int32), z=np.asarray(z, np.float32),
                         esc=np.asarray(esc, np.int16), ini=np.asarray(ini, np.int64),
-                        acoes=np.asarray(acoes, np.int16).reshape(-1, 4), visitas=np.asarray(visitas, np.int32))
+                        acoes=np.asarray(acoes, np.int16).reshape(-1, 4), visitas=np.asarray(visitas, np.int32),
+                        S=np.asarray(S, np.float32), A=np.asarray(A, np.float32))
     print(f"\n{a.partidas} partidas em {time.time() - t0:.0f}s: {res['vencidas']} com vencedor, "
           f"{res['sem_vencedor']} sem; {len(X)} decisoes -> {a.saida}")
+    if arena:
+        n_ = placar['rede'] + placar['rede_b']
+        print(f"ARENA: --rede {placar['rede']} x {placar['rede_b']} --rede-b (sem vencedor {placar['sem']}) "
+              f"= {100 * placar['rede'] / max(n_, 1):.0f}% para --rede")
     for m, n in sorted(res['fora'].items(), key=lambda x: -x[1]):
         print(f'   parou fora do nucleo: {m} ({n})')
     return 0

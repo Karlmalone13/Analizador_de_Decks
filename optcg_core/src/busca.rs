@@ -23,6 +23,8 @@ pub struct Config {
     pub turnos_rollout: u32,
     pub c_ucb: f64,
     pub semente: u64,
+    /// espaco da rede de politica+valor (0 = sem rede: rede de valor antiga / nota simples)
+    pub rede: u8,
 }
 
 pub struct Resposta {
@@ -121,6 +123,9 @@ pub fn determiniza(e: &Estado, rng: &mut Rng) -> Estado {
 /// Nota de 0 a 1 para `eu` numa mesa sem vencedor: a rede de valor do motor
 /// (`win_prob`) quando carregada; senao vida/mesa/mao.
 fn nota(eu: &Jogador, ele: &Jogador) -> f64 {
+    if let Some(r) = crate::rede::rede(REDE_ATUAL.with(|x| x.get())) {
+        return r.valor(eu, ele);
+    }
     if let Some(v) = crate::valor::prob(eu, ele) {
         return v;
     }
@@ -156,6 +161,19 @@ fn depois_do_meu_turno(mut w: Estado, gt: i64, pol: &PoliticaRef, turnos: u32, f
         Passo::Segue => {}
     }
     std::mem::swap(&mut w.ativo, &mut w.oponente);
+    if turnos == 0 {
+        // avalia no COMECO do turno do oponente (depois da compra e do DON dele): e o
+        // tipo de estado em que as redes foram treinadas (estado de decisao). Valor
+        // do ponto de vista dele -> 1 - valor.
+        return match abre_turno(&mut w, gt, pol) {
+            Passo::ForaDoNucleo(m) => {
+                *fora += 1;
+                anota(&m);
+                nota(&w.oponente, &w.ativo)
+            }
+            _ => 1.0 - nota(&w.ativo, &w.oponente),
+        };
+    }
     let fim = simula(w.clone(), gt, pol.clone(), turnos);
     if let Some(m) = &fim.nao_suportado {
         *fora += 1;
@@ -168,6 +186,8 @@ fn depois_do_meu_turno(mut w: Estado, gt: i64, pol: &PoliticaRef, turnos: u32, f
     }
 }
 
+thread_local! { static REDE_ATUAL: std::cell::Cell<u8> = const { std::cell::Cell::new(0) }; }
+
 /// Melhor jogada do ativo de `e` (ja no meio da Main dele). `gt` = global_turn atual.
 pub fn busca(e: &Estado, gt: i64, cfg: &Config) -> Resposta {
     busca_sem(e, gt, cfg, &[])
@@ -175,6 +195,7 @@ pub fn busca(e: &Estado, gt: i64, cfg: &Config) -> Resposta {
 
 /// `busca`, sem considerar na raiz as jogadas `proibidas`.
 pub fn busca_sem(e: &Estado, gt: i64, cfg: &Config, proibidas: &[Jogada]) -> Resposta {
+    REDE_ATUAL.with(|x| x.set(cfg.rede));
     let mut rng = Rng::novo(cfg.semente);
     let pol: PoliticaRef = Rc::new(RefCell::new(Rollout(Rng::novo(cfg.semente ^ 0x5DEE_CE66))));
     let d = Decisoes { politica: Some(pol.clone()), ..Default::default() };
@@ -201,7 +222,28 @@ pub fn busca_sem(e: &Estado, gt: i64, cfg: &Config, proibidas: &[Jogada]) -> Res
                     None => nao_tentadas.push(j),
                 }
             }
-            let (j, novo) = if !nao_tentadas.is_empty() {
+            // c negativo = so o valor da rede, sem a politica (exploracao UCB com |c|)
+            let (j, novo) = if let Some(r) = crate::rede::rede(cfg.rede).filter(|_| cfg.c_ucb > 0.0) {
+                // PUCT (AlphaZero): Q + c * P * sqrt(N) / (1 + n); nao tentada com Q do pai
+                let (pri, _) = r.politica(&w.ativo, &w.oponente, &leg);
+                let pai = &nos[no];
+                let q_pai = if pai.visitas > 0 { pai.soma / pai.visitas as f64 } else { 0.5 };
+                let raiz_n = (pai.visitas.max(1) as f64).sqrt();
+                let mut melhor = (f64::MIN, 0usize);
+                for (k, j) in leg.iter().enumerate() {
+                    let (q, n) = match pai.filhos.iter().find(|(f, _)| f == j) {
+                        Some(&(_, c)) => (nos[c].soma / nos[c].visitas.max(1) as f64, nos[c].visitas),
+                        None => (q_pai, 0),
+                    };
+                    let s = q + cfg.c_ucb * pri[k] * raiz_n / (1.0 + n as f64);
+                    if s > melhor.0 {
+                        melhor = (s, k);
+                    }
+                }
+                let j = leg[melhor.1].clone();
+                let novo = !nos[no].filhos.iter().any(|(f, _)| *f == j);
+                (j, novo)
+            } else if !nao_tentadas.is_empty() {
                 (nao_tentadas[rng.ate(nao_tentadas.len())].clone(), true)
             } else {
                 let mut melhor = (f64::MIN, 0usize);
@@ -211,7 +253,7 @@ pub fn busca_sem(e: &Estado, gt: i64, cfg: &Config, proibidas: &[Jogada]) -> Res
                     }
                     let n = &nos[*k];
                     let ucb = n.soma / n.visitas.max(1) as f64
-                        + cfg.c_ucb * ((n.disponivel.max(1) as f64).ln() / n.visitas.max(1) as f64).sqrt();
+                        + cfg.c_ucb.abs() * ((n.disponivel.max(1) as f64).ln() / n.visitas.max(1) as f64).sqrt();
                     if ucb > melhor.0 {
                         melhor = (ucb, *k);
                     }
@@ -281,6 +323,9 @@ pub struct Registro {
     pub legais: Vec<Jogada>,
     pub visitas: Vec<u32>,
     pub escolhida: usize,
+    /// features da rede nova (`feats.rs`): estado e cada jogada legal
+    pub estado: Vec<f32>,
+    pub jogadas: Vec<Vec<f32>>,
 }
 
 pub struct Partida {
@@ -293,7 +338,9 @@ pub struct Partida {
 
 /// AUTO-JOGO (fase C): partida inteira no nucleo, a busca decidindo a jogada
 /// principal dos DOIS lados. `e` = estado antes do 1o inicio de turno.
-pub fn autojogo(mut e: Estado, mut gt: i64, cfg: &Config, max_turnos: u32) -> Partida {
+/// `rede_outro` = espaco da rede do lado 1 (o lado 0 usa `cfg.rede`): duas
+/// geracoes jogando uma contra a outra.
+pub fn autojogo(mut e: Estado, mut gt: i64, cfg: &Config, max_turnos: u32, rede_outro: u8) -> Partida {
     let pol: PoliticaRef = Rc::new(RefCell::new(Rollout(Rng::novo(cfg.semente ^ 0xA5A5))));
     let d = Decisoes { politica: Some(pol.clone()), ..Default::default() };
     let mut regs = Vec::new();
@@ -315,11 +362,15 @@ pub fn autojogo(mut e: Estado, mut gt: i64, cfg: &Config, max_turnos: u32) -> Pa
                 Err(_) => return acaba(None, regs, turnos, Some("legais".into())),
             };
             sem = sem.wrapping_mul(6364136223846793005).wrapping_add(1442695040888963407);
-            let r = busca_sem(&e, gt, &Config { semente: sem, ..*cfg }, &proibidas);
+            let r = busca_sem(&e, gt, &Config { semente: sem, rede: if lado == 0 { cfg.rede } else { rede_outro }, ..*cfg }, &proibidas);
             let visitas: Vec<u32> = legais.iter()
                 .map(|j| r.raiz.iter().find(|(x, _, _)| x == j).map_or(0, |x| x.1)).collect();
             let escolhida = legais.iter().position(|j| *j == r.jogada).unwrap_or(legais.len() - 1);
-            regs.push(Registro { lado, feats: crate::valor::features(&e.ativo, &e.oponente), legais: legais.clone(), visitas, escolhida });
+            regs.push(Registro {
+                lado, feats: crate::valor::features(&e.ativo, &e.oponente), legais: legais.clone(), visitas, escolhida,
+                estado: crate::feats::estado(&e.ativo, &e.oponente),
+                jogadas: legais.iter().map(|j| crate::feats::jogada(&e.ativo, &e.oponente, j)).collect(),
+            });
             if legais[escolhida] == Jogada::Fim {
                 break;
             }

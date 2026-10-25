@@ -8,8 +8,10 @@ pub mod busca;
 pub mod cartas;
 pub mod efeitos;
 pub mod estado;
+pub mod feats;
 pub mod jogo;
 pub mod legais;
+pub mod rede;
 pub mod turno;
 pub mod valor;
 
@@ -123,10 +125,12 @@ fn simula_partidas(estado_json: &str, global_turn: i64, n: u32, semente: u64, ma
 
 /// Busca (ISMCTS) da melhor jogada do ativo, no meio da Main dele.
 #[pyfunction]
-fn busca_jogada(estado_json: &str, global_turn: i64, iteracoes: u32, turnos_rollout: u32, c_ucb: f64, semente: u64) -> PyResult<String> {
+#[pyo3(signature = (estado_json, global_turn, iteracoes, turnos_rollout, c_ucb, semente, rede=0))]
+fn busca_jogada(estado_json: &str, global_turn: i64, iteracoes: u32, turnos_rollout: u32, c_ucb: f64, semente: u64,
+                rede: u8) -> PyResult<String> {
     let e = estado::Estado::de_json(estado_json).map_err(erro)?;
     let t0 = std::time::Instant::now();
-    let r = busca::busca(&e, global_turn, &busca::Config { iteracoes, turnos_rollout, c_ucb, semente });
+    let r = busca::busca(&e, global_turn, &busca::Config { iteracoes, turnos_rollout, c_ucb, semente, rede });
     let raiz: Vec<serde_json::Value> = r.raiz.iter()
         .map(|(j, v, q)| serde_json::json!({"jogada": j.para_json(), "visitas": v, "valor": q})).collect();
     Ok(serde_json::json!({"jogada": r.jogada.para_json(), "raiz": raiz, "iteracoes": r.iteracoes,
@@ -150,15 +154,33 @@ fn prob_valor(estado_json: &str) -> PyResult<(Option<f64>, Vec<f64>)> {
 /// AUTO-JOGO (fase C): partida inteira no nucleo com a busca nos dois lados.
 #[pyfunction]
 fn autojogo(estado_json: &str, global_turn: i64, iteracoes: u32, turnos_rollout: u32, c_ucb: f64, semente: u64,
-            max_turnos: u32) -> PyResult<String> {
+            max_turnos: u32, rede_a: u8, rede_b: u8) -> PyResult<String> {
     let e = estado::Estado::de_json(estado_json).map_err(erro)?;
     let t0 = std::time::Instant::now();
-    let p = busca::autojogo(e, global_turn, &busca::Config { iteracoes, turnos_rollout, c_ucb, semente }, max_turnos);
+    let p = busca::autojogo(e, global_turn, &busca::Config { iteracoes, turnos_rollout, c_ucb, semente, rede: rede_a }, max_turnos, rede_b);
     let regs: Vec<serde_json::Value> = p.registros.iter().map(|r| serde_json::json!({
         "lado": r.lado, "feats": r.feats.to_vec(), "visitas": r.visitas, "escolhida": r.escolhida,
+        "estado": r.estado, "jogadas": r.jogadas,
         "legais": r.legais.iter().map(|j| j.para_json()).collect::<Vec<_>>()})).collect();
     Ok(serde_json::json!({"vencedor": p.vencedor, "turnos": p.turnos, "fora_do_nucleo": p.fora_do_nucleo,
         "registros": regs, "segundos": t0.elapsed().as_secs_f64()}).to_string())
+}
+
+/// Carrega a rede de politica+valor da fase C (JSON do `rede_pv.py`) no espaco 1..3; "" esvazia.
+#[pyfunction]
+fn carrega_rede(espaco: usize, rede_json: &str) -> PyResult<()> {
+    let r: Option<rede::Rede> = if rede_json.is_empty() { None } else { Some(serde_json::from_str(rede_json).map_err(erro)?) };
+    rede::carrega(espaco, r).map_err(erro)
+}
+
+/// Rede do espaco `espaco` no estado: (valor, probabilidades das jogadas legais, features do estado).
+#[pyfunction]
+fn rede_avalia(espaco: u8, estado_json: &str) -> PyResult<(f64, Vec<f64>, Vec<f32>)> {
+    let e = estado::Estado::de_json(estado_json).map_err(erro)?;
+    let r = rede::rede(espaco).ok_or_else(|| erro("espaco sem rede"))?;
+    let leg = legais::jogadas_legais(&e).map_err(|_| erro("legais fora do nucleo"))?;
+    let (p, v) = r.politica(&e.ativo, &e.oponente, &leg);
+    Ok((v, p, feats::estado(&e.ativo, &e.oponente)))
 }
 
 #[pymodule]
@@ -175,5 +197,7 @@ fn optcg_core(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_function(wrap_pyfunction!(carrega_valor, m)?)?;
     m.add_function(wrap_pyfunction!(prob_valor, m)?)?;
     m.add_function(wrap_pyfunction!(autojogo, m)?)?;
+    m.add_function(wrap_pyfunction!(carrega_rede, m)?)?;
+    m.add_function(wrap_pyfunction!(rede_avalia, m)?)?;
     Ok(())
 }
