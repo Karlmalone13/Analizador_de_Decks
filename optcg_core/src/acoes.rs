@@ -162,6 +162,9 @@ fn jogar(e: &mut Estado, acao: &Value, d: &Decisoes) -> Result<Resultado, Result
     // efeito ao jogar: on_play e depois main (os dois disparam)
     let mut ex = Executor::novo(fila_resto.unwrap_or_else(|| d.efeito.iter().cloned().collect()));
     let (p, opp) = (&mut e.ativo, &mut e.oponente);
+    if inf.card_type == "CHARACTER" {
+        ex.lugar_fonte = Some(("field_chars".to_string(), p.field_chars.len() - 1));
+    }
     ex.executa(p, opp, &fonte, "on_play")?;
     ex.executa(p, opp, &fonte, "main")?;
     if !ex.fila.is_empty() {
@@ -216,24 +219,30 @@ fn atacar(e: &mut Estado, acao: &Value, d: &Decisoes) -> Result<Resultado, Resul
     let mut ex = Executor::novo(d.efeito.iter().cloned().collect());
     ex.inst = 1; // `ee` do ataque (lado do atacante)
     let atk_clone = |e: &Estado| if za == "leader" { e.ativo.leader.clone() } else { e.ativo.field_chars[ia].clone() };
+    ex.lugar_fonte = Some((za.clone(), ia));
     let f = atk_clone(e);
     ex.executa(&mut e.ativo, &mut e.oponente, &f, "when_rested")?;
     let f = atk_clone(e);
     ex.executa(&mut e.ativo, &mut e.oponente, &f, "when_attacking")?;
+    let lugares = |j: &Jogador| -> Vec<(Carta, (String, usize))> {
+        std::iter::once((j.leader.clone(), ("leader".to_string(), 0)))
+            .chain(j.field_chars.iter().cloned().enumerate().map(|(i, c)| (c, ("field_chars".to_string(), i))))
+            .collect()
+    };
     if za == "leader" {
-        let fontes: Vec<Carta> = std::iter::once(e.ativo.leader.clone()).chain(e.ativo.field_chars.iter().cloned()).collect();
-        for f in fontes {
+        for (f, l) in lugares(&e.ativo) {
+            ex.lugar_fonte = Some(l);
             ex.executa(&mut e.ativo, &mut e.oponente, &f, "leader_battle_reactive")?;
         }
     }
     ex.inst = 2; // `ee_react` (lado do defensor)
-    let reag: Vec<Carta> = std::iter::once(e.oponente.leader.clone()).chain(e.oponente.field_chars.iter().cloned()).collect();
-    for f in reag {
+    for (f, l) in lugares(&e.oponente) {
+        ex.lugar_fonte = Some(l);
         ex.executa(&mut e.oponente, &mut e.ativo, &f, "on_opp_attack")?;
     }
     if alvo_tipo == "leader" {
-        let reag: Vec<Carta> = std::iter::once(e.oponente.leader.clone()).chain(e.oponente.field_chars.iter().cloned()).collect();
-        for f in reag {
+        for (f, l) in lugares(&e.oponente) {
+            ex.lugar_fonte = Some(l);
             ex.executa(&mut e.oponente, &mut e.ativo, &f, "leader_battle_reactive")?;
         }
     }
@@ -259,6 +268,7 @@ fn atacar(e: &mut Estado, acao: &Value, d: &Decisoes) -> Result<Resultado, Resul
             opp.field_chars.get_mut(ib).ok_or_else(|| ns("bloqueador inexistente"))?.rested = true;
             let fb = opp.field_chars[ib].clone();
             ex.inst = 3; // `ee_block`
+            ex.lugar_fonte = Some(("field_chars".to_string(), ib));
             ex.executa(opp, p, &fb, "on_block")?;
             for c in std::iter::once(&p.leader).chain(p.field_chars.iter()) {
                 if dados(c)?.efeitos.get("passive").and_then(|b| b["steps"].as_array()).map_or(false, |a| {
@@ -325,6 +335,7 @@ fn atacar(e: &mut Estado, acao: &Value, d: &Decisoes) -> Result<Resultado, Resul
                 if gatilho {
                     // [Trigger]: o defensor executa, fora do proprio turno
                     ex.inst = 10 + tiradas; // `ee_opp` novo a cada vida
+                    ex.lugar_fonte = None;
                     ex.executa(opp, p, &vida, "trigger")?;
                 }
             }
@@ -350,6 +361,7 @@ fn atacar(e: &mut Estado, acao: &Value, d: &Decisoes) -> Result<Resultado, Resul
                 tira_do_campo_para_lixo(opp, j);
                 let alvo = opp.trash.last().cloned().unwrap_or(alvo);
                 ex.inst = 20; // `ee_opp` do KO de batalha
+                ex.lugar_fonte = None;
                 ex.executa(opp, p, &alvo, "on_ko")?;
             }
         }

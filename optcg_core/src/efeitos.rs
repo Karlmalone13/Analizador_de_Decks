@@ -88,12 +88,31 @@ pub struct Executor {
     /// nao esta no canonico -> once_per_turn fora do nucleo.
     pub inst: u32,
     pub usados: std::collections::HashSet<(u32, String, String)>,
+    /// Lugar da carta-fonte no lado de quem executa ("leader"|"field_chars", i):
+    /// passos que mexem na PROPRIA carta (`target='self'`). None = fora do campo.
+    pub lugar_fonte: Option<(String, usize)>,
+    /// `_last_selected` (memoria de alvo entre passos do MESMO execute)
+    ultimo: Option<Option<usize>>,
 }
 
 impl Executor {
     pub fn novo(fila: VecDeque<Value>) -> Self {
-        Executor { fila, inst: 0, usados: Default::default() }
+        Executor { fila, inst: 0, usados: Default::default(), lugar_fonte: None, ultimo: None }
     }
+}
+
+/// Carta do lado `me` por lugar (None = lider)
+fn carta_mut(me: &mut Jogador, i: Option<usize>) -> R<&mut Carta> {
+    match i {
+        None => Ok(&mut me.leader),
+        Some(i) => me.field_chars.get_mut(i).ok_or_else(|| ns("carta fora do campo")),
+    }
+}
+
+/// `effective_power(your_turn=True)`
+fn poder_meu_turno(c: &Carta) -> R<i64> {
+    let base = c.base_power_override.unwrap_or(dados(c)?.power);
+    Ok((base + c.power_buff + c.don_attached * 1000).max(0))
 }
 
 impl Executor {
@@ -245,7 +264,7 @@ impl Executor {
         Ok(match st["action"].as_str().unwrap_or("") {
             "look_top_deck" | "deck_bottom_rest" | "draw" => !me.deck.is_empty(),
             "set_don_active" => me.don_rested > 0,
-            "add_to_hand" | "trash_rest" | "gain_life" | "add_don" => true,
+            "add_to_hand" | "trash_rest" | "gain_life" | "add_don" | "buff_power" => true,
             a @ ("ko" | "rest_opp_character" | "debuff_power") => {
                 match st["target"].as_str() {
                     Some("opp_stage") => return Err(ns("alvo opp_stage")),
@@ -345,6 +364,7 @@ impl Executor {
         if !self.paga_custos(&custos, me)? {
             return Ok(());
         }
+        self.ultimo = None;
         for st in &passos {
             self.passo(st, me, opp, fonte, &inf, gatilho)?;
         }
@@ -467,6 +487,7 @@ impl Executor {
             }
             "add_to_hand" => self.busca(st, me, inf)?,
             "ko" => self.ko(st, me, opp)?,
+            "buff_power" => self.buff(st, me, fonte)?,
             "rest_opp_character" => self.restar_oponente(st, me, opp)?,
             "debuff_power" => self.debuff(st, me, opp, fonte)?,
             "trash_rest" | "deck_bottom_rest" => {
@@ -720,6 +741,146 @@ impl Executor {
             }
         }
         Ok(())
+    }
+
+    /// `buff_power` (a duracao nao muda a execucao: o buff some no inicio do turno)
+    fn buff(&mut self, st: &Value, me: &mut Jogador, fonte: &Carta) -> R<()> {
+        let v = st["amount"].as_i64().unwrap_or(0);
+        match st["target"].as_str().unwrap_or("self") {
+            "self" => {
+                let (z, i) = self.lugar_fonte.clone().ok_or_else(|| ns("buff self sem fonte no campo"))?;
+                let c = match z.as_str() {
+                    "leader" => &mut me.leader,
+                    "field_chars" => me.field_chars.get_mut(i).ok_or_else(|| ns("fonte fora do campo"))?,
+                    _ => return Err(ns("fonte em zona inesperada")),
+                };
+                if c.code != fonte.code {
+                    return Err(ns("fonte mudou de lugar"));
+                }
+                c.power_buff += v;
+            }
+            "leader" => {
+                if let Some(l) = st["power_lte"].as_i64() {
+                    if poder_meu_turno(&me.leader)? > l {
+                        return Ok(());
+                    }
+                }
+                me.leader.power_buff += v;
+            }
+            "leader_or_character" => {
+                // regra de hoje: o de maior poder efetivo (max = primeiro em empate)
+                let mut pool: Vec<Option<usize>> = (0..me.field_chars.len()).map(Some).collect();
+                pool.push(None);
+                let n = st["count"].as_i64().unwrap_or(1).max(0) as usize;
+                let mut best = None;
+                for _ in 0..n.min(pool.len()) {
+                    let mut bi = 0;
+                    let mut bp = i64::MIN;
+                    for (k, x) in pool.iter().enumerate() {
+                        let pw = poder_meu_turno(carta_mut(me, *x)?)?;
+                        if pw > bp {
+                            bp = pw;
+                            bi = k;
+                        }
+                    }
+                    let x = pool.remove(bi);
+                    carta_mut(me, x)?.power_buff += v;
+                    best = Some(x);
+                }
+                self.ultimo = best;
+            }
+            "selected" => {
+                let Some(x) = self.ultimo else { return Ok(()) };
+                carta_mut(me, x)?.power_buff += v;
+            }
+            t @ ("all_allies" | "all_allies_and_leader") => {
+                if st["exclude_self"].as_bool().unwrap_or(false) {
+                    return Err(ns("buff all_allies exclude_self"));
+                }
+                let nomes: Vec<String> = st["filter_names"].as_array()
+                    .map(|a| a.iter().map(|x| x.as_str().unwrap_or("").to_string()).collect())
+                    .unwrap_or_default();
+                let cor = st["filter_color"].as_str().unwrap_or("").to_lowercase();
+                for k in 0..me.field_chars.len() {
+                    let i = dados(&me.field_chars[k])?;
+                    let nm = i.name.to_lowercase();
+                    let ok = casa_filtro(&i, &st["filter_type"], false)
+                        && (nomes.is_empty() || nomes.iter().any(|x| nm.contains(x.as_str())))
+                        && st["cost_lte"].as_i64().map_or(true, |x| i.cost <= x)
+                        && st["cost_gte"].as_i64().map_or(true, |x| i.cost >= x)
+                        && (cor.is_empty() || i.color.to_lowercase().contains(&cor))
+                        && st["power_lte"].as_i64().map_or(true, |x| i.power <= x);
+                    if ok {
+                        me.field_chars[k].power_buff += v;
+                    }
+                }
+                if t == "all_allies_and_leader" {
+                    me.leader.power_buff += v;
+                }
+            }
+            "select_filtered" => {
+                let excl = st["exclude"].as_str().unwrap_or("").to_lowercase();
+                let mut cands: Vec<Option<usize>> = Vec::new();
+                for x in (0..me.field_chars.len()).map(Some).chain(std::iter::once(None)) {
+                    let i = dados(carta_mut(me, x)?)?;
+                    if casa_filtro(&i, &st["filter_type"], false)
+                        && (excl.is_empty() || !i.name.to_lowercase().contains(&excl))
+                    {
+                        cands.push(x);
+                    }
+                }
+                if cands.is_empty() {
+                    return Ok(());
+                }
+                let x = self.alvo_meu(&cands)?;
+                carta_mut(me, x)?.power_buff += v;
+                self.ultimo = Some(x);
+            }
+            "own_character" => {
+                for k in ["filter_type_or_has_trigger", "filter_no_effect", "filter_color"] {
+                    if !st[k].is_null() && st[k] != Value::Bool(false) && st[k].as_str() != Some("") {
+                        return Err(ns(&format!("buff own_character com {k}")));
+                    }
+                }
+                let excl = st["exclude"].as_str().unwrap_or("").to_lowercase();
+                let mut cands: Vec<Option<usize>> = Vec::new();
+                for k in 0..me.field_chars.len() {
+                    let i = dados(&me.field_chars[k])?;
+                    if st["power_lte"].as_i64().map_or(true, |x| i.power <= x)
+                        && st["cost_lte"].as_i64().map_or(true, |x| i.cost <= x)
+                        && st["cost_gte"].as_i64().map_or(true, |x| i.cost >= x)
+                        && st["cost_eq"].as_i64().map_or(true, |x| i.cost == x)
+                        && (excl.is_empty() || !i.name.to_lowercase().contains(&excl))
+                    {
+                        cands.push(Some(k));
+                    }
+                }
+                let n = st["count"].as_i64().unwrap_or(1).max(0) as usize;
+                for _ in 0..n {
+                    if cands.is_empty() {
+                        break;
+                    }
+                    let x = self.alvo_meu(&cands)?;
+                    cands.retain(|y| *y != x);
+                    carta_mut(me, x)?.power_buff += v;
+                }
+            }
+            outro => return Err(ns(&format!("buff alvo {outro}"))),
+        }
+        Ok(())
+    }
+
+    /// Alvo do proprio lado (lider = None)
+    fn alvo_meu(&mut self, cands: &[Option<usize>]) -> R<Option<usize>> {
+        let x = match self.escolha("alvo")? {
+            Some((l, z, i)) if l == "eu" && z == "field_chars" => Some(i),
+            Some((l, z, _)) if l == "eu" && z == "leader" => None,
+            outro => return Err(ns(&format!("alvo inesperado: {outro:?}"))),
+        };
+        if !cands.contains(&x) {
+            return Err(ns("alvo fora dos candidatos"));
+        }
+        Ok(x)
     }
 
     /// `rest_opp_character`
