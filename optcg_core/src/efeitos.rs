@@ -277,7 +277,7 @@ impl Executor {
         Ok(match st["action"].as_str().unwrap_or("") {
             "look_top_deck" | "deck_bottom_rest" | "draw" => !me.deck.is_empty(),
             "set_don_active" => me.don_rested > 0,
-            "add_to_hand" | "trash_rest" | "gain_life" | "add_don" | "buff_power" => true,
+            "add_to_hand" | "trash_rest" | "gain_life" | "add_don" | "buff_power" | "give_don" => true,
             a @ ("ko" | "rest_opp_character" | "debuff_power") => {
                 match st["target"].as_str() {
                     Some("opp_stage") => return Err(ns("alvo opp_stage")),
@@ -472,15 +472,38 @@ impl Executor {
         match acao {
             "look_top_deck" => {}
             "draw" => {
-                if !st["count_source"].is_null() || !st["then_trash"].is_null()
-                    || !st["then_trash_same_as_drawn"].is_null()
-                {
-                    return Err(ns("draw com variacao"));
+                let mut n = n;
+                match st["count_source"].as_str() {
+                    None => {}
+                    Some("own_field_type_count") => {
+                        n = 0;
+                        for c in &me.field_chars {
+                            if casa_filtro(&dados(c)?, &st["filter_type"], false) {
+                                n += 1;
+                            }
+                        }
+                    }
+                    Some(o) => return Err(ns(&format!("draw count_source {o}"))),
                 }
+                let mut compradas = 0;
                 for _ in 0..n {
                     if let Some(c) = me.deck.pop() {
                         me.hand.push(c);
+                        compradas += 1;
                     }
+                }
+                let mut descarta = st["then_trash"].as_i64().unwrap_or(0);
+                if st["then_trash_same_as_drawn"].as_bool().unwrap_or(false) {
+                    descarta = compradas;
+                }
+                for _ in 0..descarta {
+                    // mao vazia: o diario grava a escolha vazia (None) e a fila a consome
+                    let Some((lado, z, i)) = self.escolha("descarte")? else { continue };
+                    if lado != "eu" || z != "hand" || i >= me.hand.len() {
+                        return Err(ns("descarte fora da mao"));
+                    }
+                    let x = me.hand.remove(i);
+                    me.trash.push(x);
                 }
             }
             "add_don" => {
@@ -519,6 +542,7 @@ impl Executor {
             "add_to_hand" => self.busca(st, me, inf)?,
             "ko" => self.ko(st, me, opp)?,
             "buff_power" => self.buff(st, me, fonte)?,
+            "give_don" => self.da_don(st, me)?,
             "rest_opp_character" => self.restar_oponente(st, me, opp)?,
             "debuff_power" => self.debuff(st, me, opp, fonte)?,
             "trash_rest" | "deck_bottom_rest" => {
@@ -976,6 +1000,57 @@ impl Executor {
                 }
             }
             outro => return Err(ns(&format!("buff alvo {outro}"))),
+        }
+        Ok(())
+    }
+
+    /// `give_don`: quem recebe e quantos e DECISAO (vem da fila); a regra e de
+    /// onde o DON sai (restado primeiro; `rested=True` so do restado).
+    fn da_don(&mut self, st: &Value, me: &mut Jogador) -> R<()> {
+        let nome = st["target_name"].as_str().unwrap_or("").to_lowercase();
+        let mut alvos: Vec<Option<usize>> = Vec::new();
+        let ordem: Vec<Option<usize>> = (0..me.field_chars.len()).filter(|&i| !me.field_chars[i].rested)
+            .map(Some).chain(std::iter::once(None)).collect();
+        for x in ordem {
+            let i = dados(carta_mut(me, x)?)?;
+            if (nome.is_empty() || i.name.to_lowercase().contains(&nome))
+                && casa_filtro(&i, &st["filter_type"], false)
+            {
+                alvos.push(x);
+            }
+        }
+        if alvos.is_empty() {
+            return Ok(());
+        }
+        let d = self.proxima("escolha_efeito")?;
+        if d["qual"].as_str() != Some("give_don") {
+            return Err(ns("decisao de give_don fora de ordem"));
+        }
+        let x = match d["carta"].as_array().map(|a| (a[0].as_str(), a[1].as_str(), a[2].as_u64())) {
+            Some((Some("eu"), Some("field_chars"), Some(i))) => Some(i as usize),
+            Some((Some("eu"), Some("leader"), _)) => None,
+            _ => return Err(ns("give_don sem alvo valido")),
+        };
+        if !alvos.contains(&x) {
+            return Err(ns("give_don fora dos alvos"));
+        }
+        let t = d["qtd"].as_i64().unwrap_or(0);
+        if st["rested"].as_bool().unwrap_or(false) {
+            if t > me.don_rested {
+                return Err(ns("give_don maior que o DON restado"));
+            }
+            me.don_rested -= t;
+        } else {
+            let r = t.min(me.don_rested);
+            if t - r > me.don_available {
+                return Err(ns("give_don maior que o DON"));
+            }
+            me.don_rested -= r;
+            me.don_available -= t - r;
+        }
+        carta_mut(me, x)?.don_attached += t;
+        if t > 0 && tem_reativo(me, &["on_don_given"])? {
+            return Err(ns("reativo on_don_given"));
         }
         Ok(())
     }

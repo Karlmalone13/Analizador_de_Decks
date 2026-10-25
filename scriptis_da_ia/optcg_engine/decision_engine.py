@@ -10430,6 +10430,9 @@ class EffectExecutor:
                     do_available = min(restante, me.don_available) if restante > 0 else 0
                     me.don_available -= do_available
                     transferido = do_rested + do_available
+                # DECISAO escondida na regra (quem recebe e quantos): diario de paridade
+                _diario_decisao_efeito('escolha_efeito', qual='give_don', qtd=int(transferido),
+                                       carta=_diario_lugar_com_lado(best, me, opp))
                 best.don_attached += transferido
                 if transferido:
                     self._dispatch_don_given(best)
