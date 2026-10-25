@@ -378,6 +378,327 @@ pub fn aplica_passivas_keyword(gs: &mut Jogador, opp: &Jogador) -> R<()> {
     Ok(())
 }
 
+/// `_ko_sentence`: a frase do texto da carta com "cannot be K.O.'d" / "can't be K.O"
+fn frase_de_ko(texto: &str) -> String {
+    let t = texto.to_lowercase().replace("&lt;", "<").replace("&gt;", ">").replace('＜', "<").replace('＞', ">");
+    let b = t.as_bytes();
+    let casa = |i: usize| -> Option<usize> {
+        // devolve o fim do trecho casado a partir de i
+        let resto = &t[i..];
+        if let Some(r) = resto.strip_prefix("cannot be k") {
+            let mut j = i + 11;
+            let r = r.strip_prefix('.').map(|x| { j += 1; x }).unwrap_or(r);
+            let r = r.strip_prefix('o')?;
+            j += 1;
+            let r = r.strip_prefix('.').map(|x| { j += 1; x }).unwrap_or(r);
+            let r = r.strip_prefix('\'').map(|x| { j += 1; x }).unwrap_or(r);
+            r.strip_prefix('d')?;
+            return Some(j + 1);
+        }
+        if let Some(r) = resto.strip_prefix("can't be k") {
+            let mut j = i + 10;
+            let r = r.strip_prefix('.').map(|x| { j += 1; x }).unwrap_or(r);
+            r.strip_prefix('o')?;
+            return Some(j + 1);
+        }
+        None
+    };
+    let mut achado = None;
+    for i in 0..b.len() {
+        if !t.is_char_boundary(i) {
+            continue;
+        }
+        if let Some(fim) = casa(i) {
+            achado = Some((i, fim));
+            break;
+        }
+    }
+    let Some((ini, fim)) = achado else { return String::new() };
+    let antes = &t[..ini];
+    let inicio = antes.rfind('.').map(|x| x as i64).unwrap_or(-1).max(antes.rfind('\n').map(|x| x as i64).unwrap_or(-1));
+    let final_ = t[fim..].find('.').map(|x| x + fim).unwrap_or(t.len());
+    t[(inicio + 1) as usize..final_].to_string()
+}
+
+/// `_source_matches_battle_ko_immunity`
+fn fonte_casa_imunidade(frase: &str, atacante: &InfoCarta) -> bool {
+    let tipo = atacante.card_type.to_uppercase();
+    let attr = atacante.attribute.to_lowercase();
+    if frase.contains("by leaders") {
+        return tipo == "LEADER";
+    }
+    if frase.contains("by characters without") && frase.contains("special") {
+        return tipo == "CHARACTER" && !attr.contains("special");
+    }
+    if frase.contains("by attribute cards") {
+        return !attr.is_empty();
+    }
+    for a in ["strike", "slash", "special", "wisdom", "ranged"] {
+        if !frase.contains(a) {
+            continue;
+        }
+        // regex `by [^.]*<a>[^.]*attribute` (a frase nao tem '.')
+        let casa = frase.find("by ").map_or(false, |p| {
+            frase[p + 3..].find(a).map_or(false, |q| frase[p + 3 + q + a.len()..].contains("attribute"))
+        });
+        if casa {
+            return attr.contains(a);
+        }
+    }
+    true
+}
+
+/// `_immunity_conds_met`
+fn condicoes_de_imunidade(cs: &Value, alvo_idx: usize, dono: &Jogador, outro: &Jogador) -> R<bool> {
+    let Some(m) = cs.as_object() else { return Ok(true) };
+    let n = |k: &str| m[k].as_i64().unwrap_or(0);
+    if m.contains_key("all_don_rested") && dono.don_available > 0 {
+        return Ok(false);
+    }
+    if m.contains_key("life_lte") && dono.life.len() as i64 > n("life_lte") {
+        return Ok(false);
+    }
+    if m.contains_key("life_gte") && (dono.life.len() as i64) < n("life_gte") {
+        return Ok(false);
+    }
+    if let Some(t) = m.get("only_field_type") {
+        let t = t.as_str().unwrap_or("").to_lowercase();
+        let mut ok = !dono.field_chars.is_empty();
+        for c in &dono.field_chars {
+            if !dados(c)?.sub_types.to_lowercase().contains(&t) {
+                ok = false;
+            }
+        }
+        if !ok {
+            return Ok(false);
+        }
+    }
+    if let Some(a) = m.get("leader_attribute") {
+        if !dados(&dono.leader)?.attribute.to_lowercase().contains(&a.as_str().unwrap_or("").to_lowercase()) {
+            return Ok(false);
+        }
+    }
+    if m.contains_key("don_rested_gte") && dono.don_rested < n("don_rested_gte") {
+        return Ok(false);
+    }
+    if m.contains_key("opp_leader_or_char_power_gte") {
+        let l = n("opp_leader_or_char_power_gte");
+        let mut algum = dados(&outro.leader)?.power >= l;
+        for c in &outro.field_chars {
+            algum |= dados(c)?.power >= l;
+        }
+        if !algum {
+            return Ok(false);
+        }
+    }
+    if let Some(nm) = m.get("no_other_named") {
+        let nm = nm.as_str().unwrap_or("").to_lowercase();
+        let ceq = m.get("no_other_named_cost_eq").and_then(|x| x.as_i64());
+        for (j, c) in dono.field_chars.iter().enumerate() {
+            let i = dados(c)?;
+            if j != alvo_idx && i.name.to_lowercase().contains(&nm) && ceq.map_or(true, |x| i.cost == x) {
+                return Ok(false);
+            }
+        }
+    }
+    Ok(true)
+}
+
+/// `is_immune(alvo, 'ko', dono, outro, source_is_opp=True, ko_context='battle', source_card=atacante)`
+pub fn imune_ko_em_batalha(dono: &Jogador, outro: &Jogador, alvo_idx: usize, atacante: &Carta) -> R<bool> {
+    imune_a_ko(dono, outro, alvo_idx, Some(atacante), true)
+}
+
+/// `is_immune(alvo, 'ko', ..., ko_context='battle'|'effect', source_card=fonte)`
+pub fn imune_a_ko(dono: &Jogador, outro: &Jogador, alvo_idx: usize, fonte: Option<&Carta>, batalha: bool) -> R<bool> {
+    let alvo = &dono.field_chars[alvo_idx];
+    let inf = dados(alvo)?;
+    let ainf = match fonte { Some(f) => Some(dados(f)?), None => None };
+    for (_timing, blk) in inf.efeitos.iter() {
+        if !blk.is_object() {
+            continue;
+        }
+        for st in passos_de(blk) {
+            if st["action"].as_str() != Some("immunity") || st["imm_type"].as_str() != Some("ko") {
+                continue;
+            }
+            // `_ko_immunity_applies_to_context(..., 'battle', atacante)`
+            if inf.card_text.is_empty() {
+                return Err(ns("imunidade sem texto da carta"));
+            }
+            let frase = frase_de_ko(&inf.card_text);
+            if !frase.is_empty() {
+                let so_batalha = frase.contains("in battle");
+                let so_efeito = frase.contains("by effect") || frase.contains("by your opponent's effect");
+                if batalha && so_efeito && !so_batalha {
+                    continue;
+                }
+                if !batalha && so_batalha && !so_efeito {
+                    continue;
+                }
+                if batalha {
+                    if let Some(a) = &ainf {
+                        if !fonte_casa_imunidade(&frase, a) {
+                            continue;
+                        }
+                    }
+                }
+            }
+            if let Some(l) = st["source_power_lte"].as_i64() {
+                if ainf.as_ref().map_or(true, |a| a.power > l) {
+                    continue;
+                }
+            }
+            let dr = blk["don_requirement"].as_i64().unwrap_or(0);
+            if dr != 0 && alvo.don_attached < dr {
+                continue;
+            }
+            let cs = if blk["conditions"].as_object().map_or(false, |m| !m.is_empty()) { &blk["conditions"] } else { &st["conditions"] };
+            if !cs.is_null() && cs.as_object().map_or(false, |m| !m.is_empty()) && !condicoes_de_imunidade(cs, alvo_idx, dono, outro)? {
+                continue;
+            }
+            return Ok(true);
+        }
+    }
+    if !alvo.immunity_ko_until.is_empty() {
+        return Ok(true);
+    }
+    for (j, o) in dono.field_chars.iter().enumerate() {
+        if j == alvo_idx {
+            continue;
+        }
+        let Some(pas) = dados(o)?.efeitos.get("passive").cloned() else { continue };
+        for s in passos_de(&pas) {
+            if s["action"].as_str() != Some("grant_ko_immunity_aura") {
+                continue;
+            }
+            if s["self_active_required"].as_bool().unwrap_or(false) && o.rested {
+                continue;
+            }
+            let w = s["filter_type"].as_str().unwrap_or("").to_lowercase();
+            if !w.is_empty() && !inf.sub_types.to_lowercase().contains(&w) {
+                continue;
+            }
+            if s["cost_lte"].as_i64().map_or(false, |l| inf.cost > l) {
+                continue;
+            }
+            let ex = s["exclude"].as_str().unwrap_or("").to_lowercase();
+            if !ex.is_empty() && inf.name.to_lowercase().contains(&ex) {
+                continue;
+            }
+            return Ok(true);
+        }
+    }
+    Ok(false)
+}
+
+/// `is_immune(alvo, 'rest', dono, outro, source_is_opp=True)` (sem carta-fonte)
+pub fn imune_a_rest(dono: &Jogador, outro: &Jogador, alvo_idx: usize) -> R<bool> {
+    let alvo = &dono.field_chars[alvo_idx];
+    let inf = dados(alvo)?;
+    for (_t, blk) in inf.efeitos.iter() {
+        for st in passos_de(blk) {
+            if st["action"].as_str() != Some("immunity") || st["imm_type"].as_str() != Some("rest") {
+                continue;
+            }
+            if !st["source_power_lte"].is_null() {
+                continue; // sem carta-fonte: nao vale
+            }
+            let dr = blk["don_requirement"].as_i64().unwrap_or(0);
+            if dr != 0 && alvo.don_attached < dr {
+                continue;
+            }
+            let cs = if blk["conditions"].as_object().map_or(false, |m| !m.is_empty()) { &blk["conditions"] } else { &st["conditions"] };
+            if cs.as_object().map_or(false, |m| !m.is_empty()) && !condicoes_de_imunidade(cs, alvo_idx, dono, outro)? {
+                continue;
+            }
+            return Ok(true);
+        }
+    }
+    Ok(false)
+}
+
+/// Alguma substituicao de K.O. PODE valer para este alvo? (proprio alvo,
+/// outras cartas do dono, evento [Counter] na mao) -- fora do nucleo.
+pub fn substituicao_possivel(dono: &Jogador, alvo_idx: usize) -> R<bool> {
+    let sub = |b: &Value| passos_de(b).any(|s| matches!(s["action"].as_str(), Some("substitute_ko") | Some("substitute_removal")));
+    let alvo = &dono.field_chars[alvo_idx];
+    let cartas = std::iter::once(alvo).chain(dono.field_chars.iter().enumerate().filter(|(j, _)| *j != alvo_idx).map(|(_, c)| c))
+        .chain(std::iter::once(&dono.leader)).chain(dono.stage.iter());
+    for c in cartas {
+        let i = dados(c)?;
+        for t in ["passive", "opp_turn", "your_turn"] {
+            if i.efeitos.get(t).map_or(false, |b| sub(b)) {
+                return Ok(true);
+            }
+        }
+    }
+    for c in &dono.hand {
+        let i = dados(c)?;
+        if i.card_type == "EVENT" && i.efeitos.get("counter").map_or(false, |b| sub(b)) {
+            return Ok(true);
+        }
+    }
+    Ok(false)
+}
+
+/// `_target_matches_external_substitute` (sem `exclude_self`: a fonte nunca e o alvo aqui)
+fn casa_alvo_de_substituicao(t: &Carta, i: &InfoCarta, _mesma: bool, st: &Value, b: &Value) -> R<bool> {
+    if !st["filter_type"].is_null() && st["filter_type"].as_str() != Some("") && !casa_filtro(i, &st["filter_type"], false) {
+        return Ok(false);
+    }
+    if let Some(n) = st["filter_name"].as_str().filter(|x| !x.is_empty()) {
+        let n = n.to_lowercase();
+        if !i.name.to_lowercase().contains(&n) && !t.code.to_lowercase().contains(&n) {
+            return Ok(false);
+        }
+    }
+    if let Some(c) = st["filter_color"].as_str().filter(|x| !x.is_empty()) {
+        if !i.color.to_lowercase().contains(&c.to_lowercase()) {
+            return Ok(false);
+        }
+    }
+    if let Some(a) = st["filter_attribute"].as_str().filter(|x| !x.is_empty()) {
+        let a = a.to_lowercase();
+        let at = [i.attribute.to_lowercase(), t.extra_attribute_this_turn.to_lowercase()];
+        if !at.iter().any(|x| !x.is_empty() && x.contains(&a)) {
+            return Ok(false);
+        }
+    }
+    let n = |k: &str| st[k].as_i64();
+    if n("cost_lte").map_or(false, |x| i.cost > x) || n("cost_gte").map_or(false, |x| i.cost < x)
+        || n("power_lte").map_or(false, |x| i.power > x) || n("power_eq").map_or(false, |x| i.power != x)
+        || n("power_gte").map_or(false, |x| i.power < x)
+    {
+        return Ok(false);
+    }
+    if st["rested_only"].as_bool().unwrap_or(false) && !t.rested {
+        return Ok(false);
+    }
+    if let Some(e) = st["exclude"].as_str().filter(|x| !x.is_empty()) {
+        let e = e.to_lowercase();
+        if i.name.to_lowercase().contains(&e) || t.code.to_lowercase().contains(&e) {
+            return Ok(false);
+        }
+    }
+    let cs = &b["conditions"];
+    if let Some(ty) = cs["self_type"].as_str().filter(|x| !x.is_empty()) {
+        if !i.sub_types.to_lowercase().contains(ty) {
+            return Ok(false);
+        }
+    }
+    if cs["self_power_base_lte"].as_i64().map_or(false, |x| i.power > x) || cs["self_power_base_gte"].as_i64().map_or(false, |x| i.power < x) {
+        return Ok(false);
+    }
+    const CHAVES: &[&str] = &["filter_type", "filter_name", "filter_color", "filter_attribute", "cost_lte", "cost_gte",
+        "power_lte", "power_eq", "power_gte", "rested_only", "exclude", "exclude_self"];
+    if st["no_filter"].as_bool().unwrap_or(false) {
+        return Ok(true);
+    }
+    Ok(CHAVES.iter().any(|k| st.get(*k).is_some())
+        || ["self_type", "self_power_base_lte", "self_power_base_gte"].iter().any(|k| cs.get(*k).is_some()))
+}
+
 /// `effective_hand_play_cost(p, card, opp)`
 pub fn custo_de_jogar(p: &Jogador, opp: &Jogador, c: &Carta) -> R<i64> {
     let i = dados(c)?;
@@ -853,6 +1174,407 @@ impl Executor {
             }
         }
         Ok(())
+    }
+
+    /// Carta do lado `me` por lugar ("leader" | "field_chars" | "stage")
+    fn no_lugar<'a>(me: &'a mut Jogador, l: &(String, usize)) -> R<&'a mut Carta> {
+        match l.0.as_str() {
+            "leader" => Ok(&mut me.leader),
+            "field_chars" => me.field_chars.get_mut(l.1).ok_or_else(|| ns("lugar fora do campo")),
+            "stage" => me.stage.as_mut().ok_or_else(|| ns("sem stage")),
+            _ => Err(ns("lugar inesperado")),
+        }
+    }
+
+    /// Escolha `sub_escolha` (max/min de board_value no motor) entre lugares do campo
+    fn sub_escolha(&mut self, me: &mut Jogador, opp: &mut Jogador, cands: &[(String, usize)]) -> R<(String, usize)> {
+        self.passivas_da_fila(me, opp)?;
+        match self.escolha("sub_escolha")? {
+            Some((l, z, i)) if l == "eu" => {
+                let p = if z == "leader" || z == "stage" { (z, 0) } else { (z, i) };
+                if cands.contains(&p) { Ok(p) } else { Err(ns("sub_escolha fora dos candidatos")) }
+            }
+            o => Err(ns(&format!("sub_escolha inesperada: {o:?}"))),
+        }
+    }
+
+    /// `_pay_substitute_cost(cost, card)` (card = quem paga, pelo lugar)
+    fn paga_substituicao(&mut self, cost: &Value, me: &mut Jogador, opp: &mut Jogador, card: &(String, usize)) -> R<bool> {
+        let n = cost["count"].as_i64().unwrap_or(1);
+        let no_campo = card.0 == "field_chars";
+        match cost["action"].as_str().unwrap_or("") {
+            "trash_self" => {
+                if !no_campo {
+                    return Ok(false);
+                }
+                crate::acoes::tira_do_campo_para_lixo(me, card.1);
+            }
+            "rest_don" => {
+                if me.don_available < n {
+                    return Ok(false);
+                }
+                me.don_available -= n;
+                me.don_rested += n;
+            }
+            "return_own_don" | "don_minus" => {
+                let (ok, dev) = devolve_don(me, n, None)?;
+                self.dispara_don_devolvido(me, opp, dev)?;
+                if !ok {
+                    return Ok(false);
+                }
+            }
+            "trash_from_hand" => {
+                let mut cands = Vec::new();
+                for (k, h) in me.hand.iter().enumerate() {
+                    let i = dados(h)?;
+                    if casa_filtro(&i, &cost["filter_type"], false)
+                        && cost["power_gte"].as_i64().map_or(true, |x| i.power >= x)
+                        && cost["power_lte"].as_i64().map_or(true, |x| i.power <= x)
+                    {
+                        cands.push(("hand".to_string(), k));
+                    }
+                }
+                if (cands.len() as i64) < n {
+                    return Ok(false);
+                }
+                let mut tirar = Vec::new();
+                for _ in 0..n {
+                    self.passivas_da_fila(me, opp)?;
+                    let p = match self.escolha("sub_escolha")? {
+                        Some((l, z, i)) if l == "eu" && z == "hand" && cands.contains(&(z.clone(), i)) => (z, i),
+                        o => return Err(ns(&format!("sub_escolha de descarte inesperada: {o:?}"))),
+                    };
+                    cands.retain(|c| *c != p);
+                    tirar.push(p.1);
+                    // os lugares na mao so mudam quando remove: remove ja
+                    let x = me.hand.remove(p.1);
+                    me.trash.push(x);
+                    for c in cands.iter_mut() {
+                        if c.1 > p.1 {
+                            c.1 -= 1;
+                        }
+                    }
+                }
+            }
+            "debuff_power_self" => Self::no_lugar(me, card)?.power_buff -= cost["amount"].as_i64().unwrap_or(0),
+            "debuff_power_self_leader" => me.leader.power_buff -= cost["amount"].as_i64().unwrap_or(0),
+            "rest_self" => {
+                let c = Self::no_lugar(me, card)?;
+                if c.rested {
+                    return Ok(false);
+                }
+                c.rested = true;
+            }
+            "bounce_self" => {
+                if !no_campo {
+                    return Ok(false);
+                }
+                let mut x = me.field_chars.remove(card.1);
+                if x.don_attached > 0 {
+                    me.don_rested += x.don_attached;
+                    x.don_attached = 0;
+                }
+                x.rested = false;
+                me.hand.push(x);
+            }
+            "rest_self_and_trash_hand" => {
+                let k = cost["trash_count"].as_i64().or(cost["count"].as_i64()).unwrap_or(1);
+                if Self::no_lugar(me, card)?.rested || (me.hand.len() as i64) < k {
+                    return Ok(false);
+                }
+                for _ in 0..k {
+                    self.passivas_da_fila(me, opp)?;
+                    let Some((l, z, i)) = self.escolha("descarte")? else { return Ok(false) };
+                    if l != "eu" || z != "hand" || i >= me.hand.len() {
+                        return Err(ns("descarte fora da mao"));
+                    }
+                    let x = me.hand.remove(i);
+                    me.trash.push(x);
+                }
+                Self::no_lugar(me, card)?.rested = true;
+            }
+            "rest_leader" => {
+                if me.leader.rested {
+                    return Ok(false);
+                }
+                me.leader.rested = true;
+            }
+            t @ ("rest_own_filtered" | "rest_own_character" | "rest_own_other_character" | "rest_own_card") => {
+                let mut cands: Vec<(String, usize)> = Vec::new();
+                for (j, c) in me.field_chars.iter().enumerate() {
+                    if c.rested {
+                        continue;
+                    }
+                    let i = dados(c)?;
+                    let ok = match t {
+                        "rest_own_filtered" => casa_filtro(&i, &cost["filter_type"], false),
+                        "rest_own_character" => {
+                            let ex = cost["exclude"].as_str().unwrap_or("").to_lowercase();
+                            cost["cost_gte"].as_i64().map_or(true, |x| i.cost >= x)
+                                && cost["cost_lte"].as_i64().map_or(true, |x| i.cost <= x)
+                                && (ex.is_empty() || !i.name.to_lowercase().contains(&ex))
+                        }
+                        "rest_own_other_character" => !(no_campo && j == card.1),
+                        _ => true,
+                    };
+                    if ok {
+                        cands.push(("field_chars".into(), j));
+                    }
+                }
+                if t == "rest_own_card" {
+                    if me.stage.as_ref().map_or(false, |s| !s.rested) {
+                        cands.push(("stage".into(), 0));
+                    }
+                    if !me.leader.rested {
+                        cands.push(("leader".into(), 0));
+                    }
+                }
+                let k = if matches!(t, "rest_own_other_character" | "rest_own_card") { n } else { 1 };
+                if (cands.len() as i64) < k {
+                    return Ok(false);
+                }
+                for _ in 0..k {
+                    let p = self.sub_escolha(me, opp, &cands)?;
+                    cands.retain(|c| *c != p);
+                    Self::no_lugar(me, &p)?.rested = true;
+                }
+            }
+            t @ ("life_to_hand" | "life_to_trash") => {
+                if (me.life.len() as i64) < n {
+                    return Ok(false);
+                }
+                for _ in 0..n {
+                    let mut c = me.life.pop().unwrap();
+                    c.life_face_up = false;
+                    if t == "life_to_hand" { me.hand.push(c) } else { me.trash.push(c) }
+                }
+            }
+            "trash_to_deck_bottom" => {
+                if (me.trash.len() as i64) < n {
+                    return Ok(false);
+                }
+                // o Python guarda `revealed_deck` por id() e so limpa ao ler: carta
+                // que foi revelada no deck, foi ao lixo e volta, reaparece revelada.
+                // O canonico nao carrega esse conjunto escondido.
+                return Err(ns("carta volta do lixo ao deck (revealed_deck por id no Python)"));
+                for _ in 0..n {
+                    self.passivas_da_fila(me, opp)?;
+                    let i = match self.escolha("sub_escolha")? {
+                        Some((l, z, i)) if l == "eu" && z == "trash" && i < me.trash.len() => i,
+                        o => return Err(ns(&format!("sub_escolha do lixo inesperada: {o:?}"))),
+                    };
+                    let c = me.trash.remove(i);
+                    me.deck.insert(0, c);
+                }
+            }
+            "turn_life_face_up" => {
+                if (me.life.len() as i64) < n {
+                    return Ok(false);
+                }
+                let l = me.life.len();
+                for c in me.life[l - n as usize..].iter_mut() {
+                    c.life_face_up = true;
+                }
+            }
+            "rest_opp_character" => {
+                let mut cands = Vec::new();
+                for i in 0..opp.field_chars.len() {
+                    let c = &opp.field_chars[i];
+                    if !c.rested && c.cannot_be_rested_until.is_empty() && !imune_a_rest(opp, me, i)? {
+                        cands.push(i);
+                    }
+                }
+                if (cands.len() as i64) < n {
+                    return Ok(false);
+                }
+                for _ in 0..n {
+                    self.passivas_da_fila(me, opp)?;
+                    let i = self.alvo_no_oponente(&cands)?;
+                    opp.field_chars[i].rested = true;
+                    cands.retain(|&j| j != i);
+                }
+            }
+            // qualquer outro: `_pay_substitute_cost` devolve None (nao paga)
+            _ => return Ok(false),
+        }
+        Ok(true)
+    }
+
+    /// `try_any_substitute(alvo, 'ko', source_is_opp=True)` e depois
+    /// `try_counter_event_substitute(alvo, 'ko')`, pelo executor do dono do alvo.
+    pub fn substitui_ko(&mut self, me: &mut Jogador, opp: &mut Jogador, alvo: usize) -> R<bool> {
+        self.substitui(me, opp, alvo, true)
+    }
+
+    /// `try_any_substitute(alvo, 'ko')` (+ evento [Counter] so na batalha)
+    fn substitui(&mut self, me: &mut Jogador, opp: &mut Jogador, alvo: usize, com_evento: bool) -> R<bool> {
+        let eh_sub = |s: &Value| matches!(s["action"].as_str(), Some("substitute_ko") | Some("substitute_removal"));
+        let alvo_l = ("field_chars".to_string(), alvo);
+        let a = me.field_chars[alvo].clone();
+        let ainf = dados(&a)?;
+        // 1) a propria carta (`try_substitute`)
+        for timing in ["passive", "opp_turn", "your_turn"] {
+            let Some(b) = ainf.efeitos.get(timing).cloned() else { continue };
+            let passos: Vec<Value> = passos_de(&b).cloned().collect();
+            for st in passos.iter().filter(|s| eh_sub(s)) {
+                let neg = st["negated_if_any_character_named"].as_str().unwrap_or("").to_lowercase();
+                if !neg.is_empty() {
+                    let mut tem = false;
+                    for c in me.field_chars.iter().chain(opp.field_chars.iter()) {
+                        tem |= dados(c)?.name.to_lowercase().contains(&neg);
+                    }
+                    if tem {
+                        continue;
+                    }
+                }
+                let chave = (self.inst, a.code.clone(), format!("{timing}_substitute"));
+                let uma = b["once_per_turn"].as_bool().unwrap_or(false);
+                if uma && self.usados.contains(&chave) {
+                    continue;
+                }
+                let outros = passos.iter().any(|s| !matches!(s["action"].as_str(), Some("substitute_ko") | Some("substitute_removal") | Some("substitute_rest")));
+                if !outros && !self.condicoes(&b["conditions"], me, opp, &a, timing)? {
+                    continue;
+                }
+                let ft = st["filter_type"].as_str().unwrap_or("").to_lowercase();
+                if !ft.is_empty() && !ainf.sub_types.to_lowercase().contains(&ft) {
+                    continue;
+                }
+                let fname = st["filter_name"].as_str().unwrap_or("").to_lowercase();
+                if !fname.is_empty() && !ainf.name.to_lowercase().contains(&fname) {
+                    continue;
+                }
+                self.passivas_da_fila(me, opp)?;
+                if !self.veredito("paga_substituicao")? {
+                    continue;
+                }
+                if !self.paga_substituicao(&st["cost"], me, opp, &alvo_l)? {
+                    continue;
+                }
+                self.extras_de_substituicao(st, me, opp, &a, None)?;
+                if uma {
+                    self.usados.insert(chave);
+                }
+                return Ok(true);
+            }
+        }
+        // 2) outras cartas do dono (`_try_external_substitute_from_source`)
+        let mut fontes: Vec<(String, usize)> = (0..me.field_chars.len()).filter(|&j| j != alvo).map(|j| ("field_chars".to_string(), j)).collect();
+        fontes.push(("leader".into(), 0));
+        if me.stage.is_some() {
+            fontes.push(("stage".into(), 0));
+        }
+        for fl in fontes {
+            let f = Self::no_lugar(me, &fl)?.clone();
+            let finf = dados(&f)?;
+            for timing in ["passive", "opp_turn", "your_turn"] {
+                let Some(b) = finf.efeitos.get(timing).cloned() else { continue };
+                let passos: Vec<Value> = passos_de(&b).cloned().collect();
+                if !passos.iter().any(|s| eh_sub(s)) {
+                    continue;
+                }
+                // `_source_conditions_met_for_substitute`
+                let mut cs = b["conditions"].as_object().cloned().unwrap_or_default();
+                for k in ["self_type", "self_power_base_lte", "self_power_base_gte"] {
+                    cs.remove(k);
+                }
+                if passos.iter().any(|s| !matches!(s["action"].as_str(), Some("substitute_ko") | Some("substitute_removal") | Some("substitute_rest"))) {
+                    cs.clear();
+                }
+                if !self.condicoes(&Value::Object(cs), me, opp, &f, timing)? {
+                    continue;
+                }
+                let dr = b["don_requirement"].as_i64().unwrap_or(0);
+                if dr != 0 && f.don_attached < dr {
+                    continue;
+                }
+                for st in passos.iter().filter(|s| eh_sub(s)) {
+                    let chave = (self.inst, f.code.clone(), format!("{timing}_substitute"));
+                    let uma = b["once_per_turn"].as_bool().unwrap_or(false);
+                    if uma && self.usados.contains(&chave) {
+                        continue;
+                    }
+                    if !casa_alvo_de_substituicao(&a, &ainf, false, st, &b)? {
+                        continue;
+                    }
+                    let paga = if st["cost"]["action"].as_str() == Some("debuff_power_self") { alvo_l.clone() } else { fl.clone() };
+                    self.passivas_da_fila(me, opp)?;
+                    if !self.veredito("paga_substituicao")? {
+                        continue;
+                    }
+                    if !self.paga_substituicao(&st["cost"], me, opp, &paga)? {
+                        continue;
+                    }
+                    self.extras_de_substituicao(st, me, opp, &f, Some(fl.clone()))?;
+                    if uma {
+                        self.usados.insert(chave);
+                    }
+                    return Ok(true);
+                }
+            }
+        }
+        // 3) evento [Counter] da mao (`try_counter_event_substitute`)
+        if !com_evento {
+            return Ok(false);
+        }
+        let mut k = 0;
+        while k < me.hand.len() {
+            let ev = me.hand[k].clone();
+            let ei = dados(&ev)?;
+            k += 1;
+            if ei.card_type != "EVENT" {
+                continue;
+            }
+            let Some(b) = ei.efeitos.get("counter").cloned().filter(|b| b.as_object().map_or(false, |m| !m.is_empty())) else { continue };
+            let custo = custo_de_jogar(me, opp, &ev)?;
+            if me.don_available < custo {
+                continue;
+            }
+            let passos: Vec<Value> = passos_de(&b).cloned().collect();
+            for st in passos.iter().filter(|s| eh_sub(s)) {
+                const CHAVES: &[&str] = &["filter_type", "filter_name", "filter_color", "cost_lte", "cost_gte",
+                    "power_lte", "power_eq", "power_gte", "rested_only", "exclude"];
+                if CHAVES.iter().any(|c| st.get(*c).is_some()) && !casa_alvo_de_substituicao(&a, &ainf, false, st, &b)? {
+                    continue;
+                }
+                let c = &st["cost"];
+                if c["action"].as_str() != Some("trash_from_hand") {
+                    continue;
+                }
+                if (me.hand.len() as i64 - 1) < c["count"].as_i64().unwrap_or(1) {
+                    continue;
+                }
+                let x = me.hand.remove(k - 1);
+                me.trash.push(x);
+                me.don_available -= custo;
+                me.don_rested += custo;
+                if !self.paga_substituicao(c, me, opp, &alvo_l)? {
+                    // o Python segue para o proximo passo/evento com o evento ja gasto
+                    return Err(ns("substituicao por evento nao paga"));
+                }
+                return Ok(true);
+            }
+        }
+        Ok(false)
+    }
+
+    fn extras_de_substituicao(&mut self, st: &Value, me: &mut Jogador, opp: &mut Jogador, fonte: &Carta,
+                              lugar: Option<(String, usize)>) -> R<()> {
+        let ex: Vec<Value> = st["extra_steps"].as_array().cloned().unwrap_or_default();
+        if ex.is_empty() {
+            return Ok(());
+        }
+        let inf = dados(fonte)?;
+        let lf = std::mem::replace(&mut self.lugar_fonte, lugar);
+        let mut r = Ok(());
+        for e in &ex {
+            r = self.passo(e, me, opp, fonte, &inf, "substitute");
+            if r.is_err() {
+                break;
+            }
+        }
+        self.lugar_fonte = lf;
+        r
     }
 
     fn proxima(&mut self, tipo: &str) -> R<Value> {
@@ -2209,7 +2931,7 @@ impl Executor {
                 self.passivas_da_fila(me, opp)?;
                 self.busca(st, me, inf)?
             }
-            "ko" => self.ko(st, me, opp)?,
+            "ko" => self.ko(st, me, opp, fonte)?,
             "buff_power" => self.buff(st, me, opp, fonte)?,
             "give_don" => {
                 self.passivas_da_fila(me, opp)?;
@@ -2502,7 +3224,7 @@ impl Executor {
     }
 
     /// `ko` em personagem do oponente (sem orcamento total, sem stage).
-    fn ko(&mut self, st: &Value, me: &mut Jogador, opp: &mut Jogador) -> R<()> {
+    fn ko(&mut self, st: &Value, me: &mut Jogador, opp: &mut Jogador, fonte: &Carta) -> R<()> {
         let t = st["target"].as_str().unwrap_or("opp_character");
         if t != "opp_character" {
             return Err(ns(&format!("ko com alvo {t}")));
@@ -2511,11 +3233,6 @@ impl Executor {
             if !st[k].is_null() {
                 return Err(ns(&format!("ko com {k}")));
             }
-        }
-        if lado_tem_acao(opp, "substitute")? || lado_tem_acao(opp, "immunity")?
-            || lado_tem_acao(opp, "ko_immunity")?
-        {
-            return Err(ns("imunidade/substituicao no lado do alvo"));
         }
         if tem_reativo(me, REATIVOS_DE_KO)? || tem_reativo(opp, REATIVOS_DE_KO)? {
             return Err(ns("reativo de KO"));
@@ -2530,10 +3247,22 @@ impl Executor {
         for _ in 0..n.min(cands.len()) {
             self.passivas_da_fila(me, opp)?;
             let i = self.alvo_no_oponente(&cands)?;
-            let c = &opp.field_chars[i];
-            if !c.immunity_ko_until.is_empty() {
-                return Err(ns("alvo com imunidade a KO"));
+            let fonte_char = if dados(fonte)?.card_type == "CHARACTER" { Some(fonte) } else { None };
+            let saiu_da_lista = |cands: &mut Vec<usize>| cands.retain(|&j| j != i);
+            if imune_a_ko(opp, me, i, fonte_char, false)? {
+                saiu_da_lista(&mut cands);
+                continue;
             }
+            // `EffectExecutor(owner, me)` novo para a substituicao
+            let (k_, lf_) = (self.inst, self.lugar_fonte.take());
+            self.inst = 7500 + self.fila.len() as u32 + self.usados.len() as u32;
+            let sub = self.substitui(opp, me, i, false);
+            self.inst = k_;
+            self.lugar_fonte = lf_;
+            if sub? {
+                return Err(ns("ko: substituicao paga (indices do campo podem mudar)"));
+            }
+            let c = &opp.field_chars[i];
             if dados(c)?.efeitos.contains_key("on_ko") {
                 return Err(ns("on_ko do alvo"));
             }
@@ -3013,8 +3742,16 @@ impl Executor {
 
     /// `rest_opp_character`
     fn restar_oponente(&mut self, st: &Value, me: &mut Jogador, opp: &mut Jogador) -> R<()> {
-        if lado_tem_acao(opp, "substitute")? || lado_tem_acao(opp, "immunity")? {
-            return Err(ns("imunidade/substituicao no lado do alvo"));
+        // substituicao de rest (`substitute_rest`) ainda fora do nucleo
+        {
+            let cartas = std::iter::once(&opp.leader).chain(opp.field_chars.iter()).chain(opp.stage.iter());
+            for c in cartas {
+                for t in ["passive", "opp_turn", "your_turn"] {
+                    if dados(c)?.efeitos.get(t).map_or(false, |b| passos_de(b).any(|s| s["action"].as_str() == Some("substitute_rest"))) {
+                        return Err(ns("substituicao de rest no lado do alvo"));
+                    }
+                }
+            }
         }
         let n = st["count"].as_i64().unwrap_or(1).max(0) as usize;
         let st2 = {
@@ -3026,7 +3763,7 @@ impl Executor {
         };
         let mut cands: Vec<usize> = Vec::new();
         for (i, c) in opp.field_chars.iter().enumerate() {
-            if c.cannot_be_rested_until.is_empty() && casa_alvo(&st2, c, true, true, me, opp)? {
+            if c.cannot_be_rested_until.is_empty() && !imune_a_rest(opp, me, i)? && casa_alvo(&st2, c, true, true, me, opp)? {
                 cands.push(i);
             }
         }

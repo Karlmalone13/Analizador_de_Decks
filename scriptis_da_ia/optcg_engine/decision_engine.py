@@ -6250,6 +6250,7 @@ class EffectExecutor:
             trashed = []
             for _ in range(count):
                 worst = min(candidatos, key=lambda c: c.board_value())
+                _diario_decisao_efeito('escolha_efeito', qual='sub_escolha', carta=_diario_lugar_com_lado(worst, me, self.opp))
                 remove_by_identity(me.hand, worst)
                 me.trash.append(worst)
                 remove_by_identity(candidatos, worst)
@@ -6323,6 +6324,7 @@ class EffectExecutor:
             if not candidatos:
                 return None
             alvo = max(candidatos, key=lambda c: c.board_value())
+            _diario_decisao_efeito('escolha_efeito', qual='sub_escolha', carta=_diario_lugar_com_lado(alvo, me, self.opp))
             alvo.rested = True
             return f'{card.name[:18]} evitou K.O./remoção restando {alvo.name[:15]}'
 
@@ -6344,6 +6346,7 @@ class EffectExecutor:
             if not candidatos:
                 return None
             alvo = max(candidatos, key=lambda c: c.board_value())
+            _diario_decisao_efeito('escolha_efeito', qual='sub_escolha', carta=_diario_lugar_com_lado(alvo, me, self.opp))
             alvo.rested = True
             return f'{card.name[:18]} evitou K.O./remoção restando {alvo.name[:15]}'
 
@@ -6361,6 +6364,7 @@ class EffectExecutor:
             restados = []
             for _ in range(count):
                 alvo = max(candidatos, key=lambda c: c.board_value())
+                _diario_decisao_efeito('escolha_efeito', qual='sub_escolha', carta=_diario_lugar_com_lado(alvo, me, self.opp))
                 alvo.rested = True
                 remove_by_identity(candidatos, alvo)
                 restados.append(alvo.name[:15])
@@ -6376,6 +6380,7 @@ class EffectExecutor:
             restados = []
             for _ in range(count):
                 alvo = max(candidatos, key=lambda c: c.board_value())
+                _diario_decisao_efeito('escolha_efeito', qual='sub_escolha', carta=_diario_lugar_com_lado(alvo, me, self.opp))
                 alvo.rested = True
                 remove_by_identity(candidatos, alvo)
                 restados.append(alvo.name[:15])
@@ -6425,6 +6430,7 @@ class EffectExecutor:
             movidas = []
             for _ in range(count):
                 pior = min(me.trash, key=lambda c: c.board_value())
+                _diario_decisao_efeito('escolha_efeito', qual='sub_escolha', carta=_diario_lugar_com_lado(pior, me, self.opp))
                 remove_by_identity(me.trash, pior)
                 me.deck.insert(0, pior)
                 movidas.append(pior.name[:15])
@@ -25195,6 +25201,18 @@ def _embrulha_escolha_de_carta(nome, rotulo, pula=None):
 _embrulha_escolha_de_carta('_pick_effect_target', 'alvo')
 _embrulha_escolha_de_carta('_choose_to_trash', 'descarte',
                            pula=lambda a, k: k.get('avaliando', a[1] if len(a) > 1 else False))
+_spr_orig = DecisionEngine.should_pay_removal_substitute
+
+
+def _spr_com_diario(self, target, cost, payer=None):
+    """Pagar a substituicao de K.O./remocao? (heuristica do motor -> veredito)"""
+    r = _spr_orig(self, target, cost, payer=payer)
+    _diario_decisao_efeito('veredito_efeito', qual='paga_substituicao', valor=bool(r))
+    return r
+
+
+_spr_com_diario.__wrapped__ = _spr_orig
+DecisionEngine.should_pay_removal_substitute = _spr_com_diario
 _qce_orig = EffectExecutor._q_counter_evento
 
 

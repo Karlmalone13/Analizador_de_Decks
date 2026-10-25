@@ -405,11 +405,23 @@ fn atacar(e: &mut Estado, acao: &Value, d: &Decisoes) -> Result<Resultado, Resul
             let j = alvo_idx.unwrap();
             if j < opp.field_chars.len() {
                 let t = &opp.field_chars[j];
-                if !t.immunity_ko_until.is_empty() || lado_tem_acao(opp, "immunity")?
-                    || lado_tem_acao(opp, "substitute")?
-                {
-                    return Err(ns("imunidade/substituicao no KO de batalha"));
+                let atacante = if za == "leader" { p.leader.clone() } else { p.field_chars[ia].clone() };
+                if crate::efeitos::imune_ko_em_batalha(opp, p, j, &atacante)? {
+                    let _ = atk_eh_char;
+                    if !ex.fila.is_empty() {
+                        return Err(ns("sobrou decisao de efeito na fila"));
+                    }
+                    return Ok(Resultado::Feito { venceu: false });
                 }
+                ex.inst = 20; // `ee_opp` do KO de batalha
+                ex.lugar_fonte = None;
+                if ex.substitui_ko(opp, p, j)? {
+                    if !ex.fila.is_empty() {
+                        return Err(ns("sobrou decisao de efeito na fila"));
+                    }
+                    return Ok(Resultado::Feito { venceu: false });
+                }
+                let t = &opp.field_chars[j];
                 if tem_reativo(opp, &["on_own_effect_removes_char"])? || tem_reativo(p, &["on_own_effect_removes_char"])? {
                     return Err(ns("reativo de remocao por efeito"));
                 }
