@@ -1017,7 +1017,7 @@ impl Executor {
             "add_to_hand" | "trash_rest" | "gain_life" | "add_don" | "buff_power" | "give_don" | "redirect_attack_target"
             | "activate_trash_event_main" | "transfer_don" | "activate_main_effect"
             | "deal_damage" | "give_don_either_side" | "peek_opp_deck_top"
-            | "buff_power_per_count" | "set_base_power" | "buff_cost" | "self_cant_play" | "give_don_opp" | "set_active"
+            | "buff_power_per_count" | "set_base_power" | "buff_cost" | "self_cant_take_life" | "select_grant_can_attack_active_turn" | "self_cant_play" | "give_don_opp" | "set_active"
             | "lock_opp_cannot_be_rested" | "lock_opp_blocker_turn" => true,
             "add_from_trash" => !me.trash.is_empty(),
             "deck_reorder_rest" | "deck_top_rest" => !me.deck.is_empty(),
@@ -1025,6 +1025,7 @@ impl Executor {
             "life_to_hand" => !me.life.is_empty(),
             "trash_own_life" => if st["face"].as_str() == Some("up") { me.life.iter().any(|c| c.life_face_up) } else { !me.life.is_empty() },
             "attack_life" => !opp.life.is_empty(),
+            "opp_trash_from_hand" => !opp.hand.is_empty(),
             "negate_effect" => match st["target"].as_str().unwrap_or("opp_character") {
                 "opp_leader" | "opp_leader_or_character" => true,
                 _ => {
@@ -1360,6 +1361,82 @@ impl Executor {
                         me.hand.push(v);
                     }
                 }
+                "trash_char_or_hand" => {
+                    for _ in 0..n {
+                        let mut chars = Vec::new();
+                        for (j, x) in me.field_chars.iter().enumerate() {
+                            if casa_filtro(&dados(x)?, &c["filter_type"], false) {
+                                chars.push(j);
+                            }
+                        }
+                        if chars.is_empty() && me.hand.is_empty() {
+                            return Ok(false);
+                        }
+                        self.passivas_da_fila(me, opp)?;
+                        match self.escolha("sacrificio")? {
+                            Some((l, z, i)) if l == "eu" && z == "hand" && i < me.hand.len() => {
+                                let x = me.hand.remove(i);
+                                me.trash.push(x);
+                            }
+                            Some((l, z, i)) if l == "eu" && z == "field_chars" && chars.contains(&i) => {
+                                crate::acoes::tira_do_campo_para_lixo(me, i);
+                            }
+                            o => return Err(ns(&format!("sacrificio inesperado: {o:?}"))),
+                        }
+                    }
+                }
+                "return_own_character_to_hand" => {
+                    let excl_self = if c["exclude_self"].as_bool().unwrap_or(false) {
+                        match &self.lugar_fonte {
+                            Some((z, i)) if z == "field_chars" => Some(*i),
+                            _ => return Err(ns("return_own_character_to_hand exclude_self sem lugar")),
+                        }
+                    } else {
+                        None
+                    };
+                    let exn = c["exclude"].as_str().unwrap_or("").to_lowercase();
+                    let mut cands = Vec::new();
+                    for (j, x) in me.field_chars.iter().enumerate() {
+                        let xi = dados(x)?;
+                        if Some(j) == excl_self || c["cost_gte"].as_i64().map_or(false, |g| xi.cost < g)
+                            || !casa_filtro(&xi, &c["filter_type"], false)
+                            || (!exn.is_empty() && xi.name.to_lowercase().contains(&exn))
+                        {
+                            continue;
+                        }
+                        cands.push(j);
+                    }
+                    if (cands.len() as i64) < n {
+                        return Ok(false);
+                    }
+                    for _ in 0..n {
+                        self.passivas_da_fila(me, opp)?;
+                        let Some((l, z, i)) = self.escolha("custo_sacrificar")? else {
+                            return Err(ns("custo_sacrificar vazio"));
+                        };
+                        if l != "eu" || z != "field_chars" || !cands.contains(&i) {
+                            return Err(ns("custo_sacrificar fora dos candidatos"));
+                        }
+                        let mut x = me.field_chars.remove(i);
+                        if x.don_attached > 0 {
+                            me.don_rested += x.don_attached;
+                            x.don_attached = 0;
+                        }
+                        x.rested = false;
+                        me.hand.push(x);
+                        cands.retain(|&j| j != i);
+                        for j in cands.iter_mut() {
+                            if *j > i {
+                                *j -= 1;
+                            }
+                        }
+                        if let Some((zf, fi)) = self.lugar_fonte.clone() {
+                            if zf == "field_chars" {
+                                self.lugar_fonte = if fi == i { None } else if fi > i { Some((zf, fi - 1)) } else { Some((zf, fi)) };
+                            }
+                        }
+                    }
+                }
                 "give_don_opp" => {
                     if opp.don_rested < n {
                         return Ok(false);
@@ -1421,6 +1498,48 @@ impl Executor {
         }
         match acao {
             "look_top_deck" => {}
+            "self_cant_take_life" => me.cant_take_life_this_turn = true,
+            "select_grant_can_attack_active_turn" => {
+                let f = if st["filter_types"].is_null() || st["filter_types"].as_array().map_or(false, |a| a.is_empty())
+                    || st["filter_types"].as_str() == Some("") { &st["filter_type"] } else { &st["filter_types"] };
+                let mut cands: Vec<Option<usize>> = Vec::new();
+                for (j, c) in me.field_chars.iter().enumerate() {
+                    if casa_filtro(&dados(c)?, f, false) {
+                        cands.push(Some(j));
+                    }
+                }
+                if st["include_leader"].as_bool().unwrap_or(false) && casa_filtro(&dados(&me.leader)?, f, false) {
+                    cands.push(None);
+                }
+                if !cands.is_empty() {
+                    self.passivas_da_fila(me, opp)?;
+                    let x = self.alvo_meu(&cands)?;
+                    let a = carta_mut(me, x)?;
+                    a.can_attack_active_this_turn = true;
+                    if st["allow_played_this_turn"].as_bool().unwrap_or(false) {
+                        a.rush_character_only_this_turn = true;
+                    }
+                }
+            }
+            "opp_trash_from_hand" => {
+                if st["chosen_by"].as_str() == Some("effect_owner_blind") {
+                    return Err(ns("opp_trash_from_hand aleatorio"));
+                }
+                let mut k = 0;
+                for _ in 0..n.min(opp.hand.len() as i64) {
+                    self.passivas_da_fila(me, opp)?;
+                    let Some((lado, z, i)) = self.escolha("descarte")? else { continue };
+                    if lado != "oponente" || z != "hand" || i >= opp.hand.len() {
+                        return Err(ns("descarte do oponente fora da mao"));
+                    }
+                    let x = opp.hand.remove(i);
+                    opp.trash.push(x);
+                    k += 1;
+                }
+                if k > 0 && tem_reativo(opp, &["on_hand_card_trashed"])? {
+                    return Err(ns("reativo on_hand_card_trashed"));
+                }
+            }
             "set_base_power" => {
                 if let Some(src) = st["source"].as_str() {
                     let v = match src {

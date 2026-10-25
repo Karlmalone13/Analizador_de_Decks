@@ -7375,6 +7375,7 @@ class EffectExecutor:
                                 and not pior_char.just_played
                                 and not getattr(pior_char, 'cannot_attack_until', False)):
                             # char ativo: forçar trash da mão
+                            _diario_decisao_efeito('escolha_efeito', qual='sacrificio', carta=_diario_lugar_com_lado(pior_mao, self.me, self.opp))
                             remove_by_identity(self.me.hand, pior_mao)
                             self.me.trash.append(pior_mao)
                             self._cost_logs.append(f'custo: trashou da mão {pior_mao.name[:14]}')
@@ -7392,9 +7393,11 @@ class EffectExecutor:
                             val_char *= 0.5
                     val_mao = self._trash_value(pior_mao) if pior_mao else 10**9
                     if pior_char is not None and val_char <= val_mao:
+                        _diario_decisao_efeito('escolha_efeito', qual='sacrificio', carta=_diario_lugar_com_lado(pior_char, self.me, self.opp))
                         remove_character_from_field(self.me, pior_char, 'trash')
                         self._cost_logs.append(f'custo: trashou character {pior_char.name[:14]}')
                     elif pior_mao is not None:
+                        _diario_decisao_efeito('escolha_efeito', qual='sacrificio', carta=_diario_lugar_com_lado(pior_mao, self.me, self.opp))
                         remove_by_identity(self.me.hand, pior_mao)
                         self.me.trash.append(pior_mao)
                         self._cost_logs.append(f'custo: trashou da mão {pior_mao.name[:14]}')
