@@ -44,11 +44,11 @@ fn kw_ativa(c: &Carta, i: &InfoCarta, kw: &str, nativa: bool) -> bool {
     nativa || i.don_cond.get(kw).map_or(false, |req| c.don_attached >= *req)
 }
 
-fn is_rush(c: &Carta, i: &InfoCarta) -> bool {
+pub fn is_rush(c: &Carta, i: &InfoCarta) -> bool {
     kw_ativa(c, i, "rush", c.has_rush) || c.rush_this_turn
 }
 
-fn is_rush_character(c: &Carta, i: &InfoCarta) -> bool {
+pub fn is_rush_character(c: &Carta, i: &InfoCarta) -> bool {
     kw_ativa(c, i, "rush_character", c.has_rush_character)
 }
 
@@ -68,7 +68,7 @@ fn custo_efetivo(c: &Carta, i: &InfoCarta) -> i64 {
 }
 
 /// `remove_character_from_field(owner, card, 'trash')`
-fn tira_do_campo_para_lixo(dono: &mut Jogador, idx: usize) {
+pub fn tira_do_campo_para_lixo(dono: &mut Jogador, idx: usize) {
     let mut c = dono.field_chars.remove(idx);
     if c.don_attached > 0 {
         dono.don_rested += c.don_attached;
@@ -143,7 +143,7 @@ fn jogar(e: &mut Estado, acao: &Value, d: &Decisoes) -> Result<Resultado, Result
             p.field_chars.push(carta);
             fonte = p.field_chars.last().unwrap().clone();
             let mut ex = Executor::novo(d.efeito.iter().cloned().collect());
-            ex.dispara_jogou_personagem(&mut e.ativo, &mut e.oponente, &fonte)?;
+            ex.dispara_jogou_personagem(&mut e.ativo, &mut e.oponente, &fonte, false)?;
             fila_resto = Some(ex.fila);
         }
         "EVENT" => {

@@ -10574,6 +10574,7 @@ class EffectExecutor:
                 else:
                     best = max(pool, key=lambda x: x.board_value())
 
+                _diario_decisao_efeito('escolha_efeito', qual='do_lixo', carta=_diario_lugar_com_lado(best, me, opp))
                 remove_by_identity(me.trash, best)
                 best.rested = enters_rested
                 if best.card_type == 'STAGE':
@@ -10583,6 +10584,7 @@ class EffectExecutor:
                 else:
                     if len(me.field_chars) >= 5:
                         worst = min(me.field_chars, key=lambda x: x.board_value())
+                        _diario_decisao_efeito('escolha_efeito', qual='sai_campo', carta=_diario_lugar_com_lado(worst, me, opp))
                         remove_character_from_field(me, worst, 'trash')
                     me.field_chars.append(best)
                     apply_conditional_keyword_passives(me, opp)
@@ -11422,6 +11424,7 @@ class EffectExecutor:
                 if c.card_type == 'CHARACTER':
                     if len(me.field_chars) >= 5:
                         worst = _pior_para_trocar(me.field_chars)
+                        _diario_decisao_efeito('escolha_efeito', qual='sai_campo', carta=_diario_lugar_com_lado(worst, me, opp))
                         if worst is not None:
                             remove_character_from_field(me, worst, 'trash')
                     c.rested = False
@@ -11461,8 +11464,10 @@ class EffectExecutor:
                 campo_cheio = (card.card_type == 'CHARACTER' and len(me.field_chars) >= 5)
                 if campo_cheio:
                     pior = _pior_para_trocar(me.field_chars)
+                    _diario_decisao_efeito('veredito_efeito', qual='troca_campo', valor=not (pior is None or card.board_value() <= pior.board_value()))
                     if pior is None or card.board_value() <= pior.board_value():
                         return ''   # não vale trocar — mantém na mão
+                _diario_decisao_efeito('veredito_efeito', qual='joga_self', valor=bool(val_play > val_keep))
                 if val_play <= val_keep:
                     return ''       # vale mais na mão — não joga
                 remove_by_identity(me.hand, card)
@@ -11556,6 +11561,7 @@ class EffectExecutor:
                         # guarda de campo cheio para characters
                         if melhor.card_type == 'CHARACTER' and len(me.field_chars) >= 5:
                             pior = _pior_para_trocar(me.field_chars)
+                            _troca = not (pior is None or melhor.board_value() <= pior.board_value()); _diario_decisao_efeito('veredito_efeito', qual='troca_campo', valor=_troca)
                             if pior is None or melhor.board_value() <= pior.board_value():
                                 remove_by_identity(pool, melhor)
                                 remove_by_identity(elegiveis, melhor)
@@ -11581,6 +11587,7 @@ class EffectExecutor:
                     # guarda de campo cheio para characters
                     if melhor.card_type == 'CHARACTER' and len(me.field_chars) >= 5:
                         pior = _pior_para_trocar(me.field_chars)
+                        _troca = not (pior is None or melhor.board_value() <= pior.board_value()); _diario_decisao_efeito('veredito_efeito', qual='troca_campo', valor=_troca)
                         if pior is None or melhor.board_value() <= pior.board_value():
                             remove_by_identity(elegiveis, melhor)
                             continue

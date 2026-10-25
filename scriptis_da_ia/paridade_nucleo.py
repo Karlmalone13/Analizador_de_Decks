@@ -28,7 +28,7 @@ _REATIVAS = de.OPTCGMatch._OPP_TURN_REACTIVE_ACTIONS
 # Onda de efeitos 1 no nucleo: jogadas cujos passos de efeito estao TODOS aqui
 # vao para o Rust com a fila de decisoes do efeito.
 _ONDA = {'look_top_deck', 'add_to_hand', 'deck_bottom_rest', 'trash_rest', 'draw',
-         'gain_life', 'add_don', 'set_don_active', 'ko', 'rest_opp_character', 'debuff_power', 'buff_power', 'give_don',
+         'gain_life', 'add_don', 'set_don_active', 'ko', 'rest_opp_character', 'debuff_power', 'buff_power', 'give_don', 'play_from_trash', 'play_card',
          'custo:trash_from_hand', 'custo:don_minus', 'custo:rest_don'}
 
 
@@ -184,7 +184,7 @@ def main() -> int:
                 dec['counter_cartas'] = e['cartas']
             elif e['tipo'] == 'campo_cheio':
                 dec['campo_cheio'] = e['sai']
-            elif e['tipo'] in ('escolha_efeito', 'paga_custo'):
+            elif e['tipo'] in ('escolha_efeito', 'paga_custo', 'veredito_efeito'):
                 dec.setdefault('efeito', []).append(e)
             elif e['tipo'] == 'jogada':
                 t = e['acao']['tipo']

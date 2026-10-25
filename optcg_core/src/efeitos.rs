@@ -278,6 +278,30 @@ impl Executor {
             "look_top_deck" | "deck_bottom_rest" | "draw" => !me.deck.is_empty(),
             "set_don_active" => me.don_rested > 0,
             "add_to_hand" | "trash_rest" | "gain_life" | "add_don" | "buff_power" | "give_don" => true,
+            "play_from_trash" => !me.trash.is_empty(),
+            "play_card" => {
+                if st["source"].as_str() == Some("self") {
+                    return Err(ns("play_card self: viabilidade pela identidade da carta"));
+                }
+                let tipo = st["card_type"].as_str().unwrap_or("CHARACTER").to_uppercase();
+                let cl = match &st["cost_lte"] {
+                    Value::Null => st["total_cost_lte"].as_i64(),
+                    Value::String(x) if x == "don_count_self" => Some(me.don_available + me.don_rested),
+                    Value::String(x) if x == "don_count_opp" => Some(opp.don_available + opp.don_rested),
+                    v => v.as_i64(),
+                };
+                let mut ok = false;
+                for c in &me.hand {
+                    let i = dados(c)?;
+                    if i.card_type == tipo && cl.map_or(true, |l| i.cost <= l)
+                        && st["cost_eq"].as_i64().map_or(true, |x| i.cost == x)
+                        && casa_filtro(&i, &st["filter_type"], false)
+                    {
+                        ok = true;
+                    }
+                }
+                ok
+            }
             a @ ("ko" | "rest_opp_character" | "debuff_power") => {
                 match st["target"].as_str() {
                     Some("opp_stage") => return Err(ns("alvo opp_stage")),
@@ -543,6 +567,8 @@ impl Executor {
             "ko" => self.ko(st, me, opp)?,
             "buff_power" => self.buff(st, me, fonte)?,
             "give_don" => self.da_don(st, me)?,
+            "play_from_trash" => self.joga_do_lixo(st, me)?,
+            "play_card" => self.joga_carta(st, me, opp, fonte)?,
             "rest_opp_character" => self.restar_oponente(st, me, opp)?,
             "debuff_power" => self.debuff(st, me, opp, fonte)?,
             "trash_rest" | "deck_bottom_rest" => {
@@ -637,7 +663,8 @@ impl Executor {
 impl Executor {
     /// `_dispatch_char_played` (jogada normal da Main: via_effect=False): reativos
     /// `on_own_char_played` do lado de quem jogou e `on_opp_char_played` do outro.
-    pub fn dispara_jogou_personagem(&mut self, quem: &mut Jogador, outro: &mut Jogador, jogada: &Carta) -> R<()> {
+    pub fn dispara_jogou_personagem(&mut self, quem: &mut Jogador, outro: &mut Jogador, jogada: &Carta,
+                                    via_efeito: bool) -> R<()> {
         let ij = dados(jogada)?;
         for (gat, lado_quem) in [("on_own_char_played", true), ("on_opp_char_played", false)] {
             let (w, o) = if lado_quem { (&mut *quem, &mut *outro) } else { (&mut *outro, &mut *quem) };
@@ -655,7 +682,7 @@ impl Executor {
                     !(a["play_filter_no_base_effect"].as_bool().unwrap_or(false) && !ij.efeitos.is_empty())
                         && !(a["play_filter_has_trigger"].as_bool().unwrap_or(false) && !ij.has_trigger)
                         && !(a["play_filter_cost_gte"].as_i64().map_or(false, |c| c != 0 && ij.cost < c))
-                        && !a["play_filter_via_effect"].as_bool().unwrap_or(false)
+                        && !(a["play_filter_via_effect"].as_bool().unwrap_or(false) && !via_efeito)
                 });
                 if !casa {
                     continue;
@@ -1051,6 +1078,238 @@ impl Executor {
         carta_mut(me, x)?.don_attached += t;
         if t > 0 && tem_reativo(me, &["on_don_given"])? {
             return Err(ns("reativo on_don_given"));
+        }
+        Ok(())
+    }
+
+    fn veredito(&mut self, qual: &str) -> R<bool> {
+        let d = self.proxima("veredito_efeito")?;
+        if d["qual"].as_str() != Some(qual) {
+            return Err(ns(&format!("veredito fora de ordem: esperava {qual}, veio {}", d["qual"])));
+        }
+        Ok(d["valor"].as_bool().unwrap_or(false))
+    }
+
+    /// Campo cheio dentro de efeito: quem sai e decisao (fila `sai_campo`).
+    fn sai_do_campo(&mut self, me: &mut Jogador) -> R<()> {
+        match self.escolha("sai_campo")? {
+            None => Ok(()),
+            Some((l, z, i)) if l == "eu" && z == "field_chars" && i < me.field_chars.len() => {
+                crate::acoes::tira_do_campo_para_lixo(me, i);
+                Ok(())
+            }
+            outro => Err(ns(&format!("sai_campo inesperado: {outro:?}"))),
+        }
+    }
+
+    /// Personagem entra no campo por efeito (rested, just_played, rush de personagem).
+    fn entra_personagem(me: &mut Jogador, mut c: Carta, rested: bool) -> R<()> {
+        let i = dados(&c)?;
+        c.rested = rested;
+        c.just_played = !(c.has_rush || c.rush_this_turn || crate::acoes::is_rush_character(&c, &i));
+        c.rush_character_only_this_turn =
+            crate::acoes::is_rush_character(&c, &i) && !crate::acoes::is_rush(&c, &i);
+        me.field_chars.push(c);
+        Ok(())
+    }
+
+    /// `play_from_trash` (sem on_play -- igual ao motor de hoje)
+    fn joga_do_lixo(&mut self, st: &Value, me: &mut Jogador) -> R<()> {
+        for k in ["filter_self", "same_name_as_trashed"] {
+            if st[k].as_bool().unwrap_or(false) {
+                return Err(ns(&format!("play_from_trash {k}")));
+            }
+        }
+        let cl = match &st["cost_lte"] {
+            Value::Null => None,
+            Value::String(x) if x == "don_count_self" => Some(me.don_available + me.don_rested),
+            v => Some(v.as_i64().ok_or_else(|| ns("cost_lte inesperado"))?),
+        };
+        let nome = st["filter_name"].as_str().unwrap_or("").to_lowercase();
+        let excl = st["exclude"].as_str().unwrap_or("").to_lowercase();
+        let mut cands: Vec<usize> = Vec::new();
+        for (k, c) in me.trash.iter().enumerate() {
+            let i = dados(c)?;
+            if cl.map_or(true, |l| i.cost <= l)
+                && st["cost_eq"].as_i64().map_or(true, |x| i.cost == x)
+                && st["power_eq"].as_i64().map_or(true, |x| i.power == x)
+                && st["power_lte"].as_i64().map_or(true, |x| i.power <= x)
+                && st["power_gte"].as_i64().map_or(true, |x| i.power >= x)
+                && (!st["has_trigger"].as_bool().unwrap_or(false) || i.has_trigger)
+                && casa_filtro(&i, &Value::from(st["filter_type"].as_str().unwrap_or("").to_lowercase()), false)
+                && (nome.is_empty() || i.name.to_lowercase().contains(&nome) || c.code.to_lowercase().contains(&nome))
+                && (excl.is_empty() || !i.name.to_lowercase().contains(&excl))
+            {
+                cands.push(k);
+            }
+        }
+        let distintos = st["distinct_names"].as_bool().unwrap_or(false);
+        let rested = st["rested"].as_bool().unwrap_or(false);
+        let mut nomes: Vec<String> = Vec::new();
+        let n = st["count"].as_i64().unwrap_or(1).max(0) as usize;
+        for _ in 0..n.min(cands.len()) {
+            let mut pool = cands.clone();
+            if distintos {
+                let mut p2 = Vec::new();
+                for &k in &pool {
+                    if !nomes.contains(&dados(&me.trash[k])?.name.to_lowercase()) {
+                        p2.push(k);
+                    }
+                }
+                pool = p2;
+            }
+            if pool.is_empty() {
+                break;
+            }
+            let k = match self.escolha("do_lixo")? {
+                Some((l, z, i)) if l == "eu" && z == "trash" && pool.contains(&i) => i,
+                outro => return Err(ns(&format!("do_lixo inesperado: {outro:?}"))),
+            };
+            let mut c = me.trash.remove(k);
+            cands.retain(|&j| j != k);
+            for j in cands.iter_mut() {
+                if *j > k {
+                    *j -= 1;
+                }
+            }
+            let i = dados(&c)?;
+            nomes.push(i.name.to_lowercase());
+            if i.card_type == "STAGE" {
+                c.rested = rested;
+                if let Some(v) = me.stage.take() {
+                    me.trash.push(v);
+                }
+                me.stage = Some(c);
+            } else {
+                if me.field_chars.len() >= 5 {
+                    self.sai_do_campo(me)?;
+                }
+                Self::entra_personagem(me, c, rested)?;
+            }
+        }
+        Ok(())
+    }
+
+    /// `play_card` (jogar de graca por efeito): qual carta vem da fila
+    /// (`jogar_gratis`), a troca no campo cheio tambem. on_play/main aninhados.
+    fn joga_carta(&mut self, st: &Value, me: &mut Jogador, opp: &mut Jogador, fonte: &Carta) -> R<()> {
+        if st["source"].as_str() == Some("self") {
+            return Err(ns("play_card self"));
+        }
+        for k in ["each", "filter_no_effect", "exclude_color_of_selected", "color", "power_lte",
+                  "power_gte", "power_eq", "filter_names", "filter_name", "exclude"] {
+            if !st[k].is_null() && st[k] != Value::Bool(false) && st[k].as_str() != Some("") {
+                return Err(ns(&format!("play_card com {k}")));
+            }
+        }
+        let _ = fonte;
+        let tipo = st["card_type"].as_str().unwrap_or("CHARACTER").to_uppercase();
+        let cl = match &st["cost_lte"] {
+            Value::Null => None,
+            Value::String(x) if x == "don_count_self" => Some(me.don_available + me.don_rested),
+            Value::String(x) if x == "don_count_opp" => Some(opp.don_available + opp.don_rested),
+            v => Some(v.as_i64().ok_or_else(|| ns("cost_lte inesperado"))?),
+        };
+        // elegiveis por LUGAR: ("hand"|"trash", i)
+        let mut eleg: Vec<(String, usize)> = Vec::new();
+        let zonas: Vec<&str> = if st["source_alt"].as_str() == Some("trash") { vec!["hand", "trash"] } else { vec!["hand"] };
+        for z in &zonas {
+            let lista = if *z == "hand" { &me.hand } else { &me.trash };
+            for (k, c) in lista.iter().enumerate() {
+                let i = dados(c)?;
+                if i.card_type == tipo && cl.map_or(true, |l| i.cost <= l)
+                    && st["cost_eq"].as_i64().map_or(true, |x| i.cost == x)
+                    && (!st["has_trigger"].as_bool().unwrap_or(false) || i.has_trigger)
+                    && casa_filtro(&i, &st["filter_type"], false)
+                {
+                    eleg.push((z.to_string(), k));
+                }
+            }
+        }
+        if eleg.is_empty() {
+            return Ok(());
+        }
+        let n = st["count"].as_i64().unwrap_or(1).max(0);
+        let mut orc = st["total_cost_lte"].as_i64();
+        let distintos = st["distinct_names"].as_bool().unwrap_or(false);
+        let mut nomes: Vec<String> = Vec::new();
+        for _ in 0..n {
+            let mut pool: Vec<(String, usize)> = Vec::new();
+            for (z, k) in &eleg {
+                let c = if z == "hand" { &me.hand[*k] } else { &me.trash[*k] };
+                let i = dados(c)?;
+                if (!distintos || !nomes.contains(&i.name.to_lowercase())) && orc.map_or(true, |o| i.cost <= o) {
+                    pool.push((z.clone(), *k));
+                }
+            }
+            if pool.is_empty() {
+                break;
+            }
+            // escolhe_carta_para_jogar -> _q_escolhe_carta('jogar_gratis')
+            let (z, k) = match self.escolha("jogar_gratis")? {
+                Some((l, z, i)) if l == "eu" && pool.contains(&(z.clone(), i)) => (z, i),
+                outro => return Err(ns(&format!("jogar_gratis inesperado: {outro:?}"))),
+            };
+            let ci = dados(if z == "hand" { &me.hand[k] } else { &me.trash[k] })?;
+            if ci.card_type == "CHARACTER" && me.field_chars.len() >= 5 && !self.veredito("troca_campo")? {
+                eleg.retain(|x| *x != (z.clone(), k));
+                continue;
+            }
+            let c = if z == "hand" { me.hand.remove(k) } else { me.trash.remove(k) };
+            eleg.retain(|x| *x != (z.clone(), k));
+            for x in eleg.iter_mut() {
+                if x.0 == z && x.1 > k {
+                    x.1 -= 1;
+                }
+            }
+            if distintos {
+                nomes.push(ci.name.to_lowercase());
+            }
+            if let Some(o) = orc.as_mut() {
+                *o -= ci.cost;
+            }
+            // _put_into_play
+            let lf = self.lugar_fonte.take();
+            match ci.card_type.as_str() {
+                "CHARACTER" => {
+                    if me.field_chars.len() >= 5 {
+                        self.sai_do_campo(me)?;
+                    }
+                    Self::entra_personagem(me, c, false)?;
+                    let nova = me.field_chars.last().unwrap().clone();
+                    self.dispara_jogou_personagem(me, opp, &nova, true)?;
+                    self.lugar_fonte = Some(("field_chars".into(), me.field_chars.len() - 1));
+                }
+                "STAGE" => {
+                    if let Some(v) = me.stage.take() {
+                        me.trash.push(v);
+                    }
+                    me.stage = Some(c);
+                }
+                _ => return Err(ns("play_card de evento")),
+            }
+            let nova = match ci.card_type.as_str() {
+                "CHARACTER" => me.field_chars.last().unwrap().clone(),
+                _ => me.stage.clone().unwrap(),
+            };
+            if self.inst >= 10 && dados(&nova)?.efeitos.get("on_play").map_or(false, |b| !b["conditions"]["your_turn_only"].is_null()) {
+                return Err(ns("on_play your_turn_only fora do proprio turno"));
+            }
+            let ult = self.ultimo;
+            self.executa(me, opp, &nova, "on_play")?;
+            self.executa(me, opp, &nova, "main")?;
+            self.ultimo = ult.and(None); // execute aninhado zera `_last_selected`
+            self.lugar_fonte = lf;
+            if st["enters_rested"].as_bool().unwrap_or(false) {
+                let c = if ci.card_type == "CHARACTER" {
+                    me.field_chars.iter_mut().rev().find(|x| x.code == nova.code)
+                } else {
+                    me.stage.as_mut()
+                };
+                if let Some(c) = c {
+                    c.rested = true;
+                }
+            }
         }
         Ok(())
     }
