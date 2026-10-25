@@ -306,6 +306,27 @@ const KEYWORD_GRANTS: &[&str] = &[
     "gain_blocker", "gain_rush", "gain_rush_character", "gain_double_attack", "gain_banish", "gain_unblockable",
 ];
 
+/// Fontes de um gatilho do lado `j` (lider, personagens, [stage]), so as que TEM
+/// o gatilho (as outras nao fazem nada): (posicao na lista completa, copia, lugar).
+pub fn fontes_com(j: &Jogador, gat: &str, stage: bool) -> Vec<(usize, Carta, (String, usize))> {
+    let tem = |c: &Carta| c.dados.as_ref().map_or(true, |i| i.efeitos.contains_key(gat));
+    let mut v = Vec::new();
+    if tem(&j.leader) {
+        v.push((0, j.leader.clone(), ("leader".to_string(), 0)));
+    }
+    for (i, c) in j.field_chars.iter().enumerate() {
+        if tem(c) {
+            v.push((1 + i, c.clone(), ("field_chars".to_string(), i)));
+        }
+    }
+    if stage {
+        if let Some(s) = j.stage.as_ref().filter(|s| tem(s)) {
+            v.push((1 + j.field_chars.len(), s.clone(), ("stage".to_string(), 0)));
+        }
+    }
+    v
+}
+
 /// A carta tem algo que `aplica_passivas_keyword` liga? (filtro rapido, por carta)
 pub fn tem_passiva_de_keyword(i: &InfoCarta) -> bool {
     let acoes = |t: &str| -> Vec<String> {
@@ -1248,11 +1269,8 @@ impl Executor {
         if dev <= 0 {
             return Ok(());
         }
-        let mut fontes: Vec<(Carta, Option<(String, usize)>)> = vec![(me.leader.clone(), Some(("leader".into(), 0)))];
-        fontes.extend(me.field_chars.iter().cloned().enumerate().map(|(i, c)| (c, Some(("field_chars".into(), i)))));
-        if let Some(s) = &me.stage {
-            fontes.push((s.clone(), None));
-        }
+        let fontes: Vec<(Carta, Option<(String, usize)>)> = fontes_com(me, "when_don_returned", true).into_iter()
+            .map(|(_, c, l)| (c, if l.0 == "stage" { None } else { Some(l) })).collect();
         for (f, l) in fontes {
             let inf = dados(&f)?;
             let Some(ent) = inf.efeitos.get("when_don_returned").cloned() else { continue };
@@ -3529,9 +3547,7 @@ impl Executor {
         let ij = dados(jogada)?;
         for (gat, lado_quem) in [("on_own_char_played", true), ("on_opp_char_played", false)] {
             let (w, o) = if lado_quem { (&mut *quem, &mut *outro) } else { (&mut *outro, &mut *quem) };
-            let mut fontes: Vec<Carta> = vec![w.leader.clone()];
-            fontes.extend(w.field_chars.iter().cloned());
-            fontes.extend(w.stage.iter().cloned());
+            let fontes: Vec<Carta> = fontes_com(w, gat, true).into_iter().map(|(_, c, _)| c).collect();
             for f in fontes {
                 let inf = dados(&f)?;
                 let Some(ent) = inf.efeitos.get(gat).cloned() else { continue };
@@ -3564,11 +3580,7 @@ impl Executor {
     /// Um reativo de `w` (cada um num `EffectExecutor` novo do Python).
     fn reativo(&mut self, w: &mut Jogador, o: &mut Jogador, gat: &str, inclui_stage: bool,
                filtro: impl Fn(&Value) -> R<bool>) -> R<()> {
-        let mut fontes: Vec<(Carta, (String, usize))> = vec![(w.leader.clone(), ("leader".into(), 0))];
-        fontes.extend(w.field_chars.iter().cloned().enumerate().map(|(i, c)| (c, ("field_chars".into(), i))));
-        if inclui_stage {
-            fontes.extend(w.stage.iter().cloned().map(|c| (c, ("stage".into(), 0))));
-        }
+        let fontes: Vec<(Carta, (String, usize))> = fontes_com(w, gat, inclui_stage).into_iter().map(|(_, c, l)| (c, l)).collect();
         for (f, l) in fontes {
             let Some(ent) = dados(&f)?.efeitos.get(gat).cloned() else { continue };
             if !filtro(&ent)? {

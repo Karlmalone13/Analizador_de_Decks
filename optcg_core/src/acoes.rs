@@ -317,25 +317,30 @@ fn atacar(e: &mut Estado, ator: (&'static str, usize), alvo: Option<usize>, d: &
     let f = atk_clone(e);
     ex.executa(&mut e.ativo, &mut e.oponente, &f, "when_attacking")?;
     confere(e, alvo_idx, &alvo_code)?;
-    let lugares = |j: &Jogador| -> Vec<(Carta, (String, usize))> {
-        std::iter::once((j.leader.clone(), ("leader".to_string(), 0)))
-            .chain(j.field_chars.iter().cloned().enumerate().map(|(i, c)| (c, ("field_chars".to_string(), i))))
+    // lista fixada no inicio do laco (como o Python); so as cartas com o gatilho
+    // (as outras nao fazem nada no `execute`)
+    let lugares = |j: &Jogador, gat: &str| -> Vec<(Carta, (String, usize))> {
+        let tem = |c: &Carta| c.dados.as_ref().map_or(true, |i| i.efeitos.contains_key(gat));
+        std::iter::once((&j.leader, ("leader".to_string(), 0)))
+            .chain(j.field_chars.iter().enumerate().map(|(i, c)| (c, ("field_chars".to_string(), i))))
+            .filter(|(c, _)| tem(c))
+            .map(|(c, l)| (c.clone(), l))
             .collect()
     };
     if za == "leader" {
-        for (f, l) in lugares(&e.ativo) {
+        for (f, l) in lugares(&e.ativo, "leader_battle_reactive") {
             ex.lugar_fonte = Some(l);
             ex.executa(&mut e.ativo, &mut e.oponente, &f, "leader_battle_reactive")?;
         }
     }
     ex.inst = 2; // `ee_react` (lado do defensor)
     ex.atacante_batalha = Some((if za == "leader" { None } else { Some(ia) }, atk_clone(e).code));
-    for (f, l) in lugares(&e.oponente) {
+    for (f, l) in lugares(&e.oponente, "on_opp_attack") {
         ex.lugar_fonte = Some(l);
         ex.executa(&mut e.oponente, &mut e.ativo, &f, "on_opp_attack")?;
     }
     if alvo_tipo == "leader" {
-        for (f, l) in lugares(&e.oponente) {
+        for (f, l) in lugares(&e.oponente, "leader_battle_reactive") {
             ex.lugar_fonte = Some(l);
             ex.executa(&mut e.oponente, &mut e.ativo, &f, "leader_battle_reactive")?;
         }

@@ -4,7 +4,7 @@
 //! onda de efeitos; o teste diferencial pula esses turnos).
 use crate::acoes::Resultado;
 use crate::cartas::info;
-use crate::efeitos::{Executor, PoliticaRef};
+use crate::efeitos::{fontes_com, Executor, PoliticaRef};
 use crate::estado::{Carta, Estado, Jogador};
 use serde_json::Value;
 use std::collections::VecDeque;
@@ -145,14 +145,11 @@ pub fn inicio_de_turno(e: &mut Estado, global_turn: i64, fila: VecDeque<Value>, 
     // `_apply_opp_turn_reactive_effects`: passivas 'opp_turn' do OUTRO lado,
     // um EffectExecutor novo por fonte
     const REATIVAS: &[&str] = &["buff_power", "debuff_power", "buff_cost", "debuff_cost", "set_base_power"];
-    let mut fontes: Vec<(Carta, Option<(String, usize)>)> = vec![(e.oponente.leader.clone(), Some(("leader".into(), 0)))];
-    fontes.extend(e.oponente.field_chars.iter().cloned().enumerate().map(|(i, c)| (c, Some(("field_chars".into(), i)))));
-    if let Some(s) = &e.oponente.stage {
-        fontes.push((s.clone(), None));
-    }
+    let fontes: Vec<(usize, Carta, Option<(String, usize)>)> = fontes_com(&e.oponente, "opp_turn", true).into_iter()
+        .map(|(k, c, l)| (k, c, if l.0 == "stage" { None } else { Some(l) })).collect();
     let mut ex = Executor::novo(fila);
     ex.politica = politica.clone();
-    for (k, (f, l)) in fontes.into_iter().enumerate() {
+    for (k, f, l) in fontes {
         let i = info(&f.code).ok_or_else(|| ns("carta sem dados"))?;
         let Some(b) = i.efeitos.get("opp_turn") else { continue };
         if !b["steps"].as_array().into_iter().flatten().any(|s| REATIVAS.contains(&s["action"].as_str().unwrap_or(""))) {
@@ -175,11 +172,8 @@ pub fn inicio_de_turno(e: &mut Estado, global_turn: i64, fila: VecDeque<Value>, 
 /// os "ate o fim do turno" sao limpos no inicio do turno seguinte (`inicio_de_turno`).
 pub fn fim_de_turno(e: &mut Estado, fila: VecDeque<Value>, politica: Option<PoliticaRef>) -> R<()> {
     // [End of Your Turn] de lider, personagens e stage, pelo MESMO executor
-    let mut fontes: Vec<(Carta, Option<(String, usize)>)> = vec![(e.ativo.leader.clone(), Some(("leader".into(), 0)))];
-    fontes.extend(e.ativo.field_chars.iter().cloned().enumerate().map(|(i, c)| (c, Some(("field_chars".into(), i)))));
-    if let Some(s) = &e.ativo.stage {
-        fontes.push((s.clone(), None));
-    }
+    let fontes: Vec<(Carta, Option<(String, usize)>)> = fontes_com(&e.ativo, "end_of_turn", true).into_iter()
+        .map(|(_, c, l)| (c, if l.0 == "stage" { None } else { Some(l) })).collect();
     let mut ex = Executor::novo(fila);
     ex.politica = politica.clone();
     ex.inst = 9000;
