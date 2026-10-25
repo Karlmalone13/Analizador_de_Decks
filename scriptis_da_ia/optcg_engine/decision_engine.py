@@ -2900,6 +2900,12 @@ class Card:
         if memo.get('__clone_perde_once_per_turn'):
             d.pop('_am_used_turn', None)
             d.pop('ko_on_opp_blocker_used_this_turn', None)
+        # `_passivo_on` e um set MUTADO in-place (reavalia_passivos_de_poder):
+        # compartilhado, a simulacao da busca apagava a marca da carta REAL
+        # sem desfazer o buff -- a proxima reavaliacao somava o +N de novo
+        # (achado pela paridade Rust x Python, 25/10/2026, seed 2019).
+        if '_passivo_on' in d:
+            d['_passivo_on'] = set(d['_passivo_on'])
         novo.__dict__ = d
         return novo
 
