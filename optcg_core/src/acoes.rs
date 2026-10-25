@@ -8,7 +8,7 @@
 //! prontas em `Decisoes` -- no nucleo final sao pontos de decisao da busca.
 //! O que depende de efeito ainda fora do nucleo devolve `NaoSuportado`.
 use crate::cartas::{info, InfoCarta};
-use crate::efeitos::{lado_tem_acao, tem_reativo, Executor, REATIVOS_DE_KO};
+use crate::efeitos::{lado_tem_acao, tem_reativo, Executor};
 use crate::estado::{Carta, Estado, Jogador};
 use serde::Deserialize;
 use serde_json::Value;
@@ -316,9 +316,6 @@ fn atacar(e: &mut Estado, acao: &Value, d: &Decisoes) -> Result<Resultado, Resul
             if opp.life.is_empty() {
                 return Ok(Resultado::Feito { venceu: true });
             }
-            if tem_reativo(opp, &["when_damage_or_own_char_ko"])? {
-                return Err(ns("reativo de dano"));
-            }
             let mut tiradas = 0;
             for _ in 0..dano {
                 let Some(mut vida) = opp.life.pop() else { break };
@@ -332,6 +329,7 @@ fn atacar(e: &mut Estado, acao: &Value, d: &Decisoes) -> Result<Resultado, Resul
                 } else {
                     opp.hand.push(vida.clone());
                 }
+                ex.dispara_dano_ou_ko(opp, p, None)?;
                 if gatilho {
                     // [Trigger]: o defensor executa, fora do proprio turno
                     ex.inst = 10 + tiradas; // `ee_opp` novo a cada vida
@@ -354,8 +352,8 @@ fn atacar(e: &mut Estado, acao: &Value, d: &Decisoes) -> Result<Resultado, Resul
                 {
                     return Err(ns("imunidade/substituicao no KO de batalha"));
                 }
-                if tem_reativo(opp, REATIVOS_DE_KO)? || tem_reativo(p, REATIVOS_DE_KO)? {
-                    return Err(ns("reativo de KO"));
+                if tem_reativo(opp, &["on_own_effect_removes_char"])? || tem_reativo(p, &["on_own_effect_removes_char"])? {
+                    return Err(ns("reativo de remocao por efeito"));
                 }
                 let alvo = t.clone();
                 tira_do_campo_para_lixo(opp, j);
@@ -363,6 +361,8 @@ fn atacar(e: &mut Estado, acao: &Value, d: &Decisoes) -> Result<Resultado, Resul
                 ex.inst = 20; // `ee_opp` do KO de batalha
                 ex.lugar_fonte = None;
                 ex.executa(opp, p, &alvo, "on_ko")?;
+                ex.dispara_dano_ou_ko(opp, p, Some(&alvo))?;
+                ex.dispara_ko(opp, p, &alvo)?;
             }
         }
     }

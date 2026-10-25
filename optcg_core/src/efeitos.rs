@@ -357,7 +357,8 @@ impl Executor {
                 }
             }
             // sem portao de custo opcional no Python
-            "on_own_char_played" | "on_opp_char_played" | "when_rested" | "on_block" | "on_ko" => {}
+            "on_own_char_played" | "on_opp_char_played" | "when_rested" | "on_block" | "on_ko"
+            | "when_damage_or_own_char_ko" | "on_opp_char_ko" | "on_own_char_ko" | "on_any_char_ko" => {}
             outro => return Err(ns(&format!("gatilho fora do nucleo: {outro}"))),
         }
         let custos: Vec<Value> = ef["costs"].as_array().cloned().unwrap_or_default();
@@ -614,6 +615,64 @@ impl Executor {
                 self.inst = k;
                 r?;
             }
+        }
+        Ok(())
+    }
+
+    /// Um reativo de `w` (cada um num `EffectExecutor` novo do Python).
+    fn reativo(&mut self, w: &mut Jogador, o: &mut Jogador, gat: &str, inclui_stage: bool,
+               filtro: impl Fn(&Value) -> R<bool>) -> R<()> {
+        let mut fontes: Vec<(Carta, (String, usize))> = vec![(w.leader.clone(), ("leader".into(), 0))];
+        fontes.extend(w.field_chars.iter().cloned().enumerate().map(|(i, c)| (c, ("field_chars".into(), i))));
+        if inclui_stage {
+            fontes.extend(w.stage.iter().cloned().map(|c| (c, ("stage".into(), 0))));
+        }
+        for (f, l) in fontes {
+            let Some(ent) = dados(&f)?.efeitos.get(gat).cloned() else { continue };
+            if !filtro(&ent)? {
+                continue;
+            }
+            if ent["once_per_turn"].as_bool().unwrap_or(false) {
+                return Err(ns(&format!("reativo {gat} once_per_turn (marcador fora do canonico)")));
+            }
+            let (k, lf) = (self.inst, self.lugar_fonte.take());
+            self.inst = 5000 + self.fila.len() as u32 + self.usados.len() as u32;
+            self.lugar_fonte = Some(l);
+            let r = self.executa(w, o, &f, gat);
+            self.inst = k;
+            self.lugar_fonte = lf;
+            r?;
+        }
+        Ok(())
+    }
+
+    /// `_dispatch_damage_or_own_char_ko(dono)`: dano na vida (vitima None) ou KO
+    /// de personagem do `dono`.
+    pub fn dispara_dano_ou_ko(&mut self, dono: &mut Jogador, outro: &mut Jogador, vitima: Option<&Carta>) -> R<()> {
+        let pw = match vitima { Some(v) => Some(dados(v)?.power), None => None };
+        self.reativo(dono, outro, "when_damage_or_own_char_ko", false, |e| {
+            Ok(pw.map_or(true, |p| p >= e["own_char_base_power_gte"].as_i64().unwrap_or(0)))
+        })
+    }
+
+    /// `_dispatch_opp_char_ko` + `_dispatch_own_char_ko` + `_dispatch_any_char_ko`
+    /// depois do KO de um personagem de `dono` (na ordem do motor).
+    pub fn dispara_ko(&mut self, dono: &mut Jogador, outro: &mut Jogador, vitima: &Carta) -> R<()> {
+        let vi = dados(vitima)?;
+        self.reativo(outro, dono, "on_opp_char_ko", true, |_| Ok(true))?;
+        self.reativo(dono, outro, "on_own_char_ko", true, |e| {
+            let f = &e["victim_type_filter"];
+            let tem_f = f.as_str().map_or(!f.is_null(), |x| !x.is_empty());
+            Ok((!tem_f || casa_filtro(&vi, f, false))
+                && e["victim_power_gte"].as_i64().map_or(true, |p| p == 0 || vi.power >= p))
+        })?;
+        for lado_dono in [true, false] {
+            let (w, o) = if lado_dono { (&mut *dono, &mut *outro) } else { (&mut *outro, &mut *dono) };
+            self.reativo(w, o, "on_any_char_ko", true, |e| {
+                let f = &e["victim_type_filter"];
+                let tem_f = f.as_str().map_or(!f.is_null(), |x| !x.is_empty());
+                Ok(!tem_f || casa_filtro(&vi, f, false))
+            })?;
         }
         Ok(())
     }
