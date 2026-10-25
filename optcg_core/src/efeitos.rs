@@ -277,7 +277,8 @@ impl Executor {
         Ok(match st["action"].as_str().unwrap_or("") {
             "look_top_deck" | "deck_bottom_rest" | "draw" => !me.deck.is_empty(),
             "set_don_active" => me.don_rested > 0,
-            "add_to_hand" | "trash_rest" | "gain_life" | "add_don" | "buff_power" | "give_don" => true,
+            "add_to_hand" | "trash_rest" | "gain_life" | "add_don" | "buff_power" | "give_don" | "redirect_attack_target"
+            | "activate_trash_event_main" => true,
             "play_from_trash" => !me.trash.is_empty(),
             "play_card" => {
                 if st["source"].as_str() == Some("self") {
@@ -495,6 +496,8 @@ impl Executor {
         let acao = st["action"].as_str().unwrap_or("");
         match acao {
             "look_top_deck" => {}
+            // nao implementados no motor Python (retornam '' sem mudar nada): espelho
+            "redirect_attack_target" | "activate_trash_event_main" => {}
             "draw" => {
                 let mut n = n;
                 match st["count_source"].as_str() {
