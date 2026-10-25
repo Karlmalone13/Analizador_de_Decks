@@ -1045,7 +1045,11 @@ impl Executor {
             "play_from_trash" => !me.trash.is_empty(),
             "play_card" => {
                 if st["source"].as_str() == Some("self") {
-                    return Err(ns("play_card self: viabilidade pela identidade da carta"));
+                    // `contains_identity(me.hand, card)`: a carta do trigger, pelo lugar
+                    return Ok(match &self.lugar_fonte {
+                        Some((z, i)) if z == "hand" => me.hand.get(*i).map(|c| &c.code) == Some(&fonte.code),
+                        _ => false,
+                    });
                 }
                 let tipo = st["card_type"].as_str().unwrap_or("CHARACTER").to_uppercase();
                 let cl = match &st["cost_lte"] {
@@ -2052,7 +2056,7 @@ impl Executor {
                     opp.hand.push(v.clone());
                     if dados(&v)?.has_trigger {
                         // `EffectExecutor(opp, me)` novo, fora do turno de quem tem a vida
-                        let (k, lf) = (self.inst, self.lugar_fonte.take());
+                        let (k, lf) = (self.inst, self.lugar_fonte.replace(("hand".into(), opp.hand.len() - 1)));
                         self.inst = 7000 + self.fila.len() as u32 + self.usados.len() as u32;
                         let r = self.executa(opp, me, &v, "trigger");
                         self.inst = k;
@@ -2779,9 +2783,66 @@ impl Executor {
 
     /// `play_card` (jogar de graca por efeito): qual carta vem da fila
     /// (`jogar_gratis`), a troca no campo cheio tambem. on_play/main aninhados.
+    /// `_put_into_play` + on_play/main da carta que entrou (devolve a carta em jogo)
+    fn poe_em_jogo(&mut self, me: &mut Jogador, opp: &mut Jogador, c: Carta, ci: &InfoCarta) -> R<Carta> {
+        // _put_into_play
+        let lf = self.lugar_fonte.take();
+        match ci.card_type.as_str() {
+            "CHARACTER" => {
+                if me.field_chars.len() >= 5 {
+                    self.passivas_da_fila(me, opp)?;
+                    self.sai_do_campo(me)?;
+                }
+                Self::entra_personagem(me, opp, c, false)?;
+                let nova = me.field_chars.last().unwrap().clone();
+                self.dispara_jogou_personagem(me, opp, &nova, true)?;
+                self.lugar_fonte = Some(("field_chars".into(), me.field_chars.len() - 1));
+            }
+            "STAGE" => {
+                if let Some(v) = me.stage.take() {
+                    me.trash.push(v);
+                }
+                me.stage = Some(c);
+            }
+            _ => return Err(ns("play_card de evento")),
+        }
+        let nova = match ci.card_type.as_str() {
+            "CHARACTER" => me.field_chars.last().unwrap().clone(),
+            _ => me.stage.clone().unwrap(),
+        };
+        if self.inst >= 10 && dados(&nova)?.efeitos.get("on_play").map_or(false, |b| !b["conditions"]["your_turn_only"].is_null()) {
+            return Err(ns("on_play your_turn_only fora do proprio turno"));
+        }
+        let ult = self.ultimo;
+        self.executa(me, opp, &nova, "on_play")?;
+        self.executa(me, opp, &nova, "main")?;
+        self.ultimo = ult.and(None); // execute aninhado zera `_last_selected`
+        self.lugar_fonte = lf;
+        Ok(nova)
+    }
+
     fn joga_carta(&mut self, st: &Value, me: &mut Jogador, opp: &mut Jogador, fonte: &Carta) -> R<()> {
         if st["source"].as_str() == Some("self") {
-            return Err(ns("play_card self"));
+            // [Trigger] "jogue esta carta": a propria carta, pelo lugar na mao
+            let Some((z, i)) = self.lugar_fonte.clone() else { return Ok(()) };
+            if z != "hand" || me.hand.get(i).map(|c| &c.code) != Some(&fonte.code) {
+                return Err(ns("play_card self: carta fora do lugar esperado"));
+            }
+            let ci = dados(fonte)?;
+            if ci.card_type == "CHARACTER" && me.field_chars.len() >= 5 {
+                self.passivas_da_fila(me, opp)?;
+                if !self.veredito("troca_campo")? {
+                    return Ok(());
+                }
+            }
+            self.passivas_da_fila(me, opp)?;
+            if !self.veredito("joga_self")? {
+                return Ok(());
+            }
+            let c = me.hand.remove(i);
+            self.lugar_fonte = None;
+            self.poe_em_jogo(me, opp, c, &ci)?;
+            return Ok(());
         }
         for k in ["each", "filter_no_effect", "exclude_color_of_selected", "color", "power_lte",
                   "power_gte", "power_eq", "filter_names", "filter_name", "exclude"] {
@@ -2857,39 +2918,7 @@ impl Executor {
             if let Some(o) = orc.as_mut() {
                 *o -= ci.cost;
             }
-            // _put_into_play
-            let lf = self.lugar_fonte.take();
-            match ci.card_type.as_str() {
-                "CHARACTER" => {
-                    if me.field_chars.len() >= 5 {
-                        self.passivas_da_fila(me, opp)?;
-                        self.sai_do_campo(me)?;
-                    }
-                    Self::entra_personagem(me, opp, c, false)?;
-                    let nova = me.field_chars.last().unwrap().clone();
-                    self.dispara_jogou_personagem(me, opp, &nova, true)?;
-                    self.lugar_fonte = Some(("field_chars".into(), me.field_chars.len() - 1));
-                }
-                "STAGE" => {
-                    if let Some(v) = me.stage.take() {
-                        me.trash.push(v);
-                    }
-                    me.stage = Some(c);
-                }
-                _ => return Err(ns("play_card de evento")),
-            }
-            let nova = match ci.card_type.as_str() {
-                "CHARACTER" => me.field_chars.last().unwrap().clone(),
-                _ => me.stage.clone().unwrap(),
-            };
-            if self.inst >= 10 && dados(&nova)?.efeitos.get("on_play").map_or(false, |b| !b["conditions"]["your_turn_only"].is_null()) {
-                return Err(ns("on_play your_turn_only fora do proprio turno"));
-            }
-            let ult = self.ultimo;
-            self.executa(me, opp, &nova, "on_play")?;
-            self.executa(me, opp, &nova, "main")?;
-            self.ultimo = ult.and(None); // execute aninhado zera `_last_selected`
-            self.lugar_fonte = lf;
+            let nova = self.poe_em_jogo(me, opp, c, &ci)?;
             if st["enters_rested"].as_bool().unwrap_or(false) {
                 let c = if ci.card_type == "CHARACTER" {
                     me.field_chars.iter_mut().rev().find(|x| x.code == nova.code)

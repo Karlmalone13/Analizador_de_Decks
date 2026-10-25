@@ -381,11 +381,12 @@ fn atacar(e: &mut Estado, acao: &Value, d: &Decisoes) -> Result<Resultado, Resul
                 } else {
                     opp.hand.push(vida.clone());
                 }
+                let na_mao = if !banish && opp.hand.last().map(|c| &c.code) == Some(&vida.code) { Some(opp.hand.len() - 1) } else { None };
                 ex.dispara_dano_ou_ko(opp, p, None)?;
                 if gatilho {
                     // [Trigger]: o defensor executa, fora do proprio turno
                     ex.inst = 10 + tiradas; // `ee_opp` novo a cada vida
-                    ex.lugar_fonte = None;
+                    ex.lugar_fonte = na_mao.map(|i| ("hand".to_string(), i));
                     ex.executa(opp, p, &vida, "trigger")?;
                     if (za != "leader" && p.field_chars.get(ia).map(|c| &c.code) != Some(&atk_code))
                         || alvo_idx.map_or(false, |j| opp.field_chars.get(j).map(|c| &c.code) != alvo_code.as_ref())
