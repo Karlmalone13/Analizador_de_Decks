@@ -43,7 +43,7 @@ fn ns(m: &str) -> Resultado {
 type R<T> = Result<T, Resultado>;
 
 pub(crate) fn dados(c: &Carta) -> R<std::sync::Arc<InfoCarta>> {
-    info(&c.code).ok_or_else(|| ns(&format!("carta sem dados: {}", c.code)))
+    c.dados.clone().or_else(|| info(&c.code)).ok_or_else(|| ns(&format!("carta sem dados: {}", c.code)))
 }
 
 fn norm_tipo(t: &str) -> String {
@@ -306,6 +306,18 @@ const KEYWORD_GRANTS: &[&str] = &[
     "gain_blocker", "gain_rush", "gain_rush_character", "gain_double_attack", "gain_banish", "gain_unblockable",
 ];
 
+/// A carta tem algo que `aplica_passivas_keyword` liga? (filtro rapido, por carta)
+pub fn tem_passiva_de_keyword(i: &InfoCarta) -> bool {
+    let acoes = |t: &str| -> Vec<String> {
+        i.efeitos.get(t).map(|b| passos_de(b).map(|s| s["action"].as_str().unwrap_or("").to_string()).collect()).unwrap_or_default()
+    };
+    let (p, o) = (acoes("passive"), acoes("opp_turn"));
+    p.iter().chain(o.iter()).any(|a| KEYWORD_GRANTS.contains(&a.as_str()))
+        || p.iter().any(|a| matches!(a.as_str(), "grant_rush_character_type" | "grant_rush_aura" | "grant_blocker_aura"
+            | "grant_unblockable_aura_named" | "grant_double_attack_aura_named"))
+        || o.iter().any(|a| a == "set_base_power_group_opp_turn")
+}
+
 /// `apply_conditional_keyword_passives(gs, opp)`: so LIGA (nunca desliga).
 /// Varre campo, mao, lider e stage, nessa ordem; cada carta ve o que as
 /// anteriores ja ligaram.
@@ -326,6 +338,9 @@ pub fn aplica_passivas_keyword(gs: &mut Jogador, opp: &Jogador) -> R<()> {
         }
     }
     for l in pool {
+        if !dados(pega(gs, l))?.kw_passiva {
+            continue;
+        }
         let c = pega(gs, l).clone();
         let z = ["field_chars", "hand", "leader", "stage"][l.0 as usize];
         ex.lugar_fonte = Some((z.to_string(), l.1));
@@ -2096,7 +2111,7 @@ impl Executor {
         self.rodou = false;
         self.atacante = if matches!(gatilho, "on_opp_attack" | "leader_battle_reactive") { self.atacante_batalha.clone() } else { None };
         let inf = dados(fonte)?;
-        let Some(ef) = inf.efeitos.get(gatilho).cloned() else { return Ok(()) };
+        let Some(ef) = inf.efeitos.get(gatilho) else { return Ok(()) };
         if !fonte.effects_negated_until.is_empty() {
             return Ok(());
         }
@@ -2121,7 +2136,7 @@ impl Executor {
         if don_req > 0 && fonte.don_attached < don_req {
             return Ok(());
         }
-        let passos: Vec<Value> = ef["steps"].as_array().cloned().unwrap_or_default();
+        let passos: Vec<&Value> = ef["steps"].as_array().map(|a| a.iter().collect()).unwrap_or_default();
         if passos.is_empty() && !ef["choice"].is_null() {
             return Err(ns("efeito de escolha (choice)"));
         }
@@ -2194,7 +2209,7 @@ impl Executor {
         // Aproximado por "pagou custo ou o estado mudou" (so importa para o
         // marcador once_per_turn dos reativos, entao so mede quando ha marcador).
         let antes = if uma_vez && custos.is_empty() {
-            Some((serde_json::to_value(&*me).ok(), serde_json::to_value(&*opp).ok()))
+            Some((me.clone(), opp.clone()))
         } else {
             None
         };
@@ -2204,7 +2219,7 @@ impl Executor {
         }
         // executa aninhado (trigger, main) nao apaga o deste
         self.rodou = match antes {
-            Some(a) => a != (serde_json::to_value(&*me).ok(), serde_json::to_value(&*opp).ok()),
+            Some(a) => a.0 != *me || a.1 != *opp,
             None => !custos.is_empty() || !passos.is_empty(),
         };
         if uma_vez {

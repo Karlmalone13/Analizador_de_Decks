@@ -2,7 +2,7 @@
 //! turnos de `OPTCGMatch.play_turn` (inicio -> jogadas -> fim -> troca de lado),
 //! com as jogadas da lista de `legais` e as escolhas internas de uma `Politica`.
 //! E o simulador que a busca da fase B vai rodar milhares de vezes por decisao.
-use crate::acoes::{aplica, Decisoes, Resultado};
+use crate::acoes::{aplica_j, Decisoes, Jogada, Resultado};
 use crate::efeitos::{Politica, PoliticaRef};
 use crate::estado::Estado;
 use crate::legais::jogadas_legais;
@@ -43,6 +43,9 @@ impl Politica for Aleatoria {
     }
 }
 
+thread_local! { pub static TEMPOS: std::cell::RefCell<[f64; 8]> = std::cell::RefCell::new([0.0; 8]); }
+pub fn soma(i: usize, t: std::time::Instant) { TEMPOS.with(|x| x.borrow_mut()[i] += t.elapsed().as_secs_f64()); }
+
 pub struct Fim {
     /// 0 = quem comecou ativo no estado inicial, 1 = o outro, None = limite de turnos
     pub vencedor: Option<u8>,
@@ -62,24 +65,33 @@ pub fn simula(mut e: Estado, mut global_turn: i64, pol: PoliticaRef, max_turnos:
     while turnos < max_turnos {
         // `_once_used` do executor da Main: um executor novo a cada main_phase
         e.ativo.extras.insert("_once_main".into(), Value::Array(vec![]));
-        if let Err(Resultado::NaoSuportado(m)) = inicio_de_turno(&mut e, global_turn, Default::default(), Some(pol.clone())) {
+        let t0 = std::time::Instant::now();
+        let r0 = inicio_de_turno(&mut e, global_turn, Default::default(), Some(pol.clone()));
+        soma(0, t0);
+        if let Err(Resultado::NaoSuportado(m)) = r0 {
             return fim(None, turnos, jogadas, Some(format!("inicio: {m}")));
         }
         global_turn += 1;
         turnos += 1;
         loop {
-            let leg = match jogadas_legais(&e) {
+            let t1 = std::time::Instant::now();
+            let leg0 = jogadas_legais(&e);
+            soma(1, t1);
+            let leg = match leg0 {
                 Ok(v) => v,
                 Err(Resultado::NaoSuportado(m)) => return fim(None, turnos, jogadas, Some(format!("legais: {m}"))),
                 Err(_) => return fim(None, turnos, jogadas, Some("legais: inesperado".into())),
             };
             let k = pol.borrow_mut().escolhe("jogada", leg.len(), false).unwrap_or(0).min(leg.len() - 1);
-            let a: &Value = &leg[k];
-            if a["tipo"].as_str() == Some("end") {
+            let a = &leg[k];
+            if *a == Jogada::Fim {
                 break;
             }
             jogadas += 1;
-            match aplica(&mut e, a, &d) {
+            let t2 = std::time::Instant::now();
+            let ra = aplica_j(&mut e, a, &d);
+            soma(2, t2);
+            match ra {
                 Resultado::Feito { venceu } => {
                     e.ativo.marca_publicas();
                     e.oponente.marca_publicas();
@@ -90,7 +102,10 @@ pub fn simula(mut e: Estado, mut global_turn: i64, pol: PoliticaRef, max_turnos:
                 Resultado::NaoSuportado(m) => return fim(None, turnos, jogadas, Some(m)),
             }
         }
-        if let Err(Resultado::NaoSuportado(m)) = fim_de_turno(&mut e, Default::default(), Some(pol.clone())) {
+        let t3 = std::time::Instant::now();
+        let r3 = fim_de_turno(&mut e, Default::default(), Some(pol.clone()));
+        soma(3, t3);
+        if let Err(Resultado::NaoSuportado(m)) = r3 {
             return fim(None, turnos, jogadas, Some(format!("fim: {m}")));
         }
         // deck vazio ao fim do turno: perde (deck_out_win_instead_of_loss ainda fora)

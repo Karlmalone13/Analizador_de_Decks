@@ -40,7 +40,7 @@ fn ns(m: &str) -> Resultado {
 }
 
 fn dados(c: &Carta) -> Result<std::sync::Arc<InfoCarta>, Resultado> {
-    info(&c.code).ok_or_else(|| ns(&format!("carta sem dados: {}", c.code)))
+    c.dados.clone().or_else(|| info(&c.code)).ok_or_else(|| ns(&format!("carta sem dados: {}", c.code)))
 }
 
 fn kw_ativa(c: &Carta, i: &InfoCarta, kw: &str, nativa: bool) -> bool {
@@ -84,14 +84,85 @@ pub fn tira_do_campo_para_lixo(dono: &mut Jogador, idx: usize) {
     dono.trash.push(c);
 }
 
+/// Jogada principal TIPADA (o JSON do diario so na fronteira com o Python).
+#[derive(Clone, Debug, PartialEq)]
+pub enum Jogada {
+    /// dar `n` DON a (zona, indice): "leader" | "field_chars"
+    DarDon((&'static str, usize), i64),
+    /// jogar a carta `i` da mao
+    Jogar(usize),
+    /// atacar com (zona, indice); alvo None = lider, Some(j) = personagem j do oponente
+    Atacar((&'static str, usize), Option<usize>),
+    /// [Activate: Main] de (zona, indice): "leader" | "stage" | "field_chars"
+    Ativar((&'static str, usize)),
+    Fim,
+}
+
+fn zona_estatica(z: &str) -> Option<&'static str> {
+    Some(match z {
+        "leader" => "leader",
+        "stage" => "stage",
+        "field_chars" => "field_chars",
+        "hand" => "hand",
+        _ => return None,
+    })
+}
+
+impl Jogada {
+    /// do formato do diario (`estado_canonico.descreve_acao`)
+    pub fn de_json(a: &Value) -> Result<Jogada, Resultado> {
+        let ator = || -> Result<(&'static str, usize), Resultado> {
+            let (z, i) = lugar(&a["ator"]).ok_or_else(|| ns("jogada sem ator"))?;
+            Ok((zona_estatica(&z).ok_or_else(|| ns("ator em zona inesperada"))?, i))
+        };
+        Ok(match a["tipo"].as_str().unwrap_or("") {
+            "attach_don" => Jogada::DarDon(ator()?, a["alvo_tipo"].as_i64().unwrap_or(0)),
+            "play" => {
+                let (z, i) = ator()?;
+                if z != "hand" {
+                    return Err(ns("play fora da mao"));
+                }
+                Jogada::Jogar(i)
+            }
+            "attack" => {
+                let alvo = if a["alvo_tipo"].as_str() == Some("character") {
+                    let v = a["alvo"].as_array().ok_or_else(|| ns("attack sem alvo"))?;
+                    if v.first().and_then(|x| x.as_str()) != Some("oponente") || v.get(1).and_then(|x| x.as_str()) != Some("field_chars") {
+                        return Err(ns("alvo inesperado"));
+                    }
+                    Some(v.get(2).and_then(|x| x.as_u64()).ok_or_else(|| ns("alvo sem indice"))? as usize)
+                } else {
+                    None
+                };
+                Jogada::Atacar(ator()?, alvo)
+            }
+            "activate" => Jogada::Ativar(ator()?),
+            "end" => Jogada::Fim,
+            outro => return Err(ns(&format!("jogada ainda fora do nucleo: {outro}"))),
+        })
+    }
+
+    pub fn para_json(&self) -> Value {
+        use serde_json::json;
+        match self {
+            Jogada::DarDon((z, i), n) => json!({"tipo": "attach_don", "ator": [z, i], "alvo_tipo": n, "don": null, "alvo": null}),
+            Jogada::Jogar(i) => json!({"tipo": "play", "ator": ["hand", i], "alvo_tipo": null, "don": null, "alvo": null}),
+            Jogada::Atacar((z, i), None) => json!({"tipo": "attack", "ator": [z, i], "alvo_tipo": "leader", "don": 0, "alvo": null}),
+            Jogada::Atacar((z, i), Some(j)) => json!({"tipo": "attack", "ator": [z, i], "alvo_tipo": "character", "don": 0,
+                                                      "alvo": ["oponente", "field_chars", j]}),
+            Jogada::Ativar((z, i)) => json!({"tipo": "activate", "ator": [z, i], "alvo_tipo": null, "don": null, "alvo": null}),
+            Jogada::Fim => json!({"tipo": "end"}),
+        }
+    }
+}
+
 fn lugar(v: &Value) -> Option<(String, usize)> {
     let a = v.as_array()?;
     Some((a.first()?.as_str()?.to_string(), a.get(1)?.as_u64()? as usize))
 }
 
-fn anexar_don(e: &mut Estado, acao: &Value) -> Result<Resultado, Resultado> {
-    let (z, i) = lugar(&acao["ator"]).ok_or_else(|| ns("attach_don sem ator"))?;
-    let falta = acao["alvo_tipo"].as_i64().unwrap_or(0);
+fn anexar_don(e: &mut Estado, ator: (&'static str, usize), falta: i64) -> Result<Resultado, Resultado> {
+    let (z, i) = (ator.0.to_string(), ator.1);
     let p = &mut e.ativo;
     let anexar = falta.min(p.don_available);
     if anexar > 0 {
@@ -106,10 +177,8 @@ fn anexar_don(e: &mut Estado, acao: &Value) -> Result<Resultado, Resultado> {
     Ok(Resultado::Feito { venceu: false })
 }
 
-fn jogar(e: &mut Estado, acao: &Value, d: &Decisoes) -> Result<Resultado, Resultado> {
-    // reativos de "jogou personagem"/"ativou evento" e passivas de keyword ainda
-    // fora do nucleo: o teste so manda jogadas cujos passos estao na onda
-    let (z, i) = lugar(&acao["ator"]).ok_or_else(|| ns("play sem ator"))?;
+fn jogar(e: &mut Estado, i: usize, d: &Decisoes) -> Result<Resultado, Resultado> {
+    let z = "hand";
     if z != "hand" {
         return Err(ns("play fora da mao"));
     }
@@ -185,19 +254,10 @@ fn jogar(e: &mut Estado, acao: &Value, d: &Decisoes) -> Result<Resultado, Result
     Ok(Resultado::Feito { venceu: false })
 }
 
-fn atacar(e: &mut Estado, acao: &Value, d: &Decisoes) -> Result<Resultado, Resultado> {
-    let (za, ia) = lugar(&acao["ator"]).ok_or_else(|| ns("attack sem ator"))?;
-    let mut alvo_tipo = acao["alvo_tipo"].as_str().unwrap_or("").to_string();
-    let mut alvo_idx: Option<usize> = None;
-    if alvo_tipo == "character" {
-        let a = acao["alvo"].as_array().ok_or_else(|| ns("attack sem alvo"))?;
-        if a.first().and_then(|x| x.as_str()) != Some("oponente")
-            || a.get(1).and_then(|x| x.as_str()) != Some("field_chars")
-        {
-            return Err(ns("alvo inesperado"));
-        }
-        alvo_idx = Some(a.get(2).and_then(|x| x.as_u64()).ok_or_else(|| ns("alvo sem indice"))? as usize);
-    }
+fn atacar(e: &mut Estado, ator: (&'static str, usize), alvo: Option<usize>, d: &Decisoes) -> Result<Resultado, Resultado> {
+    let (za, ia) = (ator.0.to_string(), ator.1);
+    let mut alvo_tipo = (if alvo.is_some() { "character" } else { "leader" }).to_string();
+    let mut alvo_idx: Option<usize> = alvo;
     let (p, opp) = (&mut e.ativo, &mut e.oponente);
     {
         let atk = match za.as_str() {
@@ -505,8 +565,8 @@ fn atacar(e: &mut Estado, acao: &Value, d: &Decisoes) -> Result<Resultado, Resul
 
 /// `[Activate: Main]` (kind 'activate'): marca `_am_used_turn` e executa o bloco
 /// pelo executor da Main.
-fn ativar(e: &mut Estado, acao: &Value, d: &Decisoes) -> Result<Resultado, Resultado> {
-    let (z, i) = lugar(&acao["ator"]).ok_or_else(|| ns("activate sem ator"))?;
+fn ativar(e: &mut Estado, ator: (&'static str, usize), d: &Decisoes) -> Result<Resultado, Resultado> {
+    let (z, i) = (ator.0.to_string(), ator.1);
     let turno = e.ativo.turn;
     let src = match z.as_str() {
         "leader" => &mut e.ativo.leader,
@@ -535,12 +595,19 @@ fn executor(d: &Decisoes, fila: std::collections::VecDeque<Value>) -> Executor {
 }
 
 pub fn aplica(e: &mut Estado, acao: &Value, d: &Decisoes) -> Resultado {
-    let r = match acao["tipo"].as_str().unwrap_or("") {
-        "attach_don" => anexar_don(e, acao),
-        "play" => jogar(e, acao, d),
-        "attack" => atacar(e, acao, d),
-        "activate" => ativar(e, acao, d),
-        outro => Err(ns(&format!("jogada ainda fora do nucleo: {outro}"))),
+    match Jogada::de_json(acao) {
+        Ok(j) => aplica_j(e, &j, d),
+        Err(x) => x,
+    }
+}
+
+pub fn aplica_j(e: &mut Estado, j: &Jogada, d: &Decisoes) -> Resultado {
+    let r = match *j {
+        Jogada::DarDon(a, n) => anexar_don(e, a, n),
+        Jogada::Jogar(i) => jogar(e, i, d),
+        Jogada::Atacar(a, alvo) => atacar(e, a, alvo, d),
+        Jogada::Ativar(a) => ativar(e, a, d),
+        Jogada::Fim => Err(ns("fim de turno nao e jogada aplicavel")),
     };
     match r {
         Ok(x) | Err(x) => x,

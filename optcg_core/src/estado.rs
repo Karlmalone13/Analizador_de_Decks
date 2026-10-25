@@ -5,7 +5,7 @@
 use serde::{Deserialize, Serialize};
 use serde_json::{Map, Value};
 
-#[derive(Clone, Debug, Serialize, Deserialize)]
+#[derive(Clone, Debug, Serialize, Deserialize, PartialEq)]
 pub struct Carta {
     pub code: String,
     pub rested: bool,
@@ -47,11 +47,14 @@ pub struct Carta {
     /// Marca DA CARTA: viaja com ela entre zonas.
     #[serde(rename = "_conhecida", default, skip_serializing_if = "e_zero")]
     pub conhecida: u8,
+    /// dados impressos da carta (cache da tabela, preenchido ao ler o estado)
+    #[serde(skip)]
+    pub dados: Option<std::sync::Arc<crate::cartas::InfoCarta>>,
     #[serde(flatten)]
     pub extras: Map<String, Value>,
 }
 
-#[derive(Clone, Debug, Serialize, Deserialize)]
+#[derive(Clone, Debug, Serialize, Deserialize, PartialEq)]
 pub struct Jogador {
     pub leader: Carta,
     pub stage: Option<Carta>,
@@ -115,7 +118,15 @@ pub struct Estado {
 
 impl Estado {
     pub fn de_json(s: &str) -> Result<Estado, serde_json::Error> {
-        serde_json::from_str(s)
+        let mut e: Estado = serde_json::from_str(s)?;
+        for p in [&mut e.ativo, &mut e.oponente] {
+            let cartas = std::iter::once(&mut p.leader).chain(p.stage.iter_mut()).chain(p.deck.iter_mut())
+                .chain(p.hand.iter_mut()).chain(p.field_chars.iter_mut()).chain(p.life.iter_mut()).chain(p.trash.iter_mut());
+            for c in cartas {
+                c.dados = crate::cartas::info(&c.code);
+            }
+        }
+        Ok(e)
     }
 
     pub fn para_json(&mut self) -> Result<String, serde_json::Error> {

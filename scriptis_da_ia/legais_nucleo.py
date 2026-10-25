@@ -33,7 +33,7 @@ def _norm(a):
     if t == 'attack':
         return (t, tuple(a['ator']), a['alvo_tipo'], tuple(a['alvo']) if a['alvo'] else None)
     if t == 'attach_don':
-        return (t, tuple(a['ator']), a['alvo_tipo'])
+        return (t, tuple(a['ator']), 1)     # dar k DON = k jogadas de 1
     return (t, tuple(a['ator']) if isinstance(a.get('ator'), list) else None)
 
 
@@ -87,7 +87,7 @@ def _apply_com_teste(self, action, p, opp, ee, engine, verbose=False):
             leg = json.loads(r)
             normas = {_norm(a) for a in leg}
             feita = ec.descreve_acao(action, p, opp)
-            ok = _norm(feita) in normas and (feita['tipo'] != 'attack' or (feita['don'] or 0) <= p.don_available)
+            ok = _norm(feita) in normas and (feita['tipo'] != 'attack' or (feita['don'] or 0) <= p.don_available)                 and (feita['tipo'] != 'attach_don' or feita['alvo_tipo'] <= p.don_available)
             TOT['contida'] += ok
             if not ok and len(FALHAS) < 10:
                 FALHAS.append(('contida', feita, p.leader.code, p.leader.rested, getattr(p.leader, '_am_used_turn', None), p.turn, p.don_available, p.don_rested, len(p.hand), de.get_card_effects(p.leader.code).get('activate_main') if feita['tipo'] == 'activate' else None))

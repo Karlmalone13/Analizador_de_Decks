@@ -88,7 +88,7 @@ fn ida_e_volta(estado_json: &str) -> PyResult<String> {
 fn jogadas_legais(estado_json: &str) -> PyResult<(String, String)> {
     let e = estado::Estado::de_json(estado_json).map_err(erro)?;
     match legais::jogadas_legais(&e) {
-        Ok(v) => Ok(("ok".into(), serde_json::to_string(&v).map_err(erro)?)),
+        Ok(v) => Ok(("ok".into(), serde_json::to_string(&v.iter().map(|j| j.para_json()).collect::<Vec<_>>()).map_err(erro)?)),
         Err(acoes::Resultado::NaoSuportado(m)) => Ok(("nao_suportado".into(), m)),
         Err(_) => Ok(("nao_suportado".into(), "resultado inesperado".into())),
     }
@@ -115,7 +115,8 @@ fn simula_partidas(estado_json: &str, global_turn: i64, n: u32, semente: u64, ma
         }
     }
     Ok(serde_json::json!({"partidas": n, "vitorias_ativo": v0, "vitorias_outro": v1, "limite": emp,
-        "nao_suportado": ns, "jogadas": jog, "turnos": tur, "segundos": seg}).to_string())
+        "nao_suportado": ns, "jogadas": jog, "turnos": tur, "segundos": seg,
+        "tempos": jogo::TEMPOS.with(|x| x.borrow().to_vec())}).to_string())
 }
 
 #[pymodule]

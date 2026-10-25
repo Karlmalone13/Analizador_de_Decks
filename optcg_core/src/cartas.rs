@@ -4,7 +4,7 @@ use serde::Deserialize;
 use std::collections::HashMap;
 use std::sync::{Arc, RwLock};
 
-#[derive(Clone, Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize, PartialEq, Eq)]
 pub struct InfoCarta {
     pub cost: i64,
     pub power: i64,
@@ -37,6 +37,9 @@ pub struct InfoCarta {
     /// blocos de efeito do `card_effects_db` (gatilho -> bloco), na ordem do banco
     #[serde(default)]
     pub efeitos: serde_json::Map<String, serde_json::Value>,
+    /// calculado ao carregar: tem passiva/opp_turn que `aplica_passivas_keyword` usa
+    #[serde(skip)]
+    pub kw_passiva: bool,
 }
 
 /// Compartilhada (Arc): consultar uma carta NAO copia os dados (efeitos inclusos).
@@ -44,7 +47,10 @@ static TABELA: RwLock<Option<HashMap<String, Arc<InfoCarta>>>> = RwLock::new(Non
 
 pub fn carrega(t: HashMap<String, InfoCarta>) {
     let mut g = TABELA.write().unwrap();
-    let t = t.into_iter().map(|(k, v)| (k, Arc::new(v)));
+    let t = t.into_iter().map(|(k, mut v)| {
+        v.kw_passiva = crate::efeitos::tem_passiva_de_keyword(&v);
+        (k, Arc::new(v))
+    });
     match g.as_mut() {
         Some(m) => m.extend(t),
         None => *g = Some(t.collect()),

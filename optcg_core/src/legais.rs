@@ -4,11 +4,12 @@
 //! Sao as regras do motor Python SEM os cortes heuristicos de
 //! `_generate_and_score_actions` (reserva de DON para a defesa, ataque "inutil",
 //! `avaliar_carta`, evento sem passo viavel): a busca e quem decide o que vale.
-//! O DON do ataque entra pelas jogadas `attach_don` (ataque sempre com don=0).
-use crate::acoes::{is_rush, is_rush_character, Resultado};
+//! O DON do ataque entra pelas jogadas `attach_don` (ataque sempre com don=0), e
+//! `attach_don` da UM DON por jogada (dar k = repetir k vezes).
+use crate::acoes::{is_rush, is_rush_character, Jogada, Resultado};
 use crate::efeitos::{custo_de_jogar, dados, passos_de, poder_meu_turno, poder_turno_do_outro, Executor};
 use crate::estado::{Carta, Estado, Jogador};
-use serde_json::{json, Value};
+use serde_json::Value;
 
 type R<T> = Result<T, Resultado>;
 
@@ -157,12 +158,12 @@ fn custo_impagavel(custos: &Value, p: &Jogador, fonte: &Carta) -> bool {
     false
 }
 
-fn lugar(z: &str, i: usize) -> Value {
-    json!([z, i])
+fn lugar(z: &'static str, i: usize) -> (&'static str, usize) {
+    (z, i)
 }
 
-/// Todas as jogadas legais do jogador ativo (inclui `{"tipo": "end"}`).
-pub fn jogadas_legais(e: &Estado) -> R<Vec<Value>> {
+/// Todas as jogadas legais do jogador ativo (inclui `Jogada::Fim`).
+pub fn jogadas_legais(e: &Estado) -> R<Vec<Jogada>> {
     let (p, opp) = (&e.ativo, &e.oponente);
     let mut out = Vec::new();
     // jogar da mao
@@ -182,10 +183,10 @@ pub fn jogadas_legais(e: &Estado) -> R<Vec<Value>> {
         if i.card_type == "EVENT" && !["on_play", "main", "activate_main"].iter().any(|t| i.efeitos.contains_key(*t)) {
             continue;
         }
-        out.push(json!({"tipo": "play", "ator": lugar("hand", k), "alvo_tipo": null, "don": null, "alvo": null}));
+        out.push(Jogada::Jogar(k));
     }
     // [Activate: Main]
-    let mut fontes: Vec<(&Carta, Value)> = vec![(&p.leader, lugar("leader", 0))];
+    let mut fontes: Vec<(&Carta, (&'static str, usize))> = vec![(&p.leader, lugar("leader", 0))];
     if let Some(s) = &p.stage {
         fontes.push((s, lugar("stage", 0)));
     }
@@ -195,7 +196,7 @@ pub fn jogadas_legais(e: &Estado) -> R<Vec<Value>> {
         let Some(am) = i.efeitos.get("activate_main") else { continue };
         if c.rested {
             let rest_self = am["costs"].as_array().into_iter().flatten().any(|x| x["type"].as_str() == Some("rest_self"));
-            if rest_self || l[0] != "leader" {
+            if rest_self || l.0 != "leader" {
                 continue;
             }
         }
@@ -209,22 +210,20 @@ pub fn jogadas_legais(e: &Estado) -> R<Vec<Value>> {
         if custo_impagavel(&am["costs"], p, c) {
             continue;
         }
-        out.push(json!({"tipo": "activate", "ator": l, "alvo_tipo": null, "don": null, "alvo": null}));
+        out.push(Jogada::Ativar(*l));
     }
     // dar DON
     if p.don_available > 0 {
         let mut alvos = vec![lugar("leader", 0)];
         alvos.extend((0..p.field_chars.len()).map(|k| lugar("field_chars", k)));
         for l in alvos {
-            for n in 1..=p.don_available {
-                out.push(json!({"tipo": "attach_don", "ator": l, "alvo_tipo": n, "don": null, "alvo": null}));
-            }
+            out.push(Jogada::DarDon(l, 1));
         }
     }
     // atacar
     if p.turn > 1 {
         let prov = provocador(opp, p)?;
-        let mut atacantes: Vec<(&Carta, Value)> = Vec::new();
+        let mut atacantes: Vec<(&Carta, (&'static str, usize))> = Vec::new();
         for (k, c) in p.field_chars.iter().enumerate() {
             if pode_atacar(c, p, opp)? {
                 atacantes.push((c, lugar("field_chars", k)));
@@ -235,7 +234,7 @@ pub fn jogadas_legais(e: &Estado) -> R<Vec<Value>> {
         }
         for (a, l) in atacantes {
             if !a.rush_character_only_this_turn && prov.is_none() && !p.cannot_attack_leader_this_turn {
-                out.push(json!({"tipo": "attack", "ator": l, "alvo_tipo": "leader", "don": 0, "alvo": null}));
+                out.push(Jogada::Atacar(l, None));
             }
             let ativos_tambem = a.can_attack_active_this_turn
                 || a.extras.get("can_attack_active").and_then(|x| x.as_bool()).unwrap_or(false);
@@ -246,11 +245,10 @@ pub fn jogadas_legais(e: &Estado) -> R<Vec<Value>> {
                 if a.cannot_attack_opp_chars_cost_lte >= 0 && dados(t)?.cost <= a.cannot_attack_opp_chars_cost_lte {
                     continue;
                 }
-                out.push(json!({"tipo": "attack", "ator": l, "alvo_tipo": "character", "don": 0,
-                                "alvo": ["oponente", "field_chars", j]}));
+                out.push(Jogada::Atacar(l, Some(j)));
             }
         }
     }
-    out.push(json!({"tipo": "end"}));
+    out.push(Jogada::Fim);
     Ok(out)
 }
