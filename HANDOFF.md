@@ -1,5 +1,28 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-10-26 (999) - Fase C: 1o ciclo (auto-jogo -> rede politica+valor -> arena) no nucleo Rust
+
+**Auto-jogo** (`autojogo.py` -> `optcg_core.autojogo`): partida inteira no Rust, a busca decidindo a jogada
+principal dos dois lados; grava por decisao as features, as legais, as visitas da busca e o resultado (.npz em
+`metrics/autojogo/`, gitignored). Jogada que cai em efeito fora do nucleo e DESFEITA e proibida na decisao
+(97% das partidas terminam; ~0,8 s/partida a 200 iteracoes). Arena entre geracoes (`--rede` x `--rede-b`, lados
+alternados).
+**Rede nova** (`feats.rs`: 155 features de estado + 22 por jogada, SO o observavel -- a rede antiga de 32 somava o
+counter da mao inteira do oponente, vazamento de informacao); treino em numpy (`rede_pv.py`, sem torch no
+ambiente; gradientes conferidos por diferenca finita); no nucleo (`rede.rs`, identica ao Python): valor nas folhas
+e politica como prioridade (PUCT). Espacos de rede 1..3; `busca_jogada(..., rede)`; `duelo_busca.py --rede`.
+**Erro achado e corrigido**: a folha era avaliada no FIM do meu turno (estado que a rede nunca viu no treino) --
+a busca explorava os pontos cegos (gen1 perdia 15x84). Agora avalia no COMECO do turno do oponente (1 - valor
+dele). Pendente: com `turnos>0` a nota ainda usa o estado de antes da simulacao (simula nao devolve o estado).
+**Resultados**: gen1 x gen0 = 66x30 (arena, 100 partidas); gen2 x gen1 = 51x46 (empate); busca com gen1 x bot
+Python = 11x19 (37%; com a rede antiga 9x21).
+**O que segura (diagnostico)**: (1) na simulacao/auto-jogo counter, bloqueio e alvos sao ALEATORIOS -- a busca
+planeja contra um defensor aleatorio e a rede aprende esse mundo; (2) a rede decora apos 2-3 epocas (falta
+regularizacao e partidas); (3) politica aprende pouco (visitas de 200 iteracoes = sinal ruidoso).
+**PROXIMO (proposto ao usuario, aguardando)**: B = escolhas internas avaliadas pela rede de valor (executor passa o
+estado, aplica cada opcao numa copia); depois A = nos de decisao do defensor na arvore (estilo AlphaZero);
+regularizacao no treino; mais iteracoes; automatizar o ciclo com SPRT.
+
 ## 2026-10-25 (998) - Fase A fechada no essencial + fase B iniciada (busca ISMCTS no nucleo Rust)
 
 **Paridade (fase A)**: o nucleo Rust (`optcg_core/`) reproduz o motor Python jogada a jogada -- 100% nas jogadas
