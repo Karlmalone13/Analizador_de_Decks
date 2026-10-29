@@ -49,7 +49,7 @@ class Rede:
         self.v = {k: np.zeros_like(v) for k, v in self.p.items()}
         self.t = 0
 
-    def passo(self, Sb, Ab, d, zb, pib, B, cv=1.0, lr=1e-3, treina=True):
+    def passo(self, Sb, Ab, d, zb, pib, B, cv=1.0, lr=1e-3, treina=True, l2=0.0):
         p = self.p
         H1 = np.maximum(Sb @ p['W1'] + p['b1'], 0)
         H2 = np.maximum(H1 @ p['W2'] + p['b2'], 0)
@@ -90,6 +90,9 @@ class Rede:
         g['b1'] = dH1.sum(0)
         self.t += 1
         b1, b2 = 0.9, 0.999
+        if l2:
+            for k in ('W1', 'W2', 'Wa'):     # penalidade de peso (contra decorar)
+                g[k] = g[k] + l2 * p[k]
         for k in p:
             self.m[k] = b1 * self.m[k] + (1 - b1) * g[k]
             self.v[k] = b2 * self.v[k] + (1 - b2) * g[k] ** 2
@@ -129,6 +132,7 @@ def main():
     ap.add_argument('--lote', type=int, default=256)
     ap.add_argument('--lr', type=float, default=1e-3)
     ap.add_argument('--semente', type=int, default=0)
+    ap.add_argument('--l2', type=float, default=1e-2, help='penalidade de peso')
     a = ap.parse_args()
     S, A, z, vis, ini, part = carrega(a.dados)
     # alvo da politica: visitas normalizadas por decisao
@@ -155,7 +159,7 @@ def main():
         for k in range(0, len(tr), a.lote):
             idx = tr[k:k + a.lote]
             Sb, Ab, d, zb, pb = lote(idx, Sn, An, z, pi, ini)
-            rede.passo(Sb, Ab, d, zb, pb, len(idx), lr=a.lr)
+            rede.passo(Sb, Ab, d, zb, pb, len(idx), lr=a.lr, l2=a.l2)
         pv, pp, av, t1 = avalia(rede, va, Sn, An, z, pi, ini)
         print(f'epoca {ep + 1}: validacao valor BCE {pv:.4f} acerto {av:.3f} | politica CE {pp:.4f} top1 {t1:.3f}', flush=True)
         if pv + pp < melhor[0]:
