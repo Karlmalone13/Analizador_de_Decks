@@ -50,7 +50,9 @@ def main():
         out, t = roda(['autojogo.py', '--partidas', str(a.partidas), '--seed', str(100000 + 7919 * g),
                        '--iteracoes', str(a.iteracoes), '--rede', campea, '--defesa-rede', '--saida', dados], log)
         linha_dados = [l for l in out.splitlines() if 'partidas em' in l]
-        janela = sorted(f for f in os.listdir(D) if re.match(r'(gen\d{3}|ciclo_dados_g\d{3})\.npz$', f))[-a.janela:]
+        # pela GERACAO (o nome nao ordena: `ciclo_dados_*` viria antes de `gen*`)
+        janela = sorted((f for f in os.listdir(D) if re.match(r'(gen\d{3}|ciclo_dados_g\d{3})\.npz$', f)),
+                        key=lambda f: int(re.search(r'(\d{3})\.npz$', f).group(1)))[-a.janela:]
         cand = f'{D}/rede_gen{g + 1:03d}.json'
         out_t, t_t = roda(['rede_pv.py', '--dados'] + [f'{D}/{f}' for f in janela] + ['--saida', cand, '--epocas', '10'], log)
         treino = [l for l in out_t.splitlines() if l.startswith('epoca') or l.startswith('melhor')][-2:]

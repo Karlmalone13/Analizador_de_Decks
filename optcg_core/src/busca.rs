@@ -336,6 +336,8 @@ pub struct Partida {
     pub registros: Vec<Registro>,
     pub turnos: u32,
     pub fora_do_nucleo: Option<String>,
+    /// motivo de cada jogada desfeita por cair em efeito fora do nucleo
+    pub proibidas: Vec<String>,
 }
 
 /// AUTO-JOGO (fase C): partida inteira no nucleo, a busca decidindo a jogada
@@ -349,10 +351,15 @@ pub fn autojogo(mut e: Estado, mut gt: i64, cfg: &Config, max_turnos: u32, rede_
     let mut lado = 0u8;
     let mut turnos = 0u32;
     let mut sem = cfg.semente;
-    let acaba = |v: Option<u8>, r, t, m| Partida { vencedor: v, registros: r, turnos: t, fora_do_nucleo: m };
+    let mut motivos_p: Vec<String> = Vec::new();
+    macro_rules! acaba {
+        ($v:expr, $r:expr, $t:expr, $m:expr) => {
+            Partida { vencedor: $v, registros: $r, turnos: $t, fora_do_nucleo: $m, proibidas: motivos_p }
+        };
+    }
     while turnos < max_turnos {
         if let Passo::ForaDoNucleo(m) = abre_turno(&mut e, gt, &pol) {
-            return acaba(None, regs, turnos, Some(m));
+            return acaba!(None, regs, turnos, Some(m));
         }
         gt += 1;
         turnos += 1;
@@ -361,7 +368,8 @@ pub fn autojogo(mut e: Estado, mut gt: i64, cfg: &Config, max_turnos: u32, rede_
         for _ in 0..200 {
             let legais: Vec<Jogada> = match jogadas_legais(&e) {
                 Ok(v) => v.into_iter().filter(|j| !proibidas.contains(j)).collect(),
-                Err(_) => return acaba(None, regs, turnos, Some("legais".into())),
+                Err(crate::acoes::Resultado::NaoSuportado(m)) => return acaba!(None, regs, turnos, Some(format!("legais: {m}"))),
+                Err(_) => return acaba!(None, regs, turnos, Some("legais: inesperado".into())),
             };
             sem = sem.wrapping_mul(6364136223846793005).wrapping_add(1442695040888963407);
             let r = busca_sem(&e, gt, &Config { semente: sem, rede: if lado == 0 { cfg.rede } else { rede_outro }, ..*cfg }, &proibidas);
@@ -381,7 +389,8 @@ pub fn autojogo(mut e: Estado, mut gt: i64, cfg: &Config, max_turnos: u32, rede_
             // efeito ainda fora do nucleo: desfaz, proibe a jogada nesta decisao e segue
             let antes = e.clone();
             passo = joga(&mut e, &legais[escolhida], &d);
-            if let Passo::ForaDoNucleo(_) = passo {
+            if let Passo::ForaDoNucleo(m) = passo {
+                motivos_p.push(m);
                 e = antes;
                 proibidas.push(legais[escolhida].clone());
                 regs.pop();
@@ -398,12 +407,12 @@ pub fn autojogo(mut e: Estado, mut gt: i64, cfg: &Config, max_turnos: u32, rede_
         }
         match passo {
             Passo::Segue => {}
-            Passo::Venceu => return acaba(Some(lado), regs, turnos, None),
-            Passo::Perdeu => return acaba(Some(1 - lado), regs, turnos, None),
-            Passo::ForaDoNucleo(m) => return acaba(None, regs, turnos, Some(m)),
+            Passo::Venceu => return acaba!(Some(lado), regs, turnos, None),
+            Passo::Perdeu => return acaba!(Some(1 - lado), regs, turnos, None),
+            Passo::ForaDoNucleo(m) => return acaba!(None, regs, turnos, Some(m)),
         }
         std::mem::swap(&mut e.ativo, &mut e.oponente);
         lado = 1 - lado;
     }
-    acaba(None, regs, turnos, None)
+    acaba!(None, regs, turnos, None)
 }

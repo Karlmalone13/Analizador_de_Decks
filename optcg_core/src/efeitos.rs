@@ -1980,6 +1980,14 @@ impl Executor {
                     !v.as_bool().unwrap_or(!v.is_null())
                         || me.don_available + me.don_rested <= opp.don_available + opp.don_rested
                 }
+                "don_fewer_than_opp_by_gte" => {
+                    (opp.don_available + opp.don_rested) - (me.don_available + me.don_rested) >= n
+                }
+                "hand_fewer_than_opp_by_gte" => opp.hand.len() as i64 - me.hand.len() as i64 >= n,
+                "opp_chars_rested_gte" => opp.field_chars.iter().filter(|c| c.rested).count() as i64 >= n,
+                "event_activated_cost_gte_this_turn" => {
+                    me.events_activated_costs_this_turn.iter().any(|c| c.as_i64().map_or(false, |c| c >= n))
+                }
                 "opp_char_cost_eq_or_gte" => {
                     let (eq, ge) = (v["eq"].as_i64(), v["gte"].as_i64());
                     let mut a = false;
@@ -2013,6 +2021,9 @@ impl Executor {
                     }
                     existe
                 }
+                // complementos lidos junto com a chave principal (`other_char_*`)
+                "other_char_power_gte_type" | "other_char_power_gte_names" | "other_char_power_uses_base"
+                | "other_char_cost_gte_type" => true,
                 outro if CONDICOES_DO_PYTHON.contains(&outro) => {
                     return Err(ns(&format!("condicao fora do nucleo: {outro}")))
                 }
@@ -2035,6 +2046,7 @@ impl Executor {
         Ok(match st["action"].as_str().unwrap_or("") {
             "look_top_deck" | "deck_bottom_rest" | "draw" => !me.deck.is_empty(),
             "set_don_active" => me.don_rested > 0,
+            "negate_on_play_effects" | "lock_opp_don" => true,
             "add_to_hand" | "trash_rest" | "gain_life" | "add_don" | "buff_power" | "give_don" | "redirect_attack_target"
             | "activate_trash_event_main" | "transfer_don" | "activate_main_effect"
             | "deal_damage" | "give_don_either_side" | "peek_opp_deck_top"
@@ -2049,6 +2061,16 @@ impl Executor {
             "trash_from_deck_top" => !me.deck.is_empty(),
             "reveal_deck_top_conditional" | "select_grant_unblockable_turn" | "immunity" => true,
             "character_to_owner_life" if self.politica.is_some() => true,
+            "place_opp_char_to_opp_life" if self.politica.is_some() => true,
+            "opp_bounce_own_character" => {
+                let lte = st["cost_lte"].as_i64();
+                let mut ok = false;
+                for c in &opp.field_chars {
+                    let custo = dados(c)?.cost;
+                    ok |= lte.map_or(true, |x| custo <= x);
+                }
+                ok
+            }
             "select_grant_rush" => {
                 let nome = st["filter_name"].as_str().unwrap_or("").to_lowercase();
                 let exn = st["exclude"].as_str().unwrap_or("").to_lowercase();
@@ -2681,6 +2703,22 @@ impl Executor {
                         me.deck.insert(0, x);
                     }
                 }
+                "place_hand_top_deck" => {
+                    if (me.hand.len() as i64) < n {
+                        return Ok(false);
+                    }
+                    // a mesma escolha do descarte (`_choose_to_trash`); topo = fim da lista
+                    for _ in 0..n {
+                        self.passivas_da_fila(me, opp)?;
+                        let ops: Vec<Lug> = (0..me.hand.len()).map(|j| lug("eu", "hand", j)).collect();
+                        let Some((lado, z, i)) = self.escolha_entre("descarte", &ops, false)? else { break };
+                        if lado != "eu" || z != "hand" || i >= me.hand.len() {
+                            return Err(ns("place_hand_top_deck fora da mao"));
+                        }
+                        let x = me.hand.remove(i);
+                        me.deck.push(x);
+                    }
+                }
                 outro => return Err(ns(&format!("custo fora do nucleo: {outro}"))),
             }
         }
@@ -2761,6 +2799,51 @@ impl Executor {
                         dono.life.insert(0, c);
                     } else {
                         dono.life.push(c);
+                    }
+                }
+            }
+            // alvo: o Python escolhe o de menor `board_value` (heuristica);
+            // aqui so na simulacao, pela politica
+            // o OPONENTE escolhe qual personagem dele volta pra mao (o Python: menor
+            // `board_value`, heuristica); aqui so na simulacao, pela politica
+            "opp_bounce_own_character" if self.politica.is_some() => {
+                let lte = st["cost_lte"].as_i64();
+                let (ativo, deitado) = (st["active_only"].as_bool().unwrap_or(false), st["rested_only"].as_bool().unwrap_or(false));
+                for _ in 0..n {
+                    let mut ops: Vec<Lug> = Vec::new();
+                    for (i, c) in opp.field_chars.iter().enumerate() {
+                        if lte.map_or(true, |x| dados(c).map_or(false, |d| d.cost <= x)) && !(ativo && c.rested) && !(deitado && !c.rested) {
+                            ops.push(lug("oponente", "field_chars", i));
+                        }
+                    }
+                    let Some((_, _, i)) = self.escolha_entre("alvo", &ops, false)? else { break };
+                    let mut x = opp.field_chars.remove(i);
+                    opp.don_rested += x.don_attached;
+                    x.don_attached = 0;
+                    x.rested = false;
+                    opp.hand.push(x);
+                }
+            }
+            "place_opp_char_to_opp_life" if self.politica.is_some() => {
+                let lte = st["cost_lte"].as_i64();
+                for _ in 0..n {
+                    let mut ops: Vec<Lug> = Vec::new();
+                    for (i, c) in opp.field_chars.iter().enumerate() {
+                        let d = dados(c)?;
+                        if lte.map_or(true, |x| d.cost <= x) && casa_filtro(&d, &st["filter_type"], false) {
+                            ops.push(lug("oponente", "field_chars", i));
+                        }
+                    }
+                    let Some((_, _, i)) = self.escolha_entre("alvo", &ops, false)? else { break };
+                    let mut c = opp.field_chars.remove(i);
+                    opp.don_rested += c.don_attached;
+                    c.don_attached = 0;
+                    c.rested = false;
+                    c.life_face_up = true;
+                    if st["dest"].as_str() == Some("life_bottom") {
+                        opp.life.insert(0, c);
+                    } else {
+                        opp.life.push(c);
                     }
                 }
             }
@@ -3620,6 +3703,9 @@ impl Executor {
                     }
                 }
             }
+            // o motor Python nao trata estas acoes (`_execute_step` cai no `return ''`):
+            // espelho -- bug registrado para depois da paridade
+            "negate_on_play_effects" | "lock_opp_don" => {}
             outro => return Err(ns(&format!("passo fora do nucleo: {outro}"))),
         }
         Ok(())
@@ -4098,7 +4184,7 @@ impl Executor {
                 self.ultimo = Some(x);
             }
             "own_character" => {
-                for k in ["filter_type_or_has_trigger", "filter_no_effect", "filter_color"] {
+                for k in ["filter_type_or_has_trigger", "filter_no_effect"] {
                     if !st[k].is_null() && st[k] != Value::Bool(false) && st[k].as_str() != Some("") {
                         return Err(ns(&format!("buff own_character com {k}")));
                     }
@@ -4112,6 +4198,7 @@ impl Executor {
                         && st["cost_gte"].as_i64().map_or(true, |x| i.cost >= x)
                         && st["cost_eq"].as_i64().map_or(true, |x| i.cost == x)
                         && (excl.is_empty() || !i.name.to_lowercase().contains(&excl))
+                        && st["filter_color"].as_str().map_or(true, |c| i.color.to_lowercase().contains(&c.to_lowercase()))
                     {
                         cands.push(Some(k));
                     }

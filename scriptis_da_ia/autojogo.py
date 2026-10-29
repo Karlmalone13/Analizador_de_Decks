@@ -68,7 +68,7 @@ def main():
     carrega_rede(2, a.rede_b)
     arena = bool(a.rede_b)
     placar = {'rede': 0, 'rede_b': 0, 'sem': 0}
-    res = {'vencidas': 0, 'sem_vencedor': 0, 'fora': {}}
+    res = {'vencidas': 0, 'sem_vencedor': 0, 'fora': {}, 'proibidas': {}}
     t0 = time.time()
     for k in range(a.partidas):
         e = estado_inicial(a.seed + k)
@@ -92,6 +92,8 @@ def main():
                 res['fora'][m] = res['fora'].get(m, 0) + 1
         else:
             res['vencidas'] += 1
+        for m in r.get('proibidas', []):
+            res['proibidas'][m[:70]] = res['proibidas'].get(m[:70], 0) + 1
         for g in r['registros']:
             X.append(g['feats'])
             lado.append(g['lado'])
@@ -120,6 +122,8 @@ def main():
               f"= {100 * placar['rede'] / max(n_, 1):.0f}% para --rede")
     for m, n in sorted(res['fora'].items(), key=lambda x: -x[1]):
         print(f'   parou fora do nucleo: {m} ({n})')
+    for m, n in sorted(res['proibidas'].items(), key=lambda x: -x[1])[:25]:
+        print(f'   jogada desfeita (fora do nucleo): {m} ({n})')
     return 0
 
 

@@ -163,7 +163,7 @@ fn autojogo(estado_json: &str, global_turn: i64, iteracoes: u32, turnos_rollout:
         "lado": r.lado, "feats": r.feats.to_vec(), "visitas": r.visitas, "escolhida": r.escolhida,
         "estado": r.estado, "jogadas": r.jogadas,
         "legais": r.legais.iter().map(|j| j.para_json()).collect::<Vec<_>>()})).collect();
-    Ok(serde_json::json!({"vencedor": p.vencedor, "turnos": p.turnos, "fora_do_nucleo": p.fora_do_nucleo,
+    Ok(serde_json::json!({"vencedor": p.vencedor, "turnos": p.turnos, "fora_do_nucleo": p.fora_do_nucleo, "proibidas": p.proibidas,
         "registros": regs, "segundos": t0.elapsed().as_secs_f64()}).to_string())
 }
 

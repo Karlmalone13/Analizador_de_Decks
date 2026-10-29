@@ -1,5 +1,21 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-10-29 (1001) - Cauda de efeitos do nucleo Rust (auto-jogo 99% -> 100% das partidas terminam)
+
+`autojogo` agora registra o MOTIVO de cada parada e de cada jogada desfeita (`proibidas`; antes so dizia "legais").
+Portados, conferidos contra o Python (paridade 100% em 1000/2000/3000/5000 x30; legais 428/428):
+condicoes `don_fewer_than_opp_by_gte`, `hand_fewer_than_opp_by_gte`, `event_activated_cost_gte_this_turn`,
+`opp_chars_rested_gte` e os complementos `other_char_*_type/_names/_uses_base` (paravam a partida inteira);
+`buff own_character` com `filter_color`; custo `place_hand_top_deck` (escolha = descarte, topo do deck);
+`negate_on_play_effects`/`lock_opp_don` = no-op espelhando o Python (que NAO trata -- bug p/ depois da paridade);
+`place_opp_char_to_opp_life` e `opp_bounce_own_character` so na simulacao (alvo pela politica; o Python escolhe
+por `board_value`).
+Medida (600 partidas, 50 iteracoes): 600/600 terminam (antes 594); ~55 jogadas desfeitas em 32 mil decisoes
+(0,17%). Resto: carta saiu do lugar no trigger, play_from_trash filter_self, ko all_character, choice, passo
+agendado p/ fim do turno, negate_effect leader_or_character.
+**ciclo_fase_c.py**: janela de dados agora ordena pela geracao (bug do bloco 1000 corrigido). O ciclo que esta
+rodando usa o codigo antigo (janela errada e o nucleo antigo instalado -- .pyd travado enquanto roda).
+
 ## 2026-10-29 (1000) - Fase C opcao B (defesa pela rede na simulacao) + L2 + ciclo automatico
 
 **Opcao B**: na simulacao/auto-jogo o defensor escolhe bloqueio e counter pela rede de valor (testa cada opcao,

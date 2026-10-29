@@ -2,6 +2,8 @@
 
 **Última atualização:** 9 de outubro de 2026 (blocos 943-960)
 
+> **1001**: cauda de efeitos: 600/600 partidas do auto-jogo terminam (antes 594), 0,17% de jogadas desfeitas; paridade 100%. Janela do ciclo corrigida. Pendente: reinstalar o nucleo quando o ciclo atual acabar; bugs do Python (negate_on_play_effects/lock_opp_don no-op).
+
 > **1000**: opcao B (defesa pela rede na simulacao), L2, ciclo automatico. Contra o bot Python continua 12x18. Ciclo: gen4 perdeu 78x112. BUG: janela de dados do ciclo ordena por nome e descarta dados novos. PROXIMO: cauda de efeitos, opcao A.
 
 > **999**: fase C 1o ciclo no Rust: auto-jogo + rede politica+valor (so observavel) + arena. gen1 x gen0 66x30; gen2 x gen1 51x46; busca+gen1 x bot Python 11x19. PROXIMO: counter/bloqueio/alvo deixarem de ser aleatorios na simulacao (B: pela rede de valor; depois A: nos na arvore), regularizacao, ciclo automatico com SPRT.
