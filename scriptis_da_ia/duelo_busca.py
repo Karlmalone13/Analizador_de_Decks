@@ -52,6 +52,7 @@ def main():
     ap.add_argument('--c', type=float, default=0.7)
     ap.add_argument('--sem-valor', action='store_true', help='folhas pela nota simples (sem a rede)')
     ap.add_argument('--rede', default='', help='rede politica+valor da fase C (JSON do rede_pv.py)')
+    ap.add_argument('--defesa-rede', action='store_true', help='na simulacao, o defensor bloqueia/counter pela rede')
     a = ap.parse_args()
     cfg = {'iteracoes': a.iteracoes, 'turnos': a.turnos, 'c': a.c, 'semente': a.seed}
     if not a.sem_valor:
@@ -61,6 +62,7 @@ def main():
     if a.rede:
         optcg_core.carrega_rede(1, open(a.rede).read())
         cfg['rede'] = 1
+        cfg['defesa_rede'] = a.defesa_rede
     placar = {'busca': 0, 'python': 0, 'empate': 0}
     t_busca, n_busca, fora, its = 0.0, 0, 0, 0
     t0 = time.time()

@@ -105,6 +105,7 @@ const CONDICOES_DO_PYTHON: &[&str] = &[
     "total_life_lte", "trash_gte", "trash_lte", "turn_gte",
 ];
 
+#[derive(Clone)]
 pub struct Executor {
     pub fila: VecDeque<Value>,
     /// Instancia de `EffectExecutor` do Python em uso: o `_once_used` dele e POR

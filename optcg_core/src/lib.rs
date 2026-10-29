@@ -125,12 +125,12 @@ fn simula_partidas(estado_json: &str, global_turn: i64, n: u32, semente: u64, ma
 
 /// Busca (ISMCTS) da melhor jogada do ativo, no meio da Main dele.
 #[pyfunction]
-#[pyo3(signature = (estado_json, global_turn, iteracoes, turnos_rollout, c_ucb, semente, rede=0))]
+#[pyo3(signature = (estado_json, global_turn, iteracoes, turnos_rollout, c_ucb, semente, rede=0, defesa_rede=false))]
 fn busca_jogada(estado_json: &str, global_turn: i64, iteracoes: u32, turnos_rollout: u32, c_ucb: f64, semente: u64,
-                rede: u8) -> PyResult<String> {
+                rede: u8, defesa_rede: bool) -> PyResult<String> {
     let e = estado::Estado::de_json(estado_json).map_err(erro)?;
     let t0 = std::time::Instant::now();
-    let r = busca::busca(&e, global_turn, &busca::Config { iteracoes, turnos_rollout, c_ucb, semente, rede });
+    let r = busca::busca(&e, global_turn, &busca::Config { iteracoes, turnos_rollout, c_ucb, semente, rede, defesa_rede });
     let raiz: Vec<serde_json::Value> = r.raiz.iter()
         .map(|(j, v, q)| serde_json::json!({"jogada": j.para_json(), "visitas": v, "valor": q})).collect();
     Ok(serde_json::json!({"jogada": r.jogada.para_json(), "raiz": raiz, "iteracoes": r.iteracoes,
@@ -153,11 +153,12 @@ fn prob_valor(estado_json: &str) -> PyResult<(Option<f64>, Vec<f64>)> {
 
 /// AUTO-JOGO (fase C): partida inteira no nucleo com a busca nos dois lados.
 #[pyfunction]
+#[pyo3(signature = (estado_json, global_turn, iteracoes, turnos_rollout, c_ucb, semente, max_turnos, rede_a, rede_b, defesa_rede=false))]
 fn autojogo(estado_json: &str, global_turn: i64, iteracoes: u32, turnos_rollout: u32, c_ucb: f64, semente: u64,
-            max_turnos: u32, rede_a: u8, rede_b: u8) -> PyResult<String> {
+            max_turnos: u32, rede_a: u8, rede_b: u8, defesa_rede: bool) -> PyResult<String> {
     let e = estado::Estado::de_json(estado_json).map_err(erro)?;
     let t0 = std::time::Instant::now();
-    let p = busca::autojogo(e, global_turn, &busca::Config { iteracoes, turnos_rollout, c_ucb, semente, rede: rede_a }, max_turnos, rede_b);
+    let p = busca::autojogo(e, global_turn, &busca::Config { iteracoes, turnos_rollout, c_ucb, semente, rede: rede_a, defesa_rede }, max_turnos, rede_b);
     let regs: Vec<serde_json::Value> = p.registros.iter().map(|r| serde_json::json!({
         "lado": r.lado, "feats": r.feats.to_vec(), "visitas": r.visitas, "escolhida": r.escolhida,
         "estado": r.estado, "jogadas": r.jogadas,

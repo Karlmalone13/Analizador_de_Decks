@@ -25,6 +25,8 @@ pub struct Config {
     pub semente: u64,
     /// espaco da rede de politica+valor (0 = sem rede: rede de valor antiga / nota simples)
     pub rede: u8,
+    /// opcao B: bloqueio/counter do defensor escolhidos pela rede de valor (senao: aleatorio)
+    pub defesa_rede: bool,
 }
 
 pub struct Resposta {
@@ -198,7 +200,7 @@ pub fn busca_sem(e: &Estado, gt: i64, cfg: &Config, proibidas: &[Jogada]) -> Res
     REDE_ATUAL.with(|x| x.set(cfg.rede));
     let mut rng = Rng::novo(cfg.semente);
     let pol: PoliticaRef = Rc::new(RefCell::new(Rollout(Rng::novo(cfg.semente ^ 0x5DEE_CE66))));
-    let d = Decisoes { politica: Some(pol.clone()), ..Default::default() };
+    let d = Decisoes { politica: Some(pol.clone()), rede: if cfg.defesa_rede { cfg.rede } else { 0 }, ..Default::default() };
     let mut nos: Vec<No> = vec![No::novo()];
     let mut fora = 0u32;
     for _ in 0..cfg.iteracoes {
@@ -342,7 +344,7 @@ pub struct Partida {
 /// geracoes jogando uma contra a outra.
 pub fn autojogo(mut e: Estado, mut gt: i64, cfg: &Config, max_turnos: u32, rede_outro: u8) -> Partida {
     let pol: PoliticaRef = Rc::new(RefCell::new(Rollout(Rng::novo(cfg.semente ^ 0xA5A5))));
-    let d = Decisoes { politica: Some(pol.clone()), ..Default::default() };
+    let mut d = Decisoes { politica: Some(pol.clone()), ..Default::default() };
     let mut regs = Vec::new();
     let mut lado = 0u8;
     let mut turnos = 0u32;
@@ -374,6 +376,8 @@ pub fn autojogo(mut e: Estado, mut gt: i64, cfg: &Config, max_turnos: u32, rede_
             if legais[escolhida] == Jogada::Fim {
                 break;
             }
+            // o defensor (lado de fora do turno) defende com a rede DELE
+            d.rede = if cfg.defesa_rede { if lado == 0 { rede_outro } else { cfg.rede } } else { 0 };
             // efeito ainda fora do nucleo: desfaz, proibe a jogada nesta decisao e segue
             let antes = e.clone();
             passo = joga(&mut e, &legais[escolhida], &d);

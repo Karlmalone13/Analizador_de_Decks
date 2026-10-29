@@ -18,6 +18,9 @@ pub struct Decisoes {
     /// Some = simulacao: estas decisoes (e as de dentro dos efeitos) sao da politica
     #[serde(skip)]
     pub politica: Option<PoliticaRef>,
+    /// espaco da rede de valor que o DEFENSOR usa para bloquear/counter (0 = sem: a politica)
+    #[serde(skip)]
+    pub rede: u8,
     pub don_ataque: Option<i64>,
     /// "nenhum" = decidiu nao bloquear; [zona, indice] = bloqueador; ausente = sem registro
     pub bloqueio: Option<Value>,
@@ -358,7 +361,7 @@ fn atacar(e: &mut Estado, ator: (&'static str, usize), alvo: Option<usize>, d: &
     let atk = if za == "leader" { &p.leader } else { &p.field_chars[ia] };
     let banish = atk.has_banish;
     let unblockable = atk.has_unblockable || atk.unblockable_this_turn;
-    let blv = match &d.politica {
+    let blv_pol = match &d.politica {
         Some(pol) => {
             // `blockers_active()` do defensor
             let lock = opp.blocker_lock_battle.clone();
@@ -388,6 +391,131 @@ fn atacar(e: &mut Estado, ator: (&'static str, usize), alvo: Option<usize>, d: &
         }
         None => d.bloqueio.clone().ok_or_else(|| ns("ataque sem registro de bloqueio"))?,
     };
+    let blv = blv_pol;
+    let at = Ataque { za: za.clone(), ia, atk_code, alvo_tipo, alvo_idx, alvo_code, atk_power, dano, banish, unblockable };
+    if d.politica.is_some() && !unblockable {
+        if let Some(rede) = crate::rede::rede(d.rede) {
+            // OPCAO B (fase C): o defensor testa cada bloqueio (e nenhum), com e sem
+            // counter, numa COPIA; fica com o que a rede de valor acha melhor pra ele
+            let mut opcoes: Vec<Value> = vec![Value::from("nenhum")];
+            opcoes.extend(bloqueadores(&e.oponente)?.into_iter().map(|j| serde_json::json!(["field_chars", j])));
+            let mut melhor: Option<(f64, Value, Vec<(String, usize)>)> = None;
+            for b in &opcoes {
+                for com_counter in [false, true] {
+                    let cnt = if com_counter { counter_minimo(e, &at, b)? } else { Vec::new() };
+                    if com_counter && cnt.is_empty() {
+                        continue;
+                    }
+                    let mut e2 = e.clone();
+                    let mut ex2 = ex.clone();
+                    let v = match resolve_defesa(&mut e2, &mut ex2, &at, b.clone(), Some(cnt.clone())) {
+                        Ok(Resultado::Feito { venceu: true }) => 0.0,
+                        Ok(Resultado::Feito { venceu: false }) => rede.valor(&e2.oponente, &e2.ativo),
+                        _ => continue,
+                    };
+                    if melhor.as_ref().map_or(true, |m| v > m.0) {
+                        melhor = Some((v, b.clone(), cnt));
+                    }
+                }
+            }
+            if let Some((_, b, cnt)) = melhor {
+                return resolve_defesa(e, &mut ex, &at, b, Some(cnt));
+            }
+        }
+    }
+    let counters = if d.politica.is_none() { Some(d.counter_cartas.clone()) } else { None };
+    resolve_defesa(e, &mut ex, &at, blv, counters)
+}
+
+/// O que a defesa precisa saber do ataque (calculado antes do bloqueio).
+#[derive(Clone)]
+struct Ataque {
+    za: String,
+    ia: usize,
+    atk_code: crate::cartas::Cod,
+    alvo_tipo: String,
+    alvo_idx: Option<usize>,
+    alvo_code: Option<crate::cartas::Cod>,
+    atk_power: i64,
+    dano: i64,
+    banish: bool,
+    unblockable: bool,
+}
+
+/// `blockers_active()` do defensor
+fn bloqueadores(opp: &Jogador) -> Result<Vec<usize>, Resultado> {
+    let lock = &opp.blocker_lock_battle;
+    let mut bs = Vec::new();
+    for (j, c) in opp.field_chars.iter().enumerate() {
+        let i = dados(c)?;
+        if !is_blocker(c, &i) || c.rested || !c.cannot_be_rested_until.is_empty() || !c.cannot_block_until.is_empty() {
+            continue;
+        }
+        if let Some(l) = lock.as_object() {
+            let (pl, pg, cl) = (l.get("power_lte").and_then(|x| x.as_i64()), l.get("power_gte").and_then(|x| x.as_i64()),
+                                l.get("cost_lte").and_then(|x| x.as_i64()));
+            if (pl.is_none() && pg.is_none() && cl.is_none())
+                || pl.map_or(false, |x| i.power <= x) || pg.map_or(false, |x| i.power >= x) || cl.map_or(false, |x| i.cost <= x)
+            {
+                continue;
+            }
+        }
+        bs.push(j);
+    }
+    Ok(bs)
+}
+
+/// Counter de personagem que BARRA o golpe com o menor total (cartas de menor
+/// counter primeiro); vazio se nem a mao inteira barra.
+fn counter_minimo(e: &Estado, at: &Ataque, bloqueio: &Value) -> Result<Vec<(String, usize)>, Resultado> {
+    let opp = &e.oponente;
+    let defesa = match lugar(bloqueio) {
+        Some((_, j)) => opp.field_chars.get(j).map_or(0, |t| dados(t).map_or(0, |i| i.power) + t.power_buff),
+        None if at.alvo_tipo == "leader" => dados(&opp.leader)?.power + opp.leader.power_buff,
+        None => {
+            let t = opp.field_chars.get(at.alvo_idx.unwrap_or(usize::MAX)).ok_or_else(|| ns("alvo fora do campo"))?;
+            dados(t)?.power + t.power_buff
+        }
+    };
+    if at.atk_power < defesa {
+        return Ok(Vec::new());
+    }
+    let mut cs: Vec<(i64, usize)> = Vec::new();
+    for (j, c) in opp.hand.iter().enumerate() {
+        let k = dados(c)?.counter;
+        if k > 0 {
+            cs.push((k, j));
+        }
+    }
+    cs.sort();
+    let (mut soma, mut out) = (defesa, Vec::new());
+    for (k, j) in cs {
+        if soma > at.atk_power {
+            break;
+        }
+        soma += k;
+        out.push(("hand".to_string(), j));
+    }
+    Ok(if soma > at.atk_power { out } else { Vec::new() })
+}
+
+/// Do bloqueio ao fim do ataque: bloqueio `blv` ("nenhum" | [zona, i]) e counters
+/// (`Some` = estas cartas; `None` = a politica escolhe uma a uma).
+fn resolve_defesa(e: &mut Estado, ex: &mut Executor, at: &Ataque, blv: Value, counters: Option<Vec<(String, usize)>>)
+    -> Result<Resultado, Resultado> {
+    let (p, opp) = (&mut e.ativo, &mut e.oponente);
+    let d_pol = ex.politica.clone();
+    let za = at.za.clone();
+    let ia = at.ia;
+    let atk_code = at.atk_code;
+    let mut alvo_tipo = at.alvo_tipo.clone();
+    let mut alvo_idx = at.alvo_idx;
+    let mut alvo_code = at.alvo_code;
+    let mut atk_power = at.atk_power;
+    let dano = at.dano;
+    let banish = at.banish;
+    let unblockable = at.unblockable;
+    let atk_eh_char = za != "leader";
     opp.blocker_lock_battle = Value::Null;
     let bl = if blv.as_str() == Some("nenhum") { None } else { lugar(&blv) };
     if let Some((zb, ib)) = bl {
@@ -429,25 +557,28 @@ fn atacar(e: &mut Estado, ator: (&'static str, usize), alvo: Option<usize>, d: &
         v
     };
     // COUNTER de personagens (cartas pelo lugar na mao, antes de sair)
-    let counters_pol: Vec<(String, usize)> = match &d.politica {
-        Some(pol) => {
-            // o defensor escolhe uma a uma entre as cartas com [Counter] da mao
-            let mut resto: Vec<usize> = Vec::new();
-            for (j, c) in opp.hand.iter().enumerate() {
-                if dados(c)?.counter > 0 {
-                    resto.push(j);
+    let counters_pol: Vec<(String, usize)> = match counters {
+        Some(c) => c,
+        None => match &d_pol {
+            Some(pol) => {
+                // o defensor escolhe uma a uma entre as cartas com [Counter] da mao
+                let mut resto: Vec<usize> = Vec::new();
+                for (j, c) in opp.hand.iter().enumerate() {
+                    if dados(c)?.counter > 0 {
+                        resto.push(j);
+                    }
                 }
-            }
-            let mut out = Vec::new();
-            while let Some(k) = pol.borrow_mut().escolhe("counter", resto.len(), true) {
-                if k >= resto.len() {
-                    break;
+                let mut out = Vec::new();
+                while let Some(k) = pol.borrow_mut().escolhe("counter", resto.len(), true) {
+                    if k >= resto.len() {
+                        break;
+                    }
+                    out.push(("hand".to_string(), resto.remove(k)));
                 }
-                out.push(("hand".to_string(), resto.remove(k)));
+                out
             }
-            out
-        }
-        None => d.counter_cartas.clone(),
+            None => Vec::new(),
+        },
     };
     if !counters_pol.is_empty() {
         let mut idxs: Vec<usize> = Vec::new();

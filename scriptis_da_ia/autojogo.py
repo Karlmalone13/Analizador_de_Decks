@@ -56,6 +56,7 @@ def main():
     ap.add_argument('--sem-valor', action='store_true')
     ap.add_argument('--rede', default='', help='rede politica+valor (JSON do rede_pv.py) dos dois lados')
     ap.add_argument('--rede-b', default='', help='ARENA: rede do outro lado (os lados alternam a cada partida)')
+    ap.add_argument('--defesa-rede', action='store_true', help='bloqueio/counter do defensor pela rede de valor')
     a = ap.parse_args()
     if not a.sem_valor:
         from optcg_engine import value_net as V
@@ -76,7 +77,7 @@ def main():
         eb = 2 if arena else ea
         if arena and k % 2 == 1:
             ea, eb = eb, ea
-        r = json.loads(optcg_core.autojogo(json.dumps(e), 0, a.iteracoes, a.turnos, a.c, a.seed + k, a.max_turnos, ea, eb))
+        r = json.loads(optcg_core.autojogo(json.dumps(e), 0, a.iteracoes, a.turnos, a.c, a.seed + k, a.max_turnos, ea, eb, a.defesa_rede))
         if arena:
             v_ = r['vencedor']
             if v_ is None:
