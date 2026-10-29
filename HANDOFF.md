@@ -1,5 +1,19 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-10-29 (1000) - Fase C opcao B (defesa pela rede na simulacao) + L2 + ciclo automatico
+
+**Opcao B**: na simulacao/auto-jogo o defensor escolhe bloqueio e counter pela rede de valor (testa cada opcao,
+com e sem `counter_minimo`, numa copia; `resolve_defesa` em `acoes.rs`; flag `defesa_rede`). Paridade 100%.
+**rede_pv.py**: penalidade de peso L2 (padrao 0,01). **ciclo_fase_c.py**: auto-jogo -> treino -> arena -> promove,
+registro em `metrics/autojogo/ciclo.jsonl`.
+**Resultados**: gen3 x gen2 (com defesa, L2) 58x36; contra o bot Python todas as geracoes ficam em 10-12 x 18-20
+(gen3 + defesa, ate com 4000 iteracoes: 12x18) -- velocidade nao e o limite, rede/dados sao.
+Ciclo a partir da gen3: gen4 PERDEU 78x112 (nao promovida).
+**Bug no ciclo**: a janela de dados ordena por nome (`ciclo_dados_*` antes de `gen*`), entao da 2a geracao em diante
+descarta os dados novos e mantem os antigos -- corrigir antes de confiar no ciclo.
+**PROXIMO**: cauda de efeitos fora do nucleo (~5% das partidas param no auto-jogo); depois opcao A (defesa como nos
+da arvore), mais iteracoes por decisao.
+
 ## 2026-10-26 (999) - Fase C: 1o ciclo (auto-jogo -> rede politica+valor -> arena) no nucleo Rust
 
 **Auto-jogo** (`autojogo.py` -> `optcg_core.autojogo`): partida inteira no Rust, a busca decidindo a jogada
